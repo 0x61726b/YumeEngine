@@ -96,5 +96,33 @@ if(WIN32) # The only platform it makes sense to check for DirectX SDK
     endif ()
 	mark_as_advanced(DirectX_D3D11_INCLUDE_DIR DirectX_D3D11_LIBRARY DirectX_D3DX11_LIBRARY)
   endif ()
+
+
+# D3D12
+  set(DirectX_D3D12_INCLUDE_SEARCH_PATH
+    "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/um"
+    "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/shared")
+  set(DirectX12_LIB_SEARCH_PATH
+    "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.10240.0/um/")
+
+  find_path(DirectX_D3D12_INCLUDE_DIR  NAMES d3d12.h HINTS ${DirectX_D3D12_INCLUDE_SEARCH_PATH})
+  find_library(DirectX_D3D12_LIBRARY  NAMES d3d12 HINTS ${DirectX12_LIB_SEARCH_PATH} PATH_SUFFIXES ${DirectX_LIBPATH_SUFFIX})
+  find_library(DirectX_D3D12_COMPILER_LIBRARY NAMES d3dcompiler HINTS ${DirectX12_LIB_SEARCH_PATH} PATH_SUFFIXES ${DirectX_LIBPATH_SUFFIX})
+  find_library(DirectX_D3D12_DXGUID_LIBRARY NAMES dxguid HINTS ${DirectX12_LIB_SEARCH_PATH} PATH_SUFFIXES ${DirectX_LIBPATH_SUFFIX})
+  find_library(DirectX_D3D12_DXGI_LIBRARY NAMES dxgi HINTS ${DirectX12_LIB_SEARCH_PATH} PATH_SUFFIXES ${DirectX_LIBPATH_SUFFIX})
+
+  if(DirectX_D3D12_INCLUDE_DIR AND DirectX_D3D12_LIBRARY AND DirectX_D3D12_COMPILER_LIBRARY AND DirectX_D3D12_DXGUID_LIBRARY AND DirectX_D3D12_DXGI_LIBRARY)
+    message("D3D12 Found ${DirectX_D3D12_INCLUDE_DIR} Lib ${DirectX_D3D12_LIBRARY}" )
+    set(DirectX_D3D12_FOUND TRUE)
+    set(DirectX_D3D12_INCLUDE_DIR ${DirectX_D3D12_INCLUDE_DIR})
+    set(DirectX_D3D12_LIBRARIES 
+      ${DirectX_D3D12_LIBRARY}
+      ${DirectX_D3D12_COMPILER_LIBRARY}
+      ${DirectX_D3D12_DXGUID_LIBRARY}
+      ${DirectX_D3D12_DXGI_LIBRARY})
+
+    mark_as_advanced(DirectX_D3D12_INCLUDE_DIR DirectX_D3D12_LIBRARY DirectX_D3D12_COMPILER_LIBRARY DirectX_D3D12_DXGUID_LIBRARY DirectX_D3D12_DXGI_LIBRARY )
+  endif()
+
   
 endif(WIN32)

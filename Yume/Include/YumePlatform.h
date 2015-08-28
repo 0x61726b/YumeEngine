@@ -35,7 +35,7 @@
 ///--------------------------------------------------------------------------------
 namespace YumeEngine
 {
-		//--------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------
 	#define YUME_PLATFORM_WIN32 1
 	#define YUME_PLATFORM_LINUX 2
 	#define YUME_PLATFORM_APPLE 3
@@ -43,6 +43,7 @@ namespace YumeEngine
 	#define YUME_PLATFORM_ANDROID 5
 	#define YUME_PLATFORM_ANDROID 6
 	#define YUME_PLATFORM_NACL 7
+	#define YUME_PLATFORM_WINRT 8
 	//--------------------------------------------------------------------------------
 	#define YUME_COMPILER_MSVC 1
 	#define YUME_COMPILER_GNUC 2
