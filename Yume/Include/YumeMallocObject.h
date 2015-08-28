@@ -21,31 +21,98 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeRequired.h
-/// Date : 8.27.2015
+/// File : YumeMallocObject.h
+/// Date : 8.28.2015
 /// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
 
 //---------------------------------------------------------------------------------
-#ifndef __YumeRequired_h__
-#define __YumeRequired_h__
+#ifndef __YumeMemoryAllocatedObject_h__
+#define __YumeMemoryAllocatedObject_h__
 //---------------------------------------------------------------------------------
-#include "YumePlatform.h"
+#include "YumeRequired.h"
+#include "YumeHeaderPrefix.h"
+//---------------------------------------------------------------------------------
+#ifdef new
+#  undef new
+#endif
+#ifdef delete
+#  undef delete
+#endif
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
-	#define YUME_VERSION_MAJOR 1
-	#define YUME_VERSION_MINOR 1
-	#define YUME_VERSION_PATCH 1
-	#define YUME_VERSION_SUFFIX ""
-	#define YUME_VERSION_NAME "Chitanda"
+	template <class Alloc>
+	class YumeAPIExport YumeAllocatedObject
+	{
+		public:
+		explicit YumeAllocatedObject()
+		{ }
 
-	#define YUME_VERSION_NUMBER    ((YUME_VERSION_MAJOR << 16) | (YUME_VERSION_MINOR << 8) | YUME_VERSION_PATCH)
+		~YumeAllocatedObject()
+		{ }
+
+		/// operator new, with debug line info
+		void* operator new(size_t sz, const char* file, int line, const char* func)
+		{
+			return Alloc::allocateBytes(sz, file, line, func);
+		}
+
+		void* operator new(size_t sz)
+		{
+			return Alloc::allocateBytes(sz);
+		}
+
+		/// placement operator new
+		void* operator new(size_t sz, void* ptr)
+		{
+			(void) sz;
+			return ptr;
+		}
+
+		/// array operator new, with debug line info
+		void* operator new[] ( size_t sz, const char* file, int line, const char* func )
+		{
+			return Alloc::allocateBytes(sz, file, line, func);
+		}
+
+		void* operator new[] ( size_t sz )
+		{
+			return Alloc::allocateBytes(sz);
+		}
+
+		void operator delete( void* ptr )
+		{
+			Alloc::deallocateBytes(ptr);
+		}
+
+		// Corresponding operator for placement delete (second param same as the first)
+		void operator delete( void* ptr, void* )
+		{
+			Alloc::deallocateBytes(ptr);
+		}
+
+		// only called if there is an exception in corresponding 'new'
+		void operator delete( void* ptr, const char* , int , const char*  )
+		{
+			Alloc::deallocateBytes(ptr);
+		}
+
+		void operator delete[] ( void* ptr )
+		{
+			Alloc::deallocateBytes(ptr);
+		}
+
+
+		void operator delete[] ( void* ptr, const char* , int , const char*  )
+		{
+			Alloc::deallocateBytes(ptr);
+		}
+	};
 }
 //---------------------------------------------------------------------------------
-#include "YumeStdHeaders.h"
-#include "YumeMemoryAllocatorConfig.h"
+#include "YumeHeaderSuffix.h"
 //---------------------------------------------------------------------------------
 #endif
-//~End of YumeConfig.h
+//~End of YumeMallocObject.h

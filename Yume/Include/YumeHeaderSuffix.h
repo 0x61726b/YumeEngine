@@ -21,31 +21,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeRequired.h
-/// Date : 8.27.2015
+/// File : YumeHeaderSuffix.h
+/// Date : 8.28.2015
 /// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
 
-//---------------------------------------------------------------------------------
-#ifndef __YumeRequired_h__
-#define __YumeRequired_h__
-//---------------------------------------------------------------------------------
-#include "YumePlatform.h"
-//---------------------------------------------------------------------------------
-namespace YumeEngine
-{
-	#define YUME_VERSION_MAJOR 1
-	#define YUME_VERSION_MINOR 1
-	#define YUME_VERSION_PATCH 1
-	#define YUME_VERSION_SUFFIX ""
-	#define YUME_VERSION_NAME "Chitanda"
+#if YUME_COMPILER == YUME_COMPILER_MSVC && YUME_PLATFORM != YUME_PLATFORM_WINRT
 
-	#define YUME_VERSION_NUMBER    ((YUME_VERSION_MAJOR << 16) | (YUME_VERSION_MINOR << 8) | YUME_VERSION_PATCH)
-}
-//---------------------------------------------------------------------------------
-#include "YumeStdHeaders.h"
-#include "YumeMemoryAllocatorConfig.h"
-//---------------------------------------------------------------------------------
+// restore previous warnings settings
+#   pragma warning (pop)
+
+
 #endif
-//~End of YumeConfig.h
+
+//~End of YumeHeaderSuffix.h

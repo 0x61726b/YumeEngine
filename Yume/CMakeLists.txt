@@ -11,13 +11,26 @@ set( HEADER_FILES
 	Include/YumePlatform.h
   Include/YumeRequired.h
   Include/Yume.h
+  Include/YumeHeaderSuffix.h
+  Include/YumeStdHeaders.h
+  Include/YumeHeaderPrefix.h
+  Include/YumeMallocObject.h
+  Include/YumeMemoryAllocatorNed.h
+  Include/YumeMemoryAllocatorNedPooling.h
+  Include/YumeMemoryAllocatorConfig.h
 	${CMAKE_BINARY_DIR}/include/YumeBuildSettings.h)
 
 set( SOURCE_FILES 
-	Src/Pch.cpp )
+	Src/Pch.cpp
+  Src/YumeMemoryAllocatorNed.cpp
+  Src/YumeMemoryAllocatorNedPooling.cpp )
+
+
 
 add_definitions(-D_MT -D_USRDLL)
 set (TARGET_LINK_FLAGS "")
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/nedmalloc)
 
 if(YUME_STATIC)
 	ADD_LIBRARY(YUME STATIC ${SOURCE_FILES} ${HEADER_FILES})
@@ -25,6 +38,7 @@ ELSE()
 	ADD_LIBRARY(YUME SHARED ${SOURCE_FILES} ${HEADER_FILES})
 endif()
 
+set(YUME_STATIC_LIB YUME_STATIC)
 if(WIN32 AND MSVC10 AND CMAKE_CL_64)
   set_target_properties(YUME PROPERTIES 
                         VERSION 1

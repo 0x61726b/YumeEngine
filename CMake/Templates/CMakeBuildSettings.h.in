@@ -32,6 +32,9 @@
 
 #cmakedefine YUME_BUILD_DIRECT3D11
 #cmakedefine YUME_BUILD_OPENGL
+#cmakedefine YUME_STATIC_LIB
+
+#define YUME_MEMORY_ALLOCATOR 4
 
 
 #endif

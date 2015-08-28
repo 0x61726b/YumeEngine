@@ -38,8 +38,11 @@ namespace YumeEngine
 		//--------------------------------------------------------------------------------
 	#define YUME_PLATFORM_WIN32 1
 	#define YUME_PLATFORM_LINUX 2
+	#define YUME_PLATFORM_APPLE 3
+	#define YUME_PLATFORM_APPLE_IOS 4
 	#define YUME_PLATFORM_ANDROID 5
-	#define YUME_PLATFORM_NACL 6
+	#define YUME_PLATFORM_ANDROID 6
+	#define YUME_PLATFORM_NACL 7
 	//--------------------------------------------------------------------------------
 	#define YUME_COMPILER_MSVC 1
 	#define YUME_COMPILER_GNUC 2
@@ -98,7 +101,7 @@ namespace YumeEngine
 	//--------------------------------------------------------------------------------
 	//
 	//Find out which platform we are running
-	//
+	//	
 	//--------------------------------------------------------------------------------
 	#if defined( __WIN32__ ) || defined( _WIN32 )
 	#   define YUME_PLATFORM YUME_PLATFORM_WIN32
@@ -131,6 +134,75 @@ namespace YumeEngine
 	//
 	//
 	//--------------------------------------------------------------------------------
+	#if YUME_COMPILER == YUME_COMPILER_MSVC
+	#   define YUME_DEPRECATED __declspec(deprecated)
+	#elif YUME_COMPILER == YUME_COMPILER_GNUC || YUME_COMPILER == YUME_COMPILER_CLANG
+	#   define OGRE_DEPRECATED __attribute__ ((deprecated))
+	#else
+	#   pragma message("WARNING: NO DEPRECATED FUNCTION IMPLEMENTED FOR THIS COMPILER SwiftRage")
+	#   define OGRE_DEPRECATED
+	#endif
+	//Windows Settings
+	#if YUME_PLATFORM == YUME_PLATFORM_WIN32 || YUME_PLATFORM == YUME_PLATFORM_WINRT
+
+	#	if defined( YUME_STATIC_LIB )
+			// Linux compilers don't have symbol import/export directives.
+	#   	define YumeAPIExport
+	#   	define YumeAPIPrivate
+	#   else
+	#   	if defined( YUME_NONCLIENT_BUILD )
+	#       	define YumeAPIExport __declspec( dllexport )
+	#   	else
+	#           if defined( __MINGW32__ )
+	#               define YumeAPIExport
+	#           else
+	#       	    define YumeAPIExport __declspec( dllimport )
+	#           endif
+	#   	endif
+	#   	define YumeAPIPrivate
+	#	endif
+	#endif
+
+	#define YUME_CPU_UNKNOWN    0
+	#define YUME_CPU_X86        1
+	#define YUME_CPU_PPC        2
+	#define YUME_CPU_ARM        3
+
+
+	#if (defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))) || \
+		(defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__)))
+	#   define YUME_CPU YUME_CPU_X86
+
+	#elif YUME_PLATFORM == YUME_PLATFORM_APPLE && defined(__BIG_ENDIAN__)
+	#   define YUME_CPU YUME_CPU_PPC
+	#elif YUME_PLATFORM == YUME_PLATFORM_APPLE
+	#	define YUME_CPU YUME_CPU_X86
+	#elif YUME_PLATFORM == YUME_PLATFORM_APPLE_IOS && (defined(__i386__) || defined(__x86_64__))
+	#	define YUME_CPU YUME_CPU_X86
+	#elif defined(__arm__)
+	#	define YUME_CPU YUME_CPU_ARM
+	#else
+	#   define YUME_CPU YUME_CPU_UNKNOWN
+	#endif
+
+	#if YUME_COMPILER == YUME_COMPILER_MSVC
+	#   define OGRE_ALIGNED_DECL(type, var, alignment)  __declspec(align(alignment)) type var
+
+	#elif (YUME_COMPILER == YUME_COMPILER_GNUC) || (YUME_COMPILER == YUME_COMPILER_CLANG)
+	#   define YUME_ALIGNED_DECL(type, var, alignment)  type var __attribute__((__aligned__(alignment)))
+
+	#else
+	#   define YUME_ALIGNED_DECL(type, var, alignment)  type var
+	#endif
+
+	#if YUME_CPU == YUME_CPU_X86
+	#   define YUME_SIMD_ALIGNMENT  16
+
+	#else
+	#   define YUME_SIMD_ALIGNMENT  16
+	#endif
+
+	#define YUME_SIMD_ALIGNED_DECL(type, var)   YUME_ALIGNED_DECL(type, var, OGRE_SIMD_ALIGNMENT)
 }
 ///--------------------------------------------------------------------------------
 #endif

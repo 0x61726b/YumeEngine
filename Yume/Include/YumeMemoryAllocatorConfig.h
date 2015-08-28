@@ -21,31 +21,69 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeRequired.h
-/// Date : 8.27.2015
+/// File : YumeMemoryAllocatorConfig.h
+/// Date : 8.28.2015
 /// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
 
+
+#ifndef __YumeMemoryAllocatorConfig_h__
+#define __YumeMemoryAllocatorConfig_h__
 //---------------------------------------------------------------------------------
-#ifndef __YumeRequired_h__
-#define __YumeRequired_h__
-//---------------------------------------------------------------------------------
-#include "YumePlatform.h"
+#include "YumeMallocObject.h"
+#include "YumeHeaderPrefix.h"
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
-	#define YUME_VERSION_MAJOR 1
-	#define YUME_VERSION_MINOR 1
-	#define YUME_VERSION_PATCH 1
-	#define YUME_VERSION_SUFFIX ""
-	#define YUME_VERSION_NAME "Chitanda"
-
-	#define YUME_VERSION_NUMBER    ((YUME_VERSION_MAJOR << 16) | (YUME_VERSION_MINOR << 8) | YUME_VERSION_PATCH)
+	enum MemoryCategory
+	{
+		YUME_MEM_GENERAL = 0
+	};
 }
 //---------------------------------------------------------------------------------
-#include "YumeStdHeaders.h"
-#include "YumeMemoryAllocatorConfig.h"
+#if YUME_MEMORY_ALLOCATOR == YUME_MEMORY_ALLOCATOR_NEDPOOLING
+
+#include "YumeMemoryAllocatorNedPooling.h"
+namespace YumeEngine
+{
+	template <MemoryCategory Cat> class YumeCategorisedAllocPolicy : public NedPoolingPolicy{};
+	template <MemoryCategory Cat, size_t align = 0> class YumeCategorisedAlignAllocPolicy : public NedPoolingAlignedPolicy<align>{};
+};
+#endif
+//---------------------------------------------------------------------------------
+#if YUME_MEMORY_ALLOCATOR == YUME_MEMORY_ALLOCATOR_NED
+
+#include "YumeMemoryAllocatorNed.h"
+namespace YumeEngine
+{
+	template <MemoryCategory Cat> class YumeCategorisedAllocPolicy : public NedAllocPolicy{};
+	template <MemoryCategory Cat, size_t align = 0> class YumeCategorisedAlignAllocPolicy : public NedAlignedAllocPolicy<align>{};
+};
+
+#endif
+
+namespace YumeEngine
+{
+	typedef YumeCategorisedAlignAllocPolicy<YumeEngine::YUME_MEM_GENERAL> YumeGeneralAllocPolicy;
+
+	typedef YumeAllocatedObject<YumeGeneralAllocPolicy> YumeGeneralAllocatedObject;
+}
+
+namespace YumeEngine
+{
+	template<typename T>
+	T* constructN(T* basePtr, size_t count)
+	{
+		for (size_t i = 0; i < count; ++i)
+		{
+			new ((void*)(basePtr+i)) T();
+		}
+		return basePtr;
+	}
+}
+//---------------------------------------------------------------------------------
+#include "YumeHeaderSuffix.h"
 //---------------------------------------------------------------------------------
 #endif
-//~End of YumeConfig.h
+//~End of YumeMemoryAllocatorConfig.h
