@@ -3,7 +3,7 @@ Modern Cross Platform Renderer
 
 
 
-**## Sources Used On This Project**
+## **Sources Used On This Project**
 
 [Stateless, layered, multi-threaded rendering – Part 1](http://blog.molecular-matters.com/2014/11/06/stateless-layered-multi-threaded-rendering-part-1/ "Stateless, layered, multi-threaded rendering – Part 1")
 
