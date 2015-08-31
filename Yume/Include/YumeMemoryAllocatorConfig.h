@@ -31,16 +31,20 @@
 #ifndef __YumeMemoryAllocatorConfig_h__
 #define __YumeMemoryAllocatorConfig_h__
 //---------------------------------------------------------------------------------
-#include "YumeMallocObject.h"
 #include "YumeHeaderPrefix.h"
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
 	enum MemoryCategory
 	{
-		YUME_MEM_GENERAL = 0
+		YUME_MEM_GENERAL = 0,
+		YUME_MEM_RENDERERS = 1
 	};
 }
+//---------------------------------------------------------------------------------
+#include "YumeMallocObject.h"
+#include "YumeMemoryAllocatorSTL.h"
+
 //---------------------------------------------------------------------------------
 #if YUME_MEMORY_ALLOCATOR == YUME_MEMORY_ALLOCATOR_NEDPOOLING
 
@@ -66,8 +70,13 @@ namespace YumeEngine
 namespace YumeEngine
 {
 	typedef YumeCategorisedAlignAllocPolicy<YumeEngine::YUME_MEM_GENERAL> YumeGeneralAllocPolicy;
+	typedef YumeCategorisedAlignAllocPolicy<YumeEngine::YUME_MEM_RENDERERS> YumeRendererAllocPolicy;
 
 	typedef YumeAllocatedObject<YumeGeneralAllocPolicy> YumeGeneralAllocatedObject;
+	typedef YumeAllocatedObject<YumeRendererAllocPolicy> YumeRendererAllocatedObject;
+
+
+	typedef YumeRendererAllocatedObject RenderObjAlloc;
 }
 
 namespace YumeEngine
@@ -82,6 +91,10 @@ namespace YumeEngine
 		return basePtr;
 	}
 }
+//---------------------------------------------------------------------------------
+#define YumeAPINew new
+#define YumeAPIDelete delete
+
 //---------------------------------------------------------------------------------
 #include "YumeHeaderSuffix.h"
 //---------------------------------------------------------------------------------

@@ -21,20 +21,42 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeHeaders.h
-/// Date : 8.27.2015
-/// Comments : Required .h files
+/// File : YumeRenderWindow.cpp
+/// Date : 8.31.2015
+/// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
 
-///--------------------------------------------------------------------------------
-#ifndef __YumeHeaders_h__
-#define __YumeHeaders_h__
-///--------------------------------------------------------------------------------
-#include "YumePlatform.h"
+//---------------------------------------------------------------------------------
+#include "YumeHeaders.h"
+#include "YumeRenderWindow.h"
 
-#include "YumeCommon.h"
-///--------------------------------------------------------------------------------
-#endif
-//~End of YumePlatform.h
+#include "YumeRenderer.h"
 
+//---------------------------------------------------------------------------------
+
+namespace YumeEngine
+{
+	YumeRenderWindow::YumeRenderWindow() : YumeRenderTarget()
+	{
+		m_bIsPrimary = false;
+	}
+	bool YumeRenderWindow::IsPrimary() const
+	{
+		return m_bIsPrimary;
+	}
+	bool YumeRenderWindow::IsFullScreen() const
+	{
+		return m_bIsFullScreen;
+	}
+
+	void YumeRenderWindow::GetProperties(unsigned int& width, unsigned int& height, unsigned int& colourDepth,
+		int& left, int& top)
+	{
+		width = m_uiWidth;
+		height = m_uiHeight;
+		colourDepth = m_uiColourDepth;
+		left = m_iLeft;
+		top = m_iTop;
+	}
+}

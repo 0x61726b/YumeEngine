@@ -21,20 +21,29 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeHeaders.h
-/// Date : 8.27.2015
-/// Comments : Required .h files
+/// File : YumeCommon.h
+/// Date : 8.31.2015
+/// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
 
-///--------------------------------------------------------------------------------
-#ifndef __YumeHeaders_h__
-#define __YumeHeaders_h__
-///--------------------------------------------------------------------------------
-#include "YumePlatform.h"
+//---------------------------------------------------------------------------------
+#ifndef __YumeCommon_h__
+#define __YumeCommon_h__
 
-#include "YumeCommon.h"
-///--------------------------------------------------------------------------------
+#include "YumeRequired.h"
+
+namespace YumeEngine
+{
+	
+	struct RenderWindowDesc
+	{
+		YumeString Name;
+	};
+
+	typedef YumeMap<YumeString, YumeString> StrKeyValuePair;
+}
+
+//---------------------------------------------------------------------------------
 #endif
-//~End of YumePlatform.h
-
+//~End of YumeConfig.h

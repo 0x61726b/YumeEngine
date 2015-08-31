@@ -35,17 +35,117 @@
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
-	#define YUME_VERSION_MAJOR 1
+	#define YUME_VERSION_MAJOR 0
 	#define YUME_VERSION_MINOR 1
-	#define YUME_VERSION_PATCH 1
+	#define YUME_VERSION_PATCH 0
 	#define YUME_VERSION_SUFFIX ""
 	#define YUME_VERSION_NAME "Chitanda"
 
 	#define YUME_VERSION_NUMBER    ((YUME_VERSION_MAJOR << 16) | (YUME_VERSION_MINOR << 8) | YUME_VERSION_PATCH)
+
+	class YumeRenderer;
+	class YumeRenderTarget;
 }
+//---------------------------------------------------------------------------------
+
+
 //---------------------------------------------------------------------------------
 #include "YumeStdHeaders.h"
 #include "YumeMemoryAllocatorConfig.h"
+//---------------------------------------------------------------------------------
+namespace YumeEngine
+{
+	typedef std::string _YumeStringBase;
+
+	typedef _YumeStringBase YumeString;
+}
+//---------------------------------------------------------------------------------
+namespace YumeEngine
+{
+	//STL Containers
+	template <typename T, typename A = YumeSTLAllocator<T, YumeGeneralAllocPolicy> >
+	struct YumeDeque
+	{
+#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
+		typedef typename std::deque<T, A> type;
+		typedef typename std::deque<T, A>::iterator iterator;
+		typedef typename std::deque<T, A>::const_iterator const_iterator;
+#else
+		typedef typename std::deque<T> type;
+		typedef typename std::deque<T>::iterator iterator;
+		typedef typename std::deque<T>::const_iterator const_iterator;
+#endif
+	};
+
+	template <typename T, typename A = YumeSTLAllocator<T, YumeGeneralAllocPolicy> >
+	struct YumeVector
+	{
+#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
+		typedef typename std::vector<T, A> type;
+		typedef typename std::vector<T, A>::iterator iterator;
+		typedef typename std::vector<T, A>::const_iterator const_iterator;
+#else
+		typedef typename std::vector<T> type;
+		typedef typename std::vector<T>::iterator iterator;
+		typedef typename std::vector<T>::const_iterator const_iterator;
+#endif
+	};
+
+	template <typename T, typename A = YumeSTLAllocator<T, YumeGeneralAllocPolicy> >
+	struct YumeList
+	{
+#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
+		typedef typename std::list<T, A> type;
+		typedef typename std::list<T, A>::iterator iterator;
+		typedef typename std::list<T, A>::const_iterator const_iterator;
+#else
+		typedef typename std::list<T> type;
+		typedef typename std::list<T>::iterator iterator;
+		typedef typename std::list<T>::const_iterator const_iterator;
+#endif
+	};
+
+	template <typename T, typename P = std::less<T>, typename A = YumeSTLAllocator<T, YumeGeneralAllocPolicy> >
+	struct YumeSet
+	{
+#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
+		typedef typename std::set<T, P, A> type;
+		typedef typename std::set<T, P, A>::iterator iterator;
+		typedef typename std::set<T, P, A>::const_iterator const_iterator;
+#else
+		typedef typename std::set<T, P> type;
+		typedef typename std::set<T, P>::iterator iterator;
+		typedef typename std::set<T, P>::const_iterator const_iterator;
+#endif
+	};
+	template <typename K, typename V, typename P = std::less<K>, typename A = YumeSTLAllocator<std::pair<const K, V>, YumeGeneralAllocPolicy> >
+	struct YumeMap
+	{
+#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
+		typedef typename std::map<K, V, P, A> type;
+		typedef typename std::map<K, V, P, A>::iterator iterator;
+		typedef typename std::map<K, V, P, A>::const_iterator const_iterator;
+#else
+		typedef typename std::map<K, V, P> type;
+		typedef typename std::map<K, V, P>::iterator iterator;
+		typedef typename std::map<K, V, P>::const_iterator const_iterator;
+#endif
+	};
+	template <typename K, typename V, typename P = std::less<K>, typename A = YumeSTLAllocator<std::pair<const K, V>, YumeGeneralAllocPolicy> >
+	struct YumeMultiMap
+	{
+#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
+		typedef typename std::multimap<K, V, P, A> type;
+		typedef typename std::multimap<K, V, P, A>::iterator iterator;
+		typedef typename std::multimap<K, V, P, A>::const_iterator const_iterator;
+#else
+		typedef typename std::multimap<K, V, P> type;
+		typedef typename std::multimap<K, V, P>::iterator iterator;
+		typedef typename std::multimap<K, V, P>::const_iterator const_iterator;
+#endif
+	};
+}
+
 //---------------------------------------------------------------------------------
 #endif
 //~End of YumeConfig.h

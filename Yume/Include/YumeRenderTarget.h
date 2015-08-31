@@ -1,3 +1,4 @@
+#pragma once
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
@@ -21,20 +22,44 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeHeaders.h
-/// Date : 8.27.2015
-/// Comments : Required .h files
+/// File : YumeRenderTarget.h
+/// Date : 8.31.2015
+/// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
 
-///--------------------------------------------------------------------------------
-#ifndef __YumeHeaders_h__
-#define __YumeHeaders_h__
-///--------------------------------------------------------------------------------
-#include "YumePlatform.h"
+//---------------------------------------------------------------------------------
+#ifndef __YumeRenderTarget_h__
+#define __YumeRenderTarget_h__
+//---------------------------------------------------------------------------------
+#include "YumeRequired.h"
 
-#include "YumeCommon.h"
-///--------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+namespace YumeEngine
+{
+	class YumeAPIExport YumeRenderTarget : public RenderObjAlloc
+	{
+	public:
+		YumeRenderTarget();
+		virtual ~YumeRenderTarget();
+
+		virtual const YumeString& GetName() const;
+
+		virtual unsigned int GetWidth() const;
+		virtual unsigned int GetHeight() const;
+		virtual unsigned int GetColourDepth() const;
+
+		virtual void Update();
+
+		virtual void Present(bool vSync = true);
+
+	protected:
+		YumeString						m_sName;
+		unsigned int					m_uiWidth;
+		unsigned int					m_uiHeight;
+		unsigned int					m_uiColourDepth;
+	};
+}
+//---------------------------------------------------------------------------------
 #endif
-//~End of YumePlatform.h
-
+//~End of YumeRenderer.h

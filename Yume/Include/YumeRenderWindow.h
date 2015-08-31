@@ -21,20 +21,54 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeHeaders.h
-/// Date : 8.27.2015
-/// Comments : Required .h files
+/// File : YumeRenderWindow.h
+/// Date : 8.31.2015
+/// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
+#ifndef __YumeRenderWindow_h__
+#define __YumeRenderWindow_h__
+//---------------------------------------------------------------------------------
+#include "YumeRequired.h"
+#include "YumeRenderTarget.h"
+//---------------------------------------------------------------------------------
+namespace YumeEngine
+{
+	class YumeAPIExport YumeRenderWindow : public YumeRenderTarget
+	{
+	public:
+		YumeRenderWindow();
 
-///--------------------------------------------------------------------------------
-#ifndef __YumeHeaders_h__
-#define __YumeHeaders_h__
-///--------------------------------------------------------------------------------
-#include "YumePlatform.h"
+		virtual void Create(const YumeString& Name,
+			unsigned int Width,
+			unsigned int Height,
+			bool FullScreen,
+			const StrKeyValuePair* Params) = 0;
 
-#include "YumeCommon.h"
-///--------------------------------------------------------------------------------
+		virtual void Destroy() = 0;
+		
+		virtual void Resize(unsigned int Width,
+							unsigned int Height) = 0;
+
+		virtual void Move(int left, int top) = 0;
+
+		virtual void GetProperties(unsigned int& width, unsigned int& height, unsigned int& colourDepth,
+			int& left, int& top);
+
+		virtual bool IsPrimary() const;
+
+		virtual bool IsFullScreen() const;
+
+	protected:
+		int m_iLeft;
+		int m_iTop;
+
+		bool m_bIsFullScreen;
+		bool m_bIsPrimary;
+
+	};
+}
+//---------------------------------------------------------------------------------
 #endif
-//~End of YumePlatform.h
-
+//---------------------------------------------------------------------------------
+//~End of __YumeRenderWindow_h__
