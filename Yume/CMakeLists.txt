@@ -23,6 +23,12 @@ set( HEADER_FILES
   Include/YumeRenderer.h
   Include/YumeRenderTarget.h
   Include/YumeRenderWindow.h
+  Include/YumeRendererCapabilities.h
+  Include/YumeString.h
+  Include/YumeStringVector.h
+  Include/YumeStringConverter.h
+  Include/YumeLog.h
+  Include/YumeSingleton.h
 	${CMAKE_BINARY_DIR}/Include/YumeBuildSettings.h)
 
 set( SOURCE_FILES 
@@ -32,7 +38,12 @@ set( SOURCE_FILES
   Src/YumeCommon.cpp
   Src/YumeRenderer.cpp
   Src/YumeRenderTarget.cpp
-  Src/YumeRenderWindow.cpp )
+  Src/YumeRenderWindow.cpp
+  Src/YumeRendererCapabilities.cpp
+  Src/YumeString.cpp
+  Src/YumeStringConverter.cpp
+  Src/YumeLog.cpp
+  Src/YumeLogManager.cpp )
 
 
 

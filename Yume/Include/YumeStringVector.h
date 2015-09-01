@@ -1,3 +1,4 @@
+#pragma once
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
@@ -21,36 +22,26 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeRenderer.h
-/// Date : 8.31.2015
+/// File : YumeRendererCapabilities.h
+/// Date : 9.1.2015
 /// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
 
 //---------------------------------------------------------------------------------
-#ifndef __YumeRenderer_h__
-#define __YumeRenderer_h__
+#ifndef  __YumeStringVector_h__
+#define  __YumeStringVector_h__
 //---------------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeCommon.h"
+#include "YumeString.h"
 
-#include "YumeRendererCapabilities.h"
-#include "YumeRenderTarget.h"
-//---------------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeAPIExport YumeRenderer : public RenderObjAlloc
-	{
-	public:
-		YumeRenderer();
-
-		virtual ~YumeRenderer();
-
-		virtual const YumeString& GetName();
-
-		virtual YumeRenderWindow* CreateRenderWindow(bool autoCreate, const YumeString& Title = "Yume Engine");
-	};
+	typedef YumeVector<YumeString>::type StringVector;
+	/*typedef SharedPtr<StringVector> StringVectorPtr;*/
 }
+
+
 //---------------------------------------------------------------------------------
 #endif
-//~End of YumeRenderer.h
+//~End of  __YumeStringVector_h__

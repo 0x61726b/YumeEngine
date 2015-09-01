@@ -45,6 +45,7 @@ namespace YumeEngine
 
 	class YumeRenderer;
 	class YumeRenderTarget;
+	class YumeRenderWindow;
 }
 //---------------------------------------------------------------------------------
 
@@ -56,8 +57,17 @@ namespace YumeEngine
 namespace YumeEngine
 {
 	typedef std::string _YumeStringBase;
+	typedef std::basic_stringstream<char, std::char_traits<char>, std::allocator<char> > _YumeStreamBase;
 
 	typedef _YumeStringBase YumeString;
+	typedef _YumeStreamBase YumeStringStream;
+
+	typedef unsigned char yuchar;
+	typedef unsigned short yushort;
+	typedef unsigned int yuint;
+	typedef unsigned long yulong;
+
+	typedef float Real;
 }
 //---------------------------------------------------------------------------------
 namespace YumeEngine
@@ -148,4 +158,4 @@ namespace YumeEngine
 
 //---------------------------------------------------------------------------------
 #endif
-//~End of YumeConfig.h
+//~End of YumeRequired.h

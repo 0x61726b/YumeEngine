@@ -47,7 +47,7 @@ namespace YumeEngine
 	class YumeAPIExport YumeAllocatedObject
 	{
 	public:
-		YumeAllocatedObject()
+		explicit YumeAllocatedObject()
 		{ }
 
 		~YumeAllocatedObject()
