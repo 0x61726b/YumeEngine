@@ -21,8 +21,8 @@ include(CheckCXXCompilerFlag)
 
 OPTION(YUME_STATIC "Static Library" ON)
 
-include_directories("${CMAKE_SOURCE_DIR}/Yume/include")
-include_directories("${CMAKE_BINARY_DIR}/include")
+include_directories("${CMAKE_SOURCE_DIR}/Yume/Include")
+include_directories("${CMAKE_BINARY_DIR}/Include")
 
 if (CMAKE_BUILD_TYPE STREQUAL "")
   # CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up

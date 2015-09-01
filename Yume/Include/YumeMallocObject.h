@@ -46,8 +46,8 @@ namespace YumeEngine
 	template <class Alloc>
 	class YumeAPIExport YumeAllocatedObject
 	{
-		public:
-		explicit YumeAllocatedObject()
+	public:
+		YumeAllocatedObject()
 		{ }
 
 		~YumeAllocatedObject()

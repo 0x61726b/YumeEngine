@@ -23,7 +23,7 @@ set( HEADER_FILES
   Include/YumeRenderer.h
   Include/YumeRenderTarget.h
   Include/YumeRenderWindow.h
-	${CMAKE_BINARY_DIR}/include/YumeBuildSettings.h)
+	${CMAKE_BINARY_DIR}/Include/YumeBuildSettings.h)
 
 set( SOURCE_FILES 
 	Src/Pch.cpp
@@ -39,7 +39,10 @@ set( SOURCE_FILES
 add_definitions(-D_MT -D_USRDLL -DYUME_NONCLIENT_BUILD)
 set (TARGET_LINK_FLAGS "")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/nedmalloc)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Src/nedmalloc)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 
 if(YUME_STATIC)
 	ADD_LIBRARY(YUME STATIC ${SOURCE_FILES} ${HEADER_FILES})
@@ -58,10 +61,11 @@ else()
 endif()
 
 use_precompiled_header(YUME 
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/YumeHeaders.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/Pch.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Include/YumeHeaders.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Src/Pch.cpp"
 )
 
+
 install(FILES ${HEADER_FILES}
-  DESTINATION include/Yume
+  DESTINATION Include/Yume
 )

@@ -41,7 +41,6 @@ namespace YumeEngine
 	#define YUME_PLATFORM_APPLE 3
 	#define YUME_PLATFORM_APPLE_IOS 4
 	#define YUME_PLATFORM_ANDROID 5
-	#define YUME_PLATFORM_ANDROID 6
 	#define YUME_PLATFORM_NACL 7
 	#define YUME_PLATFORM_WINRT 8
 	//--------------------------------------------------------------------------------
@@ -162,6 +161,15 @@ namespace YumeEngine
 	#   	endif
 	#   	define YumeAPIPrivate
 	#	endif
+	#endif
+	#if YUME_PLATFORM == YUME_PLATFORM_LINUX
+	#   if defined( YUME_GCC_VISIBILITY )
+	#define YumeAPIExport  __attribute__ ((visibility("default")))
+	#define YumeAPIPrivate __attribute__ ((visibility("hidden")))
+	#   else
+	#       define YumeAPIExport
+	#       define YumeAPIPrivate
+	#   endif
 	#endif
 
 	#define YUME_CPU_UNKNOWN    0
