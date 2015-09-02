@@ -1,5 +1,8 @@
 # YumeEngine
 Modern Cross Platform Renderer
+Exploring new renderer design ideas,trying to implement as simple as possible.Supporting D3D11,D3D12 and OpenGL(Vulkan in the future), this engine strives to be as platform dependent as possible.After initial planned platforms' work has been done,I'm aiming to add more platform support.(Xbox,PS4,SteamOS and Google NaCl)
+
+For updates from this engine development(and my other silly posts) you can check out my <a href="http://arkenthera.github.io">website</a>
 
 #Building the code
 ##Linux
@@ -32,7 +35,7 @@ If there is no error then the project has been built.You can check out the bin f
 - <a href="http://www.microsoft.com/en-us/download/details.aspx?id=6812">DirectX SDK June 2010</a>
 - <a href="https://dev.windows.com/en-us/downloads/windows-10-sdk">Windows 10 SDK</a> if you want to build Direct3D 12 library
 
-Note:If you have VS2015 you may already have required files.
+Note:If you have VS2015 you may already have required D3D12 files.
 
 <b>Building</b>
 
