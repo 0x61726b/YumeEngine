@@ -1,4 +1,4 @@
-# YumeEngine
+# Synopsis
 Modern Cross Platform Renderer
 Exploring new renderer design ideas,trying to implement as simple as possible.Supporting D3D11,D3D12 and OpenGL(Vulkan in the future), this engine strives to be as platform dependent as possible.After initial planned platforms' work has been done,I'm aiming to add more platform support.(Xbox,PS4,SteamOS and Google NaCl)
 
