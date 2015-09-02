@@ -28,6 +28,7 @@ set( HEADER_FILES
   Include/YumeStringVector.h
   Include/YumeStringConverter.h
   Include/YumeLog.h
+  Include/YumeLogManager.h
   Include/YumeSingleton.h
 	${CMAKE_BINARY_DIR}/Include/YumeBuildSettings.h)
 

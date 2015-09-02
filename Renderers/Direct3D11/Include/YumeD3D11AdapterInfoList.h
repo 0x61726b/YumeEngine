@@ -21,41 +21,37 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeRenderer.h
-/// Date : 8.31.2015
+/// File : YumeD3D11AdapterInfo.h
+/// Date : 9.2.2015
 /// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
 
 //---------------------------------------------------------------------------------
-#ifndef __YumeRenderer_h__
-#define __YumeRenderer_h__
+#ifndef __YumeD3D11AdapterInfoList_h__
+#define __YumeD3D11AdapterInfoList_h__
 //---------------------------------------------------------------------------------
-#include "YumeRequired.h"
-#include "YumeCommon.h"
-
-#include "YumeRendererCapabilities.h"
-#include "YumeRenderTarget.h"
+#include "YumeD3D11Required.h"
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeAPIExport YumeRenderer : public RenderObjAlloc
+	class YumeD3D11AdapterInfoList
 	{
+	private:
+		YumeD3D11Adapter* mDriver;
+		YumeVector<YumeD3D11AdapterInfo>::type mModeList;
+
 	public:
-		YumeRenderer();
+		YumeD3D11AdapterInfoList(YumeD3D11Adapter* pDriver);
+		~YumeD3D11AdapterInfoList();
 
-		virtual ~YumeRenderer();
+		BOOL enumerate();
 
-		virtual const YumeString& GetName();
+		YumeD3D11AdapterInfo* item(size_t index);
+		size_t count();
 
-		virtual YumeRenderWindow* CreateRenderWindow(bool autoCreate, const YumeString& Title = "Yume Engine");
-
-		virtual YumeRendererCapabilities* CreateRendererCapabilities() const = 0;
-
-	protected:
-		YumeRendererCapabilities* m_pCurrentCaps;
+		YumeD3D11AdapterInfo* item(const YumeString &name);
 	};
 }
 //---------------------------------------------------------------------------------
 #endif
-//~End of YumeRenderer.h

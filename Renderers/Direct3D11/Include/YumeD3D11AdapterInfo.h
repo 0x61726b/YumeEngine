@@ -21,41 +21,45 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeRenderer.h
-/// Date : 8.31.2015
+/// File : YumeD3D11AdapterInfo.h
+/// Date : 9.2.2015
 /// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
 
 //---------------------------------------------------------------------------------
-#ifndef __YumeRenderer_h__
-#define __YumeRenderer_h__
+#ifndef __YumeD3D11AdapterInfo_h__
+#define __YumeD3D11AdapterInfo_h__
 //---------------------------------------------------------------------------------
-#include "YumeRequired.h"
-#include "YumeCommon.h"
-
-#include "YumeRendererCapabilities.h"
-#include "YumeRenderTarget.h"
+#include "YumeD3D11Required.h"
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeAPIExport YumeRenderer : public RenderObjAlloc
+	static unsigned int modeCount = 0;
+
+	class YumeD3D11AdapterInfo
 	{
+	private:
+		DXGI_OUTPUT_DESC mDisplayMode;
+		DXGI_MODE_DESC mModeDesc;
+		unsigned int modeNumber;
+
 	public:
-		YumeRenderer();
+		YumeD3D11AdapterInfo();
+		YumeD3D11AdapterInfo(const YumeD3D11AdapterInfo &ob);
+		YumeD3D11AdapterInfo(DXGI_OUTPUT_DESC d3ddm, DXGI_MODE_DESC ModeDesc);
+		~YumeD3D11AdapterInfo();
 
-		virtual ~YumeRenderer();
-
-		virtual const YumeString& GetName();
-
-		virtual YumeRenderWindow* CreateRenderWindow(bool autoCreate, const YumeString& Title = "Yume Engine");
-
-		virtual YumeRendererCapabilities* CreateRendererCapabilities() const = 0;
-
-	protected:
-		YumeRendererCapabilities* m_pCurrentCaps;
+		unsigned int GetWidth() const;
+		unsigned int GetHeight() const;
+		DXGI_FORMAT GetFormat() const;
+		DXGI_RATIONAL GetRefreshRate() const;
+		unsigned int GetColourDepth() const;
+		DXGI_OUTPUT_DESC GetDisplayMode() const;
+		DXGI_MODE_DESC GetModeDesc() const;
+		void IncreaseRefreshRate(DXGI_RATIONAL rr);
+		YumeString GetDescription() const;
 	};
 }
-//---------------------------------------------------------------------------------
 #endif
-//~End of YumeRenderer.h
+//---------------------------------------------------------------------------------

@@ -29,7 +29,7 @@
 #ifndef __YumeD3D11Device_h__
 #define __YumeD3D11Device_h__
 //--------------------------------------------------------------------------------
-#include "YumeD3D11Common.h"
+#include "YumeD3D11Required.h"
 //--------------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -37,7 +37,65 @@ namespace YumeEngine
 	{
 	public:
 		YumeD3D11Device();
-		~YumeD3D11Device();
+
+	private:
+		ID3D11Device*				m_pD3DDevice;
+		ID3D11DeviceContext*		m_pImmediateContext;
+		ID3D11InfoQueue *			m_pInfoQueue;
+
+	public:
+		YumeD3D11Device(ID3D11Device* dev);
+
+		virtual ~YumeD3D11Device();
+
+		inline ID3D11DeviceContext* GetImmediateContext()
+		{
+			return m_pImmediateContext;
+		}
+
+		inline ID3D11Device * operator->() const
+		{
+			assert(m_pD3DDevice);
+			if (D3D_NO_EXCEPTION != mExceptionsErrorLevel)
+			{
+				clearStoredErrorMessages();
+			}
+			return m_pD3DDevice;
+		}
+
+		const void clearStoredErrorMessages() const;
+
+		ID3D11Device * operator=(ID3D11Device * device);
+		const bool isNull();
+		const YumeString getErrorDescription(const HRESULT hr = NO_ERROR) const;
+
+		inline const bool isError() const
+		{
+			if (D3D_NO_EXCEPTION == mExceptionsErrorLevel)
+			{
+				return  false;
+			}
+
+			return _getErrorsFromQueue();
+		}
+
+		enum eExceptionsErrorLevel
+		{
+			D3D_NO_EXCEPTION,
+			D3D_CORRUPTION,
+			D3D_ERROR,
+			D3D_WARNING,
+			D3D_INFO,
+		};
+
+
+		const bool _getErrorsFromQueue() const;
+		void Release();
+		ID3D11Device* Get();
+
+		static eExceptionsErrorLevel mExceptionsErrorLevel;
+		static void SetExceptionsErrorLevel(const eExceptionsErrorLevel exceptionsErrorLevel);
+		static const eExceptionsErrorLevel GetExceptionsErrorLevel();
 	};
 }
 

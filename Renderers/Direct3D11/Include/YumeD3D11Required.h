@@ -21,14 +21,52 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeD3D11Common.h
-/// Date : 27.8.2015
-/// Comments : Common Includes of D3D 11
-///--------------------------------------------------------------------------------
+/// File : YumeD3D11Required.h
+/// Date : 9.2.2015
+/// Comments : 
+///
 ///////////////////////////////////////////////////////////////////////////////////
-#ifndef __YumeD3D11Common_h__
-#define __YumeD3D11Common_h__
 
+//---------------------------------------------------------------------------------
+#ifndef __YumeD3D11Required_h__
+#define __YumeD3D11Required_h__
+//---------------------------------------------------------------------------------
+#include "YumeRequired.h"
+
+#undef NOMINMAX
+#define NOMINMAX
+
+//D3D11 Includes
 #include <d3d11.h>
+#include <d3dx11.h>
+#include <d3d11shader.h>
+#include <D3Dcompiler.h>
+//~
 
+#define SAFE_DELETE(p)       { if(p) { delete (p);     (p)=NULL; } }
+#define SAFE_DELETE_ARRAY(p) { if(p) { delete[] (p);   (p)=NULL; } }
+#define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
+
+namespace YumeEngine
+{
+	class YumeD3D11Device;
+	class YumeD3D11Adapter;
+	class YumeD3D11AdapterInfo;
+	class YumeD3D11AdapterInfoList;
+
+#if (YUME_PLATFORM == YUME_PLATFORM_WIN32) && !defined(YUME_STATIC_LIB)
+#	ifdef YUME_D3D_EXPORT
+#		define YumeD3DApiExport __declspec(dllexport)
+#	else
+#       if defined( __MINGW32__ )
+#           define YumeD3DApiExport
+#       else
+#    		define YumeD3DApiExport __declspec(dllimport)
+#       endif
+#	endif
+#else
+#	define _OgreD3D11Export
+#endif	// OGRE_WIN32
+}
 #endif
+//---------------------------------------------------------------------------------

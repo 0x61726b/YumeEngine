@@ -21,41 +21,56 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeRenderer.h
-/// Date : 8.31.2015
+/// File : YumeD3D11AdapterInfo.h
+/// Date : 9.2.2015
 /// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
 
 //---------------------------------------------------------------------------------
-#ifndef __YumeRenderer_h__
-#define __YumeRenderer_h__
+#ifndef __YumeD3D11Adapter_h__
+#define __YumeD3D11Adapter_h__
 //---------------------------------------------------------------------------------
-#include "YumeRequired.h"
-#include "YumeCommon.h"
-
-#include "YumeRendererCapabilities.h"
-#include "YumeRenderTarget.h"
+#include "YumeD3D11Required.h"
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeAPIExport YumeRenderer : public RenderObjAlloc
+	class YumeD3D11AdapterInfo;
+	class YumeD3D11AdapterInfoList;
+
+	class YumeD3D11Adapter
 	{
+	private:
+		// D3D only allows one device per adapter, so it can safely be stored
+		// here as well.
+		unsigned int mAdapterNumber;
+		DXGI_ADAPTER_DESC1 mAdapterIdentifier;
+		DXGI_MODE_DESC mDesktopDisplayMode;
+		YumeD3D11AdapterInfoList* mVideoModeList;
+		unsigned int tempNo;
+		static unsigned int driverCount;
+		IDXGIAdapter1*	mDXGIAdapter;
+
+
 	public:
-		YumeRenderer();
+		// Constructors
+		YumeD3D11Adapter();		// Default
+		YumeD3D11Adapter(const YumeD3D11Adapter &ob);	// Copy
+		YumeD3D11Adapter(unsigned int adapterNumber, IDXGIAdapter1* pDXGIAdapter);
+		~YumeD3D11Adapter();
 
-		virtual ~YumeRenderer();
+		// Information accessors
+		YumeString DriverName() const;
+		YumeString DriverDescription() const;
 
-		virtual const YumeString& GetName();
-
-		virtual YumeRenderWindow* CreateRenderWindow(bool autoCreate, const YumeString& Title = "Yume Engine");
-
-		virtual YumeRendererCapabilities* CreateRendererCapabilities() const = 0;
-
-	protected:
-		YumeRendererCapabilities* m_pCurrentCaps;
+		// change the device
+		unsigned int getAdapterNumber() const;
+		const DXGI_ADAPTER_DESC1& getAdapterIdentifier() const;
+		const DXGI_MODE_DESC& getDesktopMode() const;
+		IDXGIAdapter1* getDeviceAdapter() const;
+		YumeD3D11AdapterInfoList* getVideoModeList();
 	};
 }
+
 //---------------------------------------------------------------------------------
 #endif
-//~End of YumeRenderer.h

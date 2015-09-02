@@ -290,6 +290,8 @@ namespace YumeEngine
 		YumeRendererCapabilities();
 		virtual ~YumeRendererCapabilities();
 
+		void Log(YumeLog* pLog);
+
 		virtual size_t calculateSize() const { return 0; }
 
 		/** Set the driver version. */

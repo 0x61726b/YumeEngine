@@ -29,7 +29,27 @@
 
 #include "YumeHeaders.h"
 #include "YumeRenderer.h"
+#include "YumeRenderWindow.h"
 
+namespace YumeEngine
+{
+	YumeRenderer::YumeRenderer()
+		: m_pCurrentCaps(0)
+	{
+	}
+	YumeRenderer::~YumeRenderer()
+	{
+
+	}
+	const YumeString& YumeRenderer::GetName()
+	{
+		return "Hehehe";
+	}
+	YumeRenderWindow* YumeRenderer::CreateRenderWindow(bool autoCreate, const YumeString& Title )
+	{
+		return nullptr;
+	}
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////////

@@ -62,7 +62,7 @@ namespace YumeEngine
 	{
 	}
 	//-----------------------------------------------------------------------
-	/*void YumeRendererCapabilities::log(Log* pLog)
+	void YumeRendererCapabilities::Log(YumeLog* pLog)
 	{
 		pLog->logMessage("RenderSystem capabilities");
 		pLog->logMessage("-------------------------");
@@ -71,77 +71,77 @@ namespace YumeEngine
 		pLog->logMessage("Device Name: " + getDeviceName());
 		pLog->logMessage("Driver Version: " + getDriverVersion().toString());
 		pLog->logMessage(" * Fixed function pipeline: "
-			+ StringConverter::toString(hasCapability(RSC_FIXED_FUNCTION), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_FIXED_FUNCTION), true));
 		pLog->logMessage(
 			" * Hardware generation of mipmaps: "
-			+ StringConverter::toString(hasCapability(RSC_AUTOMIPMAP), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_AUTOMIPMAP), true));
 		pLog->logMessage(
 			" * Texture blending: "
-			+ StringConverter::toString(hasCapability(RSC_BLENDING), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_BLENDING), true));
 		pLog->logMessage(
 			" * Anisotropic texture filtering: "
-			+ StringConverter::toString(hasCapability(RSC_ANISOTROPY), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_ANISOTROPY), true));
 		pLog->logMessage(
 			" * Dot product texture operation: "
-			+ StringConverter::toString(hasCapability(RSC_DOT3), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_DOT3), true));
 		pLog->logMessage(
 			" * Cube mapping: "
-			+ StringConverter::toString(hasCapability(RSC_CUBEMAPPING), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_CUBEMAPPING), true));
 		pLog->logMessage(
 			" * Hardware stencil buffer: "
-			+ StringConverter::toString(hasCapability(RSC_HWSTENCIL), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_HWSTENCIL), true));
 		if (hasCapability(RSC_HWSTENCIL))
 		{
 			pLog->logMessage(
 				"   - Stencil depth: "
-				+ StringConverter::toString(getStencilBufferBitDepth()));
+				+ YumeStringConverter::toString(getStencilBufferBitDepth()));
 			pLog->logMessage(
 				"   - Two sided stencil support: "
-				+ StringConverter::toString(hasCapability(RSC_TWO_SIDED_STENCIL), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_TWO_SIDED_STENCIL), true));
 			pLog->logMessage(
 				"   - Wrap stencil values: "
-				+ StringConverter::toString(hasCapability(RSC_STENCIL_WRAP), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_STENCIL_WRAP), true));
 		}
 		pLog->logMessage(
 			" * Hardware vertex / index buffers: "
-			+ StringConverter::toString(hasCapability(RSC_VBO), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_VBO), true));
 		pLog->logMessage(
 			" * Vertex programs: "
-			+ StringConverter::toString(hasCapability(RSC_VERTEX_PROGRAM), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_VERTEX_PROGRAM), true));
 		pLog->logMessage(
 			" * Number of floating-point constants for vertex programs: "
-			+ StringConverter::toString(mVertexProgramConstantFloatCount));
+			+ YumeStringConverter::toString(mVertexProgramConstantFloatCount));
 		pLog->logMessage(
 			" * Number of integer constants for vertex programs: "
-			+ StringConverter::toString(mVertexProgramConstantIntCount));
+			+ YumeStringConverter::toString(mVertexProgramConstantIntCount));
 		pLog->logMessage(
 			" * Number of boolean constants for vertex programs: "
-			+ StringConverter::toString(mVertexProgramConstantBoolCount));
+			+ YumeStringConverter::toString(mVertexProgramConstantBoolCount));
 		pLog->logMessage(
 			" * Fragment programs: "
-			+ StringConverter::toString(hasCapability(RSC_FRAGMENT_PROGRAM), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_FRAGMENT_PROGRAM), true));
 		pLog->logMessage(
 			" * Number of floating-point constants for fragment programs: "
-			+ StringConverter::toString(mFragmentProgramConstantFloatCount));
+			+ YumeStringConverter::toString(mFragmentProgramConstantFloatCount));
 		pLog->logMessage(
 			" * Number of integer constants for fragment programs: "
-			+ StringConverter::toString(mFragmentProgramConstantIntCount));
+			+ YumeStringConverter::toString(mFragmentProgramConstantIntCount));
 		pLog->logMessage(
 			" * Number of boolean constants for fragment programs: "
-			+ StringConverter::toString(mFragmentProgramConstantBoolCount));
+			+ YumeStringConverter::toString(mFragmentProgramConstantBoolCount));
 		pLog->logMessage(
 			" * Geometry programs: "
-			+ StringConverter::toString(hasCapability(RSC_GEOMETRY_PROGRAM), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_GEOMETRY_PROGRAM), true));
 		pLog->logMessage(
 			" * Number of floating-point constants for geometry programs: "
-			+ StringConverter::toString(mGeometryProgramConstantFloatCount));
+			+ YumeStringConverter::toString(mGeometryProgramConstantFloatCount));
 		pLog->logMessage(
 			" * Number of integer constants for geometry programs: "
-			+ StringConverter::toString(mGeometryProgramConstantIntCount));
+			+ YumeStringConverter::toString(mGeometryProgramConstantIntCount));
 		pLog->logMessage(
 			" * Number of boolean constants for geometry programs: "
-			+ StringConverter::toString(mGeometryProgramConstantBoolCount));
-		String profileList = "";
+			+ YumeStringConverter::toString(mGeometryProgramConstantBoolCount));
+		YumeString profileList = "";
 		for (ShaderProfiles::iterator iter = mSupportedShaderProfiles.begin(), end = mSupportedShaderProfiles.end();
 		iter != end; ++iter)
 		{
@@ -151,128 +151,128 @@ namespace YumeEngine
 
 		pLog->logMessage(
 			" * Texture Compression: "
-			+ StringConverter::toString(hasCapability(RSC_TEXTURE_COMPRESSION), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_TEXTURE_COMPRESSION), true));
 		if (hasCapability(RSC_TEXTURE_COMPRESSION))
 		{
 			pLog->logMessage(
 				"   - DXT: "
-				+ StringConverter::toString(hasCapability(RSC_TEXTURE_COMPRESSION_DXT), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_TEXTURE_COMPRESSION_DXT), true));
 			pLog->logMessage(
 				"   - VTC: "
-				+ StringConverter::toString(hasCapability(RSC_TEXTURE_COMPRESSION_VTC), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_TEXTURE_COMPRESSION_VTC), true));
 			pLog->logMessage(
 				"   - PVRTC: "
-				+ StringConverter::toString(hasCapability(RSC_TEXTURE_COMPRESSION_PVRTC), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_TEXTURE_COMPRESSION_PVRTC), true));
 		}
 
 		pLog->logMessage(
 			" * Scissor Rectangle: "
-			+ StringConverter::toString(hasCapability(RSC_SCISSOR_TEST), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_SCISSOR_TEST), true));
 		pLog->logMessage(
 			" * Hardware Occlusion Query: "
-			+ StringConverter::toString(hasCapability(RSC_HWOCCLUSION), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_HWOCCLUSION), true));
 		pLog->logMessage(
 			" * User clip planes: "
-			+ StringConverter::toString(hasCapability(RSC_USER_CLIP_PLANES), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_USER_CLIP_PLANES), true));
 		pLog->logMessage(
 			" * VET_UBYTE4 vertex element type: "
-			+ StringConverter::toString(hasCapability(RSC_VERTEX_FORMAT_UBYTE4), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_VERTEX_FORMAT_UBYTE4), true));
 		pLog->logMessage(
 			" * Infinite far plane projection: "
-			+ StringConverter::toString(hasCapability(RSC_INFINITE_FAR_PLANE), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_INFINITE_FAR_PLANE), true));
 		pLog->logMessage(
 			" * Hardware render-to-texture: "
-			+ StringConverter::toString(hasCapability(RSC_HWRENDER_TO_TEXTURE), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_HWRENDER_TO_TEXTURE), true));
 		pLog->logMessage(
 			" * Floating point textures: "
-			+ StringConverter::toString(hasCapability(RSC_TEXTURE_FLOAT), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_TEXTURE_FLOAT), true));
 		pLog->logMessage(
 			" * Non-power-of-two textures: "
-			+ StringConverter::toString(hasCapability(RSC_NON_POWER_OF_2_TEXTURES), true)
+			+ YumeStringConverter::toString(hasCapability(RSC_NON_POWER_OF_2_TEXTURES), true)
 			+ (mNonPOW2TexturesLimited ? " (limited)" : ""));
 		pLog->logMessage(
 			" * Volume textures: "
-			+ StringConverter::toString(hasCapability(RSC_TEXTURE_3D), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_TEXTURE_3D), true));
 		pLog->logMessage(
 			" * Multiple Render Targets: "
-			+ StringConverter::toString(mNumMultiRenderTargets));
+			+ YumeStringConverter::toString(mNumMultiRenderTargets));
 		pLog->logMessage(
-			"   - With different bit depths: " + StringConverter::toString(hasCapability(RSC_MRT_DIFFERENT_BIT_DEPTHS), true));
+			"   - With different bit depths: " + YumeStringConverter::toString(hasCapability(RSC_MRT_DIFFERENT_BIT_DEPTHS), true));
 		pLog->logMessage(
 			" * Point Sprites: "
-			+ StringConverter::toString(hasCapability(RSC_POINT_SPRITES), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_POINT_SPRITES), true));
 		pLog->logMessage(
 			" * Extended point parameters: "
-			+ StringConverter::toString(hasCapability(RSC_POINT_EXTENDED_PARAMETERS), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_POINT_EXTENDED_PARAMETERS), true));
 		if (hasCapability(RSC_POINT_SPRITES))
 		{
 			pLog->logMessage(
 				" * Max Point Size: "
-				+ StringConverter::toString(mMaxPointSize));
+				+ YumeStringConverter::toString((int)mMaxPointSize));
 		}
 		pLog->logMessage(
 			" * Vertex texture fetch: "
-			+ StringConverter::toString(hasCapability(RSC_VERTEX_TEXTURE_FETCH), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_VERTEX_TEXTURE_FETCH), true));
 		pLog->logMessage(
 			" * Number of world matrices: "
-			+ StringConverter::toString(mNumWorldMatrices));
+			+ YumeStringConverter::toString(mNumWorldMatrices));
 		pLog->logMessage(
 			" * Number of texture units: "
-			+ StringConverter::toString(mNumTextureUnits));
+			+ YumeStringConverter::toString(mNumTextureUnits));
 		pLog->logMessage(
 			" * Stencil buffer depth: "
-			+ StringConverter::toString(mStencilBufferBitDepth));
+			+ YumeStringConverter::toString(mStencilBufferBitDepth));
 		pLog->logMessage(
 			" * Number of vertex blend matrices: "
-			+ StringConverter::toString(mNumVertexBlendMatrices));
+			+ YumeStringConverter::toString(mNumVertexBlendMatrices));
 		if (hasCapability(RSC_VERTEX_TEXTURE_FETCH))
 		{
 			pLog->logMessage(
 				"   - Max vertex textures: "
-				+ StringConverter::toString(mNumVertexTextureUnits));
+				+ YumeStringConverter::toString(mNumVertexTextureUnits));
 			pLog->logMessage(
 				"   - Vertex textures shared: "
-				+ StringConverter::toString(mVertexTextureUnitsShared, true));
+				+ YumeStringConverter::toString(mVertexTextureUnitsShared, true));
 
 		}
 		pLog->logMessage(
 			" * Render to Vertex Buffer : "
-			+ StringConverter::toString(hasCapability(RSC_HWRENDER_TO_VERTEX_BUFFER), true));
+			+ YumeStringConverter::toString(hasCapability(RSC_HWRENDER_TO_VERTEX_BUFFER), true));
 
 		if (mCategoryRelevant[CAPS_CATEGORY_GL])
 		{
 			pLog->logMessage(
 				" * GL 1.5 without VBO workaround: "
-				+ StringConverter::toString(hasCapability(RSC_GL1_5_NOVBO), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_GL1_5_NOVBO), true));
 
 			pLog->logMessage(
 				" * Frame Buffer objects: "
-				+ StringConverter::toString(hasCapability(RSC_FBO), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_FBO), true));
 			pLog->logMessage(
 				" * Frame Buffer objects (ARB extension): "
-				+ StringConverter::toString(hasCapability(RSC_FBO_ARB), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_FBO_ARB), true));
 			pLog->logMessage(
 				" * Frame Buffer objects (ATI extension): "
-				+ StringConverter::toString(hasCapability(RSC_FBO_ATI), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_FBO_ATI), true));
 			pLog->logMessage(
 				" * PBuffer support: "
-				+ StringConverter::toString(hasCapability(RSC_PBUFFER), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_PBUFFER), true));
 			pLog->logMessage(
 				" * GL 1.5 without HW-occlusion workaround: "
-				+ StringConverter::toString(hasCapability(RSC_GL1_5_NOHWOCCLUSION), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_GL1_5_NOHWOCCLUSION), true));
 			pLog->logMessage(
 				" * Separate shader objects: "
-				+ StringConverter::toString(hasCapability(RSC_SEPARATE_SHADER_OBJECTS), true));
+				+ YumeStringConverter::toString(hasCapability(RSC_SEPARATE_SHADER_OBJECTS), true));
 		}
 
 		if (mCategoryRelevant[CAPS_CATEGORY_D3D9])
 		{
 			pLog->logMessage(
 				" * DirectX per stage constants: "
-				+ StringConverter::toString(hasCapability(RSC_PERSTAGECONSTANT), true));
-		}*/
+				+ YumeStringConverter::toString(hasCapability(RSC_PERSTAGECONSTANT), true));
+		}
 
-	//}
+	}
 	//---------------------------------------------------------------------
 	StringVector YumeRendererCapabilities::msGPUVendorStrings;
 	//---------------------------------------------------------------------

@@ -1,11 +1,17 @@
 # Configure Direct3D11 
 set( HEADER_FILES 
-	Include/YumeD3D11Common.h
+	Include/YumeD3D11Required.h
 	Include/YumeD3D11Device.h
+	Include/YumeD3D11AdapterInfo.h
+	Include/YumeD3D11AdapterInfoList.h
+	Include/YumeD3D11Adapter.h
 	)
 
 set( SOURCE_FILES 
 	Src/YumeD3D11Device.cpp
+	Src/YumeD3D11AdapterInfo.cpp
+	Src/YumeD3D11AdapterInfoList.cpp
+	Src/YumeD3D11Adapter.cpp
     )
 
 
@@ -20,8 +26,10 @@ target_link_libraries(YUME_DIRECT3D11
   ${DirectX_LIBRARY}
 )
 
-#set_target_properties(ARKENGINE_DIRECT3D11 PROPERTIES
- #   COMPILE_DEFINITIONS OGRED3DENGINEDLL_EXPORTS
- # )
+if (NOT YUME_STATIC)
+  set_target_properties(YUME_DIRECT3D11 PROPERTIES
+    COMPILE_DEFINITIONS YUME_D3D_EXPORT
+  )
+endif()
 
 install(FILES ${HEADER_FILES} DESTINATION include/Yume/Renderers/Direct3D11)
