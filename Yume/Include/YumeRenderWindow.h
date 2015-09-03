@@ -31,6 +31,7 @@
 //---------------------------------------------------------------------------------
 #include "YumeRequired.h"
 #include "YumeRenderTarget.h"
+#include "YumeCommon.h" //remove this in da future
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {

@@ -21,29 +21,47 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeCommon.h
-/// Date : 8.31.2015
+/// File : YumeCentrum.cpp
+/// Date : 3.9.2015
 /// Comments : 
-///
+//
 ///////////////////////////////////////////////////////////////////////////////////
 
-//---------------------------------------------------------------------------------
-#ifndef __YumeCommon_h__
-#define __YumeCommon_h__
+#include "YumeHeaders.h"
+#include "YumeCentrum.h"
+#include "YumeRenderer.h"
+#include "YumeRenderWindow.h"
+#include "YumeLogManager.h"
 
-#include "YumeRequired.h"
+#include <Windows.h>
 
 namespace YumeEngine
 {
-	
-	struct RenderWindowDesc
+	typedef void(*DLL_START_PLUGIN)(void);
+	///--------------------------------------------------------------------------------
+	template<> YumeCentrum* Singleton<YumeCentrum>::msSingleton = 0;
+	YumeCentrum* YumeCentrum::GetPtr(void)
 	{
-		YumeString Name;
-	};
+		return msSingleton;
+	}
+	///--------------------------------------------------------------------------------
+	YumeCentrum& YumeCentrum::Get(void)
+	{
+		assert(msSingleton);  return (*msSingleton);
+	}
+	///--------------------------------------------------------------------------------
+	YumeCentrum::YumeCentrum()
+	{
+		LoadLibraryEx("YUME_DIRECT3D11.dll", NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+		HINSTANCE hInst = GetModuleHandle("YUME_DIRECT3D11.dll");
+		DLL_START_PLUGIN pFunc = (DLL_START_PLUGIN)GetProcAddress(hInst, "dllStartPlugin");
 
-	typedef YumeMap<YumeString, YumeString>::type StrKeyValuePair;
+		pFunc();
+	}
+	///--------------------------------------------------------------------------------
+	YumeCentrum::~YumeCentrum()
+	{
+
+	}
+	///--------------------------------------------------------------------------------
 }
-
-//---------------------------------------------------------------------------------
-#endif
-//~End of YumeConfig.h

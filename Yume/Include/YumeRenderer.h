@@ -36,9 +36,13 @@
 
 #include "YumeRendererCapabilities.h"
 #include "YumeRenderTarget.h"
+
+#include "YumeConfigOption.h"
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
+	typedef YumeMap< YumeString, YumeRenderTarget * >::type RenderTargetMap;
+	typedef YumeMultiMap<unsigned char, YumeRenderTarget * >::type RenderTargetPriorityMap;
 	class YumeAPIExport YumeRenderer : public RenderObjAlloc
 	{
 	public:
@@ -48,12 +52,21 @@ namespace YumeEngine
 
 		virtual const YumeString& GetName();
 
-		virtual YumeRenderWindow* CreateRenderWindow(bool autoCreate, const YumeString& Title = "Yume Engine");
+		virtual YumeRenderWindow* Initialize(bool autoCreate, const YumeString& Title = "Yume Engine");
 
 		virtual YumeRendererCapabilities* CreateRendererCapabilities() const = 0;
 
+		virtual YumeRenderWindow* CreateRenderWindow(const YumeString &name, unsigned int width, unsigned int height,
+			bool fullScreen, const StrKeyValuePair *miscParams = 0) = 0;
+
 	protected:
 		YumeRendererCapabilities* m_pCurrentCaps;
+
+		bool mVSync;
+		unsigned int mVSyncInterval;
+		bool mWBuffer;
+
+		DriverVersion mDriverVersion;
 	};
 }
 //---------------------------------------------------------------------------------

@@ -45,7 +45,7 @@ namespace YumeEngine
 	{
 		return "Hehehe";
 	}
-	YumeRenderWindow* YumeRenderer::CreateRenderWindow(bool autoCreate, const YumeString& Title )
+	YumeRenderWindow* YumeRenderer::Initialize(bool autoCreate, const YumeString& Title )
 	{
 		return nullptr;
 	}

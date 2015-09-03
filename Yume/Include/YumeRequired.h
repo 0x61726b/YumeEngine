@@ -42,10 +42,6 @@ namespace YumeEngine
 	#define YUME_VERSION_NAME "Chitanda"
 
 	#define YUME_VERSION_NUMBER    ((YUME_VERSION_MAJOR << 16) | (YUME_VERSION_MINOR << 8) | YUME_VERSION_PATCH)
-
-	class YumeRenderer;
-	class YumeRenderTarget;
-	class YumeRenderWindow;
 }
 //---------------------------------------------------------------------------------
 
@@ -68,6 +64,13 @@ namespace YumeEngine
 	typedef unsigned long yulong;
 
 	typedef float Real;
+
+	class YumeLog;
+	class YumeLogManager;
+	class YumeRenderTarget;
+	class YumeRenderWindow;
+	class YumeRenderer;
+	class YumeCentrum;
 }
 //---------------------------------------------------------------------------------
 namespace YumeEngine

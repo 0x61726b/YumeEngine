@@ -21,29 +21,53 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeCommon.h
-/// Date : 8.31.2015
+/// File : YumeCentrum.h
+/// Date : 3.9.2015
 /// Comments : 
-///
+///--------------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////////
 
-//---------------------------------------------------------------------------------
-#ifndef __YumeCommon_h__
-#define __YumeCommon_h__
+#ifndef __YumeCentrum_h__
+#define __YumeCentrum_h__
 
 #include "YumeRequired.h"
+#include "YumeSingleton.h"
+#include "YumeString.h"
 
 namespace YumeEngine
 {
-	
-	struct RenderWindowDesc
-	{
-		YumeString Name;
-	};
+	typedef YumeVector<YumeRenderer*>::type RendererList;
 
-	typedef YumeMap<YumeString, YumeString>::type StrKeyValuePair;
+	class YumeAPIExport YumeCentrum : public Singleton<YumeCentrum>, public CentrumObjAlloc
+	{
+	protected:
+
+		RendererList		m_Renderers;
+		YumeRenderer*		m_pActiveRenderer;
+		YumeString			m_sVersion;
+
+
+		YumeLogManager* m_pLogManager;
+
+		YumeRenderWindow* m_pAutoWindow;
+
+		bool m_bInitialized;
+
+		/*bool ShowConfigDialog();*/
+
+		static YumeCentrum& Get(void);
+
+		static YumeCentrum* GetPtr(void);
+
+		static YumeCentrum* m_sSingleton;
+
+	public:
+		YumeCentrum();
+		virtual ~YumeCentrum();
+	};
 }
 
-//---------------------------------------------------------------------------------
+
+///--------------------------------------------------------------------------------
+//End of __YumeCentrum_h__
 #endif
-//~End of YumeConfig.h

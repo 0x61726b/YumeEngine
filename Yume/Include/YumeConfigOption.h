@@ -21,29 +21,32 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeCommon.h
-/// Date : 8.31.2015
+/// File : YumeConfigOption.h
+/// Date : 3.9.2015
 /// Comments : 
-///
+//
 ///////////////////////////////////////////////////////////////////////////////////
 
-//---------------------------------------------------------------------------------
-#ifndef __YumeCommon_h__
-#define __YumeCommon_h__
+#ifndef __YumeConfigOption_h__
+#define __YumeConfigOption_h__
 
 #include "YumeRequired.h"
+#include "YumeStringVector.h"
+#include "YumeString.h"
 
 namespace YumeEngine
 {
-	
-	struct RenderWindowDesc
+	typedef struct _YumeConfigOptions
 	{
-		YumeString Name;
-	};
+		YumeString name;
+		YumeString currentValue;
+		StringVector possibleValues;
+		bool immutable;
+	} YumeConfigOption;
 
-	typedef YumeMap<YumeString, YumeString>::type StrKeyValuePair;
+	typedef YumeMap< YumeString, YumeConfigOption >::type ConfigOptionMap;
 }
 
-//---------------------------------------------------------------------------------
+///--------------------------------------------------------------------------------
+//End of __FILE_H__
 #endif
-//~End of YumeConfig.h

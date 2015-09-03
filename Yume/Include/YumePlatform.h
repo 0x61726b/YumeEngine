@@ -212,6 +212,8 @@ namespace YumeEngine
 	#endif
 
 	#define YUME_SIMD_ALIGNED_DECL(type, var)   YUME_ALIGNED_DECL(type, var, OGRE_SIMD_ALIGNMENT)
+
+	#define YUME_DEBUG_MODE 1
 }
 ///--------------------------------------------------------------------------------
 #endif

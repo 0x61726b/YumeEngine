@@ -21,29 +21,36 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeCommon.h
-/// Date : 8.31.2015
+/// File : YumeD3D11AdapterList.h
+/// Date : 3.9.2015
 /// Comments : 
-///
+///--------------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////////
-
-//---------------------------------------------------------------------------------
-#ifndef __YumeCommon_h__
-#define __YumeCommon_h__
-
-#include "YumeRequired.h"
-
+#ifndef __YumeD3D11AdapterList_h__
+#define __YumeD3D11AdapterList_h__
+///--------------------------------------------------------------------------------
+#include "YumeD3D11Required.h"
+///--------------------------------------------------------------------------------
 namespace YumeEngine
 {
-	
-	struct RenderWindowDesc
+	class YumeD3D11AdapterList
 	{
-		YumeString Name;
-	};
+	private:
+		YumeVector<YumeD3D11Adapter*>::type mDriverList;
 
-	typedef YumeMap<YumeString, YumeString>::type StrKeyValuePair;
+	public:
+		YumeD3D11AdapterList(IDXGIFactory1*	pDXGIFactory);
+		~YumeD3D11AdapterList();
+
+		BOOL Enumerate(IDXGIFactory1*	pDXGIFactory);
+		size_t GetCount() const;
+		YumeD3D11Adapter* Get(size_t index);
+
+		YumeD3D11Adapter* Get(const YumeString &name);
+
+	};
 }
 
-//---------------------------------------------------------------------------------
+///--------------------------------------------------------------------------------
+//End of __YumeD3D11AdapterList_h__
 #endif
-//~End of YumeConfig.h

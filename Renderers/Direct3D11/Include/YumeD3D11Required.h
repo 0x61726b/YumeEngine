@@ -49,10 +49,16 @@
 
 namespace YumeEngine
 {
+
 	class YumeD3D11Device;
 	class YumeD3D11Adapter;
+	class YumeD3D11AdapterList;
 	class YumeD3D11AdapterInfo;
 	class YumeD3D11AdapterInfoList;
+	class YumeD3D11RenderWindow;
+
+	class YumeD3D11Renderer;
+	
 
 #if (YUME_PLATFORM == YUME_PLATFORM_WIN32) && !defined(YUME_STATIC_LIB)
 #	ifdef YUME_D3D_EXPORT
@@ -65,7 +71,7 @@ namespace YumeEngine
 #       endif
 #	endif
 #else
-#	define _OgreD3D11Export
+#	define YumeD3DApiExport
 #endif	// OGRE_WIN32
 }
 #endif

@@ -11,6 +11,7 @@ set( HEADER_FILES
 	Include/YumePlatform.h
   Include/YumeRequired.h
   Include/Yume.h
+  Include/YumeCentrum.h
   Include/YumeCommon.h
   Include/YumeHeaderSuffix.h
   Include/YumeStdHeaders.h
@@ -30,11 +31,13 @@ set( HEADER_FILES
   Include/YumeLog.h
   Include/YumeLogManager.h
   Include/YumeSingleton.h
+  Include/YumeConfigOption.h
 	${CMAKE_BINARY_DIR}/Include/YumeBuildSettings.h)
 
 set( SOURCE_FILES 
 	Src/Pch.cpp
   Src/YumeMemoryAllocatorNed.cpp
+  Src/YumeMallocObject.cpp
   Src/YumeMemoryAllocatorNedPooling.cpp
   Src/YumeCommon.cpp
   Src/YumeRenderer.cpp
@@ -44,7 +47,8 @@ set( SOURCE_FILES
   Src/YumeString.cpp
   Src/YumeStringConverter.cpp
   Src/YumeLog.cpp
-  Src/YumeLogManager.cpp )
+  Src/YumeLogManager.cpp
+  Src/YumeCentrum.cpp )
 
 
 
@@ -58,11 +62,14 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(YUME_STATIC)
 	ADD_LIBRARY(YUME STATIC ${SOURCE_FILES} ${HEADER_FILES})
+  set(YUME_LIB_TYPE "STATIC")
 ELSE()
 	ADD_LIBRARY(YUME SHARED ${SOURCE_FILES} ${HEADER_FILES})
+  set(YUME_LIB_TYPE "SHARED")
 endif()
 
 set(YUME_STATIC_LIB YUME_STATIC)
+
 if(WIN32 AND MSVC10 AND CMAKE_CL_64)
   set_target_properties(YUME PROPERTIES 
                         VERSION 1

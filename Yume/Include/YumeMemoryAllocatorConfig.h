@@ -77,6 +77,7 @@ namespace YumeEngine
 	
 	typedef YumeGeneralAllocatedObject LogObjAlloc;
 	typedef YumeRendererAllocatedObject RenderObjAlloc;
+	typedef YumeGeneralAllocatedObject CentrumObjAlloc;
 }
 
 namespace YumeEngine

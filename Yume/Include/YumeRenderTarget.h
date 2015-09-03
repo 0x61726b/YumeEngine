@@ -53,11 +53,19 @@ namespace YumeEngine
 
 		virtual void Present(bool vSync = true);
 
+
+		virtual void SetPriority(unsigned char priority) { m_ucPriority = priority; }
+		
+		virtual unsigned char GetPriority() const { return m_ucPriority; }
+
+		virtual void GetCustomAttribute(const YumeString& name, void* pData);
+
 	protected:
 		YumeString						m_sName;
 		unsigned int					m_uiWidth;
 		unsigned int					m_uiHeight;
 		unsigned int					m_uiColourDepth;
+		unsigned char					m_ucPriority;
 	};
 }
 //---------------------------------------------------------------------------------
