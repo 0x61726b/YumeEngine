@@ -34,8 +34,9 @@
 #include "YumeLogManager.h"
 #include "YumeWindowMessageListener.h"
 
+#if YUME_PLATFORM == YUME_PLATFORM_WIN32
 #include <Windows.h>
-
+#endif
 namespace YumeEngine
 {
 	typedef void(*DLL_START_PLUGIN)(void);
@@ -67,8 +68,16 @@ namespace YumeEngine
 	///--------------------------------------------------------------------------------
 	YumeRenderWindow* YumeCentrum::Initialize(bool Auto, const YumeString& Title)
 	{
-		YumeRenderWindow* p = m_pActiveRenderer->Initialize(Auto, Title);
-		return p;
+		if(m_pActiveRenderer)
+		{
+		    YumeRenderWindow* p = m_pActiveRenderer->Initialize(Auto, Title);
+		    return p;
+		}
+		else
+		{
+		    YumeLogManager::Get().Log("No Renderer found.! Abort!");
+		}
+		return 0;
 	}
 	///--------------------------------------------------------------------------------
 	bool YumeCentrum::ShowConfigDialog()

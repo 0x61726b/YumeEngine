@@ -23,10 +23,12 @@ namespace YumeSamples
 		m_Centrum = YumeAPINew YumeEngine::YumeCentrum();
 		m_Window = m_Centrum->Initialize(true);
 		
+		if(m_Window)
+		{
+		    YumeEngine::YumeWindowEvents::AddWindowEventListener(m_Window, this);
 
-		YumeEngine::YumeWindowEvents::AddWindowEventListener(m_Window, this);
-
-		m_Centrum->StartRendering();
+		    m_Centrum->StartRendering();
+		}
 	}
 }
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
@@ -34,56 +36,14 @@ namespace YumeSamples
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR args, int ncmd)
 {
+#endif
+#if YUME_PLATFORM == YUME_PLATFORM_LINUX
+int main()
+	{
+#endif
 	YumeSamples::BasicRenderWindow b;
 	b.Setup();
 
 	
 	return 0;
 }
-#endif
-#if YUME_PLATFORM == YUME_PLATFORM_LINUX
-#include <sstream>
-#include <string>
-int main()
-{
-	
-	YumeEngine::YumeString str;
-	long numb = YUME_VERSION_NUMBER;
-	str.append("Hello from YumeEngine!  Platform Name is Linux! \n");
-	str.append("Version: " + YUME_VERSION_MAJOR);
-	str.append("." +(numb));
-	str.append("\n");
-	switch (YUME_SYSTEM_ARCHITECTURE)
-	{
-	case YUME_SYSTEM_ARCH_32:
-		str.append("CPU Architecture=X8664\n");
-		break;
-	case YUME_SYSTEM_ARCH_64:
-		str.append("CPU Architecture=X64\n");
-		break;
-	default:
-		str.append("CPU Architecture=UNKOWN\n");
-		break;
-	}
-	switch (YUME_COMPILER)
-	{
-	case YUME_COMPILER_MSVC:
-		str.append("Compiler=MSVC \n");
-		break;
-	case YUME_COMPILER_GCCE:
-		str.append("Compiler=GCCE \n");
-		break;
-	case YUME_COMPILER_GNUC:
-		str.append("Compiler=GNUC \n");
-		break;
-	default:
-		str.append("Compiler=UNKNOWN \n");
-		break;
-	}
-	str.append("Name: ");
-	str.append(YUME_VERSION_NAME);
-	std::cout << str << std::endl;
-
-	return 0;
-	}
-#endif

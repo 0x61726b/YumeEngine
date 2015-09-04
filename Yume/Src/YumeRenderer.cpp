@@ -47,7 +47,7 @@ namespace YumeEngine
 	}
 	YumeRenderWindow* YumeRenderer::Initialize(bool autoCreate, const YumeString& Title )
 	{
-		return nullptr;
+		return 0;
 	}
 }
 

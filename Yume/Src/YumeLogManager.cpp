@@ -96,7 +96,7 @@ namespace YumeEngine
 			return i->second;
 			/*OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Log not found. ", "LogManager::getLog");*/
 
-		return nullptr;
+		return 0;
 	}
 	//-----------------------------------------------------------------------
 	void YumeLogManager::destroyLog(const YumeString& name)
