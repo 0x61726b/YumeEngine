@@ -60,12 +60,16 @@ namespace YumeEngine
 
 		virtual void GetCustomAttribute(const YumeString& name, void* pData);
 
+		virtual bool IsActive() const;
+
+		void SetActive(bool b);
 	protected:
 		YumeString						m_sName;
 		unsigned int					m_uiWidth;
 		unsigned int					m_uiHeight;
 		unsigned int					m_uiColourDepth;
 		unsigned char					m_ucPriority;
+		bool							m_bActive;
 	};
 }
 //---------------------------------------------------------------------------------

@@ -32,6 +32,7 @@
 #include "YumeRenderer.h"
 #include "YumeRenderWindow.h"
 #include "YumeLogManager.h"
+#include "YumeWindowMessageListener.h"
 
 #include <Windows.h>
 
@@ -51,12 +52,56 @@ namespace YumeEngine
 	}
 	///--------------------------------------------------------------------------------
 	YumeCentrum::YumeCentrum()
+		: m_bStopRendering(false)
 	{
+		if (YumeLogManager::GetPtr() == 0)
+		{
+			m_pLogManager = YumeAPINew YumeLogManager();
+			m_pLogManager->createLog("Yume.log", true, true);
+		}
+
+
+		ShowConfigDialog();
+		
+	}
+	///--------------------------------------------------------------------------------
+	YumeRenderWindow* YumeCentrum::Initialize(bool Auto, const YumeString& Title)
+	{
+		YumeRenderWindow* p = m_pActiveRenderer->Initialize(Auto, Title);
+		return p;
+	}
+	///--------------------------------------------------------------------------------
+	bool YumeCentrum::ShowConfigDialog()
+	{
+#if YUME_PLATFORM == YUME_PLATFORM_WIN32
 		LoadLibraryEx("YUME_DIRECT3D11.dll", NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
 		HINSTANCE hInst = GetModuleHandle("YUME_DIRECT3D11.dll");
 		DLL_START_PLUGIN pFunc = (DLL_START_PLUGIN)GetProcAddress(hInst, "dllStartPlugin");
-
 		pFunc();
+#else
+
+#endif
+		return true;
+	}
+	///--------------------------------------------------------------------------------
+	void YumeCentrum::StartRendering()
+	{
+		while (!m_bStopRendering)
+		{
+			YumeWindowEvents::Run();
+		}
+	}
+	///--------------------------------------------------------------------------------
+	void YumeCentrum::StopRendering()
+	{
+		m_bStopRendering = true;
+	}
+	///--------------------------------------------------------------------------------
+	void YumeCentrum::AddRenderer(YumeRenderer* r)
+	{
+		m_Renderers.push_back(r);
+
+		m_pActiveRenderer = r;
 	}
 	///--------------------------------------------------------------------------------
 	YumeCentrum::~YumeCentrum()

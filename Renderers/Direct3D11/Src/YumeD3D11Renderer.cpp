@@ -37,6 +37,7 @@
 
 #include "YumeLogManager.h"
 
+#include "YumeCentrum.h"
 //Arrrr
 
 
@@ -44,13 +45,17 @@ namespace YumeEngine
 {
 	extern "C" void YumeD3DApiExport dllStartPlugin(void) throw()
 	{
-		MessageBox(NULL, "Test", "Test", MB_OK);
+		HINSTANCE hInst = GetModuleHandle("YUME_DIRECT3D11.dll");
+
+		YumeRenderer* r = new YumeD3D11Renderer(hInst);
+
+		YumeCentrum::Get().AddRenderer(r);
 	}
 	//---------------------------------------------------------------------
 	YumeD3D11Renderer::YumeD3D11Renderer(HINSTANCE hInst)
 		: m_Device(0)
 	{
-		YumeLogManager::Get().logMessage("D3D11 Created");
+		YumeLogManager::Get().Log("D3D11 Renderer Initialization");
 
 		m_hInstance = hInst;
 
@@ -75,7 +80,7 @@ namespace YumeEngine
 		hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&m_pDXGIFactory);
 		if (FAILED(hr))
 		{
-			YumeLogManager::Get().logMessage(
+			YumeLogManager::Get().Log(
 				"Failed to create Direct3D11 DXGIFactory1 D3D11RenderSystem::D3D11RenderSystem");
 		}
 		m_AdapterList = NULL;
@@ -89,14 +94,14 @@ namespace YumeEngine
 		}
 
 		ID3D11Device * device;
-		hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, 0, deviceFlags, NULL, 0, D3D11_SDK_VERSION, &device, 0, 0);
+		hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, 0, D3D11_CREATE_DEVICE_DEBUG, NULL, 0, D3D11_SDK_VERSION, &device, 0, 0);
 
 		if (FAILED(hr))
 		{
 			std::stringstream error;
 			/*error << "Failed to create Direct3D11 object." << std::endl << DXGetErrorDescription(hr) << std::endl;*/
 
-			YumeLogManager::Get().logMessage("Error creating D3D11 device");
+			YumeLogManager::Get().Log("Error creating D3D11 device");
 		}
 
 		m_Device = YumeD3D11Device(device);
@@ -219,8 +224,9 @@ namespace YumeEngine
 	//---------------------------------------------------------------------
 	YumeRenderWindow* YumeD3D11Renderer::Initialize(bool autoCreate, const YumeString& Title )
 	{
+		YumeLogManager::Get().Log("Initialize!");
 		YumeConfigOption* optVideoMode;
-		YumeD3D11Adapter* driver = 0;
+		m_CurrAdapter = 0;
 		YumeD3D11AdapterInfo* videoMode;
 
 		YumeRenderWindow* AutoWindow = NULL;
@@ -230,20 +236,20 @@ namespace YumeEngine
 		{
 			for (unsigned j = 0; j < GetAdapters()->GetCount(); j++)
 			{
-				driver = GetAdapters()->Get(j);
-				if (driver->DriverDescription() == opt->second.currentValue)
+				m_CurrAdapter = GetAdapters()->Get(j);
+				if (m_CurrAdapter->DriverDescription() == opt->second.currentValue)
 					break;
 			}
 
-			if (driver)
+			if (m_CurrAdapter)
 			{
 				opt = m_Options.find("Video Mode");
 				optVideoMode = &opt->second;
 				optVideoMode->possibleValues.clear();
 				// get vide modes for this device
-				for (unsigned k = 0; k < driver->getVideoModeList()->count(); k++)
+				for (unsigned k = 0; k < m_CurrAdapter->getVideoModeList()->count(); k++)
 				{
-					videoMode = driver->getVideoModeList()->item(k);
+					videoMode = m_CurrAdapter->getVideoModeList()->item(k);
 					optVideoMode->possibleValues.push_back(videoMode->GetDescription());
 				}
 
@@ -267,7 +273,7 @@ namespace YumeEngine
 
 		opt = m_Options.find("Information Queue Exceptions Bottom Level");
 		if (opt == m_Options.end())
-			YumeLogManager::Get().logMessage("Can't find option: Information Queue Exceptions Bottom Level");
+			YumeLogManager::Get().Log("Can't find option: Information Queue Exceptions Bottom Level");
 		YumeString infoQType = opt->second.currentValue;
 
 		if ("No information queue exceptions" == infoQType)
@@ -293,7 +299,7 @@ namespace YumeEngine
 
 		opt = m_Options.find("Driver type");
 		if (opt == m_Options.end())
-			YumeLogManager::Get().logMessage("Can't find option:Driver type");
+			YumeLogManager::Get().Log("Can't find option:Driver type");
 		YumeString driverTypeName = opt->second.currentValue;
 
 		m_DriverType = HARDWARE;
@@ -335,7 +341,7 @@ namespace YumeEngine
 			0,
 			0)))
 		{
-			YumeLogManager::Get().logMessage("Failed to create D3D11 Device");
+			YumeLogManager::Get().Log("Failed to create D3D11 Device");
 		}
 
 		if (m_DriverType != HARDWARE)
@@ -370,7 +376,7 @@ namespace YumeEngine
 			bool fullScreen;
 			opt = m_Options.find("Full Screen");
 			if (opt == m_Options.end())
-				YumeLogManager::Get().logMessage("Can't find full-screen options!");
+				YumeLogManager::Get().Log("Can't find full-screen options!");
 			fullScreen = opt->second.currentValue == "Yes";
 
 			YumeD3D11AdapterInfo* videoMode = NULL;
@@ -379,7 +385,7 @@ namespace YumeEngine
 
 			opt = m_Options.find("Video Mode");
 			if (opt == m_Options.end())
-				YumeLogManager::Get().logMessage("Can't find adapter info options!");
+				YumeLogManager::Get().Log("Can't find adapter info options!");
 
 			// The string we are manipulating looks like this :width x height @ colourDepth
 			// Pull out the colour depth by getting what comes after the @ and a space
@@ -408,14 +414,14 @@ namespace YumeEngine
 			}
 
 			if (!videoMode)
-				YumeLogManager::Get().logMessage("Can't find requested video mode!");
+				YumeLogManager::Get().Log("Can't find requested video mode!");
 
 			// sRGB window option
 			bool hwGamma = false;
 			opt = m_Options.find("sRGB Gamma Conversion");
 			if (opt == m_Options.end())
-				YumeLogManager::Get().logMessage("Can't find sRGB options!");
-			hwGamma = opt->second.currentValue == "Yes";
+				YumeLogManager::Get().Log("Can't find sRGB options!");
+			/*hwGamma = opt->second.currentValue == "Yes";*/
 			UINT fsaa = 0;
 			YumeString fsaaHint;
 			
@@ -442,9 +448,9 @@ namespace YumeEngine
 				mWBuffer = false;
 			}
 		}
-		YumeLogManager::Get().logMessage("***************************************");
-		YumeLogManager::Get().logMessage("*** D3D11 : Subsystem Initialized OK ***");
-		YumeLogManager::Get().logMessage("***************************************");
+		YumeLogManager::Get().Log("***************************************");
+		YumeLogManager::Get().Log("*** D3D11 : Subsystem Initialized OK ***");
+		YumeLogManager::Get().Log("***************************************");
 
 		YumeRenderer::Initialize(autoCreate);
 
@@ -453,118 +459,117 @@ namespace YumeEngine
 	//---------------------------------------------------------------------
 	YumeRendererCapabilities* YumeD3D11Renderer::CreateRendererCapabilities() const
 	{
-		//YumeRendererCapabilities* rsc = new YumeRendererCapabilities();
-		//rsc->setDriverVersion(mDriverVersion);
-		//rsc->setDeviceName(m_CurrAdapter->DriverDescription());
-		//rsc->setRenderSystemName("Yume Direct3D 11 Renderer");
+		YumeRendererCapabilities* rsc = new YumeRendererCapabilities();
+		rsc->setDriverVersion(mDriverVersion);
+		rsc->setDeviceName(m_CurrAdapter->DriverDescription());
+		rsc->setRenderSystemName("Yume Direct3D 11 Renderer");
 
-		//// Does NOT support fixed-function!
-		////rsc->setCapability(RSC_FIXED_FUNCTION);
+		// Does NOT support fixed-function!
+		//rsc->setCapability(RSC_FIXED_FUNCTION);
 
-		//rsc->setCapability(RSC_HWSTENCIL);
-		//rsc->setStencilBufferBitDepth(8);
+		rsc->setCapability(RSC_HWSTENCIL);
+		rsc->setStencilBufferBitDepth(8);
 
-		//// Set number of texture units, always 16
-		//rsc->setNumTextureUnits(16);
-		//rsc->setCapability(RSC_ANISOTROPY);
-		//rsc->setCapability(RSC_AUTOMIPMAP);
-		//rsc->setCapability(RSC_BLENDING);
-		//rsc->setCapability(RSC_DOT3);
-		//// Cube map
-		//rsc->setCapability(RSC_CUBEMAPPING);
+		// Set number of texture units, always 16
+		rsc->setNumTextureUnits(16);
+		rsc->setCapability(RSC_ANISOTROPY);
+		rsc->setCapability(RSC_AUTOMIPMAP);
+		rsc->setCapability(RSC_BLENDING);
+		rsc->setCapability(RSC_DOT3);
+		// Cube map
+		rsc->setCapability(RSC_CUBEMAPPING);
 
-		//// We always support compression, D3DX will decompress if device does not support
-		//rsc->setCapability(RSC_TEXTURE_COMPRESSION);
-		//rsc->setCapability(RSC_TEXTURE_COMPRESSION_DXT);
-		//rsc->setCapability(RSC_VBO);
-		//rsc->setCapability(RSC_SCISSOR_TEST);
-		//rsc->setCapability(RSC_TWO_SIDED_STENCIL);
-		//rsc->setCapability(RSC_STENCIL_WRAP);
-		//rsc->setCapability(RSC_HWOCCLUSION);
+		// We always support compression, D3DX will decompress if device does not support
+		rsc->setCapability(RSC_TEXTURE_COMPRESSION);
+		rsc->setCapability(RSC_TEXTURE_COMPRESSION_DXT);
+		rsc->setCapability(RSC_VBO);
+		rsc->setCapability(RSC_SCISSOR_TEST);
+		rsc->setCapability(RSC_TWO_SIDED_STENCIL);
+		rsc->setCapability(RSC_STENCIL_WRAP);
+		rsc->setCapability(RSC_HWOCCLUSION);
 
-		////convertVertexShaderCaps(rsc);
-		////convertPixelShaderCaps(rsc);
-		////convertGeometryShaderCaps(rsc);
+		//convertVertexShaderCaps(rsc);
+		//convertPixelShaderCaps(rsc);
+		//convertGeometryShaderCaps(rsc);
 
-		//rsc->setCapability(RSC_USER_CLIP_PLANES);
-		//rsc->setCapability(RSC_VERTEX_FORMAT_UBYTE4);
+		rsc->setCapability(RSC_USER_CLIP_PLANES);
+		rsc->setCapability(RSC_VERTEX_FORMAT_UBYTE4);
 
-		//rsc->setCapability(RSC_RTT_SEPARATE_DEPTHBUFFER);
-		//rsc->setCapability(RSC_RTT_MAIN_DEPTHBUFFER_ATTACHABLE);
+		rsc->setCapability(RSC_RTT_SEPARATE_DEPTHBUFFER);
+		rsc->setCapability(RSC_RTT_MAIN_DEPTHBUFFER_ATTACHABLE);
 
 
-		//// Adapter details
-		//const DXGI_ADAPTER_DESC1& adapterID = m_CurrAdapter->getAdapterIdentifier();
+		// Adapter details
+		const DXGI_ADAPTER_DESC1& adapterID = m_CurrAdapter->getAdapterIdentifier();
 
-		//switch (m_DriverType) {
-		//case HARDWARE:
-		//	// determine vendor
-		//	// Full list of vendors here: http://www.pcidatabase.com/vendors.php?sort=id
-		//	switch (adapterID.VendorId)
-		//	{
-		//	case 0x10DE:
-		//		rsc->setVendor(GPU_NVIDIA);
-		//		break;
-		//	case 0x1002:
-		//		rsc->setVendor(GPU_ATI);
-		//		break;
-		//	case 0x163C:
-		//	case 0x8086:
-		//		rsc->setVendor(GPU_INTEL);
-		//		break;
-		//	case 0x5333:
-		//		rsc->setVendor(GPU_S3);
-		//		break;
-		//	case 0x3D3D:
-		//		rsc->setVendor(GPU_3DLABS);
-		//		break;
-		//	case 0x102B:
-		//		rsc->setVendor(GPU_MATROX);
-		//		break;
-		//	default:
-		//		rsc->setVendor(GPU_UNKNOWN);
-		//		break;
-		//	};
-		//	break;
-		//case SOFTWARE:
-		//	rsc->setVendor(GPU_MS_SOFTWARE);
-		//	break;
-		//case WARP:
-		//	rsc->setVendor(GPU_MS_WARP);
-		//	break;
-		//default:
-		//	rsc->setVendor(GPU_UNKNOWN);
-		//	break;
-		//}
+		switch (m_DriverType) {
+		case HARDWARE:
+			// determine vendor
+			// Full list of vendors here: http://www.pcidatabase.com/vendors.php?sort=id
+			switch (adapterID.VendorId)
+			{
+			case 0x10DE:
+				rsc->setVendor(GPU_NVIDIA);
+				break;
+			case 0x1002:
+				rsc->setVendor(GPU_ATI);
+				break;
+			case 0x163C:
+			case 0x8086:
+				rsc->setVendor(GPU_INTEL);
+				break;
+			case 0x5333:
+				rsc->setVendor(GPU_S3);
+				break;
+			case 0x3D3D:
+				rsc->setVendor(GPU_3DLABS);
+				break;
+			case 0x102B:
+				rsc->setVendor(GPU_MATROX);
+				break;
+			default:
+				rsc->setVendor(GPU_UNKNOWN);
+				break;
+			};
+			break;
+		case SOFTWARE:
+			rsc->setVendor(GPU_MS_SOFTWARE);
+			break;
+		case WARP:
+			rsc->setVendor(GPU_MS_WARP);
+			break;
+		default:
+			rsc->setVendor(GPU_UNKNOWN);
+			break;
+		}
 
-		//rsc->setCapability(RSC_INFINITE_FAR_PLANE);
+		rsc->setCapability(RSC_INFINITE_FAR_PLANE);
 
-		//rsc->setCapability(RSC_TEXTURE_3D);
-		//rsc->setCapability(RSC_NON_POWER_OF_2_TEXTURES);
-		//rsc->setCapability(RSC_HWRENDER_TO_TEXTURE);
-		//rsc->setCapability(RSC_TEXTURE_FLOAT);
+		rsc->setCapability(RSC_TEXTURE_3D);
+		rsc->setCapability(RSC_NON_POWER_OF_2_TEXTURES);
+		rsc->setCapability(RSC_HWRENDER_TO_TEXTURE);
+		rsc->setCapability(RSC_TEXTURE_FLOAT);
 
-		//rsc->setNumMultiRenderTargets(std::min(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, 8));
-		//rsc->setCapability(RSC_MRT_DIFFERENT_BIT_DEPTHS);
+		rsc->setNumMultiRenderTargets(std::min(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, 8));
+		rsc->setCapability(RSC_MRT_DIFFERENT_BIT_DEPTHS);
 
-		//rsc->setCapability(RSC_POINT_SPRITES);
-		//rsc->setCapability(RSC_POINT_EXTENDED_PARAMETERS);
-		//rsc->setMaxPointSize(256); // TODO: guess!
+		rsc->setCapability(RSC_POINT_SPRITES);
+		rsc->setCapability(RSC_POINT_EXTENDED_PARAMETERS);
+		rsc->setMaxPointSize(256); // TODO: guess!
 
-		//rsc->setCapability(RSC_VERTEX_TEXTURE_FETCH);
-		//rsc->setNumVertexTextureUnits(4);
-		//rsc->setVertexTextureUnitsShared(false);
+		rsc->setCapability(RSC_VERTEX_TEXTURE_FETCH);
+		rsc->setNumVertexTextureUnits(4);
+		rsc->setVertexTextureUnitsShared(false);
 
-		//rsc->setCapability(RSC_MIPMAP_LOD_BIAS);
+		rsc->setCapability(RSC_MIPMAP_LOD_BIAS);
 
-		//// actually irrelevant, but set
-		//rsc->setCapability(RSC_PERSTAGECONSTANT);
+		// actually irrelevant, but set
+		rsc->setCapability(RSC_PERSTAGECONSTANT);
 
-		//rsc->setCapability(RSC_VERTEX_BUFFER_INSTANCE_DATA);
-		//rsc->setCapability(RSC_CAN_GET_COMPILED_SHADER_BUFFER);
+		rsc->setCapability(RSC_VERTEX_BUFFER_INSTANCE_DATA);
+		rsc->setCapability(RSC_CAN_GET_COMPILED_SHADER_BUFFER);
 
-		//return rsc;
-return nullptr;
+		return rsc;
 	}
 	//---------------------------------------------------------------------
 	YumeRenderWindow* YumeD3D11Renderer::CreateRenderWindow(const YumeString &name, unsigned int width, unsigned int height,
@@ -575,11 +580,11 @@ return nullptr;
 		// was fullscreen
 		if (m_CurrentWindow && m_CurrentWindow->IsFullScreen())
 		{
-			YumeLogManager::Get().logMessage("Can't create a window when there is a fullscreen one!");
+			YumeLogManager::Get().Log("Can't create a window when there is a fullscreen one!");
 		}
 		if (m_CurrentWindow && fullScreen)
 		{
-			YumeLogManager::Get().logMessage("Can't create a window when there is a fullscreen one! !!");
+			YumeLogManager::Get().Log("Can't create a window when there is a fullscreen one! !!");
 		}
 
 		// Log a message
@@ -598,7 +603,7 @@ return nullptr;
 			{
 				ss << it->first << "=" << it->second << " ";
 			}
-			YumeLogManager::Get().logMessage(ss.str());
+			YumeLogManager::Get().Log(ss.str());
 		}
 
 		YumeString msg;
@@ -607,7 +612,7 @@ return nullptr;
 		// sam name as the one supplied
 		if (mRenderTargets.find(name) != mRenderTargets.end())
 		{
-			YumeLogManager::Get().logMessage("Can't create a window because there is an existing one with the same name");
+			YumeLogManager::Get().Log("Can't create a window because there is an existing one with the same name");
 		}
 
 		YumeRenderWindow* win = new YumeD3D11RenderWindow(m_hInstance, m_Device, m_pDXGIFactory);

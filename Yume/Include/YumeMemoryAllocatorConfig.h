@@ -75,6 +75,7 @@ namespace YumeEngine
 	typedef YumeAllocatedObject<YumeGeneralAllocPolicy> YumeGeneralAllocatedObject;
 	typedef YumeAllocatedObject<YumeRendererAllocPolicy> YumeRendererAllocatedObject;
 	
+	typedef YumeGeneralAllocatedObject GeneralObjAlloc;
 	typedef YumeGeneralAllocatedObject LogObjAlloc;
 	typedef YumeRendererAllocatedObject RenderObjAlloc;
 	typedef YumeGeneralAllocatedObject CentrumObjAlloc;

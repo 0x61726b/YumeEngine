@@ -47,6 +47,8 @@ namespace YumeEngine
 			bool FullScreen,
 			const StrKeyValuePair* Params);
 
+		void CreateDirect3D11Resources();
+
 		void Destroy();
 
 		void Resize(unsigned int Width,
@@ -62,6 +64,17 @@ namespace YumeEngine
 		bool IsFullScreen() const;
 
 		void GetCustomAttribute(const YumeString& name, void* pData);
+
+		void SetHidden(bool b);
+		bool IsHidden();
+
+		void OnResize(unsigned int width, unsigned int height);
+
+		/** Notify that the window has been resized
+		@remarks
+		You don't need to call this unless you created the window externally.
+		*/
+		void OnWindowMovedOrResized() {}
 
 	protected:
 		HINSTANCE m_hInstance;

@@ -66,6 +66,16 @@ namespace YumeEngine
 		return m_uiColourDepth;
 	}
 	//---------------------------------------------------------------------------------
+	bool YumeRenderTarget::IsActive() const
+	{
+		return m_bActive;
+	}
+	//---------------------------------------------------------------------------------
+	void YumeRenderTarget::SetActive(bool b)
+	{
+		m_bActive = b;
+	}
+	//---------------------------------------------------------------------------------
 	void YumeRenderTarget::Update()
 	{
 

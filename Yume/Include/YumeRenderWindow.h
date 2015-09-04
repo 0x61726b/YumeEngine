@@ -60,13 +60,61 @@ namespace YumeEngine
 
 		virtual bool IsFullScreen() const;
 
+		bool IsVisible() const
+		{
+			return true;
+		}
+
+		bool IsActive() const
+		{
+			return m_bActive && IsVisible();
+		}
+
+		
+		//Events
+		virtual void OnResize(unsigned int width, unsigned int height) = 0;
+
+		/** Notify that the window has been resized
+		@remarks
+		You don't need to call this unless you created the window externally.
+		*/
+		virtual void OnWindowMovedOrResized() {}
+		//~
+
+		/** Returns true if the window will automatically de-activate itself when it loses focus.
+		*/
+		bool IsDeactivatedOnFocusChange() const;
+
+		/** Indicates whether the window will automatically deactivate itself when it loses focus.
+		* \param deactivate a value of 'true' will cause the window to deactivate itself when it loses focus.  'false' will allow it to continue to render even when window focus is lost.
+		* \note 'true' is the default behavior.
+		*/
+		void SetDeactivateOnFocusChange(bool deactivate);
+
+		virtual bool IsHidden(void) const { return false; }
+
+		/** Hide (or show) the window. If called with hidden=true, this
+		will make the window completely invisible to the user.
+		@remarks
+		Setting a window to hidden is useful to create a dummy primary
+		RenderWindow hidden from the user so that you can create and
+		recreate your actual RenderWindows without having to recreate
+		all your resources.
+		*/
+		virtual void SetHidden(bool hidden)
+		{
+			(void)hidden;
+		}
+
 	protected:
 		int m_iLeft;
 		int m_iTop;
 
 		bool m_bIsFullScreen;
 		bool m_bIsPrimary;
+		bool mAutoDeactivatedOnFocusChange;
 
+		friend class YumeCentrum;
 	};
 }
 //---------------------------------------------------------------------------------

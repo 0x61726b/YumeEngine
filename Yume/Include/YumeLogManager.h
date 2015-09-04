@@ -94,14 +94,14 @@ namespace YumeEngine
 
 		/** Log a message to the default log.
 		*/
-		void logMessage(const YumeString& message, LogMessageLevel lml = LML_NORMAL,
+		void Log(const YumeString& message, LogMessageLevel lml = LML_NORMAL,
 			bool maskDebug = false);
 
 		/** Log a message to the default log (signature for backward compatibility).
 		*/
-		void logMessage(LogMessageLevel lml, const YumeString& message,
+		void Log(LogMessageLevel lml, const YumeString& message,
 			bool maskDebug = false) {
-			logMessage(message, lml, maskDebug);
+			Log(message, lml, maskDebug);
 		}
 
 		/** Get a stream on the default log. */

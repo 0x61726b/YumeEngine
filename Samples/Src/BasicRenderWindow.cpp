@@ -8,15 +8,34 @@
 //--------------------------------------------------------------------------------
 
 #include "YumeHeaders.h"
-#include "YumeRequired.h"
-#include "YumeCentrum.h"
 
+#include "BasicRenderWindow.h"
+
+namespace YumeSamples
+{
+	BasicRenderWindow::BasicRenderWindow()
+	{
+		
+	}
+
+	void BasicRenderWindow::Setup()
+	{
+		m_Centrum = YumeAPINew YumeEngine::YumeCentrum();
+		m_Window = m_Centrum->Initialize(true);
+		
+
+		YumeEngine::YumeWindowEvents::AddWindowEventListener(m_Window, this);
+
+		m_Centrum->StartRendering();
+	}
+}
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
 #include <Windows.h>
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR args, int ncmd)
 {
-	YumeEngine::YumeCentrum* yc = YumeAPINew YumeEngine::YumeCentrum;
+	YumeSamples::BasicRenderWindow b;
+	b.Setup();
 
 	
 	return 0;

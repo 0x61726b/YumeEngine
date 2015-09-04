@@ -37,19 +37,23 @@
 
 namespace YumeEngine
 {
+	//---------------------------------------------------------------------------------
 	YumeRenderWindow::YumeRenderWindow() : YumeRenderTarget()
 	{
 		m_bIsPrimary = false;
+		mAutoDeactivatedOnFocusChange = true;
 	}
+	//---------------------------------------------------------------------------------
 	bool YumeRenderWindow::IsPrimary() const
 	{
 		return m_bIsPrimary;
 	}
+	//---------------------------------------------------------------------------------
 	bool YumeRenderWindow::IsFullScreen() const
 	{
 		return m_bIsFullScreen;
 	}
-
+	//---------------------------------------------------------------------------------
 	void YumeRenderWindow::GetProperties(unsigned int& width, unsigned int& height, unsigned int& colourDepth,
 		int& left, int& top)
 	{
@@ -58,5 +62,15 @@ namespace YumeEngine
 		colourDepth = m_uiColourDepth;
 		left = m_iLeft;
 		top = m_iTop;
+	}
+	//---------------------------------------------------------------------------------
+	void YumeRenderWindow::SetDeactivateOnFocusChange(bool b)
+	{
+		mAutoDeactivatedOnFocusChange = b;
+	}
+	//---------------------------------------------------------------------------------
+	bool YumeRenderWindow::IsDeactivatedOnFocusChange() const
+	{
+		return mAutoDeactivatedOnFocusChange;
 	}
 }

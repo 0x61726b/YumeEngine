@@ -124,7 +124,7 @@ namespace YumeEngine
 		destroyLog(log->getName());
 	}
 	//-----------------------------------------------------------------------
-	void YumeLogManager::logMessage(const YumeString& message, LogMessageLevel lml, bool maskDebug)
+	void YumeLogManager::Log(const YumeString& message, LogMessageLevel lml, bool maskDebug)
 	{
 
 		if (mDefaultLog)

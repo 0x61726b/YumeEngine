@@ -51,7 +51,7 @@ namespace YumeEngine
 	//-----------------------------------------------------------------------
 	BOOL YumeD3D11AdapterList::Enumerate(IDXGIFactory1*	pDXGIFactory)
 	{
-		YumeLogManager::Get().logMessage("D3D11: Driver Detection Starts");
+		YumeLogManager::Get().Log("D3D11: Driver Detection Starts");
 		// Create the DXGI Factory
 
 		for (UINT iAdapter = 0; ; iAdapter++)
@@ -85,7 +85,7 @@ namespace YumeEngine
 
 		}
 
-		YumeLogManager::Get().logMessage("D3D11: Driver Detection Ends");
+		YumeLogManager::Get().Log("D3D11: Driver Detection Ends");
 
 		return TRUE;
 	}

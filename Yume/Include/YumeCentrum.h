@@ -51,10 +51,19 @@ namespace YumeEngine
 
 		YumeRenderWindow* m_pAutoWindow;
 
+		bool m_bStopRendering;
+
 		bool m_bInitialized;
+	public:
+		YumeRenderWindow* Initialize(bool Auto, const YumeString& Title = "Yume Window");
 
-		/*bool ShowConfigDialog();*/
+		void StartRendering();
+		void StopRendering();
 
+		bool ShowConfigDialog();
+
+
+	public:
 		static YumeCentrum& Get(void);
 
 		static YumeCentrum* GetPtr(void);
@@ -64,6 +73,8 @@ namespace YumeEngine
 	public:
 		YumeCentrum();
 		virtual ~YumeCentrum();
+
+		void AddRenderer(YumeRenderer* r);
 	};
 }
 

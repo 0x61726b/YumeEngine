@@ -32,6 +32,14 @@
 #define __Yume_h__
 //---------------------------------------------------------------------------------
 #include "YumeRequired.h"
+
+#include "YumeRenderer.h"
+#include "YumeRenderWindow.h"
+#include "YumeCentrum.h"
+#include "YumeString.h"
+#include "YumeStringConverter.h"
+#include "YumeStringVector.h"
+#include "YumeWindowMessageListener.h"
 //---------------------------------------------------------------------------------
 #endif
-//~End of YumeConfig.h
+//~End of Yume.h
