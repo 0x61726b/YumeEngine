@@ -20,7 +20,7 @@ namespace YumeSamples
 	{
 	public:
 		BasicRenderWindow();
-
+		~BasicRenderWindow();
 		void Setup();
 
 

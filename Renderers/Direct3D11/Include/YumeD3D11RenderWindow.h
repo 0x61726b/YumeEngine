@@ -48,8 +48,11 @@ namespace YumeEngine
 			const StrKeyValuePair* Params);
 
 		void CreateDirect3D11Resources();
+		void DestroyDirect3D11Resources();
 
 		void Destroy();
+
+		void Present(bool vsync);
 
 		void Resize(unsigned int Width,
 			unsigned int Height);
@@ -90,17 +93,17 @@ namespace YumeEngine
 		bool	mSwitchingFullscreen;	// Are we switching from fullscreen to windowed or vice versa
 
 										// Pointer to swap chain, only valid if mIsSwapChain
-		IDXGISwapChain * mpSwapChain;
-		DXGI_SWAP_CHAIN_DESC md3dpp;
+		IDXGISwapChain * m_pSwapChain;
+		DXGI_SWAP_CHAIN_DESC m_pDXGISwapChainDesc;
 		DXGI_SAMPLE_DESC mFSAAType;
 		//DWORD mFSAAQuality;
 		UINT mDisplayFrequency;
 		bool mVSync;
 		unsigned int mVSyncInterval;
 		bool mUseNVPerfHUD;
-		ID3D11RenderTargetView*		mRenderTargetView;
-		ID3D11DepthStencilView*		mDepthStencilView;
-		ID3D11Texture2D*			mpBackBuffer;
+		ID3D11RenderTargetView*		m_pRenderTargetView;
+		ID3D11DepthStencilView*		m_pDepthStencilView;
+		ID3D11Texture2D*			m_pBackBuffer;
 	};
 }
 

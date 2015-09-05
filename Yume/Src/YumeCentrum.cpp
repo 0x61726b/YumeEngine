@@ -80,6 +80,11 @@ namespace YumeEngine
 		return 0;
 	}
 	///--------------------------------------------------------------------------------
+	YumeRenderer * YumeCentrum::GetRenderer()
+	{
+		return m_pActiveRenderer;
+	}
+	///--------------------------------------------------------------------------------
 	bool YumeCentrum::ShowConfigDialog()
 	{
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
@@ -93,11 +98,23 @@ namespace YumeEngine
 		return true;
 	}
 	///--------------------------------------------------------------------------------
+	bool YumeCentrum::Render()
+	{
+		m_pActiveRenderer->Clear(FBT_COLOUR, new float[4]{ 0,1,0,0 }, 0, 0);
+		m_pActiveRenderer->UpdateAllRenderTargets(false);
+		m_pActiveRenderer->PresentAllBuffers(true);
+
+		return true;
+	}
+	///--------------------------------------------------------------------------------
 	void YumeCentrum::StartRendering()
 	{
 		while (!m_bStopRendering)
 		{
 			YumeWindowEvents::Run();
+
+			if (!Render())
+				break;
 		}
 	}
 	///--------------------------------------------------------------------------------
@@ -115,7 +132,16 @@ namespace YumeEngine
 	///--------------------------------------------------------------------------------
 	YumeCentrum::~YumeCentrum()
 	{
+		m_pAutoWindow = 0;
 
+		
+
+#if YUME_PLATFORM == YUME_PLATFORM_WIN32
+		HINSTANCE hInst = GetModuleHandle("YUME_DIRECT3D11.dll");
+		DLL_START_PLUGIN pFunc = (DLL_START_PLUGIN)GetProcAddress(hInst, "dllStop");
+		pFunc();
+#endif
+		YumeAPIDelete m_pLogManager;
 	}
 	///--------------------------------------------------------------------------------
 }

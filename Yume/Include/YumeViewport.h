@@ -21,69 +21,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeCentrum.h
-/// Date : 3.9.2015
+/// File : YumeViewport.h
+/// Date : 5.9.2015
 /// Comments : 
 ///--------------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////////
-
-#ifndef __YumeCentrum_h__
-#define __YumeCentrum_h__
-
+#ifndef __YumeViewport_h__
+#define __YumeViewport_h__
+///--------------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeSingleton.h"
-#include "YumeString.h"
-
-namespace YumeEngine
-{
-	typedef YumeVector<YumeRenderer*>::type RendererList;
-
-	class YumeAPIExport YumeCentrum : public Singleton<YumeCentrum>, public CentrumObjAlloc
-	{
-	protected:
-
-		RendererList		m_Renderers;
-		YumeRenderer*		m_pActiveRenderer;
-		YumeString			m_sVersion;
-
-
-		YumeLogManager* m_pLogManager;
-
-		YumeRenderWindow* m_pAutoWindow;
-
-		bool m_bStopRendering;
-
-		bool m_bInitialized;
-
-
-	public:
-		YumeRenderWindow* Initialize(bool Auto, const YumeString& Title = "Yume Window");
-		YumeRenderer* GetRenderer();
-		void StartRendering();
-		void StopRendering();
-
-		bool ShowConfigDialog();
-
-		bool Render();
-
-
-
-	public:
-		static YumeCentrum& Get(void);
-
-		static YumeCentrum* GetPtr(void);
-
-		static YumeCentrum* m_sSingleton;
-
-	public:
-		YumeCentrum();
-		virtual ~YumeCentrum();
-
-		void AddRenderer(YumeRenderer* r);
-	};
-}
+#include "YumeCommon.h"
 
 
 ///--------------------------------------------------------------------------------
-//End of __YumeCentrum_h__
+//End of __YumeViewport_h__
 #endif

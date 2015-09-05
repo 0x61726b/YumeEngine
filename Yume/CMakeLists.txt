@@ -33,6 +33,7 @@ set( HEADER_FILES
   Include/YumeSingleton.h
   Include/YumeConfigOption.h
   Include/YumeWindowMessageListener.h
+  Include/YumeViewport.h
 	${CMAKE_BINARY_DIR}/Include/YumeBuildSettings.h)
 
 set( SOURCE_FILES 
@@ -50,7 +51,8 @@ set( SOURCE_FILES
   Src/YumeLog.cpp
   Src/YumeLogManager.cpp
   Src/YumeCentrum.cpp
-  Src/YumeWindowMessageListener.cpp )
+  Src/YumeWindowMessageListener.cpp
+  Src/YumeViewport.cpp )
 
 
 

@@ -38,12 +38,13 @@ namespace YumeEngine
 {
 	YumeRenderTarget::YumeRenderTarget()
 	{
-
+		m_bActive = true;
+		m_bAutoUpdated = true;
 	}
 	//---------------------------------------------------------------------------------
 	YumeRenderTarget::~YumeRenderTarget()
 	{
-
+		//Remove viewports
 	}
 	//---------------------------------------------------------------------------------
 	const YumeString& YumeRenderTarget::GetName() const
@@ -70,20 +71,22 @@ namespace YumeEngine
 	{
 		return m_bActive;
 	}
+	bool YumeRenderTarget::IsPrimary()
+	{
+		return false;
+	}
 	//---------------------------------------------------------------------------------
 	void YumeRenderTarget::SetActive(bool b)
 	{
 		m_bActive = b;
 	}
 	//---------------------------------------------------------------------------------
-	void YumeRenderTarget::Update()
+	void YumeRenderTarget::Update(bool swap)
 	{
-
-	}
-	//---------------------------------------------------------------------------------
-	void YumeRenderTarget::Present(bool vSync)
-	{
-
+		if (swap)
+		{
+			Present(true);
+		}
 	}
 	//---------------------------------------------------------------------------------
 	void YumeRenderTarget::GetCustomAttribute(const YumeString& name, void* pData)

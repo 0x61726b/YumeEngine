@@ -59,8 +59,23 @@ namespace YumeEngine
 		virtual YumeRenderWindow* CreateRenderWindow(const YumeString &name, unsigned int width, unsigned int height,
 			bool fullScreen, const StrKeyValuePair *miscParams = 0) = 0;
 
+		virtual void PresentAllBuffers(bool waitForVsnyc);
+		virtual void UpdateAllRenderTargets(bool swapBuffers);
+
+		virtual void Shutdown();
+
+		virtual void Clear(unsigned int buffers, float color[], float depth, unsigned short stencil) = 0;
+
+		virtual void SetRenderTarget(YumeRenderTarget* target)=0;
+		virtual YumeRenderTarget* GetRenderTarget(const YumeString& name);
+		virtual void AttachRenderTarget(YumeRenderTarget& target);
 	protected:
 		YumeRendererCapabilities* m_pCurrentCaps;
+		YumeRendererCapabilities* m_pRealCapabilities;
+	
+		RenderTargetMap mRenderTargets;
+		YumeRenderTarget* m_pActiveRenderTarget;
+		RenderTargetPriorityMap mPrioritisedRenderTargets;
 
 		bool mVSync;
 		unsigned int mVSyncInterval;

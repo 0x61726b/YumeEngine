@@ -69,15 +69,7 @@ namespace YumeEngine
 
 		void RefreshD3DSettings();
 
-		RenderTargetMap mRenderTargets;
-		RenderTargetPriorityMap mPrioritisedRenderTargets;
-		YumeRenderTarget* m_pActiveRenderTarget;
-
-
-		YumeRendererCapabilities* mRealCapabilities;
-		YumeRendererCapabilities* mCurrentCapabilities;
-
-		void AttachRenderTarget(YumeRenderTarget& target);
+		virtual void SetRenderTarget(YumeRenderTarget* target);
 	public:
 		YumeD3D11Renderer(HINSTANCE hInst);
 
@@ -85,6 +77,7 @@ namespace YumeEngine
 
 		void Init();
 		void Configure();
+		void Shutdown();
 
 		//Renderer Interface
 		const YumeString& GetName();
@@ -95,9 +88,9 @@ namespace YumeEngine
 
 		YumeRenderWindow* CreateRenderWindow(const YumeString &name, unsigned int width, unsigned int height,
 			bool fullScreen, const StrKeyValuePair *miscParams = 0);
+		
+		virtual void Clear(unsigned int buffers, float color[], float depth, unsigned short stencil);
 		//~
-
-
 	private:
 		bool m_bRendererInitialized;
 	};

@@ -51,6 +51,13 @@ namespace YumeEngine
 
 		YumeCentrum::Get().AddRenderer(r);
 	}
+	//---------------------------------------------------------------------	
+	extern "C" void YumeD3DApiExport dllStop(void) throw()
+	{
+		
+		YumeRenderer* renderer = YumeCentrum::Get().GetRenderer();
+		delete renderer;
+	}
 	//---------------------------------------------------------------------
 	YumeD3D11Renderer::YumeD3D11Renderer(HINSTANCE hInst)
 		: m_Device(0)
@@ -66,7 +73,8 @@ namespace YumeEngine
 	//---------------------------------------------------------------------
 	YumeD3D11Renderer::~YumeD3D11Renderer()
 	{
-
+		Shutdown();
+		YumeLogManager::Get().Log("Direct3D 11 getting destroyed");
 	}
 	//---------------------------------------------------------------------
 	void YumeD3D11Renderer::Init()
@@ -133,7 +141,7 @@ namespace YumeEngine
 		optFullScreen.name = "Full Screen";
 		optFullScreen.possibleValues.push_back("Yes");
 		optFullScreen.possibleValues.push_back("No");
-		optFullScreen.currentValue = "Yes";
+		optFullScreen.currentValue = "No";
 		optFullScreen.immutable = false;
 
 		optExceptionsErrorLevel.name = "Information Queue Exceptions Bottom Level";
@@ -217,12 +225,64 @@ namespace YumeEngine
 
 	}
 	//---------------------------------------------------------------------
+	void YumeD3D11Renderer::SetRenderTarget(YumeRenderTarget * target)
+	{
+		m_pActiveRenderTarget = target;
+		if (m_pActiveRenderTarget)
+		{
+			ID3D11RenderTargetView ** pRTView = NULL;
+			target->GetCustomAttribute("ID3D11RenderTargetView", &pRTView);
+
+			unsigned int numberOfViews;
+			target->GetCustomAttribute("numberOfViews", &numberOfViews);
+
+			////Retrieve depth buffer
+			//D3D11DepthBuffer *depthBuffer = static_cast<D3D11DepthBuffer*>(target->getDepthBuffer());
+
+			//if (target->getDepthBufferPool() != DepthBuffer::POOL_NO_DEPTH && !depthBuffer)
+			//{
+			//	//Depth is automatically managed and there is no depth buffer attached to this RT
+			//	//or the Current D3D device doesn't match the one this Depth buffer was created
+			//	setDepthBufferFor(target);
+			//}
+
+			////Retrieve depth buffer again (it may have changed)
+			//depthBuffer = static_cast<D3D11DepthBuffer*>(target->getDepthBuffer());
+
+
+			// we need to clear the state 
+			m_Device.GetImmediateContext()->ClearState();
+
+			if (m_Device.isError())
+			{
+				YumeString errorDescription = m_Device.getErrorDescription();
+				YumeLogManager::Get().Log("Can't clear immediate context state!");
+			}
+
+
+
+			// now switch to the new render target
+			m_Device.GetImmediateContext()->OMSetRenderTargets(
+				numberOfViews,
+				pRTView,
+				/*depthBuffer ? depthBuffer->getDepthStencilView() :*/ 0);
+
+			if (m_Device.isError())
+			{
+				YumeString errorDescription = m_Device.getErrorDescription();
+				YumeLogManager::Get().Log("Can't set render targets!");
+			}
+		}
+		// TODO - support MRT
+
+	}
+	//---------------------------------------------------------------------
 	const YumeString& YumeD3D11Renderer::GetName()
 	{
 		return "Yume Direct3D 11";
 	}
 	//---------------------------------------------------------------------
-	YumeRenderWindow* YumeD3D11Renderer::Initialize(bool autoCreate, const YumeString& Title )
+	YumeRenderWindow* YumeD3D11Renderer::Initialize(bool autoCreate, const YumeString& Title)
 	{
 		YumeLogManager::Get().Log("Initialize!");
 		YumeConfigOption* optVideoMode;
@@ -424,7 +484,7 @@ namespace YumeEngine
 			/*hwGamma = opt->second.currentValue == "Yes";*/
 			UINT fsaa = 0;
 			YumeString fsaaHint;
-			
+
 
 			StrKeyValuePair miscParams;
 			miscParams["colourDepth"] = YumeStringConverter::toString(videoMode->GetColourDepth());
@@ -627,16 +687,16 @@ namespace YumeEngine
 			m_CurrentWindow = (YumeD3D11RenderWindow *)win;
 			win->GetCustomAttribute("D3DDEVICE", &m_Device);
 
-			
+
 
 			// if we are using custom capabilities, then 
 			// mCurrentCapabilities has already been loaded
 			/*if (!mUseCustomCapabilities)
 				mCurrentCapabilities = mRealCapabilities;*/
 
-			/*CreateRendererCapabilities(mCurrentCapabilities, m_CurrentWindow);*/
-			mRealCapabilities = CreateRendererCapabilities();
-			mRealCapabilities->addShaderProfile("hlsl");
+				/*CreateRendererCapabilities(mCurrentCapabilities, m_CurrentWindow);*/
+			m_pRealCapabilities = CreateRendererCapabilities();
+			m_pRealCapabilities->addShaderProfile("hlsl");
 		}
 		else
 		{
@@ -647,13 +707,48 @@ namespace YumeEngine
 
 	}
 	//---------------------------------------------------------------------
-	void YumeD3D11Renderer::AttachRenderTarget(YumeRenderTarget& target)
+	void YumeD3D11Renderer::Clear(unsigned int buffers, float color[], float depth, unsigned short stencil)
 	{
-		assert(target.GetPriority() < 10); //Fix this
+		if (m_pActiveRenderTarget)
+		{
+			ID3D11RenderTargetView ** pRTView;
+			m_pActiveRenderTarget->GetCustomAttribute("ID3D11RenderTargetView", &pRTView);
 
-		mRenderTargets.insert(RenderTargetMap::value_type(target.GetName(), &target));
-		mPrioritisedRenderTargets.insert(
-			RenderTargetPriorityMap::value_type(target.GetPriority(), &target));
+			if (buffers & FBT_COLOUR)
+			{
+				unsigned int numberOfViews;
+				m_pActiveRenderTarget->GetCustomAttribute("numberOfViews", &numberOfViews);
+				if (numberOfViews == 1)
+					m_Device.GetImmediateContext()->ClearRenderTargetView(pRTView[0], color);
+				else
+				{
+					for (unsigned int i = 0; i < numberOfViews; ++i)
+						m_Device.GetImmediateContext()->ClearRenderTargetView(pRTView[i], color);
+				}
+			}
+
+			UINT ClearFlags = 0;
+			if (buffers & FBT_DEPTH)
+			{
+				ClearFlags |= D3D11_CLEAR_DEPTH;
+			}
+			if (buffers & FBT_STENCIL)
+			{
+				ClearFlags |= D3D11_CLEAR_STENCIL;
+			}
+
+			if (ClearFlags)
+			{
+				/*D3D11DepthBuffer *depthBuffer = static_cast<D3D11DepthBuffer*>(mActiveRenderTarget->
+					getDepthBuffer());*/
+				/*if (depthBuffer)
+				{
+					mDevice.GetImmediateContext()->ClearDepthStencilView(
+						depthBuffer->getDepthStencilView(),
+						ClearFlags, depth, static_cast<UINT8>(stencil));
+				}*/
+			}
+		}
 	}
 	//---------------------------------------------------------------------
 	YumeD3D11AdapterList* YumeD3D11Renderer::GetAdapters()
@@ -662,6 +757,25 @@ namespace YumeEngine
 			m_AdapterList = new YumeD3D11AdapterList(m_pDXGIFactory);
 
 		return m_AdapterList;
+	}
+	//---------------------------------------------------------------------
+	void YumeD3D11Renderer::Shutdown()
+	{
+		YumeRenderer::Shutdown();
+
+		m_bRendererInitialized = false;
+
+		m_CurrentWindow = NULL;
+
+		m_Device.Release();
+
+		m_Device = NULL;
+
+		SAFE_DELETE(m_AdapterList);
+		SAFE_RELEASE(m_pDXGIFactory);
+		m_CurrAdapter = NULL;
+
+
 	}
 	//---------------------------------------------------------------------
 }

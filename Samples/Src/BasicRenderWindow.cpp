@@ -17,6 +17,10 @@ namespace YumeSamples
 	{
 		
 	}
+	BasicRenderWindow::~BasicRenderWindow()
+	{
+		delete m_Centrum;
+	}
 
 	void BasicRenderWindow::Setup()
 	{

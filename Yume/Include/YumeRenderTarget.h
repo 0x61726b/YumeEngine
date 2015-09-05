@@ -49,9 +49,12 @@ namespace YumeEngine
 		virtual unsigned int GetHeight() const;
 		virtual unsigned int GetColourDepth() const;
 
-		virtual void Update();
+		virtual void Update(bool Swap);
 
-		virtual void Present(bool vSync = true);
+		virtual void Present(bool vSync = true)
+		{
+			(void)vSync;
+		};
 
 
 		virtual void SetPriority(unsigned char priority) { m_ucPriority = priority; }
@@ -60,9 +63,18 @@ namespace YumeEngine
 
 		virtual void GetCustomAttribute(const YumeString& name, void* pData);
 
-		virtual bool IsActive() const;
+		
+		virtual bool IsAutoUpdated() const {
+			return m_bAutoUpdated;
+		}
+		virtual void SetAutoUpdated(bool b)
+		{
+			m_bAutoUpdated = b;
+		}
 
-		void SetActive(bool b);
+		virtual bool IsPrimary();
+		virtual void SetActive(bool b);
+		virtual bool IsActive() const;
 	protected:
 		YumeString						m_sName;
 		unsigned int					m_uiWidth;
@@ -70,6 +82,7 @@ namespace YumeEngine
 		unsigned int					m_uiColourDepth;
 		unsigned char					m_ucPriority;
 		bool							m_bActive;
+		bool							m_bAutoUpdated;
 	};
 }
 //---------------------------------------------------------------------------------

@@ -52,17 +52,20 @@ namespace YumeEngine
 		mHidden = false;
 		mSwitchingFullscreen = false;
 		mDisplayFrequency = 0;
-		mRenderTargetView = 0;
-		mDepthStencilView = 0;
-		mpBackBuffer = 0;
+		m_pRenderTargetView = 0;
+		m_pDepthStencilView = 0;
+		m_pBackBuffer = 0;
+
+		mFSAAType.Count = 1;
+		mFSAAType.Quality = 0;
 	}
 	///--------------------------------------------------------------------------------
 	YumeD3D11RenderWindow::~YumeD3D11RenderWindow()
 	{
-		SAFE_RELEASE(mRenderTargetView);
-		SAFE_RELEASE(mDepthStencilView);
+		SAFE_RELEASE(m_pRenderTargetView);
+		SAFE_RELEASE(m_pDepthStencilView);
 
-		SAFE_RELEASE(mpBackBuffer);
+		SAFE_RELEASE(m_pBackBuffer);
 
 		Destroy();
 	}
@@ -176,13 +179,146 @@ namespace YumeEngine
 
 		m_bActive = true;
 		mClosed = false;
+		this->SetActive(m_bActive);
 		SetHidden(mHidden);
 	}
 	///--------------------------------------------------------------------------------
 	void YumeD3D11RenderWindow::CreateDirect3D11Resources()
 	{
+		if (mIsSwapChain && m_Device.isNull())
+		{
+			//Nope
+		}
+
+		ZeroMemory(&m_pDXGISwapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
+		m_pDXGISwapChainDesc.Windowed = !m_bIsFullScreen;
+		m_pDXGISwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+		// triple buffer if VSync is on
+		m_pDXGISwapChainDesc.BufferCount = mVSync ? 2 : 1;
+		m_pDXGISwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		m_pDXGISwapChainDesc.OutputWindow = mHwnd;
+		m_pDXGISwapChainDesc.BufferDesc.Width = m_uiWidth;
+		m_pDXGISwapChainDesc.BufferDesc.Height = m_uiHeight;
+		m_pDXGISwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+		m_pDXGISwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+
+		m_pDXGISwapChainDesc.SampleDesc.Count = mFSAAType.Count;
+		m_pDXGISwapChainDesc.SampleDesc.Quality = mFSAAType.Quality;
+
+		if (m_bIsFullScreen)
+		{
+			m_pDXGISwapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+			m_pDXGISwapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+			m_pDXGISwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		}
+
+		m_pDXGISwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+		//Do something with FSAA settings here
+
+		//MSAA 
+
+		if (mIsSwapChain)
+		{
+
+			HRESULT hr;
+			IDXGIDevice1* pDXGIDevice = NULL;
+			hr = m_Device->QueryInterface(__uuidof(IDXGIDevice1), (void**)&pDXGIDevice);
+
+			if (FAILED(hr))
+			{
+				YumeLogManager::Get().Log("Can't get DXGI device from device!");
+			}
+
+			hr = m_pDXGIFactory->CreateSwapChain(pDXGIDevice, &m_pDXGISwapChainDesc, &m_pSwapChain);
+
+			if (FAILED(hr))
+			{
+				//Try again
+				hr = m_pDXGIFactory->CreateSwapChain(pDXGIDevice, &m_pDXGISwapChainDesc, &m_pSwapChain);
+			}
+
+			SAFE_RELEASE(pDXGIDevice);
+
+			if (FAILED(hr))
+			{
+				YumeLogManager::Get().Log("Unable to create Swap Chain!");
+			}
+
+			hr = m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&m_pBackBuffer);
+
+			if (FAILED(hr))
+			{
+				YumeLogManager::Get().Log("Unable to create the back buffer from swap chain!");
+			}
+
+			D3D11_TEXTURE2D_DESC backBufferDesc;
+			m_pBackBuffer->GetDesc(&backBufferDesc);
+
+			D3D11_RENDER_TARGET_VIEW_DESC RTVDesc;
+			ZeroMemory(&RTVDesc, sizeof(RTVDesc));
+
+			RTVDesc.Format = backBufferDesc.Format;
+			RTVDesc.ViewDimension = false ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
+			RTVDesc.Texture2D.MipSlice = 0;
+			hr = m_Device->CreateRenderTargetView(m_pBackBuffer, &RTVDesc, &m_pRenderTargetView);
+
+			if (FAILED(hr))
+			{
+				YumeString errorDescription = m_Device.getErrorDescription();
+				YumeLogManager::Get().Log("Unable to create a render target view " + errorDescription);
+			}
 
 
+			//Depth Stencil Buffer
+
+			ID3D11Texture2D* pDepthStencil = NULL;
+			D3D11_TEXTURE2D_DESC descDepth;
+
+			descDepth.Width = m_uiWidth;
+			descDepth.Height = m_uiHeight;
+			descDepth.MipLevels = 1;
+			descDepth.ArraySize = 1;
+			descDepth.Format = DXGI_FORMAT_R32_TYPELESS;
+			descDepth.SampleDesc.Count = mFSAAType.Count;
+			descDepth.SampleDesc.Quality = mFSAAType.Quality;
+			descDepth.Usage = D3D11_USAGE_DEFAULT;
+			descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+			descDepth.CPUAccessFlags = 0;
+			descDepth.MiscFlags = 0;
+
+			hr = m_Device->CreateTexture2D(&descDepth, NULL, &pDepthStencil);
+			if (FAILED(hr) || m_Device.isError())
+			{
+				YumeString errorDescription = m_Device.getErrorDescription(hr);
+				YumeLogManager::Get().Log("Unable to create a depth texture" + errorDescription);
+			}
+			D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+			ZeroMemory(&descDSV, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
+
+			descDSV.Format = DXGI_FORMAT_D32_FLOAT;
+			descDSV.ViewDimension = false ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
+			descDSV.Texture2D.MipSlice = 0;
+			hr = m_Device->CreateDepthStencilView(pDepthStencil, &descDSV, &m_pDepthStencilView);
+
+			SAFE_RELEASE(pDepthStencil);
+
+			if (FAILED(hr))
+			{
+				YumeString errorDescription = m_Device.getErrorDescription();
+				YumeLogManager::Get().Log("Unable to create depth stencil view! " + errorDescription);
+			}
+
+		}
+
+	}
+	///--------------------------------------------------------------------------------
+	void YumeD3D11RenderWindow::DestroyDirect3D11Resources()
+	{
+		if (mIsSwapChain)
+		{
+			SAFE_RELEASE(m_pSwapChain);
+		}
 	}
 	///--------------------------------------------------------------------------------
 	void YumeD3D11RenderWindow::OnResize(unsigned int width, unsigned int height)
@@ -229,13 +365,29 @@ namespace YumeEngine
 
 	}
 	///--------------------------------------------------------------------------------
+	void YumeD3D11RenderWindow::Present(bool bVsync)
+	{
+		if (!m_Device.isNull())
+		{
+			HRESULT hr;
+			if (mIsSwapChain)
+			{
+				hr = m_pSwapChain->Present(bVsync ? mVSyncInterval : 0, 0);
+			}
+		}
+	}
+	///--------------------------------------------------------------------------------
 	void YumeD3D11RenderWindow::Destroy()
 	{
+		DestroyDirect3D11Resources();
 		if (mHwnd)
 		{
+			YumeWindowEvents::RemoveRenderWindow(this);
 			DestroyWindow(mHwnd);
 		}
 		mHwnd = 0;
+		m_bActive = false;
+		
 	}
 	///--------------------------------------------------------------------------------
 	void YumeD3D11RenderWindow::SetHidden(bool b)
@@ -283,13 +435,13 @@ namespace YumeEngine
 		}
 		else if (name == "ID3D11RenderTargetView")
 		{
-			*static_cast<ID3D11RenderTargetView***>(pData) = &mRenderTargetView;
+			*static_cast<ID3D11RenderTargetView***>(pData) = &m_pRenderTargetView;
 			return;
 		}
 		else if (name == "ID3D11Texture2D")
 		{
 			ID3D11Texture2D **pBackBuffer = (ID3D11Texture2D**)pData;
-			*pBackBuffer = mpBackBuffer;
+			*pBackBuffer = m_pBackBuffer;
 		}
 		else if (name == "numberOfViews")
 		{

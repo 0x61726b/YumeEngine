@@ -34,12 +34,18 @@
 namespace YumeEngine
 {
 	YumeRenderer::YumeRenderer()
-		: m_pCurrentCaps(0)
+		: m_pCurrentCaps(0),
+		m_pRealCapabilities(0)
 	{
 	}
 	YumeRenderer::~YumeRenderer()
 	{
+		Shutdown();
 
+		YumeAPIDelete m_pRealCapabilities;
+		m_pRealCapabilities = 0;
+
+		m_pCurrentCaps = 0;
 	}
 	const YumeString& YumeRenderer::GetName()
 	{
@@ -49,6 +55,67 @@ namespace YumeEngine
 	{
 		return 0;
 	}
+	//---------------------------------------------------------------------
+	void YumeRenderer::UpdateAllRenderTargets(bool swapBuffers)
+	{
+		RenderTargetPriorityMap::iterator itarg, itargend;
+		itargend = mPrioritisedRenderTargets.end();
+		for (itarg = mPrioritisedRenderTargets.begin(); itarg != itargend; ++itarg)
+		{
+			if (itarg->second->IsActive() && itarg->second->IsAutoUpdated())
+				itarg->second->Update(swapBuffers);
+		}
+	}
+	//---------------------------------------------------------------------
+	void YumeRenderer::PresentAllBuffers(bool waitForVsnyc)
+	{
+		RenderTargetPriorityMap::iterator itarg, itargend;
+		itargend = mPrioritisedRenderTargets.end();
+		for (itarg = mPrioritisedRenderTargets.begin(); itarg != itargend; ++itarg)
+		{
+			if (itarg->second->IsActive() && itarg->second->IsAutoUpdated())
+				itarg->second->Present(waitForVsnyc);
+		}
+	}
+	//---------------------------------------------------------------------
+	void YumeRenderer::Shutdown()
+	{
+		YumeRenderTarget* primary = 0;
+		for (RenderTargetMap::iterator it = mRenderTargets.begin(); it != mRenderTargets.end(); ++it)
+		{
+			if (!primary && it->second->IsPrimary())
+				primary = it->second;
+			else
+				YumeAPIDelete it->second;
+		}
+		YumeAPIDelete primary;
+		mRenderTargets.clear();
+
+		mPrioritisedRenderTargets.clear();
+	}
+	//---------------------------------------------------------------------
+	YumeRenderTarget* YumeRenderer::GetRenderTarget(const YumeString & name)
+	{
+		RenderTargetMap::iterator it = mRenderTargets.find(name);
+		YumeRenderTarget *ret = NULL;
+
+		if (it != mRenderTargets.end())
+		{
+			ret = it->second;
+		}
+
+		return ret;
+	}
+	//---------------------------------------------------------------------
+	void YumeRenderer::AttachRenderTarget(YumeRenderTarget& target)
+	{
+		assert(target.GetPriority() < 10);
+
+		mRenderTargets.insert(RenderTargetMap::value_type(target.GetName(), &target));
+		mPrioritisedRenderTargets.insert(
+			RenderTargetPriorityMap::value_type(target.GetPriority(), &target));
+	}
+	//---------------------------------------------------------------------
 }
 
 
