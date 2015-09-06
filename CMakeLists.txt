@@ -21,7 +21,7 @@ include(CheckCXXCompilerFlag)
 
 OPTION(YUME_STATIC "Static Library" ON)
 
-include_directories("${CMAKE_SOURCE_DIR}/Yume/Include")
+include_directories("${CMAKE_SOURCE_DIR}/Engine/Include")
 include_directories("${CMAKE_BINARY_DIR}/Include")
 
 if (CMAKE_BUILD_TYPE STREQUAL "")
@@ -117,7 +117,7 @@ INCLUDE(CMakeBuildSettings)
 
 ADD_SUBDIRECTORY(Samples)
 
-ADD_SUBDIRECTORY(Yume)
+ADD_SUBDIRECTORY(Engine)
 
 ADD_SUBDIRECTORY(Renderers)
 

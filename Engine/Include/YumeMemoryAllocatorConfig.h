@@ -97,6 +97,13 @@ namespace YumeEngine
 #define YumeAPINew new
 #define YumeAPIDelete delete
 
+#if YUME_DEBUG_MODE
+#	define YUME_DEALLOC(ptr, category) ::YumeEngine::YumeCategorisedAllocPolicy<category>::deallocateBytes((void*)ptr)
+#	define YUME_ALLOC_T(T, count, category) static_cast<T*>(::YumeEngine::YumeCategorisedAllocPolicy<category>::allocateBytes(sizeof(T)*(count)))
+#else
+#	define YUME_DEALLOC(ptr, category) ::YumeEngine::YumeCategorisedAllocPolicy<category>::deallocateBytes((void*)ptr)
+#endif
+
 //---------------------------------------------------------------------------------
 #include "YumeHeaderSuffix.h"
 //---------------------------------------------------------------------------------

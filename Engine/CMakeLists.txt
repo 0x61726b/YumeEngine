@@ -34,6 +34,18 @@ set( HEADER_FILES
   Include/YumeConfigOption.h
   Include/YumeWindowMessageListener.h
   Include/YumeViewport.h
+  Include/YumeMath.h
+  Include/YumeVector2.h
+  Include/YumeVector3.h
+  Include/YumeVector4.h
+  Include/YumeMatrix3.h
+  Include/YumeMatrix4.h
+  Include/YumePlaneBoundedVolume.h
+  Include/YumeQuaternion.h
+  Include/YumePlane.h
+  Include/YumeSphere.h
+  Include/YumeRay.h
+  Include/YumeAxisAlignedBox.h
 	${CMAKE_BINARY_DIR}/Include/YumeBuildSettings.h)
 
 set( SOURCE_FILES 
@@ -52,7 +64,17 @@ set( SOURCE_FILES
   Src/YumeLogManager.cpp
   Src/YumeCentrum.cpp
   Src/YumeWindowMessageListener.cpp
-  Src/YumeViewport.cpp )
+  Src/YumeViewport.cpp
+  Src/YumeVector2.cpp
+  Src/YumeVector3.cpp
+  Src/YumeVector4.cpp
+  Src/YumeMatrix3.cpp
+  Src/YumeMatrix4.cpp
+  Src/YumeQuaternion.cpp
+  Src/YumePlane.cpp
+  Src/YumeMath.cpp
+  Src/YumeAxisAlignedBox.cpp )
+
 
 
 
@@ -90,5 +112,5 @@ use_precompiled_header(YUME
 
 
 install(FILES ${HEADER_FILES}
-  DESTINATION Include/Yume
+  DESTINATION Include/Engine
 )
