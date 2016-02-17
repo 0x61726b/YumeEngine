@@ -1,85 +1,100 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2)
-set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
+################################################################################
+#Yume Engine MIT License (MIT)
 
-IF("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.4)
-  cmake_policy(SET CMP0003 NEW)
-ENDIF("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.4)
+# Copyright (c) 2015 arkenthera
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# File : CMakeLists.txt
+# Date : 8.27.2015
+# Comments :
+################################################################################
 
-PROJECT(YumeEngine)
+cmake_minimum_required(VERSION 2.8.12.2)
 
-set(CMAKE_MODULE_PATH 
+set(YUME "YumeEngine")
+
+PROJECT(${YUME})
+
+set(CMAKE_MODULE_PATH
   "${CMAKE_SOURCE_DIR}/CMake"
-  "${CMAKE_SOURCE_DIR}/CMake/Utils" 
+  "${CMAKE_SOURCE_DIR}/CMake/Utils"
   "${CMAKE_SOURCE_DIR}/CMake/Packages"
 )
 
+#Include path variables
+include(Paths)
 
-SET(YUME_TEMPLATES_DIR "${CMAKE_SOURCE_DIR}/CMake/Templates")
+#Use folders because they're cool looking!
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-include(CMakeDependentOption)
-include(CheckCXXCompilerFlag)
-
-OPTION(YUME_STATIC "Static Library" ON)
-
-include_directories("${CMAKE_SOURCE_DIR}/Engine/Include")
-include_directories("${CMAKE_BINARY_DIR}/Include")
-
-if (CMAKE_BUILD_TYPE STREQUAL "")
-  # CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up
-  # differentiation between debug and release builds.
-  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
-endif ()
-
-include(CheckTypeSize)
-CHECK_TYPE_SIZE("void*" YUME_PTR_SIZE BUILTIN_TYPES_ONLY)
-if (YUME_PTR_SIZE EQUAL 8)
-  set(YUME_PLATFORM_X64 TRUE)
-else ()
-  set(YUME_PLATFORM_X64 FALSE)
-endif ()
+# Determine the platform.
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
+  set(OS_MACOSX 1)
+  set(OS_POSIX 1)
+elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+  set(OS_LINUX 1)
+  set(OS_POSIX 1)
+elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+  set(OS_WINDOWS 1)
+endif()
 
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
+#Determine architecture
+if(NOT DEFINED PROJECT_ARCH)
+  if(CMAKE_SIZEOF_VOID_P MATCHES 8)
+    set(PROJECT_ARCH "x86_64")
+  else()
+    set(PROJECT_ARCH "x86")
+  endif()
+
+  if(OS_MACOSX)
+    # PROJECT_ARCH should be specified on Mac OS X.
+    message(WARNING "No PROJECT_ARCH value specified, using ${PROJECT_ARCH}")
+  endif()
+endif()
+
+
+if(OS_LINUX)
   check_cxx_compiler_flag(-msse YUME_GCC_HAS_SSE)
   if (YUME_GCC_HAS_SSE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
   endif ()
-  # This is a set of sensible warnings that provide meaningful output
-  set(YUME_WARNING_FLAGS "-Wno-deprecated -Wall -Wctor-dtor-privacy -Winit-self -Wno-overloaded-virtual -Wcast-qual -Wwrite-strings -Wextra -Wno-unused-parameter -pedantic -Wshadow -Wno-missing-field-initializers -Wno-long-long")
-  if (NOT APPLE)
-      set(YUME_WARNING_FLAGS "${OGRE_WARNING_FLAGS} -Wno-unused-but-set-parameter")
-  endif ()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${YUME_WARNING_FLAGS}")
-endif ()
-if (MSVC)
-  if (CMAKE_BUILD_TOOL STREQUAL "nmake")
-    # set variable to state that we are using nmake makefiles
-	set(NMAKE TRUE)
-  endif ()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
-  # Enable intrinsics on MSVC in debug mode
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Oi")
-  if (CMAKE_CL_64)
-    # Visual Studio bails out on debug builds in 64bit mode unless
-	# this flag is set...
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /bigobj")
-	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj")
-  endif ()
-endif()
 
-if ((CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX) AND NOT MINGW)
+  check_cxx_compiler_flag(-msse YUME_GCC_HAS_SSE)
+  if (YUME_GCC_HAS_SSE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
+  endif ()
+
+  set(YUME_WARNING_FLAGS "-Wno-deprecated -Wall -Wctor-dtor-privacy -Winit-self -Wno-overloaded-virtual -Wcast-qual -Wwrite-strings -Wextra -Wno-unused-parameter -pedantic -Wshadow -Wno-missing-field-initializers -Wno-long-long")
+  # This is a set of sensible warnings that provide meaningful output
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${YUME_WARNING_FLAGS}")
+
+  add_definitions(-fPIC)
+endif ()
+
+if( OS_LINUX AND OS_MACOSX)
   # Test for GCC visibility
   include(CheckCXXCompilerFlag)
   check_cxx_compiler_flag(-fvisibility=hidden YUME_GCC_VISIBILITY)
   if (YUME_GCC_VISIBILITY)
     # determine gcc version
-    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion 
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
       OUTPUT_VARIABLE YUME_GCC_VERSION)
     message(STATUS "Detected g++ ${OGRE_GCC_VERSION}")
     message(STATUS "Enabling GCC visibility flags")
     set(YUME_GCC_VISIBILITY_FLAGS "-DYUME_GCC_VISIBILITY -fvisibility=hidden")
     set(XCODE_ATTRIBUTE_GCC_SYMBOLS_PRIVATE_EXTERN "YES")
-  
+
     # check if we can safely add -fvisibility-inlines-hidden
     string(TOLOWER "${CMAKE_BUILD_TYPE}" YUME_BUILD_TYPE)
     if (YUME_BUILD_TYPE STREQUAL "debug" AND YUME_GCC_VERSION VERSION_LESS "4.2")
@@ -89,22 +104,41 @@ if ((CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX) AND NOT MINGW)
         set(XCODE_ATTRIBUTE_GCC_INLINES_ARE_PRIVATE_EXTERN "YES")
     endif ()
   endif (YUME_GCC_VISIBILITY)
-  
-  # Fix x64 issues on Linux
-  if(YUME_PLATFORM_X64 AND NOT APPLE)
-    add_definitions(-fPIC)
-  endif()  
-endif ((CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX) AND NOT MINGW)
 
 
-INCLUDE(FindLibraries)
+endif()
+
+set(LOG4CPLUS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(LOG4CPLUS_BUILD_LOGGINGSERVER OFF CACHE BOOL "" FORCE)
+
+if(OS_WINDOWS)
+  find_package(DirectX)
+
+  if(DirectX_FOUND)
+    include_directories(${DirectX_INCLUDE_DIR})
+    link_directories(${DirectX_LIBRARY_DIRS})
+  endif()
+
+  SET(YUME_COMPILER_FLAGS "/EHsc /Zi /GF /Gm /W4 /wd\"4100\" /wd\"4127\" /wd\"4244\" /wd\"4512\" /wd\"4701\" /wd\"4702\" /wd\"4996\" /wd\"4251\" /wd\"4275\" /wd\"4005\" /wd\"4267\"")
+  SET(YUME_COMPILER_FLAGS_DEBUG "/MDd /RTC1 /Od")
+  set(YUME_COMPILER_FLAGS_RELEASE  "/MT /O2 /Ob2 /GF /DEBUG")
+  set(YUME_LINKER_FLAGS_DEBUG      "/DEBUG")
+  set(YUME_EXE_LINKER_FLAGS        "/MANIFEST:NO")
+  add_definitions(-DWIN32 -D_WIN32 -D_WINDOWS -DUNICODE -D_UNICODE -DNOMINMAX -D_WIN32_WINNT=0x602)
+endif()
+
+include(Macros)
+include(CMakeDependentOption)
 
 CMAKE_DEPENDENT_OPTION(YUME_BUILD_DIRECT3D11 "Build Direct3D 11" ON "WIN32;DirectX_D3D11_FOUND" OFF)
 CMAKE_DEPENDENT_OPTION(YUME_BUILD_DIRECT3D12 "Build Direct3D 12" ON "WIN32;DirectX_D3D12_FOUND" OFF)
 CMAKE_DEPENDENT_OPTION(YUME_BUILD_OPENGL "Build OpenGL" ON "OPENGL_FOUND" OFF)
+option(YUME_USE_PCH "Use Precompiled header" OFF)
 
 set(YUME_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-set(YUME_LIBRARIES YUME)
+set(YUME_LIBRARIES ${YUME})
+
+yume_check_boost()
 
 
 
@@ -115,11 +149,51 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${YUME_BINARY_DIR}/bin")
 
 INCLUDE(CMakeBuildSettings)
 
-ADD_SUBDIRECTORY(Samples)
+set(CMAKE_C_FLAGS                     "${YUME_COMPILER_FLAGS} ${YUME_C_COMPILER_FLAGS}")
+set(CMAKE_C_FLAGS_DEBUG               "${YUME_COMPILER_FLAGS_DEBUG} ${YUME_C_COMPILER_FLAGS_DEBUG}")
+set(CMAKE_C_FLAGS_RELEASE             "${YUME_COMPILER_FLAGS_RELEASE} ${YUME_C_COMPILER_FLAGS_RELEASE}")
+set(CMAKE_CXX_FLAGS                   "${YUME_COMPILER_FLAGS} ${YUME_CXX_COMPILER_FLAGS}")
+set(CMAKE_CXX_FLAGS_DEBUG             "${YUME_COMPILER_FLAGS_DEBUG} ${YUME_CXX_COMPILER_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_RELEASE           "${YUME_COMPILER_FLAGS_RELEASE} ${YUME_CXX_COMPILER_FLAGS_RELEASE}")
+set(CMAKE_EXE_LINKER_FLAGS            "${YUME_LINKER_FLAGS} ${YUME_EXE_LINKER_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG      "${YUME_LINKER_FLAGS_DEBUG} ${YUME_EXE_LINKER_FLAGS_DEBUG}")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE    "${YUME_LINKER_FLAGS_RELEASE} ${YUME_EXE_LINKER_FLAGS_RELEASE}")
+set(CMAKE_SHARED_LINKER_FLAGS         "${YUME_LINKER_FLAGS} ${YUME_SHARED_LINKER_FLAGS}")
+set(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${YUME_LINKER_FLAGS_DEBUG} ${YUME_SHARED_LINKER_FLAGS_DEBUG}")
+set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${YUME_LINKER_FLAGS_RELEASE} ${YUME_SHARED_LINKER_FLAGS_RELEASE}")
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DBOOST_ALL_NO_LIB=1")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_ALL_NO_LIB=1")
+
 
 ADD_SUBDIRECTORY(Engine)
-
 ADD_SUBDIRECTORY(Renderers)
+ADD_SUBDIRECTORY(Samples)
 
-ADD_SUBDIRECTORY(CMake)
+message(STATUS "*** CONFIGURATION SETTINGS ***")
+message(STATUS "Generator:                    ${CMAKE_GENERATOR}")
+message(STATUS "Platform:                     ${CMAKE_SYSTEM_NAME}")
+message(STATUS "Project architecture:         ${PROJECT_ARCH}")
 
+
+if(${CMAKE_GENERATOR} STREQUAL "Ninja" OR ${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
+  message(STATUS "Build type:                   ${CMAKE_BUILD_TYPE}")
+endif()
+
+message(STATUS "Standard libraries:           ${LIBRARIES}")
+
+get_directory_property(DEFINITIONS COMPILE_DEFINITIONS)
+message(STATUS "Compiler definitions:         ${DEFINITIONS}")
+
+message(STATUS "C_FLAGS:                      ${CMAKE_C_FLAGS}")
+message(STATUS "C_FLAGS_DEBUG:                ${CMAKE_C_FLAGS_DEBUG}")
+message(STATUS "C_FLAGS_RELEASE:              ${CMAKE_C_FLAGS_RELEASE}")
+message(STATUS "CXX_FLAGS:                    ${CMAKE_CXX_FLAGS}")
+message(STATUS "CXX_FLAGS_DEBUG:              ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "CXX_FLAGS_RELEASE:            ${CMAKE_CXX_FLAGS_RELEASE}")
+message(STATUS "EXE_LINKER_FLAGS:             ${CMAKE_EXE_LINKER_FLAGS}")
+message(STATUS "EXE_LINKER_FLAGS_DEBUG:       ${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
+message(STATUS "EXE_LINKER_FLAGS_RELEASE:     ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
+message(STATUS "SHARED_LINKER_FLAGS:          ${CMAKE_SHARED_LINKER_FLAGS}")
+message(STATUS "SHARED_LINKER_FLAGS_DEBUG:    ${CMAKE_SHARED_LINKER_FLAGS_DEBUG}")
+message(STATUS "SHARED_LINKER_FLAGS_RELEASE:  ${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")

@@ -1,0 +1,4 @@
+[submodule "Engine/Source/3rdParty/log4cplus"]
+	path = Engine/Source/3rdParty/log4cplus
+	url = https://github.com/log4cplus/log4cplus
+	branch = master

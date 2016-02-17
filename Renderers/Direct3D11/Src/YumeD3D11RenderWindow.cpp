@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 Alperen Gezer
+/// Copyright (c) 2015 arkenthera
 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,9 @@
 #include "YumeD3D11RenderWindow.h"
 #include "YumeD3D11Renderer.h"
 #include "YumeD3D11Adapter.h"
-#include "YumeWindowMessageListener.h"
+#include "Core/YumeWindowMessageListener.h"
 
+#include "Logging/logging.h"
 namespace YumeEngine
 {
 	///--------------------------------------------------------------------------------
@@ -145,10 +146,10 @@ namespace YumeEngine
 			}
 			WNDCLASS wc = { 0, YumeWindowEvents::_WndProc, 0, 0, hInst,
 				LoadIcon(0, IDI_APPLICATION), LoadCursor(NULL, IDC_ARROW),
-				(HBRUSH)GetStockObject(BLACK_BRUSH), 0, "OgreD3D11Wnd" };
+				(HBRUSH)GetStockObject(BLACK_BRUSH), 0, L"YumeD3D11Wnd" };
 			RegisterClass(&wc);
 			mIsExternal = false;
-			mHwnd = CreateWindow("OgreD3D11Wnd", title.c_str(), dwStyle,
+			mHwnd = CreateWindowA("YumeD3D11Wnd", title.c_str(), dwStyle,
 				m_iLeft, m_iTop, m_uiWidth, m_uiHeight, 0, 0, hInst, this);
 
 			YumeWindowEvents::AddRenderWindow(this);
@@ -170,10 +171,10 @@ namespace YumeEngine
 		m_bIsFullScreen = FullScreen;
 		m_uiColourDepth = colourDepth;
 
-		YumeLogManager::Get().stream()
-			<< "D3D11 : Created D3D11 Rendering Window '"
+		YUMELOG_DEBUG(
+			"D3D11 : Created D3D11 Rendering Window '"
 			<< m_sName << "' : " << m_uiWidth << "x" << m_uiHeight
-			<< ", " << m_uiColourDepth << "bpp";
+			<< ", " << m_uiColourDepth << "bpp");
 
 		CreateDirect3D11Resources();
 
@@ -227,7 +228,7 @@ namespace YumeEngine
 
 			if (FAILED(hr))
 			{
-				YumeLogManager::Get().Log("Can't get DXGI device from device!");
+				YUMELOG_DEBUG("Can't get DXGI device from device!");
 			}
 
 			hr = m_pDXGIFactory->CreateSwapChain(pDXGIDevice, &m_pDXGISwapChainDesc, &m_pSwapChain);
@@ -242,14 +243,14 @@ namespace YumeEngine
 
 			if (FAILED(hr))
 			{
-				YumeLogManager::Get().Log("Unable to create Swap Chain!");
+				YUMELOG_DEBUG("Unable to create Swap Chain!");
 			}
 
 			hr = m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&m_pBackBuffer);
 
 			if (FAILED(hr))
 			{
-				YumeLogManager::Get().Log("Unable to create the back buffer from swap chain!");
+				YUMELOG_DEBUG("Unable to create the back buffer from swap chain!");
 			}
 
 			D3D11_TEXTURE2D_DESC backBufferDesc;
@@ -266,7 +267,7 @@ namespace YumeEngine
 			if (FAILED(hr))
 			{
 				YumeString errorDescription = m_Device.getErrorDescription();
-				YumeLogManager::Get().Log("Unable to create a render target view " + errorDescription);
+				YUMELOG_DEBUG("Unable to create a render target view " + errorDescription);
 			}
 
 
@@ -291,7 +292,7 @@ namespace YumeEngine
 			if (FAILED(hr) || m_Device.isError())
 			{
 				YumeString errorDescription = m_Device.getErrorDescription(hr);
-				YumeLogManager::Get().Log("Unable to create a depth texture" + errorDescription);
+				YUMELOG_DEBUG("Unable to create a depth texture" + errorDescription);
 			}
 			D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
 			ZeroMemory(&descDSV, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
@@ -306,7 +307,7 @@ namespace YumeEngine
 			if (FAILED(hr))
 			{
 				YumeString errorDescription = m_Device.getErrorDescription();
-				YumeLogManager::Get().Log("Unable to create depth stencil view! " + errorDescription);
+				YUMELOG_DEBUG("Unable to create depth stencil view! " + errorDescription);
 			}
 
 		}

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 Alperen Gezer
+/// Copyright (c) 2015 arkenthera
 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +26,19 @@
 /// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
+#include "Core/YumeHeaders.h"
 
 #include "YumeD3D11Renderer.h"
-#include "YumeD3D11Required.h"
 #include "YumeD3D11AdapterList.h"
 #include "YumeD3D11Adapter.h"
 #include "YumeD3D11AdapterInfo.h"
 #include "YumeD3D11AdapterInfoList.h"
 #include "YumeD3D11RenderWindow.h"
 
-#include "YumeLogManager.h"
 
-#include "YumeCentrum.h"
+
+#include "Core/YumeCentrum.h"
+#include "Logging/logging.h"
 //Arrrr
 
 
@@ -45,24 +46,29 @@ namespace YumeEngine
 {
 	extern "C" void YumeD3DApiExport dllStartPlugin(void) throw()
 	{
-		HINSTANCE hInst = GetModuleHandle("YUME_DIRECT3D11.dll");
+		YUMELOG_DEBUG("Loading Yume_Direct3D11.dll...");
+
+		HINSTANCE hInst = GetModuleHandle(L"YUME_DIRECT3D11.dll");
 
 		YumeRenderer* r = new YumeD3D11Renderer(hInst);
 
-		YumeCentrum::Get().AddRenderer(r);
+		if(!gYume)
+			return;
+
+
+		gYume->pYume->AddRenderer(r);
 	}
 	//---------------------------------------------------------------------	
 	extern "C" void YumeD3DApiExport dllStop(void) throw()
 	{
-		
-		YumeRenderer* renderer = YumeCentrum::Get().GetRenderer();
+		YumeRenderer* renderer = gYume->pYume->GetRenderer();
 		delete renderer;
 	}
 	//---------------------------------------------------------------------
 	YumeD3D11Renderer::YumeD3D11Renderer(HINSTANCE hInst)
 		: m_Device(0)
 	{
-		YumeLogManager::Get().Log("D3D11 Renderer Initialization");
+		
 
 		m_hInstance = hInst;
 
@@ -73,8 +79,8 @@ namespace YumeEngine
 	//---------------------------------------------------------------------
 	YumeD3D11Renderer::~YumeD3D11Renderer()
 	{
+		YUMELOG_DEBUG("Direct3D 11 is being shutdown...");
 		Shutdown();
-		YumeLogManager::Get().Log("Direct3D 11 getting destroyed");
 	}
 	//---------------------------------------------------------------------
 	void YumeD3D11Renderer::Init()
@@ -88,7 +94,7 @@ namespace YumeEngine
 		hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&m_pDXGIFactory);
 		if (FAILED(hr))
 		{
-			YumeLogManager::Get().Log(
+			YUMELOG_DEBUG(
 				"Failed to create Direct3D11 DXGIFactory1 D3D11RenderSystem::D3D11RenderSystem");
 		}
 		m_AdapterList = NULL;
@@ -109,7 +115,7 @@ namespace YumeEngine
 			std::stringstream error;
 			/*error << "Failed to create Direct3D11 object." << std::endl << DXGetErrorDescription(hr) << std::endl;*/
 
-			YumeLogManager::Get().Log("Error creating D3D11 device");
+			YUMELOG_DEBUG("Error creating D3D11 device");
 		}
 
 		m_Device = YumeD3D11Device(device);
@@ -256,7 +262,7 @@ namespace YumeEngine
 			if (m_Device.isError())
 			{
 				YumeString errorDescription = m_Device.getErrorDescription();
-				YumeLogManager::Get().Log("Can't clear immediate context state!");
+				YUMELOG_DEBUG("Can't clear immediate context state!");
 			}
 
 
@@ -270,7 +276,7 @@ namespace YumeEngine
 			if (m_Device.isError())
 			{
 				YumeString errorDescription = m_Device.getErrorDescription();
-				YumeLogManager::Get().Log("Can't set render targets!");
+				YUMELOG_DEBUG("Can't set render targets!");
 			}
 		}
 		// TODO - support MRT
@@ -284,7 +290,7 @@ namespace YumeEngine
 	//---------------------------------------------------------------------
 	YumeRenderWindow* YumeD3D11Renderer::Initialize(bool autoCreate, const YumeString& Title)
 	{
-		YumeLogManager::Get().Log("Initialize!");
+		YUMELOG_DEBUG("Initializing D3D11 Renderer!");
 		YumeConfigOption* optVideoMode;
 		m_CurrAdapter = 0;
 		YumeD3D11AdapterInfo* videoMode;
@@ -333,7 +339,7 @@ namespace YumeEngine
 
 		opt = m_Options.find("Information Queue Exceptions Bottom Level");
 		if (opt == m_Options.end())
-			YumeLogManager::Get().Log("Can't find option: Information Queue Exceptions Bottom Level");
+			YUMELOG_DEBUG("Can't find option: Information Queue Exceptions Bottom Level");
 		YumeString infoQType = opt->second.currentValue;
 
 		if ("No information queue exceptions" == infoQType)
@@ -359,7 +365,7 @@ namespace YumeEngine
 
 		opt = m_Options.find("Driver type");
 		if (opt == m_Options.end())
-			YumeLogManager::Get().Log("Can't find option:Driver type");
+			YUMELOG_DEBUG("Can't find option:Driver type");
 		YumeString driverTypeName = opt->second.currentValue;
 
 		m_DriverType = HARDWARE;
@@ -401,7 +407,7 @@ namespace YumeEngine
 			0,
 			0)))
 		{
-			YumeLogManager::Get().Log("Failed to create D3D11 Device");
+			YUMELOG_DEBUG("Failed to create D3D11 Device");
 		}
 
 		if (m_DriverType != HARDWARE)
@@ -436,7 +442,7 @@ namespace YumeEngine
 			bool fullScreen;
 			opt = m_Options.find("Full Screen");
 			if (opt == m_Options.end())
-				YumeLogManager::Get().Log("Can't find full-screen options!");
+				YUMELOG_DEBUG("Can't find full-screen options!");
 			fullScreen = opt->second.currentValue == "Yes";
 
 			YumeD3D11AdapterInfo* videoMode = NULL;
@@ -445,7 +451,7 @@ namespace YumeEngine
 
 			opt = m_Options.find("Video Mode");
 			if (opt == m_Options.end())
-				YumeLogManager::Get().Log("Can't find adapter info options!");
+				YUMELOG_DEBUG("Can't find adapter info options!");
 
 			// The string we are manipulating looks like this :width x height @ colourDepth
 			// Pull out the colour depth by getting what comes after the @ and a space
@@ -474,13 +480,13 @@ namespace YumeEngine
 			}
 
 			if (!videoMode)
-				YumeLogManager::Get().Log("Can't find requested video mode!");
+				YUMELOG_DEBUG("Can't find requested video mode!");
 
 			// sRGB window option
 			bool hwGamma = false;
 			opt = m_Options.find("sRGB Gamma Conversion");
 			if (opt == m_Options.end())
-				YumeLogManager::Get().Log("Can't find sRGB options!");
+				YUMELOG_DEBUG("Can't find sRGB options!");
 			/*hwGamma = opt->second.currentValue == "Yes";*/
 			UINT fsaa = 0;
 			YumeString fsaaHint;
@@ -508,9 +514,8 @@ namespace YumeEngine
 				mWBuffer = false;
 			}
 		}
-		YumeLogManager::Get().Log("***************************************");
-		YumeLogManager::Get().Log("*** D3D11 : Subsystem Initialized OK ***");
-		YumeLogManager::Get().Log("***************************************");
+		
+		YUMELOG_DEBUG("D3D11 renderer is ready!");
 
 		YumeRenderer::Initialize(autoCreate);
 
@@ -629,6 +634,8 @@ namespace YumeEngine
 		rsc->setCapability(RSC_VERTEX_BUFFER_INSTANCE_DATA);
 		rsc->setCapability(RSC_CAN_GET_COMPILED_SHADER_BUFFER);
 
+		rsc->Log();
+
 		return rsc;
 	}
 	//---------------------------------------------------------------------
@@ -640,11 +647,11 @@ namespace YumeEngine
 		// was fullscreen
 		if (m_CurrentWindow && m_CurrentWindow->IsFullScreen())
 		{
-			YumeLogManager::Get().Log("Can't create a window when there is a fullscreen one!");
+			YUMELOG_DEBUG("Can't create a window when there is a fullscreen one!");
 		}
 		if (m_CurrentWindow && fullScreen)
 		{
-			YumeLogManager::Get().Log("Can't create a window when there is a fullscreen one! !!");
+			YUMELOG_DEBUG("Can't create a window when there is a fullscreen one! !!");
 		}
 
 		// Log a message
@@ -663,7 +670,7 @@ namespace YumeEngine
 			{
 				ss << it->first << "=" << it->second << " ";
 			}
-			YumeLogManager::Get().Log(ss.str());
+			YUMELOG_DEBUG(ss.str());
 		}
 
 		YumeString msg;
@@ -672,7 +679,7 @@ namespace YumeEngine
 		// sam name as the one supplied
 		if (mRenderTargets.find(name) != mRenderTargets.end())
 		{
-			YumeLogManager::Get().Log("Can't create a window because there is an existing one with the same name");
+			YUMELOG_DEBUG("Can't create a window because there is an existing one with the same name");
 		}
 
 		YumeRenderWindow* win = new YumeD3D11RenderWindow(m_hInstance, m_Device, m_pDXGIFactory);

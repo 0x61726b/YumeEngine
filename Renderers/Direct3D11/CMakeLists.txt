@@ -1,5 +1,5 @@
-# Configure Direct3D11 
-set( HEADER_FILES 
+# Configure Direct3D11
+set( HEADER_FILES
 	Include/YumeD3D11Required.h
 	Include/YumeD3D11Device.h
 	Include/YumeD3D11AdapterInfo.h
@@ -10,7 +10,7 @@ set( HEADER_FILES
 	Include/YumeD3D11Renderer.h
 	)
 
-set( SOURCE_FILES 
+set( SOURCE_FILES
 	Src/YumeD3D11Device.cpp
 	Src/YumeD3D11AdapterInfo.cpp
 	Src/YumeD3D11AdapterList.cpp
@@ -21,29 +21,25 @@ set( SOURCE_FILES
     )
 
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${DirectX_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Include ${YUME_INCLUDE_DIR} ${DirectX_INCLUDE_DIR})
 link_directories(${DirectX_LIBRARY_DIR})
+include_directories(${YUME_BOOST_PATH})
 add_definitions(-D_USRDLL)
 
-if(YUME_STATIC)
-  set(YUME_LIB_TYPE "STATIC")
-ELSE()
+add_library(YUME_DIRECT3D11 SHARED ${SOURCE_FILES} ${HEADER_FILES})
 
-  set(YUME_LIB_TYPE "SHARED")
-endif()
-message("${YUME_LIB_TYPE}")
-add_library(YUME_DIRECT3D11 ${YUME_LIB_TYPE} ${SOURCE_FILES} ${HEADER_FILES})
+set_target_properties(YUME_DIRECT3D11 PROPERTIES FOLDER "Renderers")
 
 target_link_libraries(YUME_DIRECT3D11
-  YUME
+  ${YUME}
   ${DirectX_D3D11_LIBRARIES}
 )
-
-if (NOT YUME_STATIC)
-  set_target_properties(YUME_DIRECT3D11 PROPERTIES
-    COMPILE_DEFINITIONS YUME_D3D_EXPORT
-  )
-endif()
-set_property(TARGET YUME_DIRECT3D11 APPEND PROPERTY DEBUG_POSTFIX "_d")
-install(FILES ${HEADER_FILES} DESTINATION include/Yume/Renderers/Direct3D11)
-
+set_target_properties(YUME_DIRECT3D11 PROPERTIES
+	COMPILE_DEFINITIONS YUME_D3D_EXPORT
+)
+set_target_properties( YUME_DIRECT3D11
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
+)

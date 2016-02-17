@@ -2,14 +2,18 @@
 //This is a file from Arkengine
 //
 //
-//Copyright (c) Alperen Gezer.All rights reserved.
+//Copyright (c) arkenthera.All rights reserved.
 //
 //BasicRenderWindow.cpp
 //--------------------------------------------------------------------------------
 
-#include "YumeHeaders.h"
+#include "Core/YumeHeaders.h"
 
 #include "BasicRenderWindow.h"
+
+#include "Logging/logging.h"
+
+#include <log4cplus/initializer.h>
 
 namespace YumeSamples
 {
@@ -24,7 +28,7 @@ namespace YumeSamples
 
 	void BasicRenderWindow::Setup()
 	{
-		m_Centrum = YumeAPINew YumeEngine::YumeCentrum();
+		m_Centrum = YumeAPINew YumeEngine::Yume();
 		m_Window = m_Centrum->Initialize(true);
 		
 		if(m_Window)
@@ -48,6 +52,5 @@ int main()
 	YumeSamples::BasicRenderWindow b;
 	b.Setup();
 
-	
 	return 0;
 }

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 Alperen Gezer
+/// Copyright (c) 2015 arkenthera
 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,10 @@
 #define __YumeD3D11Renderer_h__
 //--------------------------------------------------------------------------------
 #include "YumeD3D11Required.h"
-#include "YumeRenderer.h"
+#include "Graphics/YumeRenderer.h"
 #include "YumeD3D11Device.h"
+
+
 //--------------------------------------------------------------------------------
 namespace YumeEngine
 {

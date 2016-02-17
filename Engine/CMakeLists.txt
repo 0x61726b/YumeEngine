@@ -1,116 +1,21 @@
+################################################################################
+#Yume Engine MIT License (MIT)
+
+# Copyright (c) 2015 arkenthera
 #
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-PROJECT(YUME)
-include(PrecompiledHeader)
+# File : CMakeLists.txt
+# Date : 8.27.2015
+# Comments :
+################################################################################
 
-
-set( HEADER_FILES 
-	Include/YumeConfig.h
-	Include/YumeHeaders.h
-	Include/YumePlatform.h
-  Include/YumeRequired.h
-  Include/Yume.h
-  Include/YumeCentrum.h
-  Include/YumeCommon.h
-  Include/YumeHeaderSuffix.h
-  Include/YumeStdHeaders.h
-  Include/YumeHeaderPrefix.h
-  Include/YumeMallocObject.h
-  Include/YumeMemoryAllocatorNed.h
-  Include/YumeMemoryAllocatorNedPooling.h
-  Include/YumeMemoryAllocatorSTL.h
-  Include/YumeMemoryAllocatorConfig.h
-  Include/YumeRenderer.h
-  Include/YumeRenderTarget.h
-  Include/YumeRenderWindow.h
-  Include/YumeRendererCapabilities.h
-  Include/YumeString.h
-  Include/YumeStringVector.h
-  Include/YumeStringConverter.h
-  Include/YumeLog.h
-  Include/YumeLogManager.h
-  Include/YumeSingleton.h
-  Include/YumeConfigOption.h
-  Include/YumeWindowMessageListener.h
-  Include/YumeViewport.h
-  Include/YumeMath.h
-  Include/YumeVector2.h
-  Include/YumeVector3.h
-  Include/YumeVector4.h
-  Include/YumeMatrix3.h
-  Include/YumeMatrix4.h
-  Include/YumePlaneBoundedVolume.h
-  Include/YumeQuaternion.h
-  Include/YumePlane.h
-  Include/YumeSphere.h
-  Include/YumeRay.h
-  Include/YumeAxisAlignedBox.h
-	${CMAKE_BINARY_DIR}/Include/YumeBuildSettings.h)
-
-set( SOURCE_FILES 
-	Src/Pch.cpp
-  Src/YumeMemoryAllocatorNed.cpp
-  Src/YumeMallocObject.cpp
-  Src/YumeMemoryAllocatorNedPooling.cpp
-  Src/YumeCommon.cpp
-  Src/YumeRenderer.cpp
-  Src/YumeRenderTarget.cpp
-  Src/YumeRenderWindow.cpp
-  Src/YumeRendererCapabilities.cpp
-  Src/YumeString.cpp
-  Src/YumeStringConverter.cpp
-  Src/YumeLog.cpp
-  Src/YumeLogManager.cpp
-  Src/YumeCentrum.cpp
-  Src/YumeWindowMessageListener.cpp
-  Src/YumeViewport.cpp
-  Src/YumeVector2.cpp
-  Src/YumeVector3.cpp
-  Src/YumeVector4.cpp
-  Src/YumeMatrix3.cpp
-  Src/YumeMatrix4.cpp
-  Src/YumeQuaternion.cpp
-  Src/YumePlane.cpp
-  Src/YumeMath.cpp
-  Src/YumeAxisAlignedBox.cpp )
-
-
-
-
-add_definitions(-D_MT -D_USRDLL -DYUME_NONCLIENT_BUILD)
-set (TARGET_LINK_FLAGS "")
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Src/nedmalloc)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-
-if(YUME_STATIC)
-	ADD_LIBRARY(YUME STATIC ${SOURCE_FILES} ${HEADER_FILES})
-  set(YUME_LIB_TYPE "STATIC")
-ELSE()
-	ADD_LIBRARY(YUME SHARED ${SOURCE_FILES} ${HEADER_FILES})
-  set(YUME_LIB_TYPE "SHARED")
-endif()
-
-set(YUME_STATIC_LIB YUME_STATIC)
-
-if(WIN32 AND MSVC10 AND CMAKE_CL_64)
-  set_target_properties(YUME PROPERTIES 
-                        VERSION 1
-                        LINK_FLAGS "/INCREMENTAL:NO"
-                      )
-else()
-  set_target_properties(YUME PROPERTIES VERSION 1)
-endif()
-
-use_precompiled_header(YUME 
-  "${CMAKE_CURRENT_SOURCE_DIR}/Include/YumeHeaders.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/Src/Pch.cpp"
-)
-
-
-install(FILES ${HEADER_FILES}
-  DESTINATION Include/Engine
-)
+add_subdirectory(Source)

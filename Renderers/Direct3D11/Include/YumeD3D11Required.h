@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 Alperen Gezer
+/// Copyright (c) 2015 arkenthera
 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,12 @@
 /// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
-
+#pragma once
 //---------------------------------------------------------------------------------
 #ifndef __YumeD3D11Required_h__
 #define __YumeD3D11Required_h__
 //---------------------------------------------------------------------------------
-#include "YumeRequired.h"
+#include "Core/YumeRequired.h"
 
 #undef NOMINMAX
 #define NOMINMAX
@@ -72,7 +72,7 @@ namespace YumeEngine
 #	endif
 #else
 #	define YumeD3DApiExport
-#endif	// OGRE_WIN32
+#endif
 }
 #endif
 //---------------------------------------------------------------------------------

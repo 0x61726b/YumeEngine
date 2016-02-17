@@ -2,14 +2,14 @@
 //This is a file from Arkengine
 //
 //
-//Copyright (c) Alperen Gezer.All rights reserved.
+//Copyright (c) arkenthera.All rights reserved.
 //
 //BasicRenderWindow.h
 //--------------------------------------------------------------------------------
 #ifndef __BasicRenderWindow_h__
 #define __BasicRenderWindow_h__
 //--------------------------------------------------------------------------------
-#include "Yume.h"
+#include "Core/Yume.h"
 
 
 
@@ -49,7 +49,7 @@ namespace YumeSamples
 
 
 	protected:
-		YumeEngine::YumeCentrum* m_Centrum;
+		YumeEngine::Yume* m_Centrum;
 		YumeEngine::YumeRenderWindow* m_Window;
 	};
 }

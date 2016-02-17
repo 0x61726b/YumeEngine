@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 Alperen Gezer
+/// Copyright (c) 2015 arkenthera
 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////
 #include "YumeD3D11AdapterList.h"
-#include "YumeLogManager.h"
+
 #include "YumeD3D11Device.h"
 #include "YumeD3D11Adapter.h"
+#include "Logging/logging.h"
 ///--------------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -51,7 +52,7 @@ namespace YumeEngine
 	//-----------------------------------------------------------------------
 	BOOL YumeD3D11AdapterList::Enumerate(IDXGIFactory1*	pDXGIFactory)
 	{
-		YumeLogManager::Get().Log("D3D11: Driver Detection Starts");
+		YUMELOG_DEBUG("D3D11: Driver Detection Starts");
 		// Create the DXGI Factory
 
 		for (UINT iAdapter = 0; ; iAdapter++)
@@ -85,7 +86,7 @@ namespace YumeEngine
 
 		}
 
-		YumeLogManager::Get().Log("D3D11: Driver Detection Ends");
+		YUMELOG_DEBUG("D3D11: Driver Detection Ends");
 
 		return TRUE;
 	}
