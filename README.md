@@ -1,6 +1,6 @@
 # Synopsis
 Modern Cross Platform Renderer
-Exploring new renderer design ideas,trying to implement as simple as possible.Supporting D3D11,D3D12 and OpenGL(Vulkan in the future), this engine strives to be as platform dependent as possible.After initial planned platforms' work has been done,I'm aiming to add more platform support.(Xbox,PS4,SteamOS and Google NaCl)
+Exploring new renderer design ideas,trying to implement as simple as possible.Heavily inspired by other open source renderers I aim to support D3D11,D3D12 and OpenGL(Vulkan in the future), this engine strives to be as platform dependent as possible.After initial planned platforms' work has been done,I'm aiming to add more platform support.
 
 For updates from this engine development(and my other silly posts) you can check out my <a href="http://arkenthera.github.io">website</a>
 
@@ -50,11 +50,8 @@ If you have CMake GUI go to the associated directory and create a _build dir.The
 [Designing a Modern Rendering Engine](https://www.cg.tuwien.ac.at/research/publications/2007/bauchinger-2007-mre/bauchinger-2007-mre-Thesis.pdf "Designing a Modern Rendering Engine")
 
 [OGRE 3D](http://www.ogre3d.org/)
-
 [Horde 3D](http://www.horde3d.org/)
-
 [Hy3](https://hieroglyph3.codeplex.com/)
-
 [Frank Luna's D3D11 Book](http://www.amazon.com/Introduction-3D-Game-Programming-DirectX/dp/1936420228)
 
 <img src = "http://i.imgur.com/mPVCTYw.png" />
