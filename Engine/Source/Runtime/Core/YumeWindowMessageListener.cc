@@ -163,20 +163,20 @@ namespace YumeEngine
 			break;
 		case WM_MOVE:
 			//log->logMessage("WM_MOVE");
-			win->OnWindowMovedOrResized();
+			win->OnWindowMovedOrresized();
 			for (index = start; index != end; ++index)
 				(index->second)->OnWindowMoved(win);
 			break;
 		case WM_DISPLAYCHANGE:
-			win->OnWindowMovedOrResized();
+			win->OnWindowMovedOrresized();
 			for (index = start; index != end; ++index)
-				(index->second)->OnWindowResized(win);
+				(index->second)->OnWindowresized(win);
 			break;
 		case WM_SIZE:
 			//log->logMessage("WM_SIZE");
-			win->OnWindowMovedOrResized();
+			win->OnWindowMovedOrresized();
 			for (index = start; index != end; ++index)
-				(index->second)->OnWindowResized(win);
+				(index->second)->OnWindowresized(win);
 			break;
 		case WM_GETMINMAXINFO:
 			// Prevent the window from going smaller than some minimu size

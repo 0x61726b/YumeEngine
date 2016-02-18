@@ -31,6 +31,8 @@ set(SRC_GRAPHICS
 	Graphics/YumeRenderTarget.h
 	Graphics/YumeRenderWindow.h
 	Graphics/YumeRendererCapabilities.h
+	Graphics/YumeGraphics.h
+	Graphics/YumeGraphics.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h
@@ -43,23 +45,34 @@ set( SRC_MATH
 	Math/YumeVector3.cc
 	Math/YumeVector4.cc
 	Math/YumeMatrix3.cc
+	Math/YumeMatrix2.cc
 	Math/YumeMatrix4.cc
 	Math/YumeQuaternion.cc
 	Math/YumePlane.cc
-	Math/YumeMath.cc
-	Math/YumeAxisAlignedBox.cc
 	Math/YumeMath.h
 	Math/YumeVector2.h
 	Math/YumeVector3.h
 	Math/YumeVector4.h
+	Math/YumeMatrix2.h
 	Math/YumeMatrix3.h
+	Math/YumeMatrix3x4.h
+	Math/YumeMatrix3x4.cc
 	Math/YumeMatrix4.h
-	Math/YumePlaneBoundedVolume.h
 	Math/YumeQuaternion.h
 	Math/YumePlane.h
 	Math/YumeSphere.h
+	Math/YumeSphere.cc
 	Math/YumeRay.h
-	Math/YumeAxisAlignedBox.h
+	Math/YumeRandom.h
+	Math/YumeRandom.cc
+	Math/YumeBoundingBox.h
+	Math/YumeBoundingBox.cc
+	Math/YumePolyhedron.h
+	Math/YumePolyhedron.cc
+	Math/YumeRect.h
+	Math/YumeRect.cc
+	Math/YumeFrustum.h
+	Math/YumeFrustum.cc
 )
 
 set( SRC_CORE
@@ -75,6 +88,7 @@ set( SRC_CORE
 	Core/YumeString.h
 	Core/PlatformImpl.h
 	Core/PlatformImpl_Win32.cc
+	Core/YumeVariant.h
 		)
 set( SRC_CORE_CONFIG
 	Core/YumeConfig.h

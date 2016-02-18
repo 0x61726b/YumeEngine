@@ -32,6 +32,8 @@
 #include "YumeRenderTarget.h"
 
 #include "Graphics/YumeRenderer.h"
+
+#include <boost/functional/hash.hpp>
 //---------------------------------------------------------------------------------
 
 namespace YumeEngine
@@ -79,6 +81,7 @@ namespace YumeEngine
 	void YumeRenderTarget::SetActive(bool b)
 	{
 		m_bActive = b;
+
 	}
 	//---------------------------------------------------------------------------------
 	void YumeRenderTarget::Update(bool swap)

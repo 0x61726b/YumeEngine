@@ -170,8 +170,9 @@ namespace YumeEngine
 		typedef typename std::multimap<K, V, P>::const_iterator const_iterator;
 #endif
 	};
-}
 
+#	define YumeStrHash std::size_t
+}
 //---------------------------------------------------------------------------------
 #endif
 //~End of YumeRequired.h

@@ -44,7 +44,7 @@ namespace YumeEngine
 			(void)rw;
 		}
 
-		virtual void OnWindowResized(YumeRenderWindow* rw)
+		virtual void OnWindowresized(YumeRenderWindow* rw)
 		{
 			(void)rw;
 		}

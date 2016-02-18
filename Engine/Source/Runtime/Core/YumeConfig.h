@@ -43,6 +43,7 @@
 #define YUME_MEMORY_ALLOCATOR YUME_MEMORY_ALLOCATOR_NEDPOOLING
 #endif
 
+#define YUME_SSE
 //---------------------------------------------------------------------------------
 #endif
 //~End of YumeConfig.h

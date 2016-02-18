@@ -28,147 +28,59 @@
 ///////////////////////////////////////////////////////////////////////////////////
 #include "YumeHeaders.h"
 #include "YumePlane.h"
-#include "YumeMatrix3.h"
-#include "YumeAxisAlignedBox.h"
+
 
 namespace YumeEngine
 {
-	//-----------------------------------------------------------------------
-	Plane::Plane()
-	{
-		normal = Vector3::ZERO;
-		d = 0.0;
-	}
-	//-----------------------------------------------------------------------
-	Plane::Plane(const Plane& rhs)
-	{
-		normal = rhs.normal;
-		d = rhs.d;
-	}
-	//-----------------------------------------------------------------------
-	Plane::Plane(const Vector3& rkNormal, Real fConstant)
-	{
-		normal = rkNormal;
-		d = -fConstant;
-	}
-	//---------------------------------------------------------------------
-	Plane::Plane(Real a, Real b, Real c, Real _d)
-		: normal(a, b, c), d(_d)
-	{
-	}
-	//-----------------------------------------------------------------------
-	Plane::Plane(const Vector3& rkNormal, const Vector3& rkPoint)
-	{
-		redefine(rkNormal, rkPoint);
-	}
-	//-----------------------------------------------------------------------
-	Plane::Plane(const Vector3& rkPoint0, const Vector3& rkPoint1,
-		const Vector3& rkPoint2)
-	{
-		redefine(rkPoint0, rkPoint1, rkPoint2);
-	}
-	//-----------------------------------------------------------------------
-	Real Plane::getDistance(const Vector3& rkPoint) const
-	{
-		return normal.dotProduct(rkPoint) + d;
-	}
-	//-----------------------------------------------------------------------
-	Plane::Side Plane::getSide(const Vector3& rkPoint) const
-	{
-		Real fDistance = getDistance(rkPoint);
 
-		if (fDistance < 0.0)
-			return Plane::NEGATIVE_SIDE;
+	// Static initialization order can not be relied on, so do not use Vector3 constants
+	const Plane Plane::UP(Vector3(0.0f,1.0f,0.0f),Vector3(0.0f,0.0f,0.0f));
 
-		if (fDistance > 0.0)
-			return Plane::POSITIVE_SIDE;
-
-		return Plane::NO_SIDE;
+	void Plane::Transform(const Matrix3& transform)
+	{
+		Define(Matrix4(transform).Inverse().Transpose() * ToVector4());
 	}
 
-
-	//-----------------------------------------------------------------------
-	Plane::Side Plane::getSide(const AxisAlignedBox& box) const
+	void Plane::Transform(const Matrix3x4& transform)
 	{
-		if (box.isNull())
-			return NO_SIDE;
-		if (box.isInfinite())
-			return BOTH_SIDE;
-
-		return getSide(box.getCenter(), box.getHalfSize());
+		Define(transform.ToMatrix4().Inverse().Transpose() * ToVector4());
 	}
-	//-----------------------------------------------------------------------
-	Plane::Side Plane::getSide(const Vector3& centre, const Vector3& halfSize) const
+
+	void Plane::Transform(const Matrix4& transform)
 	{
-		// Calculate the distance between box centre and the plane
-		Real dist = getDistance(centre);
-
-		// Calculate the maximise allows absolute distance for
-		// the distance between box centre and plane
-		Real maxAbsDist = normal.absDotProduct(halfSize);
-
-		if (dist < -maxAbsDist)
-			return Plane::NEGATIVE_SIDE;
-
-		if (dist > +maxAbsDist)
-			return Plane::POSITIVE_SIDE;
-
-		return Plane::BOTH_SIDE;
+		Define(transform.Inverse().Transpose() * ToVector4());
 	}
-	//-----------------------------------------------------------------------
-	void Plane::redefine(const Vector3& rkPoint0, const Vector3& rkPoint1,
-		const Vector3& rkPoint2)
-	{
-		Vector3 kEdge1 = rkPoint1 - rkPoint0;
-		Vector3 kEdge2 = rkPoint2 - rkPoint0;
-		normal = kEdge1.crossProduct(kEdge2);
-		normal.normalise();
-		d = -normal.dotProduct(rkPoint0);
-	}
-	//-----------------------------------------------------------------------
-	void Plane::redefine(const Vector3& rkNormal, const Vector3& rkPoint)
-	{
-		normal = rkNormal;
-		d = -rkNormal.dotProduct(rkPoint);
-	}
-	//-----------------------------------------------------------------------
-	Vector3 Plane::projectVector(const Vector3& p) const
-	{
-		// We know plane normal is unit length, so use simple method
-		Matrix3 xform;
-		xform[0][0] = 1.0f - normal.x * normal.x;
-		xform[0][1] = -normal.x * normal.y;
-		xform[0][2] = -normal.x * normal.z;
-		xform[1][0] = -normal.y * normal.x;
-		xform[1][1] = 1.0f - normal.y * normal.y;
-		xform[1][2] = -normal.y * normal.z;
-		xform[2][0] = -normal.z * normal.x;
-		xform[2][1] = -normal.z * normal.y;
-		xform[2][2] = 1.0f - normal.z * normal.z;
-		return xform * p;
 
-	}
-	//-----------------------------------------------------------------------
-	Real Plane::normalise(void)
+	Matrix3x4 Plane::ReflectionMatrix() const
 	{
-		Real fLength = normal.length();
-
-		// Will also work for zero-sized vectors, but will change nothing
-		// We're not using epsilons because we don't need to.
-		// Read http://www.ogre3d.org/forums/viewtopic.php?f=4&t=61259
-		if (fLength > Real(0.0f))
-		{
-			Real fInvLength = 1.0f / fLength;
-			normal *= fInvLength;
-			d *= fInvLength;
-		}
-
-		return fLength;
+		return Matrix3x4(
+			-2.0f * normal_.x_ * normal_.x_ + 1.0f,
+			-2.0f * normal_.x_ * normal_.y_,
+			-2.0f * normal_.x_ * normal_.z_,
+			-2.0f * normal_.x_ * d_,
+			-2.0f * normal_.y_ * normal_.x_,
+			-2.0f * normal_.y_ * normal_.y_ + 1.0f,
+			-2.0f * normal_.y_ * normal_.z_,
+			-2.0f * normal_.y_ * d_,
+			-2.0f * normal_.z_ * normal_.x_,
+			-2.0f * normal_.z_ * normal_.y_,
+			-2.0f * normal_.z_ * normal_.z_ + 1.0f,
+			-2.0f * normal_.z_ * d_
+			);
 	}
-	//-----------------------------------------------------------------------
-	std::ostream& operator<< (std::ostream& o, const Plane& p)
+
+	Plane Plane::Transformed(const Matrix3& transform) const
 	{
-		o << "Plane(normal=" << p.normal << ", d=" << p.d << ")";
-		return o;
+		return Plane(Matrix4(transform).Inverse().Transpose() * ToVector4());
+	}
+
+	Plane Plane::Transformed(const Matrix3x4& transform) const
+	{
+		return Plane(transform.ToMatrix4().Inverse().Transpose() * ToVector4());
+	}
+
+	Plane Plane::Transformed(const Matrix4& transform) const
+	{
+		return Plane(transform.Inverse().Transpose() * ToVector4());
 	}
 }

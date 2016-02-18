@@ -30,6 +30,7 @@
 #include "YumeHeaders.h"
 #include "Graphics/YumeRenderer.h"
 #include "Graphics/YumeRenderWindow.h"
+#include "Graphics/YumeGraphics.h"
 
 namespace YumeEngine
 {
@@ -53,6 +54,7 @@ namespace YumeEngine
 	}
 	YumeRenderWindow* YumeRenderer::Initialize(bool autoCreate, const YumeString& Title )
 	{
+		
 		return 0;
 	}
 	//---------------------------------------------------------------------

@@ -54,7 +54,7 @@ namespace YumeEngine
 
 		void Present(bool vsync);
 
-		void Resize(unsigned int Width,
+		void resize(unsigned int Width,
 			unsigned int Height);
 
 		void Move(int left, int top);
@@ -71,13 +71,13 @@ namespace YumeEngine
 		void SetHidden(bool b);
 		bool IsHidden();
 
-		void OnResize(unsigned int width, unsigned int height);
+		void Onresize(unsigned int width, unsigned int height);
 
 		/** Notify that the window has been resized
 		@remarks
 		You don't need to call this unless you created the window externally.
 		*/
-		void OnWindowMovedOrResized() {}
+		void OnWindowMovedOrresized() {}
 
 	protected:
 		HINSTANCE m_hInstance;

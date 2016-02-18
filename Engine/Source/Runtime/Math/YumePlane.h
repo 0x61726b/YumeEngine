@@ -30,110 +30,119 @@
 #define __YumePlane_h__
 //--------------------------------------------------------------------------------
 #include "Core/YumeRequired.h"
-#include "YumeVector3.h"
+#include "YumeMatrix3x4.h"
 //--------------------------------------------------------------------------------
 namespace YumeEngine
 {
+
+	/// Surface in three-dimensional space.
 	class YumeAPIExport Plane
 	{
 	public:
-		/** Default constructor - sets everything to 0.
-		*/
-		Plane();
-		Plane(const Plane& rhs);
-		/** Construct a plane through a normal, and a distance to move the plane along the normal.*/
-		Plane(const Vector3& rkNormal, Real fConstant);
-		/** Construct a plane using the 4 constants directly **/
-		Plane(Real a, Real b, Real c, Real d);
-		Plane(const Vector3& rkNormal, const Vector3& rkPoint);
-		Plane(const Vector3& rkPoint0, const Vector3& rkPoint1,
-			const Vector3& rkPoint2);
-
-		/** The "positive side" of the plane is the half space to which the
-		plane normal points. The "negative side" is the other half
-		space. The flag "no side" indicates the plane itself.
-		*/
-		enum Side
+		/// Construct a degenerate plane with zero normal and parameter.
+		Plane():
+			d_(0.0f)
 		{
-			NO_SIDE,
-			POSITIVE_SIDE,
-			NEGATIVE_SIDE,
-			BOTH_SIDE
-		};
-
-		Side getSide(const Vector3& rkPoint) const;
-
-		/**
-		Returns the side where the alignedBox is. The flag BOTH_SIDE indicates an intersecting box.
-		One corner ON the plane is sufficient to consider the box and the plane intersecting.
-		*/
-		Side getSide(const AxisAlignedBox& rkBox) const;
-
-		/** Returns which side of the plane that the given box lies on.
-		The box is defined as centre/half-size pairs for effectively.
-		@param centre The centre of the box.
-		@param halfSize The half-size of the box.
-		@return
-		POSITIVE_SIDE if the box complete lies on the "positive side" of the plane,
-		NEGATIVE_SIDE if the box complete lies on the "negative side" of the plane,
-		and BOTH_SIDE if the box intersects the plane.
-		*/
-		Side getSide(const Vector3& centre, const Vector3& halfSize) const;
-
-		/** This is a pseudodistance. The sign of the return value is
-		positive if the point is on the positive side of the plane,
-		negative if the point is on the negative side, and zero if the
-		point is on the plane.
-		@par
-		The absolute value of the return value is the true distance only
-		when the plane normal is a unit length vector.
-		*/
-		Real getDistance(const Vector3& rkPoint) const;
-
-		/** Redefine this plane based on 3 points. */
-		void redefine(const Vector3& rkPoint0, const Vector3& rkPoint1,
-			const Vector3& rkPoint2);
-
-		/** Redefine this plane based on a normal and a point. */
-		void redefine(const Vector3& rkNormal, const Vector3& rkPoint);
-
-		/** Project a vector onto the plane.
-		@remarks This gives you the element of the input vector that is perpendicular
-		to the normal of the plane. You can get the element which is parallel
-		to the normal of the plane by subtracting the result of this method
-		from the original vector, since parallel + perpendicular = original.
-		@param v The input vector
-		*/
-		Vector3 projectVector(const Vector3& v) const;
-
-		/** Normalises the plane.
-		@remarks
-		This method normalises the plane's normal and the length scale of d
-		is as well.
-		@note
-		This function will not crash for zero-sized vectors, but there
-		will be no changes made to their components.
-		@return The previous length of the plane's normal.
-		*/
-		Real normalise(void);
-
-		Vector3 normal;
-		Real d;
-
-		/// Comparison operator
-		bool operator==(const Plane& rhs) const
-		{
-			return (rhs.d == d && rhs.normal == normal);
-		}
-		bool operator!=(const Plane& rhs) const
-		{
-			return (rhs.d != d || rhs.normal != normal);
 		}
 
-		YumeAPIExport friend std::ostream& operator<< (std::ostream& o, const Plane& p);
+		/// Copy-construct from another plane.
+		Plane(const Plane& plane):
+			normal_(plane.normal_),
+			absNormal_(plane.absNormal_),
+			d_(plane.d_)
+		{
+		}
+
+		/// Construct from 3 vertices.
+		Plane(const Vector3& v0,const Vector3& v1,const Vector3& v2)
+		{
+			Define(v0,v1,v2);
+		}
+
+		/// Construct from a normal vector and a point on the plane.
+		Plane(const Vector3& normal,const Vector3& point)
+		{
+			Define(normal,point);
+		}
+
+		/// Construct from a 4-dimensional vector, where the w coordinate is the plane parameter.
+		Plane(const Vector4& plane)
+		{
+			Define(plane);
+		}
+
+		/// Assign from another plane.
+		Plane& operator =(const Plane& rhs)
+		{
+			normal_ = rhs.normal_;
+			absNormal_ = rhs.absNormal_;
+			d_ = rhs.d_;
+			return *this;
+		}
+
+		/// Define from 3 vertices.
+		void Define(const Vector3& v0,const Vector3& v1,const Vector3& v2)
+		{
+			Vector3 dist1 = v1 - v0;
+			Vector3 dist2 = v2 - v0;
+
+			Define(dist1.CrossProduct(dist2),v0);
+		}
+
+		/// Define from a normal vector and a point on the plane.
+		void Define(const Vector3& normal,const Vector3& point)
+		{
+			normal_ = normal.Normalized();
+			absNormal_ = normal_.Abs();
+			d_ = -normal_.DotProduct(point);
+		}
+
+		/// Define from a 4-dimensional vector, where the w coordinate is the plane parameter.
+		void Define(const Vector4& plane)
+		{
+			normal_ = Vector3(plane.x_,plane.y_,plane.z_);
+			absNormal_ = normal_.Abs();
+			d_ = plane.w_;
+		}
+
+		/// Transform with a 3x3 matrix.
+		void Transform(const Matrix3& transform);
+		/// Transform with a 3x4 matrix.
+		void Transform(const Matrix3x4& transform);
+		/// Transform with a 4x4 matrix.
+		void Transform(const Matrix4& transform);
+
+		/// Project a point on the plane.
+		Vector3 Project(const Vector3& point) const { return point - normal_ * (normal_.DotProduct(point) + d_); }
+
+		/// Return signed distance to a point.
+		float Distance(const Vector3& point) const { return normal_.DotProduct(point) + d_; }
+
+		/// Reflect a normalized direction vector.
+		Vector3 Reflect(const Vector3& direction) const { return direction - (2.0f * normal_.DotProduct(direction) * normal_); }
+
+		/// Return a reflection matrix.
+		Matrix3x4 ReflectionMatrix() const;
+		/// Return transformed by a 3x3 matrix.
+		Plane Transformed(const Matrix3& transform) const;
+		/// Return transformed by a 3x4 matrix.
+		Plane Transformed(const Matrix3x4& transform) const;
+		/// Return transformed by a 4x4 matrix.
+		Plane Transformed(const Matrix4& transform) const;
+
+		/// Return as a vector.
+		Vector4 ToVector4() const { return Vector4(normal_,d_); }
+
+		/// Plane normal.
+		Vector3 normal_;
+		/// Plane absolute normal.
+		Vector3 absNormal_;
+		/// Plane constant.
+		float d_;
+
+		/// Plane at origin with normal pointing up.
+		static const Plane UP;
 	};
-
-	typedef YumeVector<Plane>::type PlaneList;
 }
 
 

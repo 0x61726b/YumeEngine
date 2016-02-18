@@ -34,221 +34,297 @@
 //--------------------------------------------------------------------------------
 namespace YumeEngine
 {
+
+	/// 3x3 matrix for rotation and scaling.
 	class YumeAPIExport Matrix3
 	{
 	public:
-		/** Default constructor.
-		@note
-		It does <b>NOT</b> initialize the matrix for efficiency.
-		*/
-		inline Matrix3() {}
-		inline explicit Matrix3(const Real arr[3][3])
+		/// Construct an identity matrix.
+		Matrix3():
+			m00_(1.0f),
+			m01_(0.0f),
+			m02_(0.0f),
+			m10_(0.0f),
+			m11_(1.0f),
+			m12_(0.0f),
+			m20_(0.0f),
+			m21_(0.0f),
+			m22_(1.0f)
 		{
-			memcpy(m, arr, 9 * sizeof(Real));
-		}
-		inline Matrix3(const Matrix3& rkMatrix)
-		{
-			memcpy(m, rkMatrix.m, 9 * sizeof(Real));
-		}
-		Matrix3(Real fEntry00, Real fEntry01, Real fEntry02,
-			Real fEntry10, Real fEntry11, Real fEntry12,
-			Real fEntry20, Real fEntry21, Real fEntry22)
-		{
-			m[0][0] = fEntry00;
-			m[0][1] = fEntry01;
-			m[0][2] = fEntry02;
-			m[1][0] = fEntry10;
-			m[1][1] = fEntry11;
-			m[1][2] = fEntry12;
-			m[2][0] = fEntry20;
-			m[2][1] = fEntry21;
-			m[2][2] = fEntry22;
 		}
 
-		/** Exchange the contents of this matrix with another.
-		*/
-		inline void swap(Matrix3& other)
+		/// Copy-construct from another matrix.
+		Matrix3(const Matrix3& matrix):
+			m00_(matrix.m00_),
+			m01_(matrix.m01_),
+			m02_(matrix.m02_),
+			m10_(matrix.m10_),
+			m11_(matrix.m11_),
+			m12_(matrix.m12_),
+			m20_(matrix.m20_),
+			m21_(matrix.m21_),
+			m22_(matrix.m22_)
 		{
-			std::swap(m[0][0], other.m[0][0]);
-			std::swap(m[0][1], other.m[0][1]);
-			std::swap(m[0][2], other.m[0][2]);
-			std::swap(m[1][0], other.m[1][0]);
-			std::swap(m[1][1], other.m[1][1]);
-			std::swap(m[1][2], other.m[1][2]);
-			std::swap(m[2][0], other.m[2][0]);
-			std::swap(m[2][1], other.m[2][1]);
-			std::swap(m[2][2], other.m[2][2]);
 		}
 
-		// member access, allows use of construct mat[r][c]
-		inline Real* operator[] (size_t iRow) const
+		/// Construct from values.
+		Matrix3(float v00,float v01,float v02,
+			float v10,float v11,float v12,
+			float v20,float v21,float v22):
+			m00_(v00),
+			m01_(v01),
+			m02_(v02),
+			m10_(v10),
+			m11_(v11),
+			m12_(v12),
+			m20_(v20),
+			m21_(v21),
+			m22_(v22)
 		{
-			return (Real*)m[iRow];
 		}
-		/*inline operator Real* ()
-		{
-		return (Real*)m[0];
-		}*/
-		Vector3 GetColumn(size_t iCol) const;
-		void SetColumn(size_t iCol, const Vector3& vec);
-		void FromAxes(const Vector3& xAxis, const Vector3& yAxis, const Vector3& zAxis);
 
-		// assignment and comparison
-		inline Matrix3& operator= (const Matrix3& rkMatrix)
+		/// Construct from a float array.
+		explicit Matrix3(const float* data):
+			m00_(data[0]),
+			m01_(data[1]),
+			m02_(data[2]),
+			m10_(data[3]),
+			m11_(data[4]),
+			m12_(data[5]),
+			m20_(data[6]),
+			m21_(data[7]),
+			m22_(data[8])
 		{
-			memcpy(m, rkMatrix.m, 9 * sizeof(Real));
+		}
+
+		/// Assign from another matrix.
+		Matrix3& operator =(const Matrix3& rhs)
+		{
+			m00_ = rhs.m00_;
+			m01_ = rhs.m01_;
+			m02_ = rhs.m02_;
+			m10_ = rhs.m10_;
+			m11_ = rhs.m11_;
+			m12_ = rhs.m12_;
+			m20_ = rhs.m20_;
+			m21_ = rhs.m21_;
+			m22_ = rhs.m22_;
 			return *this;
 		}
 
-		/** Tests 2 matrices for equality.
-		*/
-		bool operator== (const Matrix3& rkMatrix) const;
-
-		/** Tests 2 matrices for inequality.
-		*/
-		inline bool operator!= (const Matrix3& rkMatrix) const
+		/// Test for equality with another matrix without epsilon.
+		bool operator ==(const Matrix3& rhs) const
 		{
-			return !operator==(rkMatrix);
+			const float* leftData = Data();
+			const float* rightData = rhs.Data();
+
+			for(unsigned i = 0; i < 9; ++i)
+			{
+				if(leftData[i] != rightData[i])
+					return false;
+			}
+
+			return true;
 		}
 
-		// arithmetic operations
-		/** Matrix addition.
-		*/
-		Matrix3 operator+ (const Matrix3& rkMatrix) const;
+		/// Test for inequality with another matrix without epsilon.
+		bool operator !=(const Matrix3& rhs) const { return !(*this == rhs); }
 
-		/** Matrix subtraction.
-		*/
-		Matrix3 operator- (const Matrix3& rkMatrix) const;
-
-		/** Matrix concatenation using '*'.
-		*/
-		Matrix3 operator* (const Matrix3& rkMatrix) const;
-		Matrix3 operator- () const;
-
-		/// Matrix * vector [3x3 * 3x1 = 3x1]
-		Vector3 operator* (const Vector3& rkVector) const;
-
-		/// Vector * matrix [1x3 * 3x3 = 1x3]
-		YumeAPIExport friend Vector3 operator* (const Vector3& rkVector,
-			const Matrix3& rkMatrix);
-
-		/// Matrix * scalar
-		Matrix3 operator* (Real fScalar) const;
-
-		/// Scalar * matrix
-		YumeAPIExport friend Matrix3 operator* (Real fScalar, const Matrix3& rkMatrix);
-
-		// utilities
-		Matrix3 Transpose() const;
-		bool Inverse(Matrix3& rkInverse, Real fTolerance = 1e-06) const;
-		Matrix3 Inverse(Real fTolerance = 1e-06) const;
-		Real Determinant() const;
-
-		// singular value decomposition
-		void SingularValueDecomposition(Matrix3& rkL, Vector3& rkS,
-			Matrix3& rkR) const;
-		void SingularValueComposition(const Matrix3& rkL,
-			const Vector3& rkS, const Matrix3& rkR);
-
-		/// Gram-Schmidt orthonormalization (applied to columns of rotation matrix)
-		void Orthonormalize();
-
-		/// Orthogonal Q, diagonal D, upper triangular U stored as (u01,u02,u12)
-		void QDUDecomposition(Matrix3& rkQ, Vector3& rkD,
-			Vector3& rkU) const;
-
-		Real SpectralNorm() const;
-
-		// matrix must be orthonormal
-		void ToAngleAxis(Vector3& rkAxis, Radian& rfAngle) const;
-		inline void ToAngleAxis(Vector3& rkAxis, Degree& rfAngle) const {
-			Radian r;
-			ToAngleAxis(rkAxis, r);
-			rfAngle = r;
-		}
-		void FromAngleAxis(const Vector3& rkAxis, const Radian& fRadians);
-
-		// The matrix must be orthonormal.  The decomposition is yaw*pitch*roll
-		// where yaw is rotation about the Up vector, pitch is rotation about the
-		// Right axis, and roll is rotation about the Direction axis.
-		bool ToEulerAnglesXYZ(Radian& rfYAngle, Radian& rfPAngle,
-			Radian& rfRAngle) const;
-		bool ToEulerAnglesXZY(Radian& rfYAngle, Radian& rfPAngle,
-			Radian& rfRAngle) const;
-		bool ToEulerAnglesYXZ(Radian& rfYAngle, Radian& rfPAngle,
-			Radian& rfRAngle) const;
-		bool ToEulerAnglesYZX(Radian& rfYAngle, Radian& rfPAngle,
-			Radian& rfRAngle) const;
-		bool ToEulerAnglesZXY(Radian& rfYAngle, Radian& rfPAngle,
-			Radian& rfRAngle) const;
-		bool ToEulerAnglesZYX(Radian& rfYAngle, Radian& rfPAngle,
-			Radian& rfRAngle) const;
-		void FromEulerAnglesXYZ(const Radian& fYAngle, const Radian& fPAngle, const Radian& fRAngle);
-		void FromEulerAnglesXZY(const Radian& fYAngle, const Radian& fPAngle, const Radian& fRAngle);
-		void FromEulerAnglesYXZ(const Radian& fYAngle, const Radian& fPAngle, const Radian& fRAngle);
-		void FromEulerAnglesYZX(const Radian& fYAngle, const Radian& fPAngle, const Radian& fRAngle);
-		void FromEulerAnglesZXY(const Radian& fYAngle, const Radian& fPAngle, const Radian& fRAngle);
-		void FromEulerAnglesZYX(const Radian& fYAngle, const Radian& fPAngle, const Radian& fRAngle);
-		/// Eigensolver, matrix must be symmetric
-		void EigenSolveSymmetric(Real afEigenvalue[3],
-			Vector3 akEigenvector[3]) const;
-
-		static void TensorProduct(const Vector3& rkU, const Vector3& rkV,
-			Matrix3& rkProduct);
-
-		/** Determines if this matrix involves a scaling. */
-		inline bool hasScale() const
+		/// Multiply a Vector3.
+		Vector3 operator *(const Vector3& rhs) const
 		{
-			// check magnitude of column vectors (==local axes)
-			Real t = m[0][0] * m[0][0] + m[1][0] * m[1][0] + m[2][0] * m[2][0];
-			if (!Math::RealEqual(t, 1.0, (Real)1e-04))
-				return true;
-			t = m[0][1] * m[0][1] + m[1][1] * m[1][1] + m[2][1] * m[2][1];
-			if (!Math::RealEqual(t, 1.0, (Real)1e-04))
-				return true;
-			t = m[0][2] * m[0][2] + m[1][2] * m[1][2] + m[2][2] * m[2][2];
-			if (!Math::RealEqual(t, 1.0, (Real)1e-04))
-				return true;
-
-			return false;
+			return Vector3(
+				m00_ * rhs.x_ + m01_ * rhs.y_ + m02_ * rhs.z_,
+				m10_ * rhs.x_ + m11_ * rhs.y_ + m12_ * rhs.z_,
+				m20_ * rhs.x_ + m21_ * rhs.y_ + m22_ * rhs.z_
+				);
 		}
 
-		/** Function for writing to a stream.
-		*/
-		inline YumeAPIExport friend std::ostream& operator <<
-			(std::ostream& o, const Matrix3& mat)
+		/// Add a matrix.
+		Matrix3 operator +(const Matrix3& rhs) const
 		{
-			o << "Matrix3(" << mat[0][0] << ", " << mat[0][1] << ", " << mat[0][2] << ", "
-				<< mat[1][0] << ", " << mat[1][1] << ", " << mat[1][2] << ", "
-				<< mat[2][0] << ", " << mat[2][1] << ", " << mat[2][2] << ")";
-			return o;
+			return Matrix3(
+				m00_ + rhs.m00_,
+				m01_ + rhs.m01_,
+				m02_ + rhs.m02_,
+				m10_ + rhs.m10_,
+				m11_ + rhs.m11_,
+				m12_ + rhs.m12_,
+				m20_ + rhs.m20_,
+				m21_ + rhs.m21_,
+				m22_ + rhs.m22_
+				);
 		}
 
-		static const Real EPSILON;
+		/// Subtract a matrix.
+		Matrix3 operator -(const Matrix3& rhs) const
+		{
+			return Matrix3(
+				m00_ - rhs.m00_,
+				m01_ - rhs.m01_,
+				m02_ - rhs.m02_,
+				m10_ - rhs.m10_,
+				m11_ - rhs.m11_,
+				m12_ - rhs.m12_,
+				m20_ - rhs.m20_,
+				m21_ - rhs.m21_,
+				m22_ - rhs.m22_
+				);
+		}
+
+		/// Multiply with a scalar.
+		Matrix3 operator *(float rhs) const
+		{
+			return Matrix3(
+				m00_ * rhs,
+				m01_ * rhs,
+				m02_ * rhs,
+				m10_ * rhs,
+				m11_ * rhs,
+				m12_ * rhs,
+				m20_ * rhs,
+				m21_ * rhs,
+				m22_ * rhs
+				);
+		}
+
+		/// Multiply a matrix.
+		Matrix3 operator *(const Matrix3& rhs) const
+		{
+			return Matrix3(
+				m00_ * rhs.m00_ + m01_ * rhs.m10_ + m02_ * rhs.m20_,
+				m00_ * rhs.m01_ + m01_ * rhs.m11_ + m02_ * rhs.m21_,
+				m00_ * rhs.m02_ + m01_ * rhs.m12_ + m02_ * rhs.m22_,
+				m10_ * rhs.m00_ + m11_ * rhs.m10_ + m12_ * rhs.m20_,
+				m10_ * rhs.m01_ + m11_ * rhs.m11_ + m12_ * rhs.m21_,
+				m10_ * rhs.m02_ + m11_ * rhs.m12_ + m12_ * rhs.m22_,
+				m20_ * rhs.m00_ + m21_ * rhs.m10_ + m22_ * rhs.m20_,
+				m20_ * rhs.m01_ + m21_ * rhs.m11_ + m22_ * rhs.m21_,
+				m20_ * rhs.m02_ + m21_ * rhs.m12_ + m22_ * rhs.m22_
+				);
+		}
+
+		/// Set scaling elements.
+		void SetScale(const Vector3& scale)
+		{
+			m00_ = scale.x_;
+			m11_ = scale.y_;
+			m22_ = scale.z_;
+		}
+
+		/// Set uniform scaling elements.
+		void SetScale(float scale)
+		{
+			m00_ = scale;
+			m11_ = scale;
+			m22_ = scale;
+		}
+
+		/// Return the scaling part.
+		Vector3 Scale() const
+		{
+			return Vector3(
+				sqrtf(m00_ * m00_ + m10_ * m10_ + m20_ * m20_),
+				sqrtf(m01_ * m01_ + m11_ * m11_ + m21_ * m21_),
+				sqrtf(m02_ * m02_ + m12_ * m12_ + m22_ * m22_)
+				);
+		}
+
+		/// Return transpose.
+		Matrix3 Transpose() const
+		{
+			return Matrix3(
+				m00_,
+				m10_,
+				m20_,
+				m01_,
+				m11_,
+				m21_,
+				m02_,
+				m12_,
+				m22_
+				);
+		}
+
+		/// Return scaled by a vector.
+		Matrix3 Scaled(const Vector3& scale) const
+		{
+			return Matrix3(
+				m00_ * scale.x_,
+				m01_ * scale.y_,
+				m02_ * scale.z_,
+				m10_ * scale.x_,
+				m11_ * scale.y_,
+				m12_ * scale.z_,
+				m20_ * scale.x_,
+				m21_ * scale.y_,
+				m22_ * scale.z_
+				);
+		}
+
+		/// Test for equality with another matrix with epsilon.
+		bool Equals(const Matrix3& rhs) const
+		{
+			const float* leftData = Data();
+			const float* rightData = rhs.Data();
+
+			for(unsigned i = 0; i < 9; ++i)
+			{
+				if(!YumeEngine::Equals(leftData[i],rightData[i]))
+					return false;
+			}
+
+			return true;
+		}
+
+		/// Return inverse.
+		Matrix3 Inverse() const;
+
+		/// Return float data.
+		const float* Data() const { return &m00_; }
+
+		/// Return as string.
+		YumeString ToString() const;
+
+		float m00_;
+		float m01_;
+		float m02_;
+		float m10_;
+		float m11_;
+		float m12_;
+		float m20_;
+		float m21_;
+		float m22_;
+
+		/// Bulk transpose matrices.
+		static void BulkTranspose(float* dest,const float* src,unsigned count)
+		{
+			for(unsigned i = 0; i < count; ++i)
+			{
+				dest[0] = src[0];
+				dest[1] = src[3];
+				dest[2] = src[6];
+				dest[3] = src[1];
+				dest[4] = src[4];
+				dest[5] = src[7];
+				dest[6] = src[2];
+				dest[7] = src[5];
+				dest[8] = src[8];
+
+				dest += 9;
+				src += 9;
+			}
+		}
+
+		/// Zero matrix.
 		static const Matrix3 ZERO;
+		/// Identity matrix.
 		static const Matrix3 IDENTITY;
-
-	protected:
-		// support for eigensolver
-		void Tridiagonal(Real afDiag[3], Real afSubDiag[3]);
-		bool QLAlgorithm(Real afDiag[3], Real afSubDiag[3]);
-
-		// support for singular value decomposition
-		static const Real msSvdEpsilon;
-		static const unsigned int msSvdMaxIterations;
-		static void Bidiagonalize(Matrix3& kA, Matrix3& kL,
-			Matrix3& kR);
-		static void GolubKahanStep(Matrix3& kA, Matrix3& kL,
-			Matrix3& kR);
-
-		// support for spectral norm
-		static Real MaxCubicRoot(Real afCoeff[3]);
-
-		Real m[3][3];
-
-		// for faster access
-		friend class Matrix4;
 	};
+
+	/// Multiply a 3x3 matrix with a scalar.
+	inline Matrix3 operator *(float lhs,const Matrix3& rhs) { return rhs * lhs; }
+
 }
 
 

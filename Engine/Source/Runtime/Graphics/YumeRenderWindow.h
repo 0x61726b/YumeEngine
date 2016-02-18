@@ -48,7 +48,7 @@ namespace YumeEngine
 
 		virtual void Destroy() = 0;
 		
-		virtual void Resize(unsigned int Width,
+		virtual void resize(unsigned int Width,
 							unsigned int Height) = 0;
 
 		virtual void Move(int left, int top) = 0;
@@ -72,13 +72,13 @@ namespace YumeEngine
 
 		
 		//Events
-		virtual void OnResize(unsigned int width, unsigned int height) = 0;
+		virtual void Onresize(unsigned int width, unsigned int height) = 0;
 
 		/** Notify that the window has been resized
 		@remarks
 		You don't need to call this unless you created the window externally.
 		*/
-		virtual void OnWindowMovedOrResized() {}
+		virtual void OnWindowMovedOrresized() {}
 		//~
 
 		/** Returns true if the window will automatically de-activate itself when it loses focus.

@@ -322,12 +322,12 @@ namespace YumeEngine
 		}
 	}
 	///--------------------------------------------------------------------------------
-	void YumeD3D11RenderWindow::OnResize(unsigned int width, unsigned int height)
+	void YumeD3D11RenderWindow::Onresize(unsigned int width, unsigned int height)
 	{
 
 	}
 	///--------------------------------------------------------------------------------
-	void YumeD3D11RenderWindow::Resize(unsigned int Width,
+	void YumeD3D11RenderWindow::resize(unsigned int Width,
 		unsigned int Height)
 	{
 		if (mHwnd && !m_bIsFullScreen)

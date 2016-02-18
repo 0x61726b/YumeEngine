@@ -26,13 +26,13 @@
 /// Comments : 
 ///--------------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////////
-#ifndef __YumeMatrix4_h__
-#define __YumeMatrix4_h__
+#ifndef __YumeMatrix3x4_h__
+#define __YumeMatrix3x4_h__
 //--------------------------------------------------------------------------------
 #include "Core/YumeRequired.h"
 
-#include "YumeVector4.h"
-#include "YumeQuaternion.h"
+#include "YumeMatrix4.h"
+
 //--------------------------------------------------------------------------------
 
 #ifdef YUME_SSE
@@ -43,15 +43,13 @@
 namespace YumeEngine
 {
 	
-class Matrix3x4;
-
-/// 4x4 matrix for arbitrary linear transforms including projection.
-class YumeAPIExport Matrix4
+/// 3x4 matrix for scene node transform calculations.
+class YumeAPIExport Matrix3x4
 {
 public:
     /// Construct an identity matrix.
-    Matrix4()
-#ifndef YumeEngine_SSE
+    Matrix3x4()
+#ifndef YUME_SSE
        :m00_(1.0f),
         m01_(0.0f),
         m02_(0.0f),
@@ -63,24 +61,25 @@ public:
         m20_(0.0f),
         m21_(0.0f),
         m22_(1.0f),
-        m23_(0.0f),
-        m30_(0.0f),
-        m31_(0.0f),
-        m32_(0.0f),
-        m33_(1.0f)
+        m23_(0.0f)
 #endif
     {
-#ifdef YumeEngine_SSE
+#ifdef YUME_SSE
         _mm_storeu_ps(&m00_, _mm_set_ps(0.f, 0.f, 0.f, 1.f));
         _mm_storeu_ps(&m10_, _mm_set_ps(0.f, 0.f, 1.f, 0.f));
         _mm_storeu_ps(&m20_, _mm_set_ps(0.f, 1.f, 0.f, 0.f));
-        _mm_storeu_ps(&m30_, _mm_set_ps(1.f, 0.f, 0.f, 0.f));
 #endif
     }
 
     /// Copy-construct from another matrix.
-    Matrix4(const Matrix4& matrix)
-#ifndef YumeEngine_SSE
+    Matrix3x4(const Matrix3x4& matrix)
+#if defined(YUME_SSE) && (!defined(_MSC_VER) || _MSC_VER >= 1700) /* Visual Studio 2012 and newer. VS2010 has a bug with these, see https://github.com/YumeEngine/YumeEngine/issues/1044 */
+    {
+        _mm_storeu_ps(&m00_, _mm_loadu_ps(&matrix.m00_));
+        _mm_storeu_ps(&m10_, _mm_loadu_ps(&matrix.m10_));
+        _mm_storeu_ps(&m20_, _mm_loadu_ps(&matrix.m20_));
+    }
+#else
        :m00_(matrix.m00_),
         m01_(matrix.m01_),
         m02_(matrix.m02_),
@@ -92,23 +91,13 @@ public:
         m20_(matrix.m20_),
         m21_(matrix.m21_),
         m22_(matrix.m22_),
-        m23_(matrix.m23_),
-        m30_(matrix.m30_),
-        m31_(matrix.m31_),
-        m32_(matrix.m32_),
-        m33_(matrix.m33_)
-#endif
+        m23_(matrix.m23_)
     {
-#ifdef YumeEngine_SSE
-        _mm_storeu_ps(&m00_, _mm_loadu_ps(&matrix.m00_));
-        _mm_storeu_ps(&m10_, _mm_loadu_ps(&matrix.m10_));
-        _mm_storeu_ps(&m20_, _mm_loadu_ps(&matrix.m20_));
-        _mm_storeu_ps(&m30_, _mm_loadu_ps(&matrix.m30_));
-#endif
     }
+#endif
 
-    /// Copy-cnstruct from a 3x3 matrix and set the extra elements to identity.
-    Matrix4(const Matrix3& matrix) :
+    /// Copy-construct from a 3x3 matrix and set the extra elements to identity.
+    Matrix3x4(const Matrix3& matrix) :
         m00_(matrix.m00_),
         m01_(matrix.m01_),
         m02_(matrix.m02_),
@@ -120,19 +109,38 @@ public:
         m20_(matrix.m20_),
         m21_(matrix.m21_),
         m22_(matrix.m22_),
-        m23_(0.0f),
-        m30_(0.0f),
-        m31_(0.0f),
-        m32_(0.0f),
-        m33_(1.0f)
+        m23_(0.0f)
     {
     }
 
+    /// Copy-construct from a 4x4 matrix which is assumed to contain no projection.
+    Matrix3x4(const Matrix4& matrix)
+#ifndef YUME_SSE
+       :m00_(matrix.m00_),
+        m01_(matrix.m01_),
+        m02_(matrix.m02_),
+        m03_(matrix.m03_),
+        m10_(matrix.m10_),
+        m11_(matrix.m11_),
+        m12_(matrix.m12_),
+        m13_(matrix.m13_),
+        m20_(matrix.m20_),
+        m21_(matrix.m21_),
+        m22_(matrix.m22_),
+        m23_(matrix.m23_)
+#endif
+    {
+#ifdef YUME_SSE
+        _mm_storeu_ps(&m00_, _mm_loadu_ps(&matrix.m00_));
+        _mm_storeu_ps(&m10_, _mm_loadu_ps(&matrix.m10_));
+        _mm_storeu_ps(&m20_, _mm_loadu_ps(&matrix.m20_));
+#endif
+    }
+
     // Construct from values.
-    Matrix4(float v00, float v01, float v02, float v03,
-            float v10, float v11, float v12, float v13,
-            float v20, float v21, float v22, float v23,
-            float v30, float v31, float v32, float v33) :
+    Matrix3x4(float v00, float v01, float v02, float v03,
+              float v10, float v11, float v12, float v13,
+              float v20, float v21, float v22, float v23) :
         m00_(v00),
         m01_(v01),
         m02_(v02),
@@ -144,17 +152,13 @@ public:
         m20_(v20),
         m21_(v21),
         m22_(v22),
-        m23_(v23),
-        m30_(v30),
-        m31_(v31),
-        m32_(v32),
-        m33_(v33)
+        m23_(v23)
     {
     }
 
     /// Construct from a float array.
-    explicit Matrix4(const float* data)
-#ifndef YumeEngine_SSE
+    explicit Matrix3x4(const float* data)
+#ifndef YUME_SSE
        :m00_(data[0]),
         m01_(data[1]),
         m02_(data[2]),
@@ -166,29 +170,51 @@ public:
         m20_(data[8]),
         m21_(data[9]),
         m22_(data[10]),
-        m23_(data[11]),
-        m30_(data[12]),
-        m31_(data[13]),
-        m32_(data[14]),
-        m33_(data[15])
+        m23_(data[11])
 #endif
     {
-#ifdef YumeEngine_SSE
+#ifdef YUME_SSE
         _mm_storeu_ps(&m00_, _mm_loadu_ps(data));
         _mm_storeu_ps(&m10_, _mm_loadu_ps(data + 4));
         _mm_storeu_ps(&m20_, _mm_loadu_ps(data + 8));
-        _mm_storeu_ps(&m30_, _mm_loadu_ps(data + 12));
+#endif
+    }
+
+    /// Construct from translation, rotation and uniform scale.
+    Matrix3x4(const Vector3& translation, const Quaternion& rotation, float scale)
+    {
+#ifdef YUME_SSE
+        __m128 t = _mm_set_ps(1.f, translation.z_, translation.y_, translation.x_);
+        __m128 q = _mm_loadu_ps(&rotation.w_);
+        __m128 s = _mm_set_ps(1.f, scale, scale, scale);
+        SetFromTRS(t, q, s);
+#else
+        SetRotation(rotation.RotationMatrix() * scale);
+        SetTranslation(translation);
+#endif
+    }
+
+    /// Construct from translation, rotation and nonuniform scale.
+    Matrix3x4(const Vector3& translation, const Quaternion& rotation, const Vector3& scale)
+    {
+#ifdef YUME_SSE
+        __m128 t = _mm_set_ps(1.f, translation.z_, translation.y_, translation.x_);
+        __m128 q = _mm_loadu_ps(&rotation.w_);
+        __m128 s = _mm_set_ps(1.f, scale.z_, scale.y_, scale.x_);
+        SetFromTRS(t, q, s);
+#else
+        SetRotation(rotation.RotationMatrix().Scaled(scale));
+        SetTranslation(translation);
 #endif
     }
 
     /// Assign from another matrix.
-    Matrix4& operator =(const Matrix4& rhs)
+    Matrix3x4& operator =(const Matrix3x4& rhs)
     {
-#ifdef YumeEngine_SSE
+#if defined(YUME_SSE) && (!defined(_MSC_VER) || _MSC_VER >= 1700) /* Visual Studio 2012 and newer. VS2010 has a bug with these, see https://github.com/YumeEngine/YumeEngine/issues/1044 */
         _mm_storeu_ps(&m00_, _mm_loadu_ps(&rhs.m00_));
         _mm_storeu_ps(&m10_, _mm_loadu_ps(&rhs.m10_));
         _mm_storeu_ps(&m20_, _mm_loadu_ps(&rhs.m20_));
-        _mm_storeu_ps(&m30_, _mm_loadu_ps(&rhs.m30_));
 #else
         m00_ = rhs.m00_;
         m01_ = rhs.m01_;
@@ -202,46 +228,60 @@ public:
         m21_ = rhs.m21_;
         m22_ = rhs.m22_;
         m23_ = rhs.m23_;
-        m30_ = rhs.m30_;
-        m31_ = rhs.m31_;
-        m32_ = rhs.m32_;
-        m33_ = rhs.m33_;
 #endif
         return *this;
     }
 
-    /// Assign from a 3x3 matrix. Set the extra elements to identity.
-    Matrix4& operator =(const Matrix3& rhs)
+    /// Assign from a 3x3 matrix and set the extra elements to identity.
+    Matrix3x4& operator =(const Matrix3& rhs)
     {
         m00_ = rhs.m00_;
         m01_ = rhs.m01_;
         m02_ = rhs.m02_;
-        m03_ = 0.0f;
+        m03_ = 0.0;
         m10_ = rhs.m10_;
         m11_ = rhs.m11_;
         m12_ = rhs.m12_;
-        m13_ = 0.0f;
+        m13_ = 0.0;
         m20_ = rhs.m20_;
         m21_ = rhs.m21_;
         m22_ = rhs.m22_;
-        m23_ = 0.0f;
-        m30_ = 0.0f;
-        m31_ = 0.0f;
-        m32_ = 0.0f;
-        m33_ = 1.0f;
+        m23_ = 0.0;
+        return *this;
+    }
+
+    /// Assign from a 4x4 matrix which is assumed to contain no projection.
+    Matrix3x4& operator =(const Matrix4& rhs)
+    {
+#ifdef YUME_SSE
+        _mm_storeu_ps(&m00_, _mm_loadu_ps(&rhs.m00_));
+        _mm_storeu_ps(&m10_, _mm_loadu_ps(&rhs.m10_));
+        _mm_storeu_ps(&m20_, _mm_loadu_ps(&rhs.m20_));
+#else
+        m00_ = rhs.m00_;
+        m01_ = rhs.m01_;
+        m02_ = rhs.m02_;
+        m03_ = rhs.m03_;
+        m10_ = rhs.m10_;
+        m11_ = rhs.m11_;
+        m12_ = rhs.m12_;
+        m13_ = rhs.m13_;
+        m20_ = rhs.m20_;
+        m21_ = rhs.m21_;
+        m22_ = rhs.m22_;
+        m23_ = rhs.m23_;
+#endif
         return *this;
     }
 
     /// Test for equality with another matrix without epsilon.
-    bool operator ==(const Matrix4& rhs) const
+    bool operator ==(const Matrix3x4& rhs) const
     {
-#ifdef YumeEngine_SSE
+#ifdef YUME_SSE
         __m128 c0 = _mm_cmpeq_ps(_mm_loadu_ps(&m00_), _mm_loadu_ps(&rhs.m00_));
         __m128 c1 = _mm_cmpeq_ps(_mm_loadu_ps(&m10_), _mm_loadu_ps(&rhs.m10_));
         c0 = _mm_and_ps(c0, c1);
         __m128 c2 = _mm_cmpeq_ps(_mm_loadu_ps(&m20_), _mm_loadu_ps(&rhs.m20_));
-        __m128 c3 = _mm_cmpeq_ps(_mm_loadu_ps(&m30_), _mm_loadu_ps(&rhs.m30_));
-        c2 = _mm_and_ps(c2, c3);
         c0 = _mm_and_ps(c0, c2);
         __m128 hi = _mm_movehl_ps(c0, c0);
         c0 = _mm_and_ps(c0, hi);
@@ -252,7 +292,7 @@ public:
         const float* leftData = Data();
         const float* rightData = rhs.Data();
 
-        for (unsigned i = 0; i < 16; ++i)
+        for (unsigned i = 0; i < 12; ++i)
         {
             if (leftData[i] != rightData[i])
                 return false;
@@ -263,12 +303,12 @@ public:
     }
 
     /// Test for inequality with another matrix without epsilon.
-    bool operator !=(const Matrix4& rhs) const { return !(*this == rhs); }
+    bool operator !=(const Matrix3x4& rhs) const { return !(*this == rhs); }
 
     /// Multiply a Vector3 which is assumed to represent position.
     Vector3 operator *(const Vector3& rhs) const
     {
-#ifdef YumeEngine_SSE
+#ifdef YUME_SSE
         __m128 vec = _mm_set_ps(1.f, rhs.z_, rhs.y_, rhs.x_);
         __m128 r0 = _mm_mul_ps(_mm_loadu_ps(&m00_), vec);
         __m128 r1 = _mm_mul_ps(_mm_loadu_ps(&m10_), vec);
@@ -276,31 +316,29 @@ public:
         __m128 t1 = _mm_unpackhi_ps(r0, r1);
         t0 = _mm_add_ps(t0, t1);
         __m128 r2 = _mm_mul_ps(_mm_loadu_ps(&m20_), vec);
-        __m128 r3 = _mm_mul_ps(_mm_loadu_ps(&m30_), vec);
+        __m128 r3 = _mm_setzero_ps();
         __m128 t2 = _mm_unpacklo_ps(r2, r3);
         __m128 t3 = _mm_unpackhi_ps(r2, r3);
         t2 = _mm_add_ps(t2, t3);
         vec = _mm_add_ps(_mm_movelh_ps(t0, t2), _mm_movehl_ps(t2, t0));
-        vec = _mm_div_ps(vec, _mm_shuffle_ps(vec, vec, _MM_SHUFFLE(3, 3, 3, 3)));
+
         return Vector3(
             _mm_cvtss_f32(vec),
             _mm_cvtss_f32(_mm_shuffle_ps(vec, vec, _MM_SHUFFLE(1, 1, 1, 1))),
             _mm_cvtss_f32(_mm_movehl_ps(vec, vec)));
 #else
-        float invW = 1.0f / (m30_ * rhs.x_ + m31_ * rhs.y_ + m32_ * rhs.z_ + m33_);
-
         return Vector3(
-            (m00_ * rhs.x_ + m01_ * rhs.y_ + m02_ * rhs.z_ + m03_) * invW,
-            (m10_ * rhs.x_ + m11_ * rhs.y_ + m12_ * rhs.z_ + m13_) * invW,
-            (m20_ * rhs.x_ + m21_ * rhs.y_ + m22_ * rhs.z_ + m23_) * invW
+            (m00_ * rhs.x_ + m01_ * rhs.y_ + m02_ * rhs.z_ + m03_),
+            (m10_ * rhs.x_ + m11_ * rhs.y_ + m12_ * rhs.z_ + m13_),
+            (m20_ * rhs.x_ + m21_ * rhs.y_ + m22_ * rhs.z_ + m23_)
         );
 #endif
     }
 
     /// Multiply a Vector4.
-    Vector4 operator *(const Vector4& rhs) const
+    Vector3 operator *(const Vector4& rhs) const
     {
-#ifdef YumeEngine_SSE
+#ifdef YUME_SSE
         __m128 vec = _mm_loadu_ps(&rhs.x_);
         __m128 r0 = _mm_mul_ps(_mm_loadu_ps(&m00_), vec);
         __m128 r1 = _mm_mul_ps(_mm_loadu_ps(&m10_), vec);
@@ -308,37 +346,36 @@ public:
         __m128 t1 = _mm_unpackhi_ps(r0, r1);
         t0 = _mm_add_ps(t0, t1);
         __m128 r2 = _mm_mul_ps(_mm_loadu_ps(&m20_), vec);
-        __m128 r3 = _mm_mul_ps(_mm_loadu_ps(&m30_), vec);
+        __m128 r3 = _mm_setzero_ps();
         __m128 t2 = _mm_unpacklo_ps(r2, r3);
         __m128 t3 = _mm_unpackhi_ps(r2, r3);
         t2 = _mm_add_ps(t2, t3);
         vec = _mm_add_ps(_mm_movelh_ps(t0, t2), _mm_movehl_ps(t2, t0));
 
-        Vector4 ret;
-        _mm_storeu_ps(&ret.x_, vec);
-        return ret;
+        return Vector3(
+            _mm_cvtss_f32(vec),
+            _mm_cvtss_f32(_mm_shuffle_ps(vec, vec, _MM_SHUFFLE(1, 1, 1, 1))),
+            _mm_cvtss_f32(_mm_movehl_ps(vec, vec)));
 #else
-        return Vector4(
-            m00_ * rhs.x_ + m01_ * rhs.y_ + m02_ * rhs.z_ + m03_ * rhs.w_,
-            m10_ * rhs.x_ + m11_ * rhs.y_ + m12_ * rhs.z_ + m13_ * rhs.w_,
-            m20_ * rhs.x_ + m21_ * rhs.y_ + m22_ * rhs.z_ + m23_ * rhs.w_,
-            m30_ * rhs.x_ + m31_ * rhs.y_ + m32_ * rhs.z_ + m33_ * rhs.w_
+        return Vector3(
+            (m00_ * rhs.x_ + m01_ * rhs.y_ + m02_ * rhs.z_ + m03_ * rhs.w_),
+            (m10_ * rhs.x_ + m11_ * rhs.y_ + m12_ * rhs.z_ + m13_ * rhs.w_),
+            (m20_ * rhs.x_ + m21_ * rhs.y_ + m22_ * rhs.z_ + m23_ * rhs.w_)
         );
 #endif
     }
 
     /// Add a matrix.
-    Matrix4 operator +(const Matrix4& rhs) const
+    Matrix3x4 operator +(const Matrix3x4& rhs) const
     {
-#ifdef YumeEngine_SSE
-        Matrix4 ret;
+#ifdef YUME_SSE
+        Matrix3x4 ret;
         _mm_storeu_ps(&ret.m00_, _mm_add_ps(_mm_loadu_ps(&m00_), _mm_loadu_ps(&rhs.m00_)));
         _mm_storeu_ps(&ret.m10_, _mm_add_ps(_mm_loadu_ps(&m10_), _mm_loadu_ps(&rhs.m10_)));
         _mm_storeu_ps(&ret.m20_, _mm_add_ps(_mm_loadu_ps(&m20_), _mm_loadu_ps(&rhs.m20_)));
-        _mm_storeu_ps(&ret.m30_, _mm_add_ps(_mm_loadu_ps(&m30_), _mm_loadu_ps(&rhs.m30_)));
         return ret;
 #else
-        return Matrix4(
+        return Matrix3x4(
             m00_ + rhs.m00_,
             m01_ + rhs.m01_,
             m02_ + rhs.m02_,
@@ -350,27 +387,22 @@ public:
             m20_ + rhs.m20_,
             m21_ + rhs.m21_,
             m22_ + rhs.m22_,
-            m23_ + rhs.m23_,
-            m30_ + rhs.m30_,
-            m31_ + rhs.m31_,
-            m32_ + rhs.m32_,
-            m33_ + rhs.m33_
+            m23_ + rhs.m23_
         );
 #endif
     }
 
     /// Subtract a matrix.
-    Matrix4 operator -(const Matrix4& rhs) const
+    Matrix3x4 operator -(const Matrix3x4& rhs) const
     {
-#ifdef YumeEngine_SSE
-        Matrix4 ret;
+#ifdef YUME_SSE
+        Matrix3x4 ret;
         _mm_storeu_ps(&ret.m00_, _mm_sub_ps(_mm_loadu_ps(&m00_), _mm_loadu_ps(&rhs.m00_)));
         _mm_storeu_ps(&ret.m10_, _mm_sub_ps(_mm_loadu_ps(&m10_), _mm_loadu_ps(&rhs.m10_)));
         _mm_storeu_ps(&ret.m20_, _mm_sub_ps(_mm_loadu_ps(&m20_), _mm_loadu_ps(&rhs.m20_)));
-        _mm_storeu_ps(&ret.m30_, _mm_sub_ps(_mm_loadu_ps(&m30_), _mm_loadu_ps(&rhs.m30_)));
         return ret;
 #else
-        return Matrix4(
+        return Matrix3x4(
             m00_ - rhs.m00_,
             m01_ - rhs.m01_,
             m02_ - rhs.m02_,
@@ -382,28 +414,23 @@ public:
             m20_ - rhs.m20_,
             m21_ - rhs.m21_,
             m22_ - rhs.m22_,
-            m23_ - rhs.m23_,
-            m30_ - rhs.m30_,
-            m31_ - rhs.m31_,
-            m32_ - rhs.m32_,
-            m33_ - rhs.m33_
+            m23_ - rhs.m23_
         );
 #endif
     }
 
     /// Multiply with a scalar.
-    Matrix4 operator *(float rhs) const
+    Matrix3x4 operator *(float rhs) const
     {
-#ifdef YumeEngine_SSE
-        Matrix4 ret;
+#ifdef YUME_SSE
+        Matrix3x4 ret;
         const __m128 mul = _mm_set1_ps(rhs);
         _mm_storeu_ps(&ret.m00_, _mm_mul_ps(_mm_loadu_ps(&m00_), mul));
         _mm_storeu_ps(&ret.m10_, _mm_mul_ps(_mm_loadu_ps(&m10_), mul));
         _mm_storeu_ps(&ret.m20_, _mm_mul_ps(_mm_loadu_ps(&m20_), mul));
-        _mm_storeu_ps(&ret.m30_, _mm_mul_ps(_mm_loadu_ps(&m30_), mul));
         return ret;
 #else
-        return Matrix4(
+        return Matrix3x4(
             m00_ * rhs,
             m01_ * rhs,
             m02_ * rhs,
@@ -415,19 +442,66 @@ public:
             m20_ * rhs,
             m21_ * rhs,
             m22_ * rhs,
-            m23_ * rhs,
-            m30_ * rhs,
-            m31_ * rhs,
-            m32_ * rhs,
-            m33_ * rhs
+            m23_ * rhs
         );
 #endif
     }
 
     /// Multiply a matrix.
+    Matrix3x4 operator *(const Matrix3x4& rhs) const
+    {
+#ifdef YUME_SSE
+        Matrix3x4 out;
+
+        __m128 r0 = _mm_loadu_ps(&rhs.m00_);
+        __m128 r1 = _mm_loadu_ps(&rhs.m10_);
+        __m128 r2 = _mm_loadu_ps(&rhs.m20_);
+        __m128 r3 = _mm_set_ps(1.f, 0.f, 0.f, 0.f);
+
+        __m128 l = _mm_loadu_ps(&m00_);
+        __m128 t0 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(0, 0, 0, 0)), r0);
+        __m128 t1 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(1, 1, 1, 1)), r1);
+        __m128 t2 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(2, 2, 2, 2)), r2);
+        __m128 t3 = _mm_mul_ps(l, r3);
+        _mm_storeu_ps(&out.m00_, _mm_add_ps(_mm_add_ps(t0, t1), _mm_add_ps(t2, t3)));
+
+        l = _mm_loadu_ps(&m10_);
+        t0 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(0, 0, 0, 0)), r0);
+        t1 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(1, 1, 1, 1)), r1);
+        t2 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(2, 2, 2, 2)), r2);
+        t3 = _mm_mul_ps(l, r3);
+        _mm_storeu_ps(&out.m10_, _mm_add_ps(_mm_add_ps(t0, t1), _mm_add_ps(t2, t3)));
+
+        l = _mm_loadu_ps(&m20_);
+        t0 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(0, 0, 0, 0)), r0);
+        t1 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(1, 1, 1, 1)), r1);
+        t2 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(2, 2, 2, 2)), r2);
+        t3 = _mm_mul_ps(l, r3);
+        _mm_storeu_ps(&out.m20_, _mm_add_ps(_mm_add_ps(t0, t1), _mm_add_ps(t2, t3)));
+
+        return out;
+#else
+        return Matrix3x4(
+            m00_ * rhs.m00_ + m01_ * rhs.m10_ + m02_ * rhs.m20_,
+            m00_ * rhs.m01_ + m01_ * rhs.m11_ + m02_ * rhs.m21_,
+            m00_ * rhs.m02_ + m01_ * rhs.m12_ + m02_ * rhs.m22_,
+            m00_ * rhs.m03_ + m01_ * rhs.m13_ + m02_ * rhs.m23_ + m03_,
+            m10_ * rhs.m00_ + m11_ * rhs.m10_ + m12_ * rhs.m20_,
+            m10_ * rhs.m01_ + m11_ * rhs.m11_ + m12_ * rhs.m21_,
+            m10_ * rhs.m02_ + m11_ * rhs.m12_ + m12_ * rhs.m22_,
+            m10_ * rhs.m03_ + m11_ * rhs.m13_ + m12_ * rhs.m23_ + m13_,
+            m20_ * rhs.m00_ + m21_ * rhs.m10_ + m22_ * rhs.m20_,
+            m20_ * rhs.m01_ + m21_ * rhs.m11_ + m22_ * rhs.m21_,
+            m20_ * rhs.m02_ + m21_ * rhs.m12_ + m22_ * rhs.m22_,
+            m20_ * rhs.m03_ + m21_ * rhs.m13_ + m22_ * rhs.m23_ + m23_
+        );
+#endif
+    }
+
+    /// Multiply a 4x4 matrix.
     Matrix4 operator *(const Matrix4& rhs) const
     {
-#ifdef YumeEngine_SSE
+#ifdef YUME_SSE
         Matrix4 out;
 
         __m128 r0 = _mm_loadu_ps(&rhs.m00_);
@@ -456,12 +530,7 @@ public:
         t3 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(3, 3, 3, 3)), r3);
         _mm_storeu_ps(&out.m20_, _mm_add_ps(_mm_add_ps(t0, t1), _mm_add_ps(t2, t3)));
 
-        l = _mm_loadu_ps(&m30_);
-        t0 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(0, 0, 0, 0)), r0);
-        t1 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(1, 1, 1, 1)), r1);
-        t2 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(2, 2, 2, 2)), r2);
-        t3 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(3, 3, 3, 3)), r3);
-        _mm_storeu_ps(&out.m30_, _mm_add_ps(_mm_add_ps(t0, t1), _mm_add_ps(t2, t3)));
+        _mm_storeu_ps(&out.m30_, r3);
 
         return out;
 #else
@@ -478,16 +547,13 @@ public:
             m20_ * rhs.m01_ + m21_ * rhs.m11_ + m22_ * rhs.m21_ + m23_ * rhs.m31_,
             m20_ * rhs.m02_ + m21_ * rhs.m12_ + m22_ * rhs.m22_ + m23_ * rhs.m32_,
             m20_ * rhs.m03_ + m21_ * rhs.m13_ + m22_ * rhs.m23_ + m23_ * rhs.m33_,
-            m30_ * rhs.m00_ + m31_ * rhs.m10_ + m32_ * rhs.m20_ + m33_ * rhs.m30_,
-            m30_ * rhs.m01_ + m31_ * rhs.m11_ + m32_ * rhs.m21_ + m33_ * rhs.m31_,
-            m30_ * rhs.m02_ + m31_ * rhs.m12_ + m32_ * rhs.m22_ + m33_ * rhs.m32_,
-            m30_ * rhs.m03_ + m31_ * rhs.m13_ + m32_ * rhs.m23_ + m33_ * rhs.m33_
+            rhs.m30_,
+            rhs.m31_,
+            rhs.m32_,
+            rhs.m33_
         );
 #endif
     }
-
-    /// Multiply with a 3x4 matrix.
-    Matrix4 operator *(const Matrix3x4& rhs) const;
 
     /// Set translation elements.
     void SetTranslation(const Vector3& translation)
@@ -511,7 +577,7 @@ public:
         m22_ = rotation.m22_;
     }
 
-    // Set scaling elements.
+    /// Set scaling elements.
     void SetScale(const Vector3& scale)
     {
         m00_ = scale.x_;
@@ -519,7 +585,7 @@ public:
         m22_ = scale.z_;
     }
 
-    // Set uniform scaling elements.
+    /// Set uniform scaling elements.
     void SetScale(float scale)
     {
         m00_ = scale;
@@ -541,6 +607,39 @@ public:
             m21_,
             m22_
         );
+    }
+
+    /// Convert to a 4x4 matrix by filling in an identity last row.
+    Matrix4 ToMatrix4() const
+    {
+#ifdef YUME_SSE
+        Matrix4 ret;
+        _mm_storeu_ps(&ret.m00_, _mm_loadu_ps(&m00_));
+        _mm_storeu_ps(&ret.m10_, _mm_loadu_ps(&m10_));
+        _mm_storeu_ps(&ret.m20_, _mm_loadu_ps(&m20_));
+        _mm_storeu_ps(&ret.m30_, _mm_set_ps(1.f, 0.f, 0.f, 0.f));
+        return ret;
+#else
+
+        return Matrix4(
+            m00_,
+            m01_,
+            m02_,
+            m03_,
+            m10_,
+            m11_,
+            m12_,
+            m13_,
+            m20_,
+            m21_,
+            m22_,
+            m23_,
+            0.0f,
+            0.0f,
+            0.0f,
+            1.0f
+        );
+#endif
     }
 
     /// Return the rotation matrix with scaling removed.
@@ -568,7 +667,7 @@ public:
     /// Return the rotation part.
     Quaternion Rotation() const { return Quaternion(RotationMatrix()); }
 
-    /// Return the scaling part
+    /// Return the scaling part.
     Vector3 Scale() const
     {
         return Vector3(
@@ -578,50 +677,13 @@ public:
         );
     }
 
-    /// Return transpose
-    Matrix4 Transpose() const
-    {
-#ifdef YumeEngine_SSE
-        __m128 m0 = _mm_loadu_ps(&m00_);
-        __m128 m1 = _mm_loadu_ps(&m10_);
-        __m128 m2 = _mm_loadu_ps(&m20_);
-        __m128 m3 = _mm_loadu_ps(&m30_);
-        _MM_TRANSPOSE4_PS(m0, m1, m2, m3);
-        Matrix4 out;
-        _mm_storeu_ps(&out.m00_, m0);
-        _mm_storeu_ps(&out.m10_, m1);
-        _mm_storeu_ps(&out.m20_, m2);
-        _mm_storeu_ps(&out.m30_, m3);
-        return out;
-#else
-        return Matrix4(
-            m00_,
-            m10_,
-            m20_,
-            m30_,
-            m01_,
-            m11_,
-            m21_,
-            m31_,
-            m02_,
-            m12_,
-            m22_,
-            m32_,
-            m03_,
-            m13_,
-            m23_,
-            m33_
-        );
-#endif
-    }
-
     /// Test for equality with another matrix with epsilon.
-    bool Equals(const Matrix4& rhs) const
+    bool Equals(const Matrix3x4& rhs) const
     {
         const float* leftData = Data();
         const float* rightData = rhs.Data();
 
-        for (unsigned i = 0; i < 16; ++i)
+        for (unsigned i = 0; i < 12; ++i)
         {
             if (!YumeEngine::Equals(leftData[i], rightData[i]))
                 return false;
@@ -633,9 +695,9 @@ public:
     /// Return decomposition to translation, rotation and scale.
     void Decompose(Vector3& translation, Quaternion& rotation, Vector3& scale) const;
     /// Return inverse.
-    Matrix4 Inverse() const;
+    Matrix3x4 Inverse() const;
 
-    /// Return float data
+    /// Return float data.
     const float* Data() const { return &m00_; }
 
     /// Return as string.
@@ -653,57 +715,44 @@ public:
     float m21_;
     float m22_;
     float m23_;
-    float m30_;
-    float m31_;
-    float m32_;
-    float m33_;
-
-    /// Bulk transpose matrices.
-    static void BulkTranspose(float* dest, const float* src, unsigned count)
-    {
-        for (unsigned i = 0; i < count; ++i)
-        {
-#ifdef YumeEngine_SSE
-            __m128 m0 = _mm_loadu_ps(src);
-            __m128 m1 = _mm_loadu_ps(src + 4);
-            __m128 m2 = _mm_loadu_ps(src + 8);
-            __m128 m3 = _mm_loadu_ps(src + 12);
-            _MM_TRANSPOSE4_PS(m0, m1, m2, m3);
-            _mm_storeu_ps(dest, m0);
-            _mm_storeu_ps(dest + 4, m1);
-            _mm_storeu_ps(dest + 8, m2);
-            _mm_storeu_ps(dest + 12, m3);
-#else
-            dest[0] = src[0];
-            dest[1] = src[4];
-            dest[2] = src[8];
-            dest[3] = src[12];
-            dest[4] = src[1];
-            dest[5] = src[5];
-            dest[6] = src[9];
-            dest[7] = src[13];
-            dest[8] = src[2];
-            dest[9] = src[6];
-            dest[10] = src[10];
-            dest[11] = src[14];
-            dest[12] = src[3];
-            dest[13] = src[7];
-            dest[14] = src[11];
-            dest[15] = src[15];
-#endif
-            dest += 16;
-            src += 16;
-        }
-    }
 
     /// Zero matrix.
-    static const Matrix4 ZERO;
+    static const Matrix3x4 ZERO;
     /// Identity matrix.
-    static const Matrix4 IDENTITY;
+    static const Matrix3x4 IDENTITY;
+
+#ifdef YUME_SSE
+private:
+    // Sets this matrix from the given translation, rotation (as quaternion (w,x,y,z)), and nonuniform scale (x,y,z) parameters.
+    // Note: the w component of the scale parameter passed to this function must be 1.
+    void inline SetFromTRS(__m128 t, __m128 q, __m128 s)
+    {
+        q = _mm_shuffle_ps(q, q, _MM_SHUFFLE(0, 3, 2, 1));
+        __m128 one = _mm_set_ps(0, 0, 0, 1);
+        const __m128 sseX1 = _mm_castsi128_ps(_mm_set_epi32((int)0x80000000UL, (int)0x80000000UL, 0, (int)0x80000000UL));
+        __m128 q2 = _mm_add_ps(q, q);
+        __m128 t2 = _mm_add_ss(_mm_xor_ps(_mm_mul_ps(_mm_shuffle_ps(q, q, _MM_SHUFFLE(3, 3, 3, 2)), _mm_shuffle_ps(q2, q2, _MM_SHUFFLE(0, 1, 2, 2))), sseX1), one);
+        const __m128 sseX0 = _mm_shuffle_ps(sseX1, sseX1, _MM_SHUFFLE(0, 3, 2, 1));
+        __m128 t0 = _mm_mul_ps(_mm_shuffle_ps(q, q, _MM_SHUFFLE(1, 0, 0, 1)), _mm_shuffle_ps(q2, q2, _MM_SHUFFLE(2, 2, 1, 1)));
+        __m128 t1 = _mm_xor_ps(t0, sseX0);
+        __m128 r0 = _mm_sub_ps(t2, t1);
+        __m128 xx2 = _mm_mul_ss(q, q2);
+        __m128 r1 = _mm_sub_ps(_mm_xor_ps(t2, sseX0), _mm_move_ss(t1, xx2));
+        r1 = _mm_shuffle_ps(r1, r1, _MM_SHUFFLE(2, 3, 0, 1));
+        __m128 r2 = _mm_shuffle_ps(_mm_movehl_ps(r0, r1), _mm_sub_ss(_mm_sub_ss(one, xx2), t0), _MM_SHUFFLE(2, 0, 3, 1));
+        __m128 tmp0 = _mm_unpacklo_ps(r0, r1);
+        __m128 tmp2 = _mm_unpacklo_ps(r2, t);
+        __m128 tmp1 = _mm_unpackhi_ps(r0, r1);
+        __m128 tmp3 = _mm_unpackhi_ps(r2, t);
+        _mm_storeu_ps(&m00_, _mm_mul_ps(_mm_movelh_ps(tmp0, tmp2), s));
+        _mm_storeu_ps(&m10_, _mm_mul_ps(_mm_movehl_ps(tmp2, tmp0), s));
+        _mm_storeu_ps(&m20_, _mm_mul_ps(_mm_movelh_ps(tmp1, tmp3), s));
+    }
+#endif
 };
 
-/// Multiply a 4x4 matrix with a scalar
-inline Matrix4 operator *(float lhs, const Matrix4& rhs) { return rhs * lhs; }
+/// Multiply a 3x4 matrix with a scalar.
+inline Matrix3x4 operator *(float lhs, const Matrix3x4& rhs) { return rhs * lhs; }
 }
 
 
