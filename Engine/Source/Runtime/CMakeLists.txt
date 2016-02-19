@@ -20,11 +20,21 @@
 PROJECT(Yume)
 include(PrecompiledHeader)
 
-set(SRC_GRAPHICS
-
+set(SRC_RENDERER
+	Renderer/YumeRendererDefs.h
+	Renderer/YumeGraphicsApi.h
 )
-set(SRC_GRAPHICS_D3D11
-
+set(SRC_RENDERER_D3D11
+	Renderer/Direct3D11/YumeD3D11ShaderVariation.h
+	Renderer/Direct3D11/YumeD3D11ShaderVariation.cc
+	Renderer/Direct3D11/YumeD3D11RendererImpl.h
+	Renderer/Direct3D11/YumeD3D11RendererImpl.cc
+	Renderer/Direct3D11/YumeD3D11ConstantBuffer.h
+	Renderer/Direct3D11/YumeD3D11ConstantBuffer.cc
+	Renderer/Direct3D11/YumeD3D11GpuResource.h
+	Renderer/Direct3D11/YumeD3D11GpuResource.cc
+	Renderer/Direct3D11/YumeD3D11Graphics.h
+	Renderer/Direct3D11/YumeD3D11Graphics.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h
@@ -91,18 +101,26 @@ set( SRC_CORE_MEMORY
 	Core/YumeMemoryAllocatorStd.h
 	Core/YumeAlignedAllocator.h
 )
+
+set( SRC_ENGINE
+	Engine/YumeEngine.h
+	Engine/YumeEngine.cc
+)
 source_group(Yume\\\\Logging FILES ${SRC_LOGGING})
 source_group(Yume\\\\Math FILES ${SRC_MATH})
-source_group(Yume\\\\Graphics FILES ${SRC_GRAPHICS})
+source_group(Yume\\\\Renderer FILES ${SRC_RENDERER})
+source_group(Yume\\\\Renderer\\\\Direct3D11 FILES ${SRC_RENDERER_D3D11})
 source_group(Yume\\\\Core FILES ${SRC_CORE})
 source_group(Yume\\\\Core\\\\Config FILES ${SRC_CORE_CONFIG})
 source_group(Yume\\\\Core\\\\Memory FILES ${SRC_CORE_MEMORY})
+source_group(Yume\\\\Engine FILES ${SRC_ENGINE})
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Core)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${YUME_3RDPARTY_PATH})
+include_directories(${YUME_SDL_INCLUDE_PATH})
 
 
 
@@ -116,10 +134,13 @@ ADD_LIBRARY(${YUME} STATIC
 					  ${SRC_CORE_UTILS}
 					  ${SRC_CORE_CONFIG}
 						${SRC_CORE_STL}
-						${SRC_GRAPHICS_D3D11}
+						${SRC_RENDERER_D3D11}
+						${SRC_RENDERER}
+						${SRC_ENGINE}
 						)
 
 add_definitions(-DBUILDING_YUME_ENGINE)
+add_definitions(-DYUME_DIRECT3D11)
 
 set(YUME_LIB_TYPE "SHARED")
 

@@ -20,6 +20,7 @@
 
 #Setup various PATHS
 set(YUME_BOOST_PATH "${CMAKE_SOURCE_DIR}/Engine/Source/3rdParty/yume-boost")
+set(YUME_SDL_INCLUDE_PATH "${CMAKE_SOURCE_DIR}/Engine/Source/3rdParty/SDL-mirror/include")
 set(YUME_ROOT_DIR "${CMAKE_SOURCE_DIR}")
 set(YUME_3RDPARTY_PATH "${CMAKE_SOURCE_DIR}/Engine/Source/3rdParty")
 SET(YUME_TEMPLATES_DIR "${CMAKE_SOURCE_DIR}/CMake/Templates")
