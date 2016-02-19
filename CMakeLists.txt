@@ -64,6 +64,7 @@ endif()
 
 
 if(OS_LINUX)
+  include(CheckCXXCompilerFlag)
   check_cxx_compiler_flag(-msse YUME_GCC_HAS_SSE)
   if (YUME_GCC_HAS_SSE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")

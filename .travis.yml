@@ -1,6 +1,8 @@
 language: cpp
 os: linux
 
+notifications:
+  email: false
 
 git:
   submodules: false
