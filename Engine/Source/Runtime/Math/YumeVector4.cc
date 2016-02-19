@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 arkenthera
+/// Copyright (c) 2015 Alperen Gezer
 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,5 @@
 
 namespace YumeEngine
 {
-	const Vector4 Vector4::ZERO;
-	const Vector4 Vector4::ONE(1.0f,1.0f,1.0f,1.0f);
-
-	YumeString Vector4::ToString() const
-	{
-		char tempBuffer[128];
-		sprintf(tempBuffer,"%g %g %g %g",x_,y_,z_,w_);
-		return YumeString(tempBuffer);
-	}
+	const Vector4 Vector4::ZERO(0, 0, 0, 0);
 }

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 arkenthera
+/// Copyright (c) 2015 Alperen Gezer
 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -67,6 +67,19 @@ namespace YumeEngine
 
 #endif
 
+#if YUME_MEMORY_ALLOCATOR == YUME_MEMORY_ALLOCATOR_STD
+
+#include "Core/YumeMemoryAllocatorStd.h"
+
+namespace YumeEngine
+{
+	template <MemoryCategory Cat> class YumeCategorisedAllocPolicy : public StdAllocPolicy{};
+	template <MemoryCategory Cat,size_t align = 0> class YumeCategorisedAlignAllocPolicy : public StdAlignedAllocPolicy<align>{};
+};
+
+#endif
+
+
 namespace YumeEngine
 {
 	typedef YumeCategorisedAlignAllocPolicy<YumeEngine::YUME_MEM_GENERAL> YumeGeneralAllocPolicy;
@@ -74,7 +87,7 @@ namespace YumeEngine
 
 	typedef YumeAllocatedObject<YumeGeneralAllocPolicy> YumeGeneralAllocatedObject;
 	typedef YumeAllocatedObject<YumeRendererAllocPolicy> YumeRendererAllocatedObject;
-	
+
 	typedef YumeGeneralAllocatedObject GeneralObjAlloc;
 	typedef YumeGeneralAllocatedObject LogObjAlloc;
 	typedef YumeRendererAllocatedObject RenderObjAlloc;
@@ -84,9 +97,9 @@ namespace YumeEngine
 namespace YumeEngine
 {
 	template<typename T>
-	T* constructN(T* basePtr, size_t count)
+	T* constructN(T* basePtr,size_t count)
 	{
-		for (size_t i = 0; i < count; ++i)
+		for(size_t i = 0; i < count; ++i)
 		{
 			new ((void*)(basePtr+i)) T();
 		}

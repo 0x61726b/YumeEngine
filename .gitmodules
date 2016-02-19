@@ -2,3 +2,15 @@
 	path = Engine/Source/3rdParty/log4cplus
 	url = https://github.com/log4cplus/log4cplus
 	branch = master
+[submodule "Engine/Source/3rdParty/SDL-mirror"]
+	path = Engine/Source/3rdParty/SDL-mirror
+	url = https://github.com/spurious/SDL-mirror
+	branch = master
+[submodule "Engine/Source/3rdParty/yume-freetype"]
+	path = Engine/Source/3rdParty/yume-freetype
+	url = https://github.com/arkenthera/yume-freetype
+	branch = master
+[submodule "Engine/Source/3rdParty/yume-boost"]
+	path = Engine/Source/3rdParty/yume-boost
+	url = https://github.com/arkenthera/yume-boost
+	branch = 1.57.0

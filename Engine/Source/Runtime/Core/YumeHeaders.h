@@ -34,11 +34,6 @@
 #include "Core/YumePlatform.h"
 
 #include "Core/YumeCommon.h"
-
-#include "Core/YumeHashMap.h"
-#include "Core/YumeHashSet.h"
-#include "Core/YumeSort.h"
-#include "Core/YumeStr.h"
 ///--------------------------------------------------------------------------------
 #endif
 //~End of YumePlatform.h

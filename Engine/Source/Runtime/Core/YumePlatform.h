@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 arkenthera
+/// Copyright (c) 2015 Alperen Gezer
 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -105,6 +105,16 @@ namespace YumeEngine
 	//--------------------------------------------------------------------------------
 	#if defined( __WIN32__ ) || defined( _WIN32 )
 	#   define YUME_PLATFORM YUME_PLATFORM_WIN32
+	#elif defined(__ANDROID__)
+	#	define YUME_PLATFORM YUME_PLATFORM_ANDROID
+	#elif defined( __native_client__ ) 
+	#   define YUME_PLATFORM OGRE_PLATFORM_NACL
+	#   ifndef ARKEN_STATIC_LIB
+	#       error OGRE must be built as static for NaCl
+	#   endif
+	#   ifdef YUME_BUILD_RENDERER_OGL
+	#       error OpenGL is not supported on NaCl
+	#   endif
 	#else
 	#   define YUME_PLATFORM YUME_PLATFORM_LINUX
 	#endif
@@ -127,10 +137,10 @@ namespace YumeEngine
 	#if YUME_COMPILER == YUME_COMPILER_MSVC
 	#   define YUME_DEPRECATED __declspec(deprecated)
 	#elif YUME_COMPILER == YUME_COMPILER_GNUC || YUME_COMPILER == YUME_COMPILER_CLANG
-	#   define YUME_DEPRECATED __attribute__ ((deprecated))
+	#   define OGRE_DEPRECATED __attribute__ ((deprecated))
 	#else
 	#   pragma message("WARNING: NO DEPRECATED FUNCTION IMPLEMENTED FOR THIS COMPILER SwiftRage")
-	#   define YUME_DEPRECATED
+	#   define OGRE_DEPRECATED
 	#endif
 	//Windows Settings
 	#if YUME_PLATFORM == YUME_PLATFORM_WIN32 || YUME_PLATFORM == YUME_PLATFORM_WINRT
@@ -140,18 +150,18 @@ namespace YumeEngine
 	#   	define YumeAPIExport
 	#   	define YumeAPIPrivate
 	#   else
-	#		if defined BUILDING_YUME_ENGINE
+	  		#if defined BUILDING_YUME_ENGINE
 	#			define YumeAPIExport __declspec( dllexport )
 	#		else
 	#			define YumeAPIExport __declspec( dllimport )
-#			endif	
+	#		endif
 	#   	define YumeAPIPrivate
 	#	endif
 	#endif
 	#if YUME_PLATFORM == YUME_PLATFORM_LINUX
 	#   if defined( YUME_GCC_VISIBILITY )
-	#		define YumeAPIExport  __attribute__ ((visibility("default")))
-	#		define YumeAPIPrivate __attribute__ ((visibility("hidden")))
+	#define YumeAPIExport  __attribute__ ((visibility("default")))
+	#define YumeAPIPrivate __attribute__ ((visibility("hidden")))
 	#   else
 	#       define YumeAPIExport
 	#       define YumeAPIPrivate
@@ -181,7 +191,7 @@ namespace YumeEngine
 	#endif
 
 	#if YUME_COMPILER == YUME_COMPILER_MSVC
-	#   define YUME_ALIGNED_DECL(type, var, alignment)  __declspec(align(alignment)) type var
+	#   define OGRE_ALIGNED_DECL(type, var, alignment)  __declspec(align(alignment)) type var
 
 	#elif (YUME_COMPILER == YUME_COMPILER_GNUC) || (YUME_COMPILER == YUME_COMPILER_CLANG)
 	#   define YUME_ALIGNED_DECL(type, var, alignment)  type var __attribute__((__aligned__(alignment)))
@@ -197,7 +207,7 @@ namespace YumeEngine
 	#   define YUME_SIMD_ALIGNMENT  16
 	#endif
 
-	#define YUME_SIMD_ALIGNED_DECL(type, var)   YUME_ALIGNED_DECL(type, var, YUME_SIMD_ALIGNMENT)
+	#define YUME_SIMD_ALIGNED_DECL(type, var)   YUME_ALIGNED_DECL(type, var, OGRE_SIMD_ALIGNMENT)
 
 	#define YUME_DEBUG_MODE 1
 }

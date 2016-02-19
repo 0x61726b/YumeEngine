@@ -21,18 +21,10 @@ PROJECT(Yume)
 include(PrecompiledHeader)
 
 set(SRC_GRAPHICS
-	Graphics/YumeRenderer.cc
-	Graphics/YumeRenderTarget.cc
-	Graphics/YumeRenderWindow.cc
-	Graphics/YumeRendererCapabilities.cc
-	Graphics/YumeViewport.cc
-	Graphics/YumeViewport.h
-	Graphics/YumeRenderer.h
-	Graphics/YumeRenderTarget.h
-	Graphics/YumeRenderWindow.h
-	Graphics/YumeRendererCapabilities.h
-	Graphics/YumeGraphics.h
-	Graphics/YumeGraphics.cc
+
+)
+set(SRC_GRAPHICS_D3D11
+
 )
 set( SRC_LOGGING
 		Logging/logging.h
@@ -41,132 +33,81 @@ set( SRC_LOGGING
 
 set( SRC_MATH
 	Math/asm_math.h
-	Math/YumeVector2.cc
-	Math/YumeVector3.cc
-	Math/YumeVector4.cc
-	Math/YumeMatrix3.cc
-	Math/YumeMatrix2.cc
-	Math/YumeMatrix4.cc
-	Math/YumeQuaternion.cc
-	Math/YumePlane.cc
-	Math/YumeMath.h
 	Math/YumeVector2.h
+	Math/YumeVector2.cc
 	Math/YumeVector3.h
+	Math/YumeVector3.cc
 	Math/YumeVector4.h
-	Math/YumeMatrix2.h
+	Math/YumeVector4.cc
 	Math/YumeMatrix3.h
-	Math/YumeMatrix3x4.h
-	Math/YumeMatrix3x4.cc
+	Math/YumeMatrix3.cc
 	Math/YumeMatrix4.h
+	Math/YumeMatrix4.cc
 	Math/YumeQuaternion.h
+	Math/YumeQuaternion.cc
 	Math/YumePlane.h
+	Math/YumePlaneBoundedVolume.h
+	Math/YumePlane.cc
 	Math/YumeSphere.h
-	Math/YumeSphere.cc
 	Math/YumeRay.h
-	Math/YumeRandom.h
-	Math/YumeRandom.cc
-	Math/YumeBoundingBox.h
-	Math/YumeBoundingBox.cc
-	Math/YumePolyhedron.h
-	Math/YumePolyhedron.cc
-	Math/YumeRect.h
-	Math/YumeRect.cc
-	Math/YumeFrustum.h
-	Math/YumeFrustum.cc
-	Math/YumeColor.h
-	Math/YumeColor.cc
-	Math/YumeStringHash.cc
-	Math/YumeStringHash.cc
+	Math/YumeAxisAlignedBox.h
+	Math/YumeMath.h
+	Math/YumeMath.cc
 )
 
 set( SRC_CORE
 	Core/Pch.cc
 	Core/YumeCommon.cc
-	Core/YumeCentrum.cc
 	Core/YumeHeaders.h
   Core/YumeRequired.h
   Core/Yume.h
-  Core/YumeCentrum.h
   Core/YumeCommon.h
   Core/YumeStdHeaders.h
-	Core/YumeString.h
 	Core/PlatformImpl.h
 	Core/PlatformImpl_Win32.cc
-	Core/YumeVariant.h
-	Core/YumeObject.h
-	Core/YumeObject.h
-	Core/YumeLinkedList.h
-	Core/YumeContext.h
-	Core/YumeContext.cc
-	Core/YumeAttribute.h
-	Core/YumeAllocator.cc
-	Core/YumeAllocator.h
-	Core/YumeArrayPtr.h
-	Core/YumeForEach.h
-	Core/YumeHash.h
-	Core/YumeHashBase.cc
-	Core/YumeHashBase.h
-	Core/YumeHashMap.h
-	Core/YumeHashSet.h
-	Core/YumeList.h
-	Core/YumeListBase.h
-	Core/YumePair.h
-	Core/YumeSort.h
-	Core/YumeStr.h
-	Core/YumeStr.cc
-	Core/YumeSwap.h
-	Core/YumeSwap.cc
-	Core/YumeVector.h
-	Core/YumeVectorBase.cc
-	Core/YumeVectorBase.h
+	Core/YumeHeaderSuffix.h
+	Core/YumeHeaderPrefix.h
 		)
+set( SRC_CORE_STL
+
+)
 set( SRC_CORE_CONFIG
 	Core/YumeConfig.h
 	Core/YumePlatform.h
 	${CMAKE_BINARY_DIR}/Include/YumeBuildSettings.h
 )
 set( SRC_CORE_UTILS
-	Core/YumeWindowMessageListener.cc
-	Core/YumeString.cc
-	Core/YumeStringConverter.cc
-	Core/YumeStringVector.h
-	Core/YumeStringConverter.h
-	Core/YumeConfigOption.h
-	Core/YumeWindowMessageListener.h
-	Core/YumeHeaderSuffix.h
-	Core/YumeHeaderPrefix.h
+
 )
 set( SRC_CORE_MEMORY
-	Core/YumeMallocObject.h
-  Core/YumeMemoryAllocatorNed.h
-  Core/YumeMemoryAllocatorNedPooling.h
-  Core/YumeMemoryAllocatorSTL.h
-  Core/YumeMemoryAllocatorConfig.h
+	Core/YumeMemoryAllocatorSTL.h
+	Core/YumeMemoryAllocatorConfig.h
+	Core/YumeMemoryAllocatorNed.h
+	Core/YumeMemoryAllocatorNedPooling.h
 	Core/YumeMemoryAllocatorNed.cc
-	Core/YumeMallocObject.cc
 	Core/YumeMemoryAllocatorNedPooling.cc
-	Core/YumePointer.h
-	Core/YumeIntrusive.h
-	Core/YumeIntrusive.cc
+	Core/YumeMallocObject.h
+	Core/YumeMallocObject.cc
+	Core/YumeMemoryAllocatorStd.h
+	Core/YumeAlignedAllocator.h
 )
 source_group(Yume\\\\Logging FILES ${SRC_LOGGING})
 source_group(Yume\\\\Math FILES ${SRC_MATH})
 source_group(Yume\\\\Graphics FILES ${SRC_GRAPHICS})
 source_group(Yume\\\\Core FILES ${SRC_CORE})
-source_group(Yume\\\\Core\\\\Memory FILES ${SRC_CORE_MEMORY})
-source_group(Yume\\\\Core\\\\Utils FILES ${SRC_CORE_UTILS})
 source_group(Yume\\\\Core\\\\Config FILES ${SRC_CORE_CONFIG})
+source_group(Yume\\\\Core\\\\Memory FILES ${SRC_CORE_MEMORY})
 
 
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Core/nedmalloc)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Core)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${YUME_3RDPARTY_PATH})
 
 
 
-ADD_LIBRARY(${YUME} SHARED
+
+ADD_LIBRARY(${YUME} STATIC
 						${SRC_LOGGING}
  						${SRC_MATH}
 					  ${SRC_CORE}
@@ -174,6 +115,8 @@ ADD_LIBRARY(${YUME} SHARED
 					  ${SRC_CORE_MEMORY}
 					  ${SRC_CORE_UTILS}
 					  ${SRC_CORE_CONFIG}
+						${SRC_CORE_STL}
+						${SRC_GRAPHICS_D3D11}
 						)
 
 add_definitions(-DBUILDING_YUME_ENGINE)
@@ -206,13 +149,15 @@ link_boost_library(${YUME} filesystem)
 link_boost_library(${YUME} thread)
 link_boost_library(${YUME} system)
 link_boost_library(${YUME} date_time)
+target_link_libraries(${YUME} SDL2-static)
+target_link_libraries(${YUME} FreeType)
 
 set(YUME_LIBRARIES ${YUME_LIBRARIES} boost_filesystem boost_thread boost_system boost_date_time log4cplus)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
 set_target_properties(${YUME} PROPERTIES FOLDER "Yume")
-set_target_properties(log4cplus PROPERTIES FOLDER "3rdParty")
+
 
 set_target_properties( ${YUME}
     PROPERTIES

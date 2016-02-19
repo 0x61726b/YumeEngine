@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 arkenthera
+/// Copyright (c) 2015 Alperen Gezer
 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #ifndef __YumeMemoryAllocatorSTL_h__
 #define __YumeMemoryAllocatorSTL_h__
 //---------------------------------------------------------------------------------
-#include "Core/YumeRequired.h"
+#include "YumeRequired.h"
 #include "YumeHeaderPrefix.h"
 //---------------------------------------------------------------------------------
 namespace YumeEngine

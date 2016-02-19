@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 arkenthera
+/// Copyright (c) 2015 Alperen Gezer
 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -29,106 +29,83 @@
 #ifndef __YumeRay_h__
 #define __YumeRay_h__
 //--------------------------------------------------------------------------------
-#include "Core/YumeRequired.h"
-#include "Math/YumeMatrix3x4.h"
-
+#include "YumeRequired.h"
+#include "YumeVector3.h"
+#include "YumePlaneBoundedVolume.h"
 //--------------------------------------------------------------------------------
 namespace YumeEngine
 {
-
-	class BoundingBox;
-	class Frustum;
-	class Plane;
-	class Sphere;
-
-	/// Infinite straight line in three-dimensional space.
 	class YumeAPIExport Ray
 	{
+	protected:
+		Vector3 mOrigin;
+		Vector3 mDirection;
 	public:
-		/// Construct a degenerate ray with zero origin and direction.
-		Ray()
-		{
+		Ray() :mOrigin(Vector3::ZERO), mDirection(Vector3::UNIT_Z) {}
+		Ray(const Vector3& origin, const Vector3& direction)
+			:mOrigin(origin), mDirection(direction) {}
+
+		/** Sets the origin of the ray. */
+		void setOrigin(const Vector3& origin) { mOrigin = origin; }
+		/** Gets the origin of the ray. */
+		const Vector3& getOrigin(void) const { return mOrigin; }
+
+		/** Sets the direction of the ray. */
+		void setDirection(const Vector3& dir) { mDirection = dir; }
+		/** Gets the direction of the ray. */
+		const Vector3& getDirection(void) const { return mDirection; }
+
+		/** Gets the position of a point t units along the ray. */
+		Vector3 getPoint(Real t) const {
+			return Vector3(mOrigin + (mDirection * t));
 		}
 
-		/// Construct from origin and direction. The direction will be normalized.
-		Ray(const Vector3& origin,const Vector3& direction)
-		{
-			Define(origin,direction);
+		/** Gets the position of a point t units along the ray. */
+		Vector3 operator*(Real t) const {
+			return getPoint(t);
 		}
 
-		/// Copy-construct from another ray.
-		Ray(const Ray& ray):
-			origin_(ray.origin_),
-			direction_(ray.direction_)
+		/** Tests whether this ray intersects the given plane.
+		@return A pair structure where the first element indicates whether
+		an intersection occurs, and if true, the second element will
+		indicate the distance along the ray at which it intersects.
+		This can be converted to a point in space by calling getPoint().
+		*/
+		std::pair<bool, Real> intersects(const Plane& p) const
 		{
+			return Math::intersects(*this, p);
+		}
+		/** Tests whether this ray intersects the given plane bounded volume.
+		@return A pair structure where the first element indicates whether
+		an intersection occurs, and if true, the second element will
+		indicate the distance along the ray at which it intersects.
+		This can be converted to a point in space by calling getPoint().
+		*/
+		std::pair<bool, Real> intersects(const PlaneBoundedVolume& p) const
+		{
+			return Math::intersects(*this, p.planes, p.outside == Plane::POSITIVE_SIDE);
+		}
+		/** Tests whether this ray intersects the given sphere.
+		@return A pair structure where the first element indicates whether
+		an intersection occurs, and if true, the second element will
+		indicate the distance along the ray at which it intersects.
+		This can be converted to a point in space by calling getPoint().
+		*/
+		std::pair<bool, Real> intersects(const Sphere& s) const
+		{
+			return Math::intersects(*this, s);
+		}
+		/** Tests whether this ray intersects the given box.
+		@return A pair structure where the first element indicates whether
+		an intersection occurs, and if true, the second element will
+		indicate the distance along the ray at which it intersects.
+		This can be converted to a point in space by calling getPoint().
+		*/
+		std::pair<bool, Real> intersects(const AxisAlignedBox& box) const
+		{
+			return Math::intersects(*this, box);
 		}
 
-		/// Assign from another ray.
-		Ray& operator =(const Ray& rhs)
-		{
-			origin_ = rhs.origin_;
-			direction_ = rhs.direction_;
-			return *this;
-		}
-
-		/// Check for equality with another ray.
-		bool operator ==(const Ray& rhs) const { return origin_ == rhs.origin_ && direction_ == rhs.direction_; }
-
-		/// Check for inequality with another ray.
-		bool operator !=(const Ray& rhs) const { return origin_ != rhs.origin_ || direction_ != rhs.direction_; }
-
-		/// Define from origin and direction. The direction will be normalized.
-		void Define(const Vector3& origin,const Vector3& direction)
-		{
-			origin_ = origin;
-			direction_ = direction.Normalized();
-		}
-
-		/// Project a point on the ray.
-		Vector3 Project(const Vector3& point) const
-		{
-			Vector3 offset = point - origin_;
-			return origin_ + offset.DotProduct(direction_) * direction_;
-		}
-
-		/// Return distance of a point from the ray.
-		float Distance(const Vector3& point) const
-		{
-			Vector3 projected = Project(point);
-			return (point - projected).Length();
-		}
-
-		/// Return closest point to another ray.
-		Vector3 ClosestPoint(const Ray& ray) const;
-		/// Return hit distance to a plane, or infinity if no hit.
-		float HitDistance(const Plane& plane) const;
-		/// Return hit distance to a bounding box, or infinity if no hit.
-		float HitDistance(const BoundingBox& box) const;
-		/// Return hit distance to a frustum, or infinity if no hit. If solidInside parameter is true (default) rays originating from inside return zero distance, otherwise the distance to the closest plane.
-		float HitDistance(const Frustum& frustum,bool solidInside = true) const;
-		/// Return hit distance to a sphere, or infinity if no hit.
-		float HitDistance(const Sphere& sphere) const;
-		/// Return hit distance to a triangle, or infinity if no hit. Optionally return hit normal and hit barycentric coordinate at intersect point.
-		float HitDistance(const Vector3& v0,const Vector3& v1,const Vector3& v2,Vector3* outNormal = 0,Vector3* outBary = 0) const;
-		/// Return hit distance to non-indexed geometry data, or infinity if no hit. Optionally return hit normal and hit uv coordinates at intersect point.
-		float HitDistance
-			(const void* vertexData,unsigned vertexStride,unsigned vertexStart,unsigned vertexCount,Vector3* outNormal = 0,
-			Vector2* outUV = 0,unsigned uvOffset = 0) const;
-		/// Return hit distance to indexed geometry data, or infinity if no hit. Optionally return hit normal and hit uv coordinates at intersect point.
-		float HitDistance(const void* vertexData,unsigned vertexStride,const void* indexData,unsigned indexSize,unsigned indexStart,
-			unsigned indexCount,Vector3* outNormal = 0,Vector2* outUV = 0,unsigned uvOffset = 0) const;
-		/// Return whether ray is inside non-indexed geometry.
-		bool InsideGeometry(const void* vertexData,unsigned vertexSize,unsigned vertexStart,unsigned vertexCount) const;
-		/// Return whether ray is inside indexed geometry.
-		bool InsideGeometry(const void* vertexData,unsigned vertexSize,const void* indexData,unsigned indexSize,unsigned indexStart,
-			unsigned indexCount) const;
-		/// Return transformed by a 3x4 matrix. This may result in a non-normalized direction.
-		Ray Transformed(const Matrix3x4& transform) const;
-
-		/// Ray origin.
-		Vector3 origin_;
-		/// Ray direction.
-		Vector3 direction_;
 	};
 }
 

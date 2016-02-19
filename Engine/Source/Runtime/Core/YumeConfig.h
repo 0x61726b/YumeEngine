@@ -44,6 +44,7 @@
 #endif
 
 #define YUME_SSE
+#define YUME_THREADING
 //---------------------------------------------------------------------------------
 #endif
 //~End of YumeConfig.h

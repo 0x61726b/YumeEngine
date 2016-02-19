@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 arkenthera
+/// Copyright (c) 2015 Alperen Gezer
 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -29,207 +29,375 @@
 #ifndef __YumeVector4_h__
 #define __YumeVector4_h__
 //--------------------------------------------------------------------------------
-#include "Core/YumeRequired.h"
+#include "YumeRequired.h"
 #include "YumeVector3.h"
 //--------------------------------------------------------------------------------
 namespace YumeEngine
 {
-	
-/// Four-dimensional vector.
-class YumeAPIExport Vector4
-{
-public:
-    /// Construct a zero vector.
-    Vector4() :
-        x_(0.0f),
-        y_(0.0f),
-        z_(0.0f),
-        w_(0.0f)
-    {
-    }
+	class YumeAPIExport Vector4
+	{
+	public:
+		Real x, y, z, w;
 
-    /// Copy-construct from another vector.
-    Vector4(const Vector4& vector) :
-        x_(vector.x_),
-        y_(vector.y_),
-        z_(vector.z_),
-        w_(vector.w_)
-    {
-    }
+	public:
+		inline Vector4()
+		{
+		}
 
-    /// Construct from a 3-dimensional vector and the W coordinate.
-    Vector4(const Vector3& vector, float w) :
-        x_(vector.x_),
-        y_(vector.y_),
-        z_(vector.z_),
-        w_(w)
-    {
-    }
+		inline Vector4(const Real fX, const Real fY, const Real fZ, const Real fW)
+			: x(fX), y(fY), z(fZ), w(fW)
+		{
+		}
 
-    /// Construct from coordinates.
-    Vector4(float x, float y, float z, float w) :
-        x_(x),
-        y_(y),
-        z_(z),
-        w_(w)
-    {
-    }
+		inline explicit Vector4(const Real afCoordinate[4])
+			: x(afCoordinate[0]),
+			y(afCoordinate[1]),
+			z(afCoordinate[2]),
+			w(afCoordinate[3])
+		{
+		}
 
-    /// Construct from a float array.
-    explicit Vector4(const float* data) :
-        x_(data[0]),
-        y_(data[1]),
-        z_(data[2]),
-        w_(data[3])
-    {
-    }
+		inline explicit Vector4(const int afCoordinate[4])
+		{
+			x = (Real)afCoordinate[0];
+			y = (Real)afCoordinate[1];
+			z = (Real)afCoordinate[2];
+			w = (Real)afCoordinate[3];
+		}
 
-    /// Assign from another vector.
-    Vector4& operator =(const Vector4& rhs)
-    {
-        x_ = rhs.x_;
-        y_ = rhs.y_;
-        z_ = rhs.z_;
-        w_ = rhs.w_;
-        return *this;
-    }
+		inline explicit Vector4(Real* const r)
+			: x(r[0]), y(r[1]), z(r[2]), w(r[3])
+		{
+		}
 
-    /// Test for equality with another vector without epsilon.
-    bool operator ==(const Vector4& rhs) const { return x_ == rhs.x_ && y_ == rhs.y_ && z_ == rhs.z_ && w_ == rhs.w_; }
+		inline explicit Vector4(const Real scaler)
+			: x(scaler)
+			, y(scaler)
+			, z(scaler)
+			, w(scaler)
+		{
+		}
 
-    /// Test for inequality with another vector without epsilon.
-    bool operator !=(const Vector4& rhs) const { return x_ != rhs.x_ || y_ != rhs.y_ || z_ != rhs.z_ || w_ != rhs.w_; }
+		inline explicit Vector4(const Vector3& rhs)
+			: x(rhs.x), y(rhs.y), z(rhs.z), w(1.0f)
+		{
+		}
 
-    /// Add a vector.
-    Vector4 operator +(const Vector4& rhs) const { return Vector4(x_ + rhs.x_, y_ + rhs.y_, z_ + rhs.z_, w_ + rhs.w_); }
+		/** Exchange the contents of this vector with another.
+		*/
+		inline void swap(Vector4& other)
+		{
+			std::swap(x, other.x);
+			std::swap(y, other.y);
+			std::swap(z, other.z);
+			std::swap(w, other.w);
+		}
 
-    /// Return negation.
-    Vector4 operator -() const { return Vector4(-x_, -y_, -z_, -w_); }
+		inline Real operator [] (const size_t i) const
+		{
+			assert(i < 4);
 
-    /// Subtract a vector.
-    Vector4 operator -(const Vector4& rhs) const { return Vector4(x_ - rhs.x_, y_ - rhs.y_, z_ - rhs.z_, w_ - rhs.w_); }
+			return *(&x + i);
+		}
 
-    /// Multiply with a scalar.
-    Vector4 operator *(float rhs) const { return Vector4(x_ * rhs, y_ * rhs, z_ * rhs, w_ * rhs); }
+		inline Real& operator [] (const size_t i)
+		{
+			assert(i < 4);
 
-    /// Multiply with a vector.
-    Vector4 operator *(const Vector4& rhs) const { return Vector4(x_ * rhs.x_, y_ * rhs.y_, z_ * rhs.z_, w_ * rhs.w_); }
+			return *(&x + i);
+		}
 
-    /// Divide by a scalar.
-    Vector4 operator /(float rhs) const { return Vector4(x_ / rhs, y_ / rhs, z_ / rhs, w_ / rhs); }
+		/// Pointer accessor for direct copying
+		inline Real* ptr()
+		{
+			return &x;
+		}
+		/// Pointer accessor for direct copying
+		inline const Real* ptr() const
+		{
+			return &x;
+		}
 
-    /// Divide by a vector.
-    Vector4 operator /(const Vector4& rhs) const { return Vector4(x_ / rhs.x_, y_ / rhs.y_, z_ / rhs.z_, w_ / rhs.w_); }
+		/** Assigns the value of the other vector.
+		@param
+		rkVector The other vector
+		*/
+		inline Vector4& operator = (const Vector4& rkVector)
+		{
+			x = rkVector.x;
+			y = rkVector.y;
+			z = rkVector.z;
+			w = rkVector.w;
 
-    /// Add-assign a vector.
-    Vector4& operator +=(const Vector4& rhs)
-    {
-        x_ += rhs.x_;
-        y_ += rhs.y_;
-        z_ += rhs.z_;
-        w_ += rhs.w_;
-        return *this;
-    }
+			return *this;
+		}
 
-    /// Subtract-assign a vector.
-    Vector4& operator -=(const Vector4& rhs)
-    {
-        x_ -= rhs.x_;
-        y_ -= rhs.y_;
-        z_ -= rhs.z_;
-        w_ -= rhs.w_;
-        return *this;
-    }
+		inline Vector4& operator = (const Real fScalar)
+		{
+			x = fScalar;
+			y = fScalar;
+			z = fScalar;
+			w = fScalar;
+			return *this;
+		}
 
-    /// Multiply-assign a scalar.
-    Vector4& operator *=(float rhs)
-    {
-        x_ *= rhs;
-        y_ *= rhs;
-        z_ *= rhs;
-        w_ *= rhs;
-        return *this;
-    }
+		inline bool operator == (const Vector4& rkVector) const
+		{
+			return (x == rkVector.x &&
+				y == rkVector.y &&
+				z == rkVector.z &&
+				w == rkVector.w);
+		}
 
-    /// Multiply-assign a vector.
-    Vector4& operator *=(const Vector4& rhs)
-    {
-        x_ *= rhs.x_;
-        y_ *= rhs.y_;
-        z_ *= rhs.z_;
-        w_ *= rhs.w_;
-        return *this;
-    }
+		inline bool operator != (const Vector4& rkVector) const
+		{
+			return (x != rkVector.x ||
+				y != rkVector.y ||
+				z != rkVector.z ||
+				w != rkVector.w);
+		}
 
-    /// Divide-assign a scalar.
-    Vector4& operator /=(float rhs)
-    {
-        float invRhs = 1.0f / rhs;
-        x_ *= invRhs;
-        y_ *= invRhs;
-        z_ *= invRhs;
-        w_ *= invRhs;
-        return *this;
-    }
+		inline Vector4& operator = (const Vector3& rhs)
+		{
+			x = rhs.x;
+			y = rhs.y;
+			z = rhs.z;
+			w = 1.0f;
+			return *this;
+		}
 
-    /// Divide-assign a vector.
-    Vector4& operator /=(const Vector4& rhs)
-    {
-        x_ /= rhs.x_;
-        y_ /= rhs.y_;
-        z_ /= rhs.z_;
-        w_ /= rhs.w_;
-        return *this;
-    }
+		// arithmetic operations
+		inline Vector4 operator + (const Vector4& rkVector) const
+		{
+			return Vector4(
+				x + rkVector.x,
+				y + rkVector.y,
+				z + rkVector.z,
+				w + rkVector.w);
+		}
 
-    /// Calculate dot product.
-    float DotProduct(const Vector4& rhs) const { return x_ * rhs.x_ + y_ * rhs.y_ + z_ * rhs.z_ + w_ * rhs.w_; }
+		inline Vector4 operator - (const Vector4& rkVector) const
+		{
+			return Vector4(
+				x - rkVector.x,
+				y - rkVector.y,
+				z - rkVector.z,
+				w - rkVector.w);
+		}
 
-    /// Calculate absolute dot product.
-    float AbsDotProduct(const Vector4& rhs) const
-    {
-        return YumeEngine::Abs(x_ * rhs.x_) + YumeEngine::Abs(y_ * rhs.y_) + YumeEngine::Abs(z_ * rhs.z_) + YumeEngine::Abs(w_ * rhs.w_);
-    }
+		inline Vector4 operator * (const Real fScalar) const
+		{
+			return Vector4(
+				x * fScalar,
+				y * fScalar,
+				z * fScalar,
+				w * fScalar);
+		}
 
-    /// Return absolute vector.
-    Vector4 Abs() const { return Vector4(YumeEngine::Abs(x_), YumeEngine::Abs(y_), YumeEngine::Abs(z_), YumeEngine::Abs(w_)); }
+		inline Vector4 operator * (const Vector4& rhs) const
+		{
+			return Vector4(
+				rhs.x * x,
+				rhs.y * y,
+				rhs.z * z,
+				rhs.w * w);
+		}
 
-    /// Linear interpolation with another vector.
-    Vector4 Lerp(const Vector4& rhs, float t) const { return *this * (1.0f - t) + rhs * t; }
+		inline Vector4 operator / (const Real fScalar) const
+		{
+			assert(fScalar != 0.0);
 
-    /// Test for equality with another vector with epsilon.
-    bool Equals(const Vector4& rhs) const
-    {
-        return YumeEngine::Equals(x_, rhs.x_) && YumeEngine::Equals(y_, rhs.y_) && YumeEngine::Equals(z_, rhs.z_) && YumeEngine::Equals(w_, rhs.w_);
-    }
+			Real fInv = 1.0f / fScalar;
 
-    /// Return whether is NaN.
-    bool IsNaN() const { return YumeEngine::IsNaN(x_) || YumeEngine::IsNaN(y_) || YumeEngine::IsNaN(z_) || YumeEngine::IsNaN(w_); }
+			return Vector4(
+				x * fInv,
+				y * fInv,
+				z * fInv,
+				w * fInv);
+		}
 
-    /// Return float data.
-    const float* Data() const { return &x_; }
+		inline Vector4 operator / (const Vector4& rhs) const
+		{
+			return Vector4(
+				x / rhs.x,
+				y / rhs.y,
+				z / rhs.z,
+				w / rhs.w);
+		}
 
-    /// Return as string.
-    YumeString ToString() const;
+		inline const Vector4& operator + () const
+		{
+			return *this;
+		}
 
-    /// X coordinate.
-    float x_;
-    /// Y coordinate.
-    float y_;
-    /// Z coordinate.
-    float z_;
-    /// W coordinate.
-    float w_;
+		inline Vector4 operator - () const
+		{
+			return Vector4(-x, -y, -z, -w);
+		}
 
-    /// Zero vector.
-    static const Vector4 ZERO;
-    /// (1,1,1) vector.
-    static const Vector4 ONE;
-};
+		inline friend Vector4 operator * (const Real fScalar, const Vector4& rkVector)
+		{
+			return Vector4(
+				fScalar * rkVector.x,
+				fScalar * rkVector.y,
+				fScalar * rkVector.z,
+				fScalar * rkVector.w);
+		}
 
-/// Multiply Vector4 with a scalar.
-inline Vector4 operator *(float lhs, const Vector4& rhs) { return rhs * lhs; }
+		inline friend Vector4 operator / (const Real fScalar, const Vector4& rkVector)
+		{
+			return Vector4(
+				fScalar / rkVector.x,
+				fScalar / rkVector.y,
+				fScalar / rkVector.z,
+				fScalar / rkVector.w);
+		}
 
+		inline friend Vector4 operator + (const Vector4& lhs, const Real rhs)
+		{
+			return Vector4(
+				lhs.x + rhs,
+				lhs.y + rhs,
+				lhs.z + rhs,
+				lhs.w + rhs);
+		}
+
+		inline friend Vector4 operator + (const Real lhs, const Vector4& rhs)
+		{
+			return Vector4(
+				lhs + rhs.x,
+				lhs + rhs.y,
+				lhs + rhs.z,
+				lhs + rhs.w);
+		}
+
+		inline friend Vector4 operator - (const Vector4& lhs, Real rhs)
+		{
+			return Vector4(
+				lhs.x - rhs,
+				lhs.y - rhs,
+				lhs.z - rhs,
+				lhs.w - rhs);
+		}
+
+		inline friend Vector4 operator - (const Real lhs, const Vector4& rhs)
+		{
+			return Vector4(
+				lhs - rhs.x,
+				lhs - rhs.y,
+				lhs - rhs.z,
+				lhs - rhs.w);
+		}
+
+		// arithmetic updates
+		inline Vector4& operator += (const Vector4& rkVector)
+		{
+			x += rkVector.x;
+			y += rkVector.y;
+			z += rkVector.z;
+			w += rkVector.w;
+
+			return *this;
+		}
+
+		inline Vector4& operator -= (const Vector4& rkVector)
+		{
+			x -= rkVector.x;
+			y -= rkVector.y;
+			z -= rkVector.z;
+			w -= rkVector.w;
+
+			return *this;
+		}
+
+		inline Vector4& operator *= (const Real fScalar)
+		{
+			x *= fScalar;
+			y *= fScalar;
+			z *= fScalar;
+			w *= fScalar;
+			return *this;
+		}
+
+		inline Vector4& operator += (const Real fScalar)
+		{
+			x += fScalar;
+			y += fScalar;
+			z += fScalar;
+			w += fScalar;
+			return *this;
+		}
+
+		inline Vector4& operator -= (const Real fScalar)
+		{
+			x -= fScalar;
+			y -= fScalar;
+			z -= fScalar;
+			w -= fScalar;
+			return *this;
+		}
+
+		inline Vector4& operator *= (const Vector4& rkVector)
+		{
+			x *= rkVector.x;
+			y *= rkVector.y;
+			z *= rkVector.z;
+			w *= rkVector.w;
+
+			return *this;
+		}
+
+		inline Vector4& operator /= (const Real fScalar)
+		{
+			assert(fScalar != 0.0);
+
+			Real fInv = 1.0f / fScalar;
+
+			x *= fInv;
+			y *= fInv;
+			z *= fInv;
+			w *= fInv;
+
+			return *this;
+		}
+
+		inline Vector4& operator /= (const Vector4& rkVector)
+		{
+			x /= rkVector.x;
+			y /= rkVector.y;
+			z /= rkVector.z;
+			w /= rkVector.w;
+
+			return *this;
+		}
+
+		/** Calculates the dot (scalar) product of this vector with another.
+		@param
+		vec Vector with which to calculate the dot product (together
+		with this one).
+		@return
+		A float representing the dot product value.
+		*/
+		inline Real dotProduct(const Vector4& vec) const
+		{
+			return x * vec.x + y * vec.y + z * vec.z + w * vec.w;
+		}
+		/// Check whether this vector contains valid values
+		inline bool isNaN() const
+		{
+			return Math::isNaN(x) || Math::isNaN(y) || Math::isNaN(z) || Math::isNaN(w);
+		}
+		/** Function for writing to a stream.
+		*/
+		inline YumeAPIExport friend std::ostream& operator <<
+			(std::ostream& o, const Vector4& v)
+		{
+			o << "Vector4(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
+			return o;
+		}
+		// special
+		static const Vector4 ZERO;
+	};
 }
 
 

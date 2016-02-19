@@ -19,8 +19,19 @@
 ################################################################################
 
 
-#Log4cplus is a very powerful logging libarary
+#Log4cplus is a very powerful logging library
 ADD_SUBDIRECTORY(log4cplus)
+
+#SDL
+ADD_SUBDIRECTORY(SDL-mirror)
+
+#FreeType
+ADD_SUBDIRECTORY(yume-freetype)
+
+#jo_jpeg
+ADD_SUBDIRECTORY(JO)
+
+# ADD_SUBDIRECTORY(yume-boost)
 
 #Boost
 add_boost_library(system)
@@ -32,6 +43,11 @@ set_target_properties(boost_system PROPERTIES FOLDER "3rdParty" )
 set_target_properties(boost_filesystem PROPERTIES FOLDER "3rdParty" )
 set_target_properties(boost_thread PROPERTIES FOLDER "3rdParty" )
 set_target_properties(boost_date_time PROPERTIES FOLDER "3rdParty" )
+set_target_properties(SDL2-static PROPERTIES FOLDER "3rdParty" )
+set_target_properties(SDL2main PROPERTIES FOLDER "3rdParty" )
+set_target_properties(FreeType PROPERTIES FOLDER "3rdParty" )
+set_target_properties(JO PROPERTIES FOLDER "3rdParty" )
+
 
 if(OS_LINUX)
   target_compile_options(boost_system PUBLIC "-fPIC")

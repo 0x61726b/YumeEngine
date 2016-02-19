@@ -36,19 +36,7 @@
 namespace YumeEngine
 {
 
-	enum FrameBufferType
-	{
-		FBT_COLOUR = 0x1,
-		FBT_DEPTH = 0x2,
-		FBT_STENCIL = 0x4
-	};
 
-	struct RenderWindowDesc
-	{
-		YumeString Name;
-	};
-
-	typedef YumeMap<YumeString, YumeString>::type StrKeyValuePair;
 }
 
 //---------------------------------------------------------------------------------
