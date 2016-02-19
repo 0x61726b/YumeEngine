@@ -67,23 +67,6 @@ namespace YumeEngine
 	class YumeRenderTarget;
 	class YumeRenderWindow;
 	class YumeRenderer;
-
-	//Math predefinitions
-	class Radian;
-	class Degree;
-	class Angle;
-	class Math;
-	class Vector2;
-	class Vector3;
-	class Vector4;
-	class Matrix3;
-	class Matrix4;
-	class Quaternion;
-	class Ray;
-	class AxisAlignedBox;
-	class Sphere;
-	class Plane;
-	class PlaneBoundedVolume;
 }
 //---------------------------------------------------------------------------------
 namespace YumeEngine
@@ -171,7 +154,7 @@ namespace YumeEngine
 #endif
 	};
 
-#	define YumeStrHash std::size_t
+#	define YumeStrHash StringHash
 }
 //---------------------------------------------------------------------------------
 #endif

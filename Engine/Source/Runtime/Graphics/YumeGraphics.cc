@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------
-//Chiika Api
+//Yume Engine
 //Copyright (C) 2015  arkenthera
 //This program is free software; you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include "YumeHeaders.h"
 #include "YumeGraphics.h"
 
-#include <boost/functional/hash.hpp>
 #include "Math/YumeVector3.h"
 
 
@@ -32,58 +31,57 @@
 
 namespace YumeEngine
 {
-	boost::hash<YumeString> string_hash;	
 
-	extern YumeAPIExport const YumeStrHash VSP_AMBIENTSTARTCOLOR = MakeHash("AmbientColor");
-	extern YumeAPIExport const YumeStrHash VSP_AMBIENTENDCOLOR = MakeHash("AmbientEndColor");
-	extern YumeAPIExport const YumeStrHash VSP_BILLBOARDROT = MakeHash("BillboardRot");
-	extern YumeAPIExport const YumeStrHash VSP_CAMERAPOS = MakeHash("CameraPos");
-	extern YumeAPIExport const YumeStrHash VSP_CAMERAROT = MakeHash("CameraRot");
-	extern YumeAPIExport const YumeStrHash VSP_CLIPPLANE = MakeHash("ClipPlane");
-	extern YumeAPIExport const YumeStrHash VSP_NEARCLIP = MakeHash("NearClip");
-	extern YumeAPIExport const YumeStrHash VSP_FARCLIP = MakeHash("FarClip");
-	extern YumeAPIExport const YumeStrHash VSP_DEPTHMODE = MakeHash("DepthMode");
-	extern YumeAPIExport const YumeStrHash VSP_DELTATIME = MakeHash("DeltaTime");
+	extern YumeAPIExport const YumeStrHash VSP_AMBIENTSTARTCOLOR("AmbientColor");
+	extern YumeAPIExport const YumeStrHash VSP_AMBIENTENDCOLOR("AmbientEndColor");
+	extern YumeAPIExport const YumeStrHash VSP_BILLBOARDROT("BillboardRot");
+	extern YumeAPIExport const YumeStrHash VSP_CAMERAPOS("CameraPos");
+	extern YumeAPIExport const YumeStrHash VSP_CAMERAROT("CameraRot");
+	extern YumeAPIExport const YumeStrHash VSP_CLIPPLANE("ClipPlane");
+	extern YumeAPIExport const YumeStrHash VSP_NEARCLIP("NearClip");
+	extern YumeAPIExport const YumeStrHash VSP_FARCLIP("FarClip");
+	extern YumeAPIExport const YumeStrHash VSP_DEPTHMODE("DepthMode");
+	extern YumeAPIExport const YumeStrHash VSP_DELTATIME("DeltaTime");
 
-	extern YumeAPIExport const YumeStrHash VSP_ELAPSEDTIME = MakeHash("ElapsedTime");
-	extern YumeAPIExport const YumeStrHash VSP_FRUSTUMSIZE = MakeHash("FrustumSize");
-	extern YumeAPIExport const YumeStrHash VSP_GBUFFEROFFSETS = MakeHash("GBufferOffsets");
-	extern YumeAPIExport const YumeStrHash VSP_LIGHTDIR = MakeHash("LightDir");
-	extern YumeAPIExport const YumeStrHash VSP_LIGHTPOS = MakeHash("LightPos");
-	extern YumeAPIExport const YumeStrHash VSP_MODEL = MakeHash("Model");
-	extern YumeAPIExport const YumeStrHash VSP_VIEW = MakeHash("View");
-	extern YumeAPIExport const YumeStrHash VSP_VIEWINV = MakeHash("ViewInv");
-	extern YumeAPIExport const YumeStrHash VSP_VIEWPROJ = MakeHash("ViewProj");
-	extern YumeAPIExport const YumeStrHash VSP_UOFFSET = MakeHash("UOffset");
-	extern YumeAPIExport const YumeStrHash VSP_VOFFSET = MakeHash("VOffset");
-	extern YumeAPIExport const YumeStrHash VSP_ZONE = MakeHash("Zone");
-	extern YumeAPIExport const YumeStrHash VSP_LIGHTMATRICES = MakeHash("LightMatrices");
-	extern YumeAPIExport const YumeStrHash VSP_SKINMATRICES = MakeHash("SkinMatrices");
-	extern YumeAPIExport const YumeStrHash VSP_VERTEXLIGHTS = MakeHash("VertexLights");
-	extern YumeAPIExport const YumeStrHash PSP_AMBIENTCOLOR = MakeHash("AmbientColor");
-	extern YumeAPIExport const YumeStrHash PSP_CAMERAPOS = MakeHash("CameraPosPS");
-	extern YumeAPIExport const YumeStrHash PSP_DELTATIME = MakeHash("DeltaTimePS");
-	extern YumeAPIExport const YumeStrHash PSP_DEPTHRERUCT = MakeHash("DepthReconstruct");
-	extern YumeAPIExport const YumeStrHash PSP_ELAPSEDTIME = MakeHash("ElapsedTimePS");
-	extern YumeAPIExport const YumeStrHash PSP_FOGCOLOR = MakeHash("FogColor");
-	extern YumeAPIExport const YumeStrHash PSP_FOGPARAMS = MakeHash("FogParams");
-	extern YumeAPIExport const YumeStrHash PSP_GBUFFERINVSIZE = MakeHash("GBufferInvSize");
-	extern YumeAPIExport const YumeStrHash PSP_LIGHTCOLOR = MakeHash("LightColor");
-	extern YumeAPIExport const YumeStrHash PSP_LIGHTDIR = MakeHash("LightDirPS");
-	extern YumeAPIExport const YumeStrHash PSP_LIGHTPOS = MakeHash("LightPosPS");
-	extern YumeAPIExport const YumeStrHash PSP_MATDIFFCOLOR = MakeHash("MatDiffColor");
-	extern YumeAPIExport const YumeStrHash PSP_MATEMISSIVECOLOR = MakeHash("MatEmissiveColor");
-	extern YumeAPIExport const YumeStrHash PSP_MATENVMAPCOLOR = MakeHash("MatEnvMapColor");
-	extern YumeAPIExport const YumeStrHash PSP_MATSPECCOLOR = MakeHash("MatSpecColor");
-	extern YumeAPIExport const YumeStrHash PSP_NEARCLIP = MakeHash("NearClipPS");
-	extern YumeAPIExport const YumeStrHash PSP_FARCLIP = MakeHash("FarClipPS");
-	extern YumeAPIExport const YumeStrHash PSP_SHADOWCUBEADJUST = MakeHash("ShadowCubeAdjust");
-	extern YumeAPIExport const YumeStrHash PSP_SHADOWDEPTHFADE = MakeHash("ShadowDepthFade");
-	extern YumeAPIExport const YumeStrHash PSP_SHADOWINTENSITY = MakeHash("ShadowIntensity");
-	extern YumeAPIExport const YumeStrHash PSP_SHADOWMAPINVSIZE = MakeHash("ShadowMapInvSize");
-	extern YumeAPIExport const YumeStrHash PSP_SHADOWSPLITS = MakeHash("ShadowSplits");
-	extern YumeAPIExport const YumeStrHash PSP_LIGHTMATRICES = MakeHash("LightMatricesPS");
-	extern YumeAPIExport const YumeStrHash PSP_VSMSHADOWPARAMS = MakeHash("VSMShadowParams");
+	extern YumeAPIExport const YumeStrHash VSP_ELAPSEDTIME("ElapsedTime");
+	extern YumeAPIExport const YumeStrHash VSP_FRUSTUMSIZE("FrustumSize");
+	extern YumeAPIExport const YumeStrHash VSP_GBUFFEROFFSETS("GBufferOffsets");
+	extern YumeAPIExport const YumeStrHash VSP_LIGHTDIR("LightDir");
+	extern YumeAPIExport const YumeStrHash VSP_LIGHTPOS("LightPos");
+	extern YumeAPIExport const YumeStrHash VSP_MODEL("Model");
+	extern YumeAPIExport const YumeStrHash VSP_VIEW("View");
+	extern YumeAPIExport const YumeStrHash VSP_VIEWINV("ViewInv");
+	extern YumeAPIExport const YumeStrHash VSP_VIEWPROJ("ViewProj");
+	extern YumeAPIExport const YumeStrHash VSP_UOFFSET("UOffset");
+	extern YumeAPIExport const YumeStrHash VSP_VOFFSET("VOffset");
+	extern YumeAPIExport const YumeStrHash VSP_ZONE("Zone");
+	extern YumeAPIExport const YumeStrHash VSP_LIGHTMATRICES("LightMatrices");
+	extern YumeAPIExport const YumeStrHash VSP_SKINMATRICES("SkinMatrices");
+	extern YumeAPIExport const YumeStrHash VSP_VERTEXLIGHTS("VertexLights");
+	extern YumeAPIExport const YumeStrHash PSP_AMBIENTCOLOR("AmbientColor");
+	extern YumeAPIExport const YumeStrHash PSP_CAMERAPOS("CameraPosPS");
+	extern YumeAPIExport const YumeStrHash PSP_DELTATIME("DeltaTimePS");
+	extern YumeAPIExport const YumeStrHash PSP_DEPTHRERUCT("DepthReconstruct");
+	extern YumeAPIExport const YumeStrHash PSP_ELAPSEDTIME("ElapsedTimePS");
+	extern YumeAPIExport const YumeStrHash PSP_FOGCOLOR("FogColor");
+	extern YumeAPIExport const YumeStrHash PSP_FOGPARAMS("FogParams");
+	extern YumeAPIExport const YumeStrHash PSP_GBUFFERINVSIZE("GBufferInvSize");
+	extern YumeAPIExport const YumeStrHash PSP_LIGHTCOLOR("LightColor");
+	extern YumeAPIExport const YumeStrHash PSP_LIGHTDIR("LightDirPS");
+	extern YumeAPIExport const YumeStrHash PSP_LIGHTPOS("LightPosPS");
+	extern YumeAPIExport const YumeStrHash PSP_MATDIFFCOLOR("MatDiffColor");
+	extern YumeAPIExport const YumeStrHash PSP_MATEMISSIVECOLOR("MatEmissiveColor");
+	extern YumeAPIExport const YumeStrHash PSP_MATENVMAPCOLOR("MatEnvMapColor");
+	extern YumeAPIExport const YumeStrHash PSP_MATSPECCOLOR("MatSpecColor");
+	extern YumeAPIExport const YumeStrHash PSP_NEARCLIP("NearClipPS");
+	extern YumeAPIExport const YumeStrHash PSP_FARCLIP("FarClipPS");
+	extern YumeAPIExport const YumeStrHash PSP_SHADOWCUBEADJUST("ShadowCubeAdjust");
+	extern YumeAPIExport const YumeStrHash PSP_SHADOWDEPTHFADE("ShadowDepthFade");
+	extern YumeAPIExport const YumeStrHash PSP_SHADOWINTENSITY("ShadowIntensity");
+	extern YumeAPIExport const YumeStrHash PSP_SHADOWMAPINVSIZE("ShadowMapInvSize");
+	extern YumeAPIExport const YumeStrHash PSP_SHADOWSPLITS("ShadowSplits");
+	extern YumeAPIExport const YumeStrHash PSP_LIGHTMATRICES("LightMatricesPS");
+	extern YumeAPIExport const YumeStrHash PSP_VSMSHADOWPARAMS("VSMShadowParams");
 
 	extern YumeAPIExport  Vector3 DOT_SCALE(1 / 3.0f,1 / 3.0f,1 / 3.0f);
 }

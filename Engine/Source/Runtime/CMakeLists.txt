@@ -73,6 +73,10 @@ set( SRC_MATH
 	Math/YumeRect.cc
 	Math/YumeFrustum.h
 	Math/YumeFrustum.cc
+	Math/YumeColor.h
+	Math/YumeColor.cc
+	Math/YumeStringHash.cc
+	Math/YumeStringHash.cc
 )
 
 set( SRC_CORE
@@ -89,6 +93,32 @@ set( SRC_CORE
 	Core/PlatformImpl.h
 	Core/PlatformImpl_Win32.cc
 	Core/YumeVariant.h
+	Core/YumeObject.h
+	Core/YumeObject.h
+	Core/YumeLinkedList.h
+	Core/YumeContext.h
+	Core/YumeContext.cc
+	Core/YumeAttribute.h
+	Core/YumeAllocator.cc
+	Core/YumeAllocator.h
+	Core/YumeArrayPtr.h
+	Core/YumeForEach.h
+	Core/YumeHash.h
+	Core/YumeHashBase.cc
+	Core/YumeHashBase.h
+	Core/YumeHashMap.h
+	Core/YumeHashSet.h
+	Core/YumeList.h
+	Core/YumeListBase.h
+	Core/YumePair.h
+	Core/YumeSort.h
+	Core/YumeStr.h
+	Core/YumeStr.cc
+	Core/YumeSwap.h
+	Core/YumeSwap.cc
+	Core/YumeVector.h
+	Core/YumeVectorBase.cc
+	Core/YumeVectorBase.h
 		)
 set( SRC_CORE_CONFIG
 	Core/YumeConfig.h
@@ -115,6 +145,9 @@ set( SRC_CORE_MEMORY
 	Core/YumeMemoryAllocatorNed.cc
 	Core/YumeMallocObject.cc
 	Core/YumeMemoryAllocatorNedPooling.cc
+	Core/YumePointer.h
+	Core/YumeIntrusive.h
+	Core/YumeIntrusive.cc
 )
 source_group(Yume\\\\Logging FILES ${SRC_LOGGING})
 source_group(Yume\\\\Math FILES ${SRC_MATH})
