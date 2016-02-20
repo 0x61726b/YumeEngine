@@ -48,9 +48,8 @@ matrix:
         - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
         - sudo bash ./rungcc.sh
       before_script:
-        - cmake --version
         - mkdir build && cd build
-        - cmake .. -DCMAKE_CXX_COMPILER=${COMPILER} ${CMAKE_OPTIONS}
+        - ./../cmake-3.2.2-Linux-x86_64/bin/cmake .. -DCMAKE_CXX_COMPILER=${COMPILER} ${CMAKE_OPTIONS}
       addons:
         apt:
           sources:
@@ -60,6 +59,7 @@ matrix:
             - g++-4.8
 
 script:
+  - ./Engine/Source/3rdParty/log4cplus/configure
   - cd ${TRAVIS_BUILD_DIR}
   - cd build
   - make
