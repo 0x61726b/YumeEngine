@@ -59,7 +59,7 @@ matrix:
             - g++-4.8
 
 script:
-  - ./Engine/Source/3rdParty/log4cplus/configure
   - cd ${TRAVIS_BUILD_DIR}
+  - ./Engine/Source/3rdParty/log4cplus/configure
   - cd build
   - make
