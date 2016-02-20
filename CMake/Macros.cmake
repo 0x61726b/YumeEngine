@@ -138,7 +138,7 @@ function(proxy_setup)
 endfunction(proxy_setup)
 
 
-macro( add_yume_sample )
+macro( add_yume_sample sample_name)
   include_directories(${YUME_INCLUDE_DIR})
   include_directories(${CMAKE_CURRENT_SOURCE_DIR})
   include_directories(${YUME_BOOST_PATH})
@@ -164,9 +164,6 @@ macro( add_yume_sample )
   source_group(Common FILES ${COMMON_SOURCES})
 
   include_directories(${CMAKE_SOURCE_DIR}/Samples)
-
-  MESSAGE(${DirectX_LIBRARY})
-  target_link_libraries(${SAMPLE_TARGET} ${DirectX_D3D11_LIBRARIES})
 
   set_target_properties( ${SAMPLE_TARGET}
       PROPERTIES

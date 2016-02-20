@@ -7,4 +7,4 @@ set(HEADER_FILES
 	BasicRenderWindow.h)
 
 
-add_yume_sample()
+add_yume_sample("HelloWorld")

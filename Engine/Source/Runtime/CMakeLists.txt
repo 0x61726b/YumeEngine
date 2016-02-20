@@ -124,9 +124,20 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${YUME_3RDPARTY_PATH})
 include_directories(${YUME_SDL_INCLUDE_PATH})
-include_directories("${CMAKE_BINARY_DIR}/Engine/3rdParty/log4cplus/include")
 
 
+set(RENDERER_LIB "")
+
+
+
+if( YUME_BUILD_OPENGL )
+	add_definitions(-DYUME_OPENGL)
+endif()
+
+if( YUME_BUILD_DIRECT3D11 )
+	add_definitions(-DYUME_DIRECT3D11)
+	set(RENDERER_LIB ${SRC_RENDERER_D3D11})
+endif()
 
 
 ADD_LIBRARY(${YUME} STATIC
@@ -138,19 +149,20 @@ ADD_LIBRARY(${YUME} STATIC
 					  ${SRC_CORE_UTILS}
 					  ${SRC_CORE_CONFIG}
 						${SRC_CORE_STL}
-						${SRC_RENDERER_D3D11}
+						${RENDERER_LIB}
 						${SRC_RENDERER}
 						${SRC_ENGINE}
 						)
 
 add_definitions(-DBUILDING_YUME_ENGINE)
-add_definitions(-DYUME_DIRECT3D11)
+
+
 
 set(YUME_LIB_TYPE "SHARED")
 
 target_link_libraries( ${YUME} log4cplus )
 include_directories(${YUME_3RDPARTY_PATH}/log4cplus/include)
-
+include_directories(${CMAKE_BINARY_DIR}/Engine/Source/3rdParty/log4cplus/include)
 
 if(WIN32 AND MSVC10 AND CMAKE_CL_64)
   set_target_properties(${YUME} PROPERTIES

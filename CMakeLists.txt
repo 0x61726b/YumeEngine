@@ -80,10 +80,13 @@ if(OS_LINUX)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${YUME_WARNING_FLAGS}")
 
+  set(YUME_C_COMPILER_FLAGS        "-std=c99")
+  set(YUME_CXX_COMPILER_FLAGS "-std=gnu++11")
+
   add_definitions(-fPIC)
 endif ()
 
-if( OS_LINUX AND OS_MACOSX)
+if( OS_LINUX OR OS_MACOSX)
   # Test for GCC visibility
   include(CheckCXXCompilerFlag)
   check_cxx_compiler_flag(-fvisibility=hidden YUME_GCC_VISIBILITY)
@@ -165,6 +168,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${YUME_LINKER_FLAGS_RELEASE} ${YUME_SHARE
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DBOOST_ALL_NO_LIB=1")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_ALL_NO_LIB=1")
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ADD_SUBDIRECTORY(Engine)
 ADD_SUBDIRECTORY(Samples)
