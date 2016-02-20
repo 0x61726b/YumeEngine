@@ -13,35 +13,27 @@
 
 #include "Logging/logging.h"
 
-#include <log4cplus/initializer.h>
+#include <boost/shared_ptr.hpp>
 
-namespace YumeSamples
+namespace YumeEngine
 {
-	BasicRenderWindow::BasicRenderWindow()
+	HelloWorld::HelloWorld()
 	{
-		
-	}
-	BasicRenderWindow::~BasicRenderWindow()
-	{
-		delete m_Centrum;
+
 	}
 
-	void BasicRenderWindow::Setup()
+	HelloWorld::~HelloWorld()
 	{
-		m_Centrum = YumeAPINew YumeEngine::Yume();
-		m_Window = m_Centrum->Initialize(true);
-		
-		if(m_Window)
-		{
-		    YumeEngine::YumeWindowEvents::AddWindowEventListener(m_Window, this);
 
-		    m_Centrum->StartRendering();
-		}
+	}
+
+	void HelloWorld::Start()
+	{
+		BaseApplication::Start();
 	}
 }
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
 #include <Windows.h>
-
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR args, int ncmd)
 {
 #endif
@@ -49,8 +41,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR args, int ncmd)
 int main()
 	{
 #endif
-	YumeSamples::BasicRenderWindow b;
-	b.Setup();
+	boost::shared_ptr<YumeEngine::HelloWorld> app(new YumeEngine::HelloWorld);
 
-	return 0;
+	return app->Run();
 }

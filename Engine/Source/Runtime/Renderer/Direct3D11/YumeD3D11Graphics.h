@@ -25,6 +25,9 @@
 #include "YumeRequired.h"
 #include "Renderer/YumeRendererDefs.h"
 
+#include "Math/YumeVector2.h"
+#include "Math/YumeVector4.h"
+
 #include <boost/thread/mutex.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
@@ -41,16 +44,88 @@ namespace YumeEngine
 
 		static YumeGraphics* Get();
 
-		void AddGpuResource( YumeGpuResource* object );
-		void RemoveGpuResource( YumeGpuResource* object );
+		bool SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
+			int multiSample);
 
+		bool BeginFrame();
+		void EndFrame();
+		void Clear(unsigned flags, const Vector4& color = Vector4(0.0f, 1.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
+
+		bool CreateD3D11Device(int width,int height,int multisample);
+		bool UpdateSwapchain(int width,int height);
+
+		void ResetRenderTargets();
+		void SetViewport(const Vector4&);
+
+		Vector2 GetRenderTargetDimensions() const;
+
+		void SetFlushGPU(bool flushGpu);
+		void CreateRendererCapabilities();
+		YumeVector<int>::type GetMultiSampleLevels() const;
+
+		//Window ops
+		bool OpenWindow(int width,int height,bool resizable,bool borderless);
+		void Close();
+		void AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless);
+		void Maximize();
+		void SetWindowPos(const Vector2& pos);
+		void SetWindowTitle(const YumeString& string);
+
+		void AddGpuResource(YumeGpuResource* object);
+		void RemoveGpuResource(YumeGpuResource* object);
+
+
+		bool IsInitialized() const { return initialized_; }
 
 		YumeRendererImpl* GetImpl() const { return impl_; }
 	private:
-		boost::mutex gpuResourceMutex_;
-		GpuResourceVector gpuResources_;
+		YumeVector<Vector2>::type				GetScreenResolutions();
+	private:
+		bool									initialized_;
 
-		YumeRendererImpl* impl_;
+		YumeString								windowTitle_;
+		int										windowWidth_;
+		int										windowHeight_;
+		Vector2									windowPos_;
+		bool									fullscreen_;
+		bool									borderless_;
+		bool									resizeable_;
+		bool									tripleBuffer_;
+		int										multiSample_;
+		bool									vsync_;
+		bool									flushGpu_;
+
+		int										numPrimitives_;
+		int										numBatches_;
+
+		Vector4									viewport_;
+
+		//Renderer features
+		bool sRGB_;
+		bool lightPrepassSupport_;
+		bool deferredSupport_;
+		bool hardwareShadowSupport_;
+		bool instancingSupport_;
+		bool sRGBSupport_;
+		bool sRGBWriteSupport_;
+		unsigned dummyColorFormat_;
+		unsigned shadowMapFormat_;
+		unsigned hiresShadowMapFormat_;
+
+		bool renderTargetsDirty_;
+		bool texturesDirty_;
+		bool vertexDeclarationDirty_;
+		bool blendStateDirty_;
+		bool depthStateDirty_;
+		bool rasterizerStateDirty_;
+		bool scissorRectDirty_;
+		bool stencilRefDirty_;
+
+
+		boost::mutex							gpuResourceMutex_;
+		GpuResourceVector						gpuResources_;
+
+		YumeRendererImpl*						impl_;
 	};
 }
 

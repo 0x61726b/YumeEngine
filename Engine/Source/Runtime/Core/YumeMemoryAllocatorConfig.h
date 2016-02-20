@@ -107,14 +107,19 @@ namespace YumeEngine
 	}
 }
 //---------------------------------------------------------------------------------
-#define YumeAPINew new
-#define YumeAPIDelete delete
+
 
 #if YUME_DEBUG_MODE
 #	define YUME_DEALLOC(ptr, category) ::YumeEngine::YumeCategorisedAllocPolicy<category>::deallocateBytes((void*)ptr)
 #	define YUME_ALLOC_T(T, count, category) static_cast<T*>(::YumeEngine::YumeCategorisedAllocPolicy<category>::allocateBytes(sizeof(T)*(count)))
+
+#	define DebugNew new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#	define YumeAPINew DebugNew
+#	define YumeAPIDelete delete
 #else
 #	define YUME_DEALLOC(ptr, category) ::YumeEngine::YumeCategorisedAllocPolicy<category>::deallocateBytes((void*)ptr)
+#	define YumeAPINew new
+#	define YumeAPIDelete delete
 #endif
 
 //---------------------------------------------------------------------------------

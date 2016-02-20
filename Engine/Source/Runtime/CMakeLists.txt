@@ -99,11 +99,15 @@ set( SRC_CORE_MEMORY
 	Core/YumeMallocObject.cc
 	Core/YumeMemoryAllocatorStd.h
 	Core/YumeAlignedAllocator.h
+	Core/YumeAlignedAllocator.cc
+	Core/YumeBitPattern.h
 )
 
 set( SRC_ENGINE
 	Engine/YumeEngine.h
 	Engine/YumeEngine.cc
+	Engine/YumeApplication.h
+	Engine/YumeApplication.cc
 )
 source_group(Yume\\\\Logging FILES ${SRC_LOGGING})
 source_group(Yume\\\\Math FILES ${SRC_MATH})
@@ -120,7 +124,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${YUME_3RDPARTY_PATH})
 include_directories(${YUME_SDL_INCLUDE_PATH})
-include_directories(${CMAKE_BINARY_DIR}/Engine/3rdParty/log4cplus/include)
+include_directories("${CMAKE_BINARY_DIR}/Engine/3rdParty/log4cplus/include")
 
 
 

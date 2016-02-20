@@ -23,13 +23,17 @@
 #define __YumeEngine_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+
+#include <boost/shared_ptr.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeAPIExport YumeEngine
+	class YumeGraphics;
+
+	class YumeAPIExport YumeEngine3D
 	{
 	public:
-		YumeEngine();
+		YumeEngine3D();
 
 		bool Initialize();
 
@@ -37,7 +41,13 @@ namespace YumeEngine
 
 		void Exit();
 
+		void Update();
+		void Render();
+
 		bool IsExiting() const { return exiting_; }
+
+	private:
+		boost::shared_ptr<YumeGraphics> graphics_;
 	private:
 		bool initialized_;
 		bool exiting_;

@@ -36,62 +36,71 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	class YumeGraphics;
+
+	typedef boost::unordered_map<unsigned,ID3D11BlendState*> BlendStatesMap;
+	typedef boost::unordered_map<unsigned,ID3D11DepthStencilState*> DepthStatesMap;
+	typedef boost::unordered_map<unsigned,ID3D11RasterizerState*> RasterizerStatesMap;
+
 	class YumeAPIExport YumeRendererImpl
 	{
+		friend class YumeGraphics;
 	public:
 		YumeRendererImpl();
 
-		
-    /// Return Direct3D device.
-    ID3D11Device* GetDevice() const { return device_; }
 
-    /// Return Direct3D immediate device context.
-    ID3D11DeviceContext* GetDeviceContext() const { return deviceContext_; }
+		/// Return Direct3D device.
+		ID3D11Device* GetDevice() const { return device_; }
 
-    /// Return swapchain.
-    IDXGISwapChain* GetSwapChain() const { return swapChain_; }
+		/// Return Direct3D immediate device context.
+		ID3D11DeviceContext* GetDeviceContext() const { return deviceContext_; }
 
-    /// Return window.
-    SDL_Window* GetWindow() const { return window_; }
+		/// Return swapchain.
+		IDXGISwapChain* GetSwapChain() const { return swapChain_; }
 
-private:
-    SDL_Window* window_;
+		/// Return window.
+		SDL_Window* GetWindow() const { return window_; }
 
-    ID3D11Device* device_;
+	private:
+		SDL_Window* window_;
 
-    ID3D11DeviceContext* deviceContext_;
+		ID3D11Device* device_;
 
-    IDXGISwapChain* swapChain_;
+		ID3D11Debug* debug_;
 
-    ID3D11RenderTargetView* defaultRenderTargetView_;
-    
-    ID3D11Texture2D* defaultDepthTexture_;
-    
-    ID3D11DepthStencilView* defaultDepthStencilView_;
-    
-    ID3D11RenderTargetView* renderTargetViews_[MAX_RENDERTARGETS];
-    
-    ID3D11DepthStencilView* depthStencilView_;
-    
-    boost::unordered_map<unsigned, ID3D11BlendState*> blendStates_;
-    
-    boost::unordered_map<unsigned, ID3D11DepthStencilState*> depthStates_;
-    
-    boost::unordered_map<unsigned, ID3D11RasterizerState*> rasterizerStates_;
-    
-    ID3D11Texture2D* resolveTexture_;
-    
-    ID3D11ShaderResourceView* shaderResourceViews_[MAX_TEXTURE_UNITS];
-    
-    ID3D11SamplerState* samplers_[MAX_TEXTURE_UNITS];
-    
-    ID3D11Buffer* vertexBuffers_[MAX_VERTEX_STREAMS];
-    
-    ID3D11Buffer* constantBuffers_[2][MAX_SHADER_PARAMETER_GROUPS];
-    
-    unsigned vertexSizes_[MAX_VERTEX_STREAMS];
-    
-    unsigned vertexOffsets_[MAX_VERTEX_STREAMS];
+		ID3D11DeviceContext* deviceContext_;
+
+		IDXGISwapChain* swapChain_;
+
+		ID3D11RenderTargetView* defaultRenderTargetView_;
+
+		ID3D11Texture2D* defaultDepthTexture_;
+
+		ID3D11DepthStencilView* defaultDepthStencilView_;
+
+		ID3D11RenderTargetView* renderTargetViews_[MAX_RENDERTARGETS];
+
+		ID3D11DepthStencilView* depthStencilView_;
+
+		BlendStatesMap blendStates_;
+
+		DepthStatesMap depthStates_;
+
+		RasterizerStatesMap rasterizerStates_;
+
+		ID3D11Texture2D* resolveTexture_;
+
+		ID3D11ShaderResourceView* shaderResourceViews_[MAX_TEXTURE_UNITS];
+
+		ID3D11SamplerState* samplers_[MAX_TEXTURE_UNITS];
+
+		ID3D11Buffer* vertexBuffers_[MAX_VERTEX_STREAMS];
+
+		ID3D11Buffer* constantBuffers_[2][MAX_SHADER_PARAMETER_GROUPS];
+
+		unsigned vertexSizes_[MAX_VERTEX_STREAMS];
+
+		unsigned vertexOffsets_[MAX_VERTEX_STREAMS];
 
 	};
 }

@@ -28,22 +28,36 @@
 namespace YumeEngine
 {
 	YumeApplication::YumeApplication()
+		: exitCode_(0)
 	{
-		engine_ = boost::shared_ptr<YumeEngine>(new YumeEngine);
+		engine_ = boost::shared_ptr<YumeEngine3D>(new YumeEngine3D);
+	}
+
+	YumeApplication::~YumeApplication()
+	{
+
 	}
 
 	int YumeApplication::Run()
 	{
 		Setup();
-		
-		if( !engine_->Initialize() )
-			return -1;
+
+		if(!engine_->Initialize())
+		{
+			exitCode_ = -1;
+			return exitCode_;
+		}
+
 
 		Start();
+		if(exitCode_ == 1)
+			return exitCode_;
 
-		if( !engine_->IsExiting())
+		while(!engine_->IsExiting())
 			engine_->Run();
 
 		engine_->Exit();
+
+		return exitCode_;
 	}
 }

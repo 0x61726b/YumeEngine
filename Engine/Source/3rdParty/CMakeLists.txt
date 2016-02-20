@@ -46,6 +46,7 @@ set_target_properties(boost_date_time PROPERTIES FOLDER "3rdParty" )
 set_target_properties(SDL2-static PROPERTIES FOLDER "3rdParty" )
 set_target_properties(SDL2main PROPERTIES FOLDER "3rdParty" )
 set_target_properties(FreeType PROPERTIES FOLDER "3rdParty" )
+set_target_properties(log4cplus PROPERTIES FOLDER "3rdParty" )
 set_target_properties(JO PROPERTIES FOLDER "3rdParty" )
 
 

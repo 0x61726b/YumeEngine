@@ -166,8 +166,11 @@ namespace YumeEngine
 		typedef typename std::multimap<K, V, P>::const_iterator const_iterator;
 #endif
 	};
+}
 
-#	define YumeStrHash StringHash
+namespace YumeEngine
+{
+
 }
 //---------------------------------------------------------------------------------
 #endif

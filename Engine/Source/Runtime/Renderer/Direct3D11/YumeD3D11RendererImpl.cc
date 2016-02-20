@@ -29,6 +29,7 @@ namespace YumeEngine
 	YumeRendererImpl::YumeRendererImpl()
 		: window_(0),
 		device_(0),
+		debug_(0),
 		deviceContext_(0),
 		swapChain_(0),
 		defaultRenderTargetView_(0),
