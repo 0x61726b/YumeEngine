@@ -84,7 +84,6 @@ set( SRC_CORE_STL
 set( SRC_CORE_CONFIG
 	Core/YumeConfig.h
 	Core/YumePlatform.h
-	${CMAKE_BINARY_DIR}/Include/YumeBuildSettings.h
 )
 set( SRC_CORE_UTILS
 
