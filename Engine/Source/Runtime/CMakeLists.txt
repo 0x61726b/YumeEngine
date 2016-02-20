@@ -120,6 +120,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${YUME_3RDPARTY_PATH})
 include_directories(${YUME_SDL_INCLUDE_PATH})
+include_directories(${CMAKE_BINARY_DIR}/Engine/3rdParty/log4cplus/include)
 
 
 

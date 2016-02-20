@@ -34,13 +34,6 @@
 
 #include "Core/YumeRequired.h"
 
-#include "Graphics/YumeRenderer.h"
-#include "Graphics/YumeRenderWindow.h"
-#include "Core/YumeCentrum.h"
-#include "Core/YumeString.h"
-#include "Core/YumeStringConverter.h"
-#include "Core/YumeStringVector.h"
-#include "Core/YumeWindowMessageListener.h"
 //---------------------------------------------------------------------------------
 #endif
 //~End of Yume.h
