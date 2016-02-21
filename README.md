@@ -31,12 +31,20 @@ Tested on Yosemite 10.10
 
 Tested on Ubuntu 14.04
 
+```
+mkdir build && cd build
+cmake ..
+make
+```
+
 ##Windows
 <b>Prerequisities</b>
 
 - <a href="http://www.cmake.org/">CMake 2.6.2 or greater</a>
 - Visual Studio 2013 (Need C++11 support)
 - <a href="http://www.microsoft.com/en-us/download/details.aspx?id=6812">DirectX SDK June 2010</a>
+
+You can use CMake GUI to create a Vs2013 solution then build it.
 
 Tested on Win10 x64 Vs2013
 
