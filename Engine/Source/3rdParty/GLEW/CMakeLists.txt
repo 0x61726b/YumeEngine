@@ -26,6 +26,7 @@ set(SOURCE_FILES glew.c glew.h glxew.h wglew.h)
 set (INCLUDE_DIRS .)
 
 add_definitions(-DGLEW_NO_GLU)
+add_definitions(-DGLEW_BUILD)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
