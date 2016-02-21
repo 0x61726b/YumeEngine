@@ -86,30 +86,38 @@ if(OS_LINUX)
   add_definitions(-fPIC)
 endif ()
 
-if( OS_LINUX OR OS_MACOSX)
-  # Test for GCC visibility
-  include(CheckCXXCompilerFlag)
-  check_cxx_compiler_flag(-fvisibility=hidden YUME_GCC_VISIBILITY)
-  if (YUME_GCC_VISIBILITY)
-    # determine gcc version
-    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
-      OUTPUT_VARIABLE YUME_GCC_VERSION)
-    message(STATUS "Detected g++ ${OGRE_GCC_VERSION}")
-    message(STATUS "Enabling GCC visibility flags")
-    set(YUME_GCC_VISIBILITY_FLAGS "-DYUME_GCC_VISIBILITY -fvisibility=hidden")
-    set(XCODE_ATTRIBUTE_GCC_SYMBOLS_PRIVATE_EXTERN "YES")
+if(OS_MACOSX)
+  set(YUME_COMPILER_FLAGS          "-fno-strict-aliasing -fstack-protector -funwind-tables -fvisibility=hidden")
+  set(YUME_C_COMPILER_FLAGS        "-std=c99")
+  set(YUME_CXX_COMPILER_FLAGS      "-fno-threadsafe-statics -fobjc-call-cxx-cdtors -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++")
+  set(YUME_COMPILER_FLAGS_DEBUG    "-O0 -g")
+  set(YUME_COMPILER_FLAGS_RELEASE  "-O3")
+  set(YUME_LINKER_FLAGS            "-Wl,-search_paths_first -Wl,-ObjC -Wl,-pie")
+  set(YUME_LINKER_FLAGS_RELEASE    "-Wl,-dead_strip")
 
-    # check if we can safely add -fvisibility-inlines-hidden
-    string(TOLOWER "${CMAKE_BUILD_TYPE}" YUME_BUILD_TYPE)
-    if (YUME_BUILD_TYPE STREQUAL "debug" AND YUME_GCC_VERSION VERSION_LESS "4.2")
-      message(STATUS "Skipping -fvisibility-inlines-hidden due to possible bug in g++ < 4.2")
-    else ()
-        set(YUME_GCC_VISIBILITY_FLAGS "${YUME_GCC_VISIBILITY_FLAGS} -fvisibility-inlines-hidden")
-        set(XCODE_ATTRIBUTE_GCC_INLINES_ARE_PRIVATE_EXTERN "YES")
-    endif ()
-  endif (YUME_GCC_VISIBILITY)
+  # Standard libraries.
+  set(YUME_STANDARD_LIBS "-lpthread")
 
+  # Find the newest available base SDK.
+  execute_process(COMMAND xcode-select --print-path OUTPUT_VARIABLE XCODE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+  foreach(OS_VERSION 10.10 10.9 10.8 10.7)
+    set(SDK "${XCODE_PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${OS_VERSION}.sdk")
+    if(NOT "${CMAKE_OSX_SYSROOT}" AND EXISTS "${SDK}" AND IS_DIRECTORY "${SDK}")
+      set(CMAKE_OSX_SYSROOT ${SDK})
+    endif()
+  endforeach()
 
+  # Target SDK.
+  set(YUME_TARGET_SDK               "10.8")
+  set(YUME_COMPILER_FLAGS           "${CHI_COMPILER_FLAGS} -mmacosx-version-min=${YUME_TARGET_SDK}")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET  ${YUME_TARGET_SDK})
+
+  # Target architecture.
+  if(PROJECT_ARCH STREQUAL "x86_64")
+    set(CMAKE_OSX_ARCHITECTURES "x86_64")
+  else()
+    set(CMAKE_OSX_ARCHITECTURES "i386")
+  endif()
 endif()
 
 set(LOG4CPLUS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
