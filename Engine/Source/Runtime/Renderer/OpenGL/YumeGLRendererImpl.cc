@@ -21,7 +21,7 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 
-#include "Renderer/YumeGraphics.h"
+#include "Renderer/YumeGraphicsApi.h"
 #include "YumeGLRendererImpl.h"
 
 

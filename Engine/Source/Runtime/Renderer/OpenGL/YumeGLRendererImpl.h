@@ -88,13 +88,13 @@ namespace YumeEngine
          /// Current pixel format.
          int pixelFormat_;
          /// Map for FBO's per resolution and format.
-         HashMap<unsigned long long, FrameBufferObject> frameBuffers_;
+         
          /// Need FBO commit flag.
          bool fboDirty_;
          /// sRGB write mode flag.
          bool sRGBWrite_;
 
-    }
+    };
 }
 
 

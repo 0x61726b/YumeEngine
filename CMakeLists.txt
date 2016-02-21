@@ -135,6 +135,7 @@ endif()
 
 include(Macros)
 include(CMakeDependentOption)
+find_package(OpenGL)
 
 CMAKE_DEPENDENT_OPTION(YUME_BUILD_DIRECT3D11 "Build Direct3D 11" ON "WIN32;DirectX_D3D11_FOUND" OFF)
 CMAKE_DEPENDENT_OPTION(YUME_BUILD_DIRECT3D12 "Build Direct3D 12" ON "WIN32;DirectX_D3D12_FOUND" OFF)

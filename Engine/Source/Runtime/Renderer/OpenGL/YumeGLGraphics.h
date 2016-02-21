@@ -40,7 +40,7 @@ namespace YumeEngine
 	{
 	public:
 		YumeGraphics();
-		~YumeGraphics();
+		virtual ~YumeGraphics();
 
 		static YumeGraphics* Get();
 
@@ -49,10 +49,9 @@ namespace YumeEngine
 
 		bool BeginFrame();
 		void EndFrame();
-		void Clear(unsigned flags, const Vector4& color = Vector4(0.0f, 1.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
+		void Clear(unsigned flags, const Vector4& color = Vector4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
 
-		bool CreateD3D11Device(int width,int height,int multisample);
-		bool UpdateSwapchain(int width,int height);
+		
 
 		void ResetRenderTargets();
 		void SetViewport(const Vector4&);
@@ -64,7 +63,6 @@ namespace YumeEngine
 		YumeVector<int>::type GetMultiSampleLevels() const;
 
 		//Window ops
-		bool OpenWindow(int width,int height,bool resizable,bool borderless);
 		void Close();
 		void AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless);
 		void Maximize();
@@ -73,6 +71,7 @@ namespace YumeEngine
 
 		void AddGpuResource(YumeGpuResource* object);
 		void RemoveGpuResource(YumeGpuResource* object);
+		void Restore();
 
 
 		bool IsInitialized() const { return initialized_; }
@@ -94,6 +93,13 @@ namespace YumeEngine
 		int										multiSample_;
 		bool									vsync_;
 		bool									flushGpu_;
+		bool									forceGL2_;
+		bool									gl3Support;
+		YumeString								apiName_;
+		bool									anisotropySupport_;
+		bool									dxtTextureSupport_;
+		bool									etcTextureSupport_;
+		bool									pvrtcTextureSupport_;
 
 		int										numPrimitives_;
 		int										numBatches_;

@@ -24,7 +24,7 @@
 //----------------------------------------------------------------------------
 
 #if defined(YUME_OPENGL)
-#include "OpenGL/YumeOpenGLGraphics.h"
+#include "OpenGL/YumeGLGraphics.h"
 #elif defined(YUME_DIRECT3D11)
 #include "Direct3D11/YumeD3D11Graphics.h"
 #endif

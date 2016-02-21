@@ -36,6 +36,14 @@ set(SRC_RENDERER_D3D11
 	Renderer/Direct3D11/YumeD3D11Graphics.h
 	Renderer/Direct3D11/YumeD3D11Graphics.cc
 )
+set(SRC_RENDERER_GL
+	Renderer/OpenGL/YumeGLRendererImpl.h
+	Renderer/OpenGL/YumeGLRendererImpl.cc
+	Renderer/OpenGL/YumeGLGpuResource.h
+	Renderer/OpenGL/YumeGLGpuResource.cc
+	Renderer/OpenGL/YumeGLGraphics.h
+	Renderer/OpenGL/YumeGLGraphics.cc
+)
 set( SRC_LOGGING
 		Logging/logging.h
 		Logging/log4cplus.cc
@@ -113,6 +121,7 @@ source_group(Yume\\\\Logging FILES ${SRC_LOGGING})
 source_group(Yume\\\\Math FILES ${SRC_MATH})
 source_group(Yume\\\\Renderer FILES ${SRC_RENDERER})
 source_group(Yume\\\\Renderer\\\\Direct3D11 FILES ${SRC_RENDERER_D3D11})
+source_group(Yume\\\\Renderer\\\\OpenGL FILES ${SRC_RENDERER_GL})
 source_group(Yume\\\\Core FILES ${SRC_CORE})
 source_group(Yume\\\\Core\\\\Config FILES ${SRC_CORE_CONFIG})
 source_group(Yume\\\\Core\\\\Memory FILES ${SRC_CORE_MEMORY})
@@ -132,6 +141,7 @@ set(RENDERER_LIB "")
 
 if( YUME_BUILD_OPENGL )
 	add_definitions(-DYUME_OPENGL)
+	set(RENDERER_LIB ${SRC_RENDERER_GL})
 endif()
 
 if( YUME_BUILD_DIRECT3D11 )
@@ -140,7 +150,7 @@ if( YUME_BUILD_DIRECT3D11 )
 endif()
 
 
-ADD_LIBRARY(${YUME} STATIC
+ADD_LIBRARY(${YUME} SHARED
 						${SRC_LOGGING}
  						${SRC_MATH}
 					  ${SRC_CORE}
@@ -157,6 +167,9 @@ ADD_LIBRARY(${YUME} STATIC
 add_definitions(-DBUILDING_YUME_ENGINE)
 
 
+if(OPENGL_FOUND)
+	target_link_libraries(${YUME} ${OPENGL_LIBRARIES})
+endif()
 
 set(YUME_LIB_TYPE "SHARED")
 
@@ -188,6 +201,7 @@ link_boost_library(${YUME} system)
 link_boost_library(${YUME} date_time)
 target_link_libraries(${YUME} SDL2-static)
 target_link_libraries(${YUME} FreeType)
+target_link_libraries(${YUME} GLEW)
 
 set(YUME_LIBRARIES ${YUME_LIBRARIES} boost_filesystem boost_thread boost_system boost_date_time log4cplus)
 

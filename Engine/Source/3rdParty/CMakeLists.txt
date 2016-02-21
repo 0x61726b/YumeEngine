@@ -33,6 +33,10 @@ ADD_SUBDIRECTORY(JO)
 
 # ADD_SUBDIRECTORY(yume-boost)
 
+if(YUME_BUILD_OPENGL)
+  ADD_SUBDIRECTORY(GLEW)
+endif()
+
 #Boost
 add_boost_library(system)
 add_boost_library(filesystem)
