@@ -26,7 +26,7 @@ Tested on Yosemite 10.10
 ##Debian/Ubuntu
 <b>Prerequisities</b>
 - [CMake](http://www.cmake.org)
-- sudo apt-get install build-essential libgl1-mesa-dev
+- ```sudo apt-get install build-essential libgl1-mesa-dev```
 - GCC 4.8
 
 Tested on Ubuntu 14.04
