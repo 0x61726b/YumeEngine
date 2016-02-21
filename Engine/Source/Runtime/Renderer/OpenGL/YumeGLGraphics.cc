@@ -73,7 +73,7 @@ namespace YumeEngine
 	{
 		YumeGraphicsSingleton = this;
 
-
+		YUMELOG_INFO("Initializing OpenGL graphics....");
 
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
 	}

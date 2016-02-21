@@ -45,6 +45,8 @@ namespace YumeEngine
 
 		YumeEngine::Log::InitLogging("D:/Arken/C++/Yume/v2/YumeEngine/logs/Yume.log");
 
+		YUMELOG_INFO("Initializing Yume Engine...");
+
 		graphics_ = boost::shared_ptr<YumeGraphics>(YumeAPINew YumeGraphics);
 
 		graphics_->SetWindowTitle("Yume Engine");
@@ -54,6 +56,8 @@ namespace YumeEngine
 			return false;
 
 		initialized_ = true;
+
+		YUMELOG_INFO("Engine initializing succesfull..");
 
 		return initialized_;
 	}
