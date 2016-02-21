@@ -169,6 +169,7 @@ add_definitions(-DBUILDING_YUME_ENGINE)
 
 if(OPENGL_FOUND)
 	target_link_libraries(${YUME} ${OPENGL_LIBRARIES})
+	add_definitions(-DGLEW_NO_GLU)
 endif()
 
 set(YUME_LIB_TYPE "SHARED")

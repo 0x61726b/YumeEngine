@@ -153,12 +153,11 @@ macro( add_yume_sample sample_name)
     add_executable(${SAMPLE_TARGET} WIN32 ${HEADER_FILES} ${SOURCE_FILES} ${COMMON_SOURCES}) #This is to avoid linker error on MSVC so tell that this is a win32 app LOL
   endif()
   if(NOT MSVC)
-  	add_executable(${SAMPLE_TARGET} ${HEADER_FILES} ${SOURCE_FILES})
+  	add_executable(${SAMPLE_TARGET} ${HEADER_FILES} ${SOURCE_FILES} ${COMMON_SOURCES})
   endif()
 
   if(YUME_BUILD_OPENGL)
     target_link_libraries(${SAMPLE_TARGET} GLEW)
-    add_definitions(-DGLEW_STATIC)
     include_directories(${YUME_3RDPARTY_PATH}/GLEW)
   endif()
 

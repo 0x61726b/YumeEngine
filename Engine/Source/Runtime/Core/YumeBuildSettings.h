@@ -38,6 +38,6 @@
 
 #define YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR 1
 
-#define YUME_USE_PCH
+/* #undef YUME_USE_PCH */
 
 #endif

@@ -9,10 +9,10 @@
 /// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 /// copies of the Software, and to permit persons to whom the Software is
 /// furnished to do so, subject to the following conditions:
-/// 
+///
 /// The above copyright notice and this permission notice shall be included in
 /// all copies or substantial portions of the Software.
-/// 
+///
 /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 /// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,10 +20,10 @@
 /// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
-/// 
+///
 /// File : YumeMemoryAllocatorConfig.h
 /// Date : 8.28.2015
-/// Comments : 
+/// Comments :
 ///
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -112,7 +112,7 @@ namespace YumeEngine
 #if YUME_DEBUG_MODE
 #	define YUME_DEALLOC(ptr, category) ::YumeEngine::YumeCategorisedAllocPolicy<category>::deallocateBytes((void*)ptr)
 #	define YUME_ALLOC_T(T, count, category) static_cast<T*>(::YumeEngine::YumeCategorisedAllocPolicy<category>::allocateBytes(sizeof(T)*(count)))
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
 #	define DebugNew new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #	define YumeAPINew DebugNew
 #	define YumeAPIDelete delete
