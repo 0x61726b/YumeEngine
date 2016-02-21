@@ -6,42 +6,39 @@ Exploring new renderer design ideas,trying to implement as simple as possible.He
 
 For updates from this engine development(and my other silly posts) you can check out my <a href="http://arkenthera.github.io">website</a>
 
-#Building the code
-##Linux
+#Building
+
+```
+git clone https://github.com/arkenthera/YumeEngine
+cd YumeEngine
+git submodule update --init --recursive
+```
+
+##Mac OS X
 <b>Prerequisities</b>
+- [CMake](http://www.cmake.org)
+- OpenGL (probably already installed)
+- XCode or Command line tools
+ 
 
-- <a href="http://www.cmake.org/">CMake 2.6.2 or greater</a>
-On Ubuntu/Debian
-`sudo apt-get install cmake`
-- OpenGL
-`sudo apt-get install freeglut3-dev`
-This should install all required dependencies
-- IDE of your choice (not required)
-- GNUXX `sudo apt-get install g++`
+Tested on Yosemite 10.10
 
-<b>Building</b>
+##Debian/Ubuntu
+<b>Prerequisities</b>
+- [CMake](http://www.cmake.org)
+- sudo apt-get install build-essential libgl1-mesa-dev
+- GCC 4.8
 
-After forking the repository go to the directory 
-- `mkdir _build && cd _build`
-- `sudo cmake ..`
-If all dependencies are satisfied,it should say Configuring Done Generating Done.
-- Then on the _build directory just type `make`
-
-If there is no error then the project has been built.You can check out the bin folder for sample projects.
+Tested on Ubuntu 14.04
 
 ##Windows
 <b>Prerequisities</b>
 
 - <a href="http://www.cmake.org/">CMake 2.6.2 or greater</a>
-- Visual Studio
+- Visual Studio 2013 (Need C++11 support)
 - <a href="http://www.microsoft.com/en-us/download/details.aspx?id=6812">DirectX SDK June 2010</a>
-- <a href="https://dev.windows.com/en-us/downloads/windows-10-sdk">Windows 10 SDK</a> if you want to build Direct3D 12 library
 
-Note:If you have VS2015 you may already have required D3D12 files.
-
-<b>Building</b>
-
-If you have CMake GUI go to the associated directory and create a _build dir.Then hit Configure.Tune in the options as you desire.Then hit configure again(no red bars should remain). Then hit Generate.Go to _build directory and launch YumeEngine.sln. Build the ALL_BUILD project.
+Tested on Win10 x64 Vs2013
 
 # **Sources Used On This Project**
 
