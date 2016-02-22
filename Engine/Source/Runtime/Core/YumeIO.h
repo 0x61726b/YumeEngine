@@ -19,44 +19,21 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeEnvironment_h__
-#define __YumeEnvironment_h__
+#ifndef __YumeIO_h__
+#define __YumeIO_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-
-#include <boost/filesystem.hpp>
-
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeDynamicLibrary;
-	typedef boost::filesystem::path FsPath;
-
-	class YumeAPIExport YumeEnvironment
+	class YumeAPIExport YumeIO : public GeneralObjAlloc
 	{
 	public:
-		YumeEnvironment();
-		virtual ~YumeEnvironment();
+		YumeIO();
 
-		bool Exists(boost::filesystem::path path);
-		bool CreateDirectory(const boost::filesystem::path& path); 
-
-
-
-		const FsPath& GetLogFile() { return logFile_; }
-
-
-		YumeDynamicLibrary* LoadDynLib(const YumeString& name);
-		void UnloadDynLib(YumeDynamicLibrary*);
-	private:
-		boost::filesystem::path		appDataPath_;
-		boost::filesystem::path		yumeConfigsPath;
-		boost::filesystem::path		configFile_;
-		boost::filesystem::path		logFile_;
-
-		typedef YumeMap<YumeString,YumeDynamicLibrary*>::type DynLibMap;
-		DynLibMap dynLibMap_;
+		virtual ~YumeIO();
 	};
+
 }
 
 

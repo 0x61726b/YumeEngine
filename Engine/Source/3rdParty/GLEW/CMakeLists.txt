@@ -24,12 +24,13 @@ set(SOURCE_FILES glew.c glew.h glxew.h wglew.h)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(GLEW SHARED ${SOURCE_FILES})
+add_library(GLEW STATIC ${SOURCE_FILES})
 
 if(OPENGL_FOUND)
 	target_link_libraries(GLEW ${OPENGL_LIBRARIES})
 	set_target_properties(GLEW PROPERTIES COMPILE_DEFINITIONS GLEW_NO_GLU)
 	add_definitions(-DGLEW_BUILD)
+	add_definitions(-DGLEW_STATIC)
 endif()
 
 set_target_properties(GLEW PROPERTIES FOLDER "3rdParty" )

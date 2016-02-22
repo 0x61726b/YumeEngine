@@ -19,10 +19,10 @@ matrix:
       compiler: clang
       sudo: false
       after_success:
-        - codecov
+        - codecov --token=9a11d4e0-571e-4df4-bfa6-7295aee52df2
       before_install:
         - set -e # Fail the whole script whenever any command fails
-        - pip install codecov
+        - sudo pip install codecov
         - git submodule update --init --recursive
       install:
         - |
@@ -44,7 +44,7 @@ matrix:
       after_success:
         - codecov
       before_install:
-        - pip install codecov
+        - sudo pip install codecov
         - set -e
         - git submodule update --init --recursive
         - sudo add-apt-repository -y ppa:ubuntu-sdk-team/ppa

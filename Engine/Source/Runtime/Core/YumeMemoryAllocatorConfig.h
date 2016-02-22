@@ -91,7 +91,7 @@ namespace YumeEngine
 	typedef YumeGeneralAllocatedObject GeneralObjAlloc;
 	typedef YumeGeneralAllocatedObject LogObjAlloc;
 	typedef YumeRendererAllocatedObject RenderObjAlloc;
-	typedef YumeGeneralAllocatedObject CentrumObjAlloc;
+	typedef YumeGeneralAllocatedObject DynamicLibAlloc;
 }
 
 namespace YumeEngine
@@ -114,7 +114,7 @@ namespace YumeEngine
 #	define YUME_ALLOC_T(T, count, category) static_cast<T*>(::YumeEngine::YumeCategorisedAllocPolicy<category>::allocateBytes(sizeof(T)*(count)))
 #if defined(_MSC_VER)
 #	define DebugNew new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#	define YumeAPINew DebugNew
+#	define YumeAPINew new
 #	define YumeAPIDelete delete
 #else
 #	define DebugNew new

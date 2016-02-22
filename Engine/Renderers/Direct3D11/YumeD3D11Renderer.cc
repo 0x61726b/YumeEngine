@@ -36,15 +36,16 @@
 
 namespace YumeEngine
 {
-	extern "C" void YumeD3DExport LoadGraphicsModule(YumeEngine3D* engine) throw()
+	extern "C" void YumeD3DExport LoadModule(YumeEngine3D* engine) throw()
 	{
 		YumeRenderer* graphics_ = new YumeD3D11Renderer;
 		engine->SetRenderer(graphics_);
 	}
 	//---------------------------------------------------------------------	
-	extern "C" void YumeD3DExport UnloadGraphicsModule(YumeEngine3D* engine) throw()
+	extern "C" void YumeD3DExport UnloadModule(YumeEngine3D* engine) throw()
 	{
-		//
+		YumeRenderer* graphics_ = engine->GetRenderer();
+		delete graphics_;
 	}
 	//---------------------------------------------------------------------
 	YumeD3D11Renderer::YumeD3D11Renderer()

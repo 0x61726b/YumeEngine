@@ -24,6 +24,7 @@
 #include "Renderer/YumeGraphicsApi.h"
 #include "Renderer/YumeRenderer.h"
 
+#include "Core/YumeDynamicLibrary.h"
 #include "Core/YumeEnvironment.h"
 
 #include "Math/YumeVector2.h"
@@ -40,6 +41,7 @@ YumeEngine::YumeEngine3D* YumeEngineGlobal = 0;
 namespace YumeEngine
 {
 	typedef void(*DLL_LOAD_MODULE)(YumeEngine3D*);
+	typedef void(*DLL_UNLOAD_MODULE)(YumeEngine3D*);
 
 	YumeEngine3D::YumeEngine3D()
 		: exiting_(false),
@@ -50,6 +52,10 @@ namespace YumeEngine
 		log4cplus::Initializer initialize;
 	}
 
+	YumeEngine3D::~YumeEngine3D()
+	{
+
+	}
 	YumeEngine3D* YumeEngine3D::Get()
 	{
 		return YumeEngineGlobal;
@@ -60,20 +66,19 @@ namespace YumeEngine
 		if(initialized_)
 			return true;
 
-		YumeEngine::Log::InitLogging("D:/Arken/C++/Yume/v2/YumeEngine/logs/Yume.log");
-
-		YUMELOG_INFO("Initializing Yume Engine...");
+		initialized_ = true;
 
 		env_ = boost::shared_ptr<YumeEnvironment>(YumeAPINew YumeEnvironment);
 
+		YumeEngine::Log::InitLogging(env_->GetLogFile().generic_string().c_str());
 
-		
+		YUMELOG_INFO("Initializing Yume Engine...");
 
-		LoadLibraryEx(L"YumeDirect3D11.dll", NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
-		HINSTANCE hInst = GetModuleHandle(L"YumeDirect3D11.dll");
-		DLL_LOAD_MODULE pFunc = (DLL_LOAD_MODULE)GetProcAddress(hInst, "LoadGraphicsModule");
-		pFunc(this);
 
+		initialized_ = LoadExternalLibrary("YumeOpenGL");
+
+		if(!initialized_)
+			return false;
 
 		graphics_->SetWindowTitle("Yume Engine");
 		graphics_->SetWindowPos(Vector2(250,250));
@@ -81,12 +86,75 @@ namespace YumeEngine
 		if(!graphics_->SetGraphicsMode(1280,720,false,false,true,true,false,1))
 			return false;
 
-		initialized_ = true;
-
 		YUMELOG_INFO("Engine initializing succesfull..");
 
 		return initialized_;
 	}
+
+	bool YumeEngine3D::LoadExternalLibrary(const YumeString& lib)
+	{
+		YumeDynamicLibrary* dynLib = env_->LoadDynLib(lib);
+
+		if(dynLib)
+		{
+			if(std::find(extLibs_.begin(),extLibs_.end(),dynLib) == extLibs_.end())
+			{
+				extLibs_.push_back(dynLib);
+
+				DLL_LOAD_MODULE pFunc = (DLL_LOAD_MODULE)dynLib->GetSymbol("LoadModule");
+
+				if(!pFunc)
+				{
+					YUMELOG_ERROR("Error loading address of LoadModule in an external library..." << lib.c_str());
+					return false;
+				}
+
+				pFunc(this);
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+
+	}
+
+	void YumeEngine3D::UnloadExternalLibrary(const YumeString& lib)
+	{
+		ExtLibList::iterator i;
+
+		for(i = extLibs_.begin(); i != extLibs_.end(); ++i)
+		{
+			if((*i)->GetName() == lib)
+			{
+				// Call plugin shutdown
+				DLL_UNLOAD_MODULE pFunc = (DLL_UNLOAD_MODULE)(*i)->GetSymbol("UnloadModule");
+				// this must call uninstallPlugin
+				pFunc(this);
+				// Unload library (destroyed by DynLibManager)
+				env_->UnloadDynLib(*i);
+				extLibs_.erase(i);
+				return;
+			}
+		}
+	}
+
+	void YumeEngine3D::UnloadExternalLibraries()
+	{
+		ExtLibList::iterator i;
+
+		for(i = extLibs_.begin(); i != extLibs_.end(); ++i)
+		{
+			DLL_UNLOAD_MODULE pFunc = (DLL_UNLOAD_MODULE)(*i)->GetSymbol("UnloadModule");
+			// this must call uninstallPlugin
+			pFunc(this);
+			// Unload library (destroyed by DynLibManager)
+			env_->UnloadDynLib(*i);
+		}
+		extLibs_.clear();
+	}
+
 
 	void YumeEngine3D::Render()
 	{
@@ -96,7 +164,7 @@ namespace YumeEngine
 		//Renderer
 		Vector4 clearColor(0,0,0,0);
 
-		graphics_->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL, clearColor);
+		graphics_->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL,clearColor);
 
 		graphics_->EndFrame();
 	}
@@ -123,25 +191,22 @@ namespace YumeEngine
 
 	void YumeEngine3D::SetRenderer(YumeRenderer* renderer)
 	{
-		graphics_ = boost::shared_ptr<YumeRenderer>(renderer);
+		graphics_ = renderer;
 	}
 
-	boost::shared_ptr<YumeRenderer> YumeEngine3D::GetRenderer()
+	YumeRenderer* YumeEngine3D::GetRenderer()
 	{
 		return graphics_;
 	}
 
 	void YumeEngine3D::Exit()
 	{
+		exiting_ = true;
+
+		UnloadExternalLibraries();
+
 		YumeEngine::Log::StopLogging();
 
 
-#if YUME_PLATFORM == YUME_PLATFORM_WIN32
-		HINSTANCE hInst = GetModuleHandle(L"YumeDirect3D11.dll");
-		DLL_LOAD_MODULE pFunc = (DLL_LOAD_MODULE)GetProcAddress(hInst, "UnloadGraphicsModule");
-		pFunc(this);
-#endif
-
-		exiting_ = true;
 	}
 }

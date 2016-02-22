@@ -30,12 +30,14 @@ namespace YumeEngine
 {
 	class YumeRenderer;
 	class YumeEnvironment;
+	class YumeDynamicLibrary;
 
 	class YumeAPIExport YumeEngine3D
 	{
 	public:
 		YumeEngine3D();
 
+		virtual ~YumeEngine3D();
 		bool Initialize();
 
 		static YumeEngine3D* Get();
@@ -47,14 +49,22 @@ namespace YumeEngine
 		void Update();
 		void Render();
 
+		bool LoadExternalLibrary(const YumeString& libName);
+		void UnloadExternalLibrary(const YumeString& libName);
+
+		void UnloadExternalLibraries();
+
 		bool IsExiting() const { return exiting_; }
 
 		void SetRenderer(YumeRenderer* renderer);
-		boost::shared_ptr<YumeRenderer> GetRenderer();
+		YumeRenderer* GetRenderer();
 
 	private:
-		boost::shared_ptr<YumeRenderer> graphics_;
+		YumeRenderer* graphics_;
 		boost::shared_ptr<YumeEnvironment> env_;
+
+		typedef YumeVector<YumeDynamicLibrary*>::type ExtLibList;
+		ExtLibList extLibs_;
 	private:
 		bool initialized_;
 		bool exiting_;

@@ -41,15 +41,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR args, int ncmd)
 int main()
 	{
 #endif
-	if(boost::filesystem::exists("C:\\Users\\alperen\\AppData\\Roaming\\YumeEngine"))
-		{
-			std::cout << "Exists";
-		}
-		else
-		{
-			std::cout << "Does not Exists";
-		}
-
 	boost::shared_ptr<YumeEngine::HelloWorld> app(new YumeEngine::HelloWorld);
 
 	return app->Run();

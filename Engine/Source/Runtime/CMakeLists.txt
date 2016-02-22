@@ -72,7 +72,15 @@ set( SRC_CORE
 	Core/YumeHeaderPrefix.h
 	Core/YumeEnvironment.h
 	Core/YumeEnvironment.cc
+	Core/YumeDynamicLibrary.h
+	Core/YumeDynamicLibrary.cc
 		)
+set( SRC_CORE_IO
+	Core/YumeIO.h
+	Core/YumeIO.cc
+	Core/YumeFile.h
+	Core/YumeFile.cc
+)
 set( SRC_CORE_STL
 
 )
@@ -110,6 +118,7 @@ source_group(Yume\\\\Renderer FILES ${SRC_RENDERER})
 source_group(Yume\\\\Core FILES ${SRC_CORE})
 source_group(Yume\\\\Core\\\\Config FILES ${SRC_CORE_CONFIG})
 source_group(Yume\\\\Core\\\\Memory FILES ${SRC_CORE_MEMORY})
+source_group(Yume\\\\Core\\\\IO FILES ${SRC_CORE_IO})
 source_group(Yume\\\\Engine FILES ${SRC_ENGINE})
 
 
@@ -127,9 +136,8 @@ ADD_LIBRARY(${YUME} SHARED
 					  ${SRC_CORE}
 						${SRC_GRAPHICS}
 					  ${SRC_CORE_MEMORY}
-					  ${SRC_CORE_UTILS}
 					  ${SRC_CORE_CONFIG}
-						${SRC_CORE_STL}
+						${SRC_CORE_IO}
 						${SRC_RENDERER}
 						${SRC_ENGINE}
 						)

@@ -22,6 +22,8 @@
 #include "YumeHeaders.h"
 #include "YumeEnvironment.h"
 
+#include "YumeDynamicLibrary.h"
+
 #include "Logging/logging.h"
 
 namespace YumeEngine
@@ -52,10 +54,54 @@ namespace YumeEngine
 		YUMELOG_INFO("Initializing environment..."
 			<< std::endl << "Engine Config Path: " << yumeConfigsPath.c_str());
 
+		
+
+		CreateDirectory(yumeConfigsPath);
+
 		configFile_ = yumeConfigsPath / "Yume.config";
+		logFile_ = yumeConfigsPath / "Yume.log";
+	}
+
+	YumeEnvironment::~YumeEnvironment()
+	{
+		// Unload & delete resources in turn
+		for(DynLibMap::iterator it = dynLibMap_.begin(); it != dynLibMap_.end(); ++it)
+		{
+			it->second->Unload();
+			YumeAPIDelete it->second;
+		}
+
+		// Empty the list
+		dynLibMap_.clear();
+	}
 
 
-		CreateDirectory(appDataPath_);
+	YumeDynamicLibrary* YumeEnvironment::LoadDynLib(const YumeString& name)
+	{
+		DynLibMap::iterator i = dynLibMap_.find(name);
+		if(i != dynLibMap_.end())
+		{
+			return i->second;
+		}
+		else
+		{
+			YumeDynamicLibrary* pLib = YumeAPINew YumeDynamicLibrary(name);
+			if(!pLib->Load())
+				return NULL;
+			dynLibMap_[name] = pLib;
+			return pLib;
+		}
+	}
+
+	void YumeEnvironment::UnloadDynLib(YumeDynamicLibrary* lib)
+	{
+		DynLibMap::iterator i = dynLibMap_.find(lib->GetName());
+		if(i != dynLibMap_.end())
+		{
+			dynLibMap_.erase(i);
+		}
+		lib->Unload();
+		YumeAPIDelete lib;
 	}
 
 	bool YumeEnvironment::CreateDirectory(const boost::filesystem::path& path)

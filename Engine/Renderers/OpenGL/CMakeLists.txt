@@ -44,14 +44,10 @@ add_library(${RENDERER_TARGET} SHARED ${SRC_RENDERER_GL})
 target_link_libraries(${RENDERER_TARGET} ${YUME})
 target_link_libraries(${RENDERER_TARGET} ${OPENGL_LIBRARIES})
 target_link_libraries(${RENDERER_TARGET} FreeType)
-target_link_libraries(${RENDERER_TARGET} log4cplus)
 target_link_libraries(${RENDERER_TARGET} GLEW)
-target_link_libraries(${RENDERER_TARGET} SDL2)
-target_link_libraries(${RENDERER_TARGET} SDL2main)
 include_directories(${YUME_INCLUDE_DIR})
-include_directories(${YUME_BOOST_PATH})
-include_directories(${YUME_SDL_INCLUDE_PATH})
-include_directories(${YUME_3RDPARTY_PATH}/log4cplus/include)
+
+add_definitions(-DGLEW_STATIC)
 
 set_output_dir_to_yume(${RENDERER_TARGET})
 
