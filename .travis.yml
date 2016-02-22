@@ -19,7 +19,7 @@ matrix:
       compiler: clang
       sudo: false
       after_success:
-        - codecov --token=9a11d4e0-571e-4df4-bfa6-7295aee52df2
+        - sudo codecov --token=9a11d4e0-571e-4df4-bfa6-7295aee52df2
       before_install:
         - set -e # Fail the whole script whenever any command fails
         - sudo pip install codecov
