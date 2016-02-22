@@ -10,4 +10,4 @@ before_build:
    - cmake .. -DSDL_STATIC=0 -DSDL_SHARED=1 -DBUILD_SHARED_LIBS=0 -DYUME_BUILD_DIRECT3D11=1
 
 build:
-  project: build\YumeEngine.sln
+  project: C:/projects/yumeengine/build/YumeEngine.sln
