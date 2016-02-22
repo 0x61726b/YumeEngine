@@ -74,8 +74,12 @@ namespace YumeEngine
 
 		YUMELOG_INFO("Initializing Yume Engine...");
 
+        YUMELOG_INFO("Initialized environment...");
 
-		initialized_ = LoadExternalLibrary("YumeOpenGL");
+        YUMELOG_INFO("Engine Config Path: " << env_->GetRoot().generic_string().c_str());
+
+
+		initialized_ = LoadExternalLibrary("libYumeOpenGL");
 
 		if(!initialized_)
 			return false;

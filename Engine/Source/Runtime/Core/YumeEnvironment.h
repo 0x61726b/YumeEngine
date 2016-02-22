@@ -39,18 +39,19 @@ namespace YumeEngine
 		virtual ~YumeEnvironment();
 
 		bool Exists(boost::filesystem::path path);
-		bool CreateDirectory(const boost::filesystem::path& path); 
+		bool CreateDirectory(const boost::filesystem::path& path);
 
 
 
 		const FsPath& GetLogFile() { return logFile_; }
+		const FsPath& GetRoot() { return root_; }
 
 
 		YumeDynamicLibrary* LoadDynLib(const YumeString& name);
 		void UnloadDynLib(YumeDynamicLibrary*);
 	private:
 		boost::filesystem::path		appDataPath_;
-		boost::filesystem::path		yumeConfigsPath;
+		boost::filesystem::path		root_;
 		boost::filesystem::path		configFile_;
 		boost::filesystem::path		logFile_;
 

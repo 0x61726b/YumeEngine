@@ -62,7 +62,7 @@ namespace YumeEngine
 		YumeString name = mName;
 #if YUME_PLATFORM == YUME_PLATFORM_LINUX
         // dlopen() does not add .so to the filename, like windows does for .dll
-	if (name.find(".so") == String::npos)
+	if (name.find(".so") == std::string::npos)
            name += ".so";
 #elif YUME_PLATFORM == YUME_PLATFORM_APPLE
         // dlopen() does not add .dylib to the filename, like windows does for .dll
@@ -79,7 +79,7 @@ namespace YumeEngine
         if( !mInst )
 		{
             YUMELOG_FATAL(
-                "Could not load dynamic library " + mName + 
+                "Could not load dynamic library " + mName +
                 ".  System Error: " + dynlibError());
 			return false;
 		}
@@ -106,21 +106,21 @@ namespace YumeEngine
         return (void*)DYNLIB_GETSYM( mInst, strName.c_str() );
     }
     //-----------------------------------------------------------------------
-    YumeString YumeDynamicLibrary::dynlibError( void ) 
+    YumeString YumeDynamicLibrary::dynlibError( void )
     {
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
-        LPVOID lpMsgBuf; 
-        FormatMessage( 
-            FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-            FORMAT_MESSAGE_FROM_SYSTEM | 
-            FORMAT_MESSAGE_IGNORE_INSERTS, 
-            NULL, 
-            GetLastError(), 
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
-            (LPTSTR) &lpMsgBuf, 
-            0, 
-            NULL 
-            ); 
+        LPVOID lpMsgBuf;
+        FormatMessage(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+            FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL,
+            GetLastError(),
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPTSTR) &lpMsgBuf,
+            0,
+            NULL
+            );
         YumeString ret = (char*)lpMsgBuf;
         // Free the buffer.
         LocalFree( lpMsgBuf );

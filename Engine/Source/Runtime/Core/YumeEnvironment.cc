@@ -35,7 +35,7 @@ namespace YumeEngine
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
 		appData = std::string(std::getenv("APPDATA"));
 #elif YUME_PLATFORM == YUME_PLATFORM_LINUX
-		appData = std::string(std::getenv("APPDATA"));
+		appData = std::string(std::getenv("HOME"));
 #elif YUME_PLATFORM == YUME_PLATFORM_APPLE
 		appData = std::string(std::getenv("APPDATA"));
 #endif
@@ -49,17 +49,14 @@ namespace YumeEngine
 #endif
 
 
-		boost::filesystem::path yumeConfigsPath = appDataPath_ / "YumeEngine";
+		root_ = appDataPath_ / "YumeEngine";
 
-		YUMELOG_INFO("Initializing environment..."
-			<< std::endl << "Engine Config Path: " << yumeConfigsPath.c_str());
 
-		
 
-		CreateDirectory(yumeConfigsPath);
+		CreateDirectory(root_);
 
-		configFile_ = yumeConfigsPath / "Yume.config";
-		logFile_ = yumeConfigsPath / "Yume.log";
+		configFile_ = root_ / "Yume.config";
+		logFile_ = root_ / "Yume.log";
 	}
 
 	YumeEnvironment::~YumeEnvironment()

@@ -47,6 +47,7 @@ target_link_libraries(${RENDERER_TARGET} FreeType)
 target_link_libraries(${RENDERER_TARGET} GLEW)
 include_directories(${YUME_INCLUDE_DIR})
 
+add_definitions(-DGLEW_NO_GLU)
 add_definitions(-DGLEW_STATIC)
 
 set_output_dir_to_yume(${RENDERER_TARGET})
