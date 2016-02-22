@@ -62,6 +62,12 @@ if(NOT DEFINED PROJECT_ARCH)
   endif()
 endif()
 
+if(OS_LINUX OR OS_MACOSX)
+   include(CodeCoverage)
+   SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-g -O0 -fprofile-arcs -ftest-coverage")
+   SET(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-g -O0 -fprofile-arcs -ftest-coverage")
+   setup_target_for_coverage(${PROJECT_NAME}_coverage ${PROJECT_TEST_NAME} coverage)
+endif()
 
 if(OS_LINUX)
   include(CheckCXXCompilerFlag)

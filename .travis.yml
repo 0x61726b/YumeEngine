@@ -70,3 +70,4 @@ script:
   - ./Engine/Source/3rdParty/log4cplus/configure
   - cd build
   - make
+  - make YumeEngine_coverage
