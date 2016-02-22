@@ -126,7 +126,7 @@ namespace YumeEngine
         LocalFree( lpMsgBuf );
         return ret;
 #elif YUME_PLATFORM == YUME_PLATFORM_LINUX || YUME_PLATFORM == YUME_PLATFORM_APPLE
-        return String(dlerror());
+        return YumeString(dlerror());
 #endif
     }
 }
