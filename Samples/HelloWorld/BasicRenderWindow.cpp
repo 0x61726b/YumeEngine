@@ -14,7 +14,7 @@
 #include "Logging/logging.h"
 
 #include <boost/shared_ptr.hpp>
-
+#include <boost/filesystem.hpp>
 namespace YumeEngine
 {
 	HelloWorld::HelloWorld()
@@ -41,7 +41,14 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR args, int ncmd)
 int main()
 	{
 #endif
-	
+	if(boost::filesystem::exists("C:\\Users\\alperen\\AppData\\Roaming\\YumeEngine"))
+		{
+			std::cout << "Exists";
+		}
+		else
+		{
+			std::cout << "Does not Exists";
+		}
 
 	boost::shared_ptr<YumeEngine::HelloWorld> app(new YumeEngine::HelloWorld);
 

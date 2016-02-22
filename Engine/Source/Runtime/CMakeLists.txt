@@ -134,6 +134,7 @@ ADD_LIBRARY(${YUME} SHARED
 						${SRC_ENGINE}
 						)
 
+
 add_definitions(-DBUILDING_YUME_ENGINE)
 
 
@@ -165,7 +166,9 @@ link_boost_library(${YUME} filesystem)
 link_boost_library(${YUME} thread)
 link_boost_library(${YUME} system)
 link_boost_library(${YUME} date_time)
-target_link_libraries(${YUME} SDL2-static)
+target_link_libraries(${YUME} SDL2)
+target_link_libraries(${YUME} SDL2main)
+target_link_libraries(${YUME} pugixml)
 
 set(YUME_LIBRARIES ${YUME_LIBRARIES} boost_filesystem boost_thread boost_system boost_date_time log4cplus)
 
@@ -175,7 +178,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 set_target_properties(${YUME} PROPERTIES FOLDER "Yume")
 
 
-set_target_properties( ${YUME}
+set_target_properties( ${YUME} SDL2 SDL2main
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"

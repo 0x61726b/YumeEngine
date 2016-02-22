@@ -14,3 +14,7 @@
 	path = Engine/Source/3rdParty/yume-boost
 	url = https://github.com/arkenthera/yume-boost
 	branch = 1.57.0
+[submodule "Engine/Source/3rdParty/pugixml"]
+	path = Engine/Source/3rdParty/pugixml
+	url = https://github.com/zeux/pugixml
+	branch = master

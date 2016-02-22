@@ -23,7 +23,6 @@
 #include "Engine/YumeApplication.h"
 #include "Engine/YumeEngine.h"
 
-#include <boost/make_shared.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -33,7 +32,6 @@ namespace YumeEngine
 		: exitCode_(0)
 	{
 		engine_ = boost::shared_ptr<YumeEngine3D>(new YumeEngine3D);
-	
 	}
 
 	YumeApplication::~YumeApplication()
@@ -62,5 +60,6 @@ namespace YumeEngine
 		engine_->Exit();
 
 		return exitCode_;
+		return 0;
 	}
 }

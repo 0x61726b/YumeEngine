@@ -31,6 +31,8 @@ ADD_SUBDIRECTORY(yume-freetype)
 #jo_jpeg
 ADD_SUBDIRECTORY(JO)
 
+ADD_SUBDIRECTORY(pugixml/scripts)
+
 # ADD_SUBDIRECTORY(yume-boost)
 
 if(YUME_BUILD_OPENGL)
@@ -47,12 +49,15 @@ set_target_properties(boost_system PROPERTIES FOLDER "3rdParty" )
 set_target_properties(boost_filesystem PROPERTIES FOLDER "3rdParty" )
 set_target_properties(boost_thread PROPERTIES FOLDER "3rdParty" )
 set_target_properties(boost_date_time PROPERTIES FOLDER "3rdParty" )
-set_target_properties(SDL2-static PROPERTIES FOLDER "3rdParty" )
+# set_target_properties(SDL2-static PROPERTIES FOLDER "3rdParty" )
 set_target_properties(SDL2main PROPERTIES FOLDER "3rdParty" )
+set_target_properties(SDL2 PROPERTIES FOLDER "3rdParty" )
 set_target_properties(FreeType PROPERTIES FOLDER "3rdParty" )
 set_target_properties(log4cplus PROPERTIES FOLDER "3rdParty" )
 set_target_properties(JO PROPERTIES FOLDER "3rdParty" )
+set_target_properties(JO PROPERTIES FOLDER "3rdParty" )
 
+setup_lib("pugixml")
 
 if(OS_LINUX)
   target_compile_options(boost_system PUBLIC "-fPIC")

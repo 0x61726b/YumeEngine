@@ -30,7 +30,6 @@ namespace YumeEngine
 	{
 		std::string appData;
 
-
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
 		appData = std::string(std::getenv("APPDATA"));
 #elif YUME_PLATFORM == YUME_PLATFORM_LINUX
@@ -40,34 +39,23 @@ namespace YumeEngine
 #endif
 
 
-		const size_t cSize = strlen(appData.c_str());
-		std::wstring wstr(cSize,L'#');
-		mbstowcs(&wstr[0],appData.c_str(),cSize);
 
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
-		appDataPath_ = boost::filesystem::path(wstr);
+		appDataPath_ = boost::filesystem::path(appData);
 #else
-		appDataPath_ = boost::filesystem::path(wstr);
+		appDataPath_ = boost::filesystem::path(appData);
 #endif
 
 
-		boost::filesystem::path ym = appDataPath_ / L"YumeEngine";
+		boost::filesystem::path yumeConfigsPath = appDataPath_ / "YumeEngine";
 
 		YUMELOG_INFO("Initializing environment..."
 			<< std::endl << "Engine Config Path: " << yumeConfigsPath.c_str());
 
-		configFile_ = yumeConfigsPath / L"Yume.config";
+		configFile_ = yumeConfigsPath / "Yume.config";
 
 
-
-		if(boost::filesystem::exists(L"C:\\Users\\alperen\\AppData\\Roaming\\YumeEngine"))
-		{
-			std::cout << "Exists";
-		}
-		else
-		{
-			std::cout << "Does not Exists";
-		}
+		CreateDirectory(appDataPath_);
 	}
 
 	bool YumeEnvironment::CreateDirectory(const boost::filesystem::path& path)

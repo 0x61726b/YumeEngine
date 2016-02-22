@@ -18,8 +18,11 @@ matrix:
     - os: osx
       compiler: clang
       sudo: false
+      after_success:
+        - codecov
       before_install:
         - set -e # Fail the whole script whenever any command fails
+        - pip install codecov
         - git submodule update --init --recursive
       install:
         - |
@@ -36,9 +39,12 @@ matrix:
         - mkdir build && cd build
         - cmake .. -DCMAKE_CXX_COMPILER=${COMPILER} ${CMAKE_OPTIONS}
     - os: linux
-      env: COMPILER=g++-4.8 CMAKE_OPTIONS="-DJSONCPP_LIB_BUILD_STATIC=ON -DJSONCPP_LIB_BUILD_SHARED=OFF"
+      env: COMPILER=g++-4.8 CMAKE_OPTIONS="-DYUME_BUILD_OPENGL=1 -DYUME_BUILD_DIRECT3D11=0"
       compiler: gcc
+      after_success:
+        - codecov
       before_install:
+        - pip install codecov
         - set -e
         - git submodule update --init --recursive
         - sudo add-apt-repository -y ppa:ubuntu-sdk-team/ppa

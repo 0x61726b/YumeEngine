@@ -190,3 +190,8 @@ endmacro( set_output_dir_to_yume)
 macro( set_folder_name TARGET_NAME FOLDERNAME)
   set_target_properties(${TARGET_NAME} PROPERTIES FOLDER ${FOLDERNAME})
 endmacro( set_folder_name)
+
+macro( setup_lib TARGET_NAME)
+  set_output_dir_to_yume( ${TARGET_NAME} )
+  set_folder_name( ${TARGET_NAME} "3rdParty")
+endmacro(setup_lib)
