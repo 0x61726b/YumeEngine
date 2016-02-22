@@ -21,7 +21,7 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 
-#include "YumeGLGraphics.h"
+#include "YumeGLRenderer.h"
 #include "YumeGLRendererImpl.h"
 #include "YumeGLGpuResource.h"
 
@@ -29,17 +29,27 @@
 
 #include "Logging/logging.h"
 
+#include "Engine/YumeEngine.h"
 
 
 
 #include <SDL_syswm.h>
 
-static YumeEngine::YumeGraphics* YumeGraphicsSingleton = NULL;
-
 namespace YumeEngine
 {
-	YumeGraphics::YumeGraphics():
-		impl_(new YumeRendererImpl()),
+	extern "C" void YumeGLExport LoadGraphicsModule(YumeEngine3D* engine) throw()
+	{
+		YumeRenderer* graphics_ = new YumeGLRenderer;
+		engine->SetRenderer(graphics_);
+	}
+	//---------------------------------------------------------------------	
+	extern "C" void YumeGLExport UnloadGraphicsModule(YumeEngine3D* engine) throw()
+	{
+		//
+	}
+	//---------------------------------------------------------------------
+	YumeGLRenderer::YumeGLRenderer():
+		impl_(new YumeGLRendererImpl()),
 		windowWidth_(0),
 		windowHeight_(0),
 		windowPos_(SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED),
@@ -71,14 +81,13 @@ namespace YumeEngine
 		apiName_("GLES2")
 #endif
 	{
-		YumeGraphicsSingleton = this;
 
 		YUMELOG_INFO("Initializing OpenGL graphics....");
 
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
 	}
 
-	YumeGraphics::~YumeGraphics()
+	YumeGLRenderer::~YumeGLRenderer()
 	{
 		{
 			boost::mutex::scoped_lock lock(gpuResourceMutex_);
@@ -104,12 +113,7 @@ namespace YumeEngine
 
 	}
 
-	YumeGraphics* YumeGraphics::Get()
-	{
-		return YumeGraphicsSingleton;
-	}
-
-	bool YumeGraphics::BeginFrame()
+	bool YumeGLRenderer::BeginFrame()
 	{
 		if(!IsInitialized())
 			return false;
@@ -123,7 +127,7 @@ namespace YumeEngine
 		return true;
 	}
 
-	void YumeGraphics::EndFrame()
+	void YumeGLRenderer::EndFrame()
 	{
 		if(!IsInitialized())
 			return;
@@ -131,7 +135,7 @@ namespace YumeEngine
 
 	}
 
-	void YumeGraphics::Clear(unsigned flags,const Vector4& color,float depth,unsigned stencil)
+	void YumeGLRenderer::Clear(unsigned flags,const Vector4& color,float depth,unsigned stencil)
 	{
 		unsigned glFlags = 0;
 		if(flags & CLEAR_COLOR)
@@ -153,7 +157,7 @@ namespace YumeEngine
 		glClear(glFlags);
 	}
 
-	void YumeGraphics::CreateRendererCapabilities()
+	void YumeGLRenderer::CreateRendererCapabilities()
 	{
 		// Check supported features: light pre-pass, deferred rendering and hardware depth texture
 		lightPrepassSupport_ = false;
@@ -205,12 +209,12 @@ namespace YumeEngine
 #endif
 	}
 
-	void YumeGraphics::ResetRenderTargets()
+	void YumeGLRenderer::ResetRenderTargets()
 	{
 		SetViewport(Vector4(0,0,windowWidth_,windowHeight_));
 	}
 
-	void YumeGraphics::SetViewport(const Vector4& rect)
+	void YumeGLRenderer::SetViewport(const Vector4& rect)
 	{
 		Vector2 size = GetRenderTargetDimensions();
 
@@ -221,7 +225,7 @@ namespace YumeEngine
 		/*SetScissorTest(false);*/
 	}
 
-	Vector2 YumeGraphics::GetRenderTargetDimensions() const
+	Vector2 YumeGLRenderer::GetRenderTargetDimensions() const
 	{
 		int width,height;
 
@@ -247,7 +251,7 @@ namespace YumeEngine
 	}
 
 
-	YumeVector<int>::type YumeGraphics::GetMultiSampleLevels() const
+	YumeVector<int>::type YumeGLRenderer::GetMultiSampleLevels() const
 	{
 		YumeVector<int>::type levelsVector;
 		levelsVector.push_back(1);
@@ -258,27 +262,27 @@ namespace YumeEngine
 	}
 
 
-	void YumeGraphics::SetFlushGPU(bool flushGpu_)
+	void YumeGLRenderer::SetFlushGPU(bool flushGpu_)
 	{
 		flushGpu_ = flushGpu_;
 
 	}
 
-	void YumeGraphics::SetWindowPos(const Vector2& pos)
+	void YumeGLRenderer::SetWindowPos(const Vector2& pos)
 	{
 		if(impl_->window_)
 			SDL_SetWindowPosition(impl_->window_,pos.x,pos.y);
 		else
 			windowPos_ = pos; // Sets as initial position for OpenWindow()
 	}
-	void YumeGraphics::SetWindowTitle(const YumeString& title)
+	void YumeGLRenderer::SetWindowTitle(const YumeString& title)
 	{
 		windowTitle_ = title;
 		if(impl_->window_)
 			SDL_SetWindowTitle(impl_->window_,title.c_str());
 	}
 
-	void YumeGraphics::AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless)
+	void YumeGLRenderer::AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless)
 	{
 		if(!newWidth || !newHeight)
 		{
@@ -292,7 +296,7 @@ namespace YumeEngine
 		SDL_SetWindowBordered(impl_->window_,newBorderless ? SDL_FALSE : SDL_TRUE);
 	}
 
-	void YumeGraphics::Close()
+	void YumeGLRenderer::Close()
 	{
 		if(impl_->window_)
 		{
@@ -302,7 +306,7 @@ namespace YumeEngine
 		}
 	}
 
-	bool YumeGraphics::SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
+	bool YumeGLRenderer::SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
 		int multiSample)
 	{
 		bool maximize = false;
@@ -395,7 +399,7 @@ namespace YumeEngine
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,2);
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_CORE);
-			}
+		}
 			else
 			{
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,2);
@@ -464,7 +468,7 @@ namespace YumeEngine
 
 			if(!impl_->context_)
 				return false;
-		}
+	}
 
 		SDL_GL_SetSwapInterval(vsync ? 1 : 0);
 
@@ -502,9 +506,9 @@ namespace YumeEngine
 
 		initialized_ = true;
 		return true;
-	}
+}
 
-	void YumeGraphics::Restore()
+	void YumeGLRenderer::Restore()
 	{
 		if(!impl_->window_)
 			return;
@@ -579,7 +583,7 @@ namespace YumeEngine
 		}
 	}
 
-	void YumeGraphics::Maximize()
+	void YumeGLRenderer::Maximize()
 	{
 		if(!impl_->window_)
 			return;
@@ -587,7 +591,7 @@ namespace YumeEngine
 		SDL_MaximizeWindow(impl_->window_);
 	}
 
-	YumeVector<Vector2>::type YumeGraphics::GetScreenResolutions()
+	YumeVector<Vector2>::type YumeGLRenderer::GetScreenResolutions()
 	{
 		YumeVector<Vector2>::type resolutions;
 
@@ -618,14 +622,14 @@ namespace YumeEngine
 		return resolutions;
 	}
 
-	void YumeGraphics::AddGpuResource(YumeGpuResource* gpuRes)
+	void YumeGLRenderer::AddGpuResource(YumeGpuResource* gpuRes)
 	{
 		boost::mutex::scoped_lock lock(gpuResourceMutex_);
 
 		gpuResources_.push_back(gpuRes);
 	}
 
-	void YumeGraphics::RemoveGpuResource(YumeGpuResource* gpuRes)
+	void YumeGLRenderer::RemoveGpuResource(YumeGpuResource* gpuRes)
 	{
 		boost::mutex::scoped_lock lock(gpuResourceMutex_);
 

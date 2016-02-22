@@ -22,20 +22,37 @@
 #include "YumeHeaders.h"
 #include "Engine/YumeEngine.h"
 #include "Renderer/YumeGraphicsApi.h"
+#include "Renderer/YumeRenderer.h"
 
+#include "Core/YumeEnvironment.h"
+
+#include "Math/YumeVector2.h"
 #include "Logging/logging.h"
 
 #include <log4cplus/initializer.h>
 
+#include <boost/filesystem.hpp>
+
 #include <SDL.h>
+
+YumeEngine::YumeEngine3D* YumeEngineGlobal = 0;
 
 namespace YumeEngine
 {
+	typedef void(*DLL_LOAD_MODULE)(YumeEngine3D*);
+
 	YumeEngine3D::YumeEngine3D()
 		: exiting_(false),
 		initialized_(false)
 	{
+		YumeEngineGlobal = this;
+
 		log4cplus::Initializer initialize;
+	}
+
+	YumeEngine3D* YumeEngine3D::Get()
+	{
+		return YumeEngineGlobal;
 	}
 
 	bool YumeEngine3D::Initialize()
@@ -47,7 +64,16 @@ namespace YumeEngine
 
 		YUMELOG_INFO("Initializing Yume Engine...");
 
-		graphics_ = boost::shared_ptr<YumeGraphics>(YumeAPINew YumeGraphics);
+		env_ = boost::shared_ptr<YumeEnvironment>(YumeAPINew YumeEnvironment);
+
+
+		
+
+		LoadLibraryEx(L"YumeDirect3D11.dll", NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+		HINSTANCE hInst = GetModuleHandle(L"YumeDirect3D11.dll");
+		DLL_LOAD_MODULE pFunc = (DLL_LOAD_MODULE)GetProcAddress(hInst, "LoadGraphicsModule");
+		pFunc(this);
+
 
 		graphics_->SetWindowTitle("Yume Engine");
 		graphics_->SetWindowPos(Vector2(250,250));
@@ -95,12 +121,26 @@ namespace YumeEngine
 		Render();
 	}
 
+	void YumeEngine3D::SetRenderer(YumeRenderer* renderer)
+	{
+		graphics_ = boost::shared_ptr<YumeRenderer>(renderer);
+	}
+
+	boost::shared_ptr<YumeRenderer> YumeEngine3D::GetRenderer()
+	{
+		return graphics_;
+	}
+
 	void YumeEngine3D::Exit()
 	{
 		YumeEngine::Log::StopLogging();
 
-		if(graphics_)
-			graphics_->Close();
+
+#if YUME_PLATFORM == YUME_PLATFORM_WIN32
+		HINSTANCE hInst = GetModuleHandle(L"YumeDirect3D11.dll");
+		DLL_LOAD_MODULE pFunc = (DLL_LOAD_MODULE)GetProcAddress(hInst, "UnloadGraphicsModule");
+		pFunc(this);
+#endif
 
 		exiting_ = true;
 	}

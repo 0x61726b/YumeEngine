@@ -21,7 +21,7 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 #include "YumeRequired.h"
-#include "YumeD3D11Graphics.h"
+#include "YumeD3D11Renderer.h"
 
 #include "YumeD3D11GpuResource.h"
 #include "YumeD3D11RendererImpl.h"
@@ -30,15 +30,24 @@
 
 #include "Logging/logging.h"
 
-
+#include "Engine/YumeEngine.h"
 
 #include <SDL_syswm.h>
 
-static YumeEngine::YumeGraphics* YumeGraphicsSingleton = NULL;
-
 namespace YumeEngine
 {
-	YumeGraphics::YumeGraphics()
+	extern "C" void YumeD3DExport LoadGraphicsModule(YumeEngine3D* engine) throw()
+	{
+		YumeRenderer* graphics_ = new YumeD3D11Renderer;
+		engine->SetRenderer(graphics_);
+	}
+	//---------------------------------------------------------------------	
+	extern "C" void YumeD3DExport UnloadGraphicsModule(YumeEngine3D* engine) throw()
+	{
+		//
+	}
+	//---------------------------------------------------------------------
+	YumeD3D11Renderer::YumeD3D11Renderer()
 		: initialized_(false),
 		numPrimitives_(0),
 		numBatches_(0),
@@ -46,7 +55,7 @@ namespace YumeEngine
 		windowHeight_(0),
 		windowTitle_("Yume Engine"),
 		windowPos_(SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED),
-		impl_(YumeAPINew YumeRendererImpl),
+		impl_(YumeAPINew YumeD3D11RendererImpl),
 		flushGpu_(false),
 		multiSample_(1),
 		fullscreen_(false),
@@ -55,14 +64,12 @@ namespace YumeEngine
 		vsync_(false),
 		tripleBuffer_(false)
 	{
-		YumeGraphicsSingleton = this;
-
 
 
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
 	}
 
-	YumeGraphics::~YumeGraphics()
+	YumeD3D11Renderer::~YumeD3D11Renderer()
 	{
 		{
 			boost::mutex::scoped_lock lock(gpuResourceMutex_);
@@ -122,12 +129,7 @@ namespace YumeEngine
 
 	}
 
-	YumeGraphics* YumeGraphics::Get()
-	{
-		return YumeGraphicsSingleton;
-	}
-
-	bool YumeGraphics::BeginFrame()
+	bool YumeD3D11Renderer::BeginFrame()
 	{
 		if(!IsInitialized())
 			return false;
@@ -141,7 +143,7 @@ namespace YumeEngine
 		return true;
 	}
 
-	void YumeGraphics::EndFrame()
+	void YumeD3D11Renderer::EndFrame()
 	{
 		if(!IsInitialized())
 			return;
@@ -150,7 +152,7 @@ namespace YumeEngine
 
 	}
 
-	void YumeGraphics::Clear(unsigned flags,const Vector4& color,float depth,unsigned stencil)
+	void YumeD3D11Renderer::Clear(unsigned flags,const Vector4& color,float depth,unsigned stencil)
 	{
 		//Dummy clear code
 		/*if((flags & CLEAR_COLOR) && impl_->renderTargetViews_[0])
@@ -176,7 +178,7 @@ namespace YumeEngine
 		impl_->deviceContext_->ClearDepthStencilView(impl_->defaultDepthStencilView_,depthClearFlags,depth,(UINT8)stencil);
 	}
 
-	void YumeGraphics::CreateRendererCapabilities()
+	void YumeD3D11Renderer::CreateRendererCapabilities()
 	{
 		lightPrepassSupport_ = true;
 		deferredSupport_ = true;
@@ -198,12 +200,12 @@ namespace YumeEngine
 		return sysInfo.info.win.window;
 	}
 
-	void YumeGraphics::ResetRenderTargets()
+	void YumeD3D11Renderer::ResetRenderTargets()
 	{
 		SetViewport(Vector4(0,0,windowWidth_,windowHeight_));
 	}
 
-	void YumeGraphics::SetViewport(const Vector4& rect)
+	void YumeD3D11Renderer::SetViewport(const Vector4& rect)
 	{
 		Vector2 size = GetRenderTargetDimensions();
 
@@ -231,7 +233,7 @@ namespace YumeEngine
 		/*SetScissorTest(false);*/
 	}
 
-	Vector2 YumeGraphics::GetRenderTargetDimensions() const
+	Vector2 YumeD3D11Renderer::GetRenderTargetDimensions() const
 	{
 		int width,height;
 
@@ -257,7 +259,7 @@ namespace YumeEngine
 	}
 
 
-	YumeVector<int>::type YumeGraphics::GetMultiSampleLevels() const
+	YumeVector<int>::type YumeD3D11Renderer::GetMultiSampleLevels() const
 	{
 		YumeVector<int>::type levelsVector;
 		levelsVector.push_back(1);
@@ -277,7 +279,7 @@ namespace YumeEngine
 	}
 
 
-	void YumeGraphics::SetFlushGPU(bool flushGpu_)
+	void YumeD3D11Renderer::SetFlushGPU(bool flushGpu_)
 	{
 		flushGpu_ = flushGpu_;
 
@@ -293,20 +295,20 @@ namespace YumeEngine
 		}
 	}
 
-	void YumeGraphics::SetWindowPos(const Vector2& pos)
+	void YumeD3D11Renderer::SetWindowPos(const Vector2& pos)
 	{
 		if(impl_->window_)
 			SDL_SetWindowPosition(impl_->window_,pos.x,pos.y);
 		else
 			windowPos_ = pos; // Sets as initial position for OpenWindow()
 	}
-	void YumeGraphics::SetWindowTitle(const YumeString& title)
+	void YumeD3D11Renderer::SetWindowTitle(const YumeString& title)
 	{
 		windowTitle_ = title;
 		if(impl_->window_)
 			SDL_SetWindowTitle(impl_->window_,title.c_str());
 	}
-	bool YumeGraphics::OpenWindow(int width,int height,bool resizable,bool borderless)
+	bool YumeD3D11Renderer::OpenWindow(int width,int height,bool resizable,bool borderless)
 	{
 		unsigned flags = 0;
 		if(resizable)
@@ -332,7 +334,7 @@ namespace YumeEngine
 	}
 
 
-	void YumeGraphics::AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless)
+	void YumeD3D11Renderer::AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless)
 	{
 		if(!newWidth || !newHeight)
 		{
@@ -346,7 +348,7 @@ namespace YumeEngine
 		SDL_SetWindowBordered(impl_->window_,newBorderless ? SDL_FALSE : SDL_TRUE);
 	}
 
-	void YumeGraphics::Close()
+	void YumeD3D11Renderer::Close()
 	{
 		if(impl_->window_)
 		{
@@ -356,7 +358,7 @@ namespace YumeEngine
 		}
 	}
 
-	bool YumeGraphics::SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
+	bool YumeD3D11Renderer::SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
 		int multiSample)
 	{
 		bool maximize = false;
@@ -461,7 +463,7 @@ namespace YumeEngine
 		return true;
 	}
 
-	bool YumeGraphics::CreateD3D11Device(int width,int height,int multisample)
+	bool YumeD3D11Renderer::CreateD3D11Device(int width,int height,int multisample)
 	{
 		// Device needs only to be created once
 		if(!impl_->device_)
@@ -552,7 +554,7 @@ namespace YumeEngine
 		return false;
 	}
 
-	bool YumeGraphics::UpdateSwapchain(int width,int height)
+	bool YumeD3D11Renderer::UpdateSwapchain(int width,int height)
 	{
 		bool success = true;
 
@@ -646,7 +648,7 @@ namespace YumeEngine
 		ResetRenderTargets();
 		return success;
 	}
-	void YumeGraphics::Maximize()
+	void YumeD3D11Renderer::Maximize()
 	{
 		if(!impl_->window_)
 			return;
@@ -654,7 +656,7 @@ namespace YumeEngine
 		SDL_MaximizeWindow(impl_->window_);
 	}
 
-	YumeVector<Vector2>::type YumeGraphics::GetScreenResolutions()
+	YumeVector<Vector2>::type YumeD3D11Renderer::GetScreenResolutions()
 	{
 		YumeVector<Vector2>::type resolutions;
 
@@ -685,14 +687,14 @@ namespace YumeEngine
 		return resolutions;
 	}
 
-	void YumeGraphics::AddGpuResource(YumeGpuResource* gpuRes)
+	void YumeD3D11Renderer::AddGpuResource(YumeGpuResource* gpuRes)
 	{
 		boost::mutex::scoped_lock lock(gpuResourceMutex_);
 
 		gpuResources_.push_back(gpuRes);
 	}
 
-	void YumeGraphics::RemoveGpuResource(YumeGpuResource* gpuRes)
+	void YumeD3D11Renderer::RemoveGpuResource(YumeGpuResource* gpuRes)
 	{
 		boost::mutex::scoped_lock lock(gpuResourceMutex_);
 

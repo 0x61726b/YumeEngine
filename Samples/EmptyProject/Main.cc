@@ -19,28 +19,13 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#include "YumeHeaders.h"
-#include "YumeGLGpuResource.h"
-#include "YumeGLGraphics.h"
 
+#include "Engine/YumeApplication.h"
 
-namespace YumeEngine
+int main(void)
 {
+	YumeEngine::YumeApplication* app(new YumeEngine::YumeApplication);
 
-	YumeGpuResource::YumeGpuResource():
-		object_(0),
-    dataPending_(false),
-    dataLost_(false)
-	{
-		if(YumeGraphics::Get())
-			YumeGraphics::Get()->AddGpuResource(this);
-	}
-
-	YumeGpuResource::~YumeGpuResource()
-	{
-		if(YumeGraphics::Get())
-		{
-			YumeGraphics::Get()->RemoveGpuResource(this);
-		}
-	}
+	app->Run();
+	return 0;
 }

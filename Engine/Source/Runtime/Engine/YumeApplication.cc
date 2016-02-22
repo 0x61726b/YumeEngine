@@ -25,12 +25,15 @@
 
 #include <boost/make_shared.hpp>
 
+#include <boost/filesystem.hpp>
+
 namespace YumeEngine
 {
 	YumeApplication::YumeApplication()
 		: exitCode_(0)
 	{
 		engine_ = boost::shared_ptr<YumeEngine3D>(new YumeEngine3D);
+	
 	}
 
 	YumeApplication::~YumeApplication()

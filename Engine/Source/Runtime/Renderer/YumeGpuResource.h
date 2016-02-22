@@ -19,17 +19,16 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeD3D11GpuResource_h__
-#define __YumeD3D11GpuResource_h__
+#ifndef __YumeGpuResource_h__
+#define __YumeGpuResource_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-
-#include <boost/weak_ptr.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 
-	class YumeGraphics;
+	class YumeRenderer;
+	class YumeEngine3D;
 
 	/// Base class for GPU resources.
 	class YumeAPIExport YumeGpuResource
@@ -40,27 +39,21 @@ namespace YumeEngine
 		virtual ~YumeGpuResource();
 
 		/// Unconditionally release the GPU resource.
-		virtual void Release() { }
+		virtual void Release() = 0;
 
 		/// Clear the data lost flag. No-op on D3D11.
-		void ClearDataLost() { }
+		virtual void ClearDataLost() = 0;
 
 		/// Return Direct3D object.
-		unsigned GetGPUObject() const { return object_; }
+		void* GetGPUObject() const { return object_; }
 
 		/// Return whether data is lost due to device loss. Always false on D3D11.
-		bool IsDataLost() const { return dataLost_; }
+		virtual bool IsDataLost() const = 0;
 
 		/// Return whether has pending data assigned while device was lost. Always false on D3D11.
-		bool HasPendingData() const { return dataPending_; }
+		virtual bool HasPendingData() const = 0;
 
-
-  protected:
-    bool dataLost_;
-    bool dataPending_;
-
-    unsigned object_;
-
+		void* object_;
 	};
 }
 

@@ -14,9 +14,14 @@
 # all copies or substantial portions of the Software.
 #
 # File : CMakeLists.txt
-# Date : 8.27.2015
+# Date : 2.21.2016
 # Comments :
 ################################################################################
 
-add_subdirectory(Source)
-add_subdirectory(Renderers)
+if(YUME_BUILD_DIRECT3D11)
+  add_subdirectory(Direct3D11)
+endif()
+
+if(YUME_BUILD_OPENGL)
+  add_subdirectory(OpenGL)
+endif()

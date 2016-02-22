@@ -20,8 +20,9 @@
 //
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
-#include "YumeD3D11GpuResource.h"
-#include "YumeD3D11Graphics.h"
+#include "YumeGpuResource.h"
+#include "YumeRenderer.h"
+#include "Engine/YumeEngine.h"
 
 
 namespace YumeEngine
@@ -30,15 +31,17 @@ namespace YumeEngine
 	YumeGpuResource::YumeGpuResource():
 		object_(0)
 	{
-		if(YumeGraphics::Get())
-			YumeGraphics::Get()->AddGpuResource(this);
+		
+		if(YumeEngine3D::Get()->GetRenderer())
+			YumeEngine3D::Get()->GetRenderer()->AddGpuResource(this);
+
 	}
 
 	YumeGpuResource::~YumeGpuResource()
 	{
-		if(YumeGraphics::Get())
+		if(YumeEngine3D::Get()->GetRenderer())
 		{
-			YumeGraphics::Get()->RemoveGpuResource(this);
+			YumeEngine3D::Get()->GetRenderer()->RemoveGpuResource(this);
 		}
 	}
 }

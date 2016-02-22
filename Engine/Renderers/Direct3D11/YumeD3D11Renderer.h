@@ -22,27 +22,28 @@
 #ifndef __YumeD3D11Graphics_h__
 #define __YumeD3D11Graphics_h__
 //----------------------------------------------------------------------------
-#include "YumeRequired.h"
+#include "YumeD3D11Required.h"
 #include "Renderer/YumeRendererDefs.h"
 
 #include "Math/YumeVector2.h"
 #include "Math/YumeVector4.h"
+
+#include "Renderer/YumeRenderer.h"
 
 #include <boost/thread/mutex.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class YumeGpuResource;
-	class YumeRendererImpl;
+	class YumeD3D11RendererImpl;
 
 	typedef std::vector<YumeGpuResource*> GpuResourceVector;
-	class YumeAPIExport YumeGraphics
+	class YumeD3DExport YumeD3D11Renderer : public YumeRenderer
 	{
 	public:
-		YumeGraphics();
-		~YumeGraphics();
+		YumeD3D11Renderer();
+		~YumeD3D11Renderer();
 
-		static YumeGraphics* Get();
 
 		bool SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
 			int multiSample);
@@ -77,7 +78,7 @@ namespace YumeEngine
 
 		bool IsInitialized() const { return initialized_; }
 
-		YumeRendererImpl* GetImpl() const { return impl_; }
+		YumeD3D11RendererImpl* GetImpl() const { return impl_; }
 	private:
 		YumeVector<Vector2>::type				GetScreenResolutions();
 	private:
@@ -125,7 +126,7 @@ namespace YumeEngine
 		boost::mutex							gpuResourceMutex_;
 		GpuResourceVector						gpuResources_;
 
-		YumeRendererImpl*						impl_;
+		YumeD3D11RendererImpl*						impl_;
 	};
 }
 

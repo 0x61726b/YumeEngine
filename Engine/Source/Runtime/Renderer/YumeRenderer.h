@@ -19,43 +19,50 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeD3D11GpuResource_h__
-#define __YumeD3D11GpuResource_h__
+#ifndef __YumeGraphicsInterface_h__
+#define __YumeGraphicsInterface_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+#include "Renderer/YumeRendererDefs.h"
 
-#include <boost/weak_ptr.hpp>
+#include "Math/YumeVector4.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	class YumeGpuResource;
+	class YumeRendererImpl;
 
-	class YumeGraphics;
-
-	/// Base class for GPU resources.
-	class YumeAPIExport YumeGpuResource
+	class YumeAPIExport YumeRenderer : public RenderObjAlloc
 	{
 	public:
-		YumeGpuResource();
-		/// Destruct. Remove from the graphics subsystem.
-		virtual ~YumeGpuResource();
+		YumeRenderer();
 
-		/// Unconditionally release the GPU resource.
-		virtual void Release() { }
+		virtual ~YumeRenderer();
 
-		/// Clear the data lost flag. No-op on D3D11.
-		void ClearDataLost() { }
+		virtual bool SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
+			int multiSample) = 0;
 
-		/// Return Direct3D object.
-		void* GetGPUObject() const { return object_; }
+		virtual bool BeginFrame() = 0;
+		virtual void EndFrame() = 0;
+		virtual void Clear(unsigned flags,const Vector4& color = Vector4(0.0f,1.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) = 0;
 
-		/// Return whether data is lost due to device loss. Always false on D3D11.
-		bool IsDataLost() const { return false; }
+		virtual void ResetRenderTargets() = 0;
+		virtual void SetViewport(const Vector4&) = 0;
 
-		/// Return whether has pending data assigned while device was lost. Always false on D3D11.
-		bool HasPendingData() const { return false; }
+		virtual Vector2 GetRenderTargetDimensions() const = 0;
 
-		/// Direct3D object.
-		void* object_;
+		virtual void SetFlushGPU(bool flushGpu) = 0;
+		virtual void CreateRendererCapabilities() = 0;
+		virtual YumeVector<int>::type GetMultiSampleLevels() const = 0;
+
+		virtual void Close() = 0;
+		virtual void AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless) = 0;
+		virtual void Maximize() = 0;
+		virtual void SetWindowPos(const Vector2& pos) = 0;
+		virtual void SetWindowTitle(const YumeString& string) = 0;
+
+		virtual void AddGpuResource(YumeGpuResource* object) = 0;
+		virtual void RemoveGpuResource(YumeGpuResource* object) = 0;
 	};
 }
 

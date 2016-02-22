@@ -22,27 +22,27 @@
 #ifndef __YumeGLGraphics_h__
 #define __YumeGLGraphics_h__
 //----------------------------------------------------------------------------
-#include "YumeRequired.h"
+#include "YumeGLRequired.h"
 #include "Renderer/YumeRendererDefs.h"
 
 #include "Math/YumeVector2.h"
 #include "Math/YumeVector4.h"
+
+#include "Renderer/YumeRenderer.h"
 
 #include <boost/thread/mutex.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class YumeGpuResource;
-	class YumeRendererImpl;
+	class YumeGLRendererImpl;
 
 	typedef std::vector<YumeGpuResource*> GpuResourceVector;
-	class YumeAPIExport YumeGraphics
+	class YumeGLExport YumeGLRenderer : public YumeRenderer
 	{
 	public:
-		YumeGraphics();
-		virtual ~YumeGraphics();
-
-		static YumeGraphics* Get();
+		YumeGLRenderer();
+		virtual ~YumeGLRenderer();
 
 		bool SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
 			int multiSample);
@@ -76,7 +76,7 @@ namespace YumeEngine
 
 		bool IsInitialized() const { return initialized_; }
 
-		YumeRendererImpl* GetImpl() const { return impl_; }
+		YumeGLRendererImpl* GetImpl() const { return impl_; }
 	private:
 		YumeVector<Vector2>::type				GetScreenResolutions();
 	private:
@@ -131,7 +131,7 @@ namespace YumeEngine
 		boost::mutex							gpuResourceMutex_;
 		GpuResourceVector						gpuResources_;
 
-		YumeRendererImpl*						impl_;
+		YumeGLRendererImpl*						impl_;
 	};
 }
 

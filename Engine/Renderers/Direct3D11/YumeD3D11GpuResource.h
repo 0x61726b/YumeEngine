@@ -19,45 +19,35 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeEngine_h__
-#define __YumeEngine_h__
+#ifndef __YumeD3D11GpuResource_h__
+#define __YumeD3D11GpuResource_h__
 //----------------------------------------------------------------------------
-#include "YumeRequired.h"
+#include "YumeD3D11Required.h"
 
-#include <boost/shared_ptr.hpp>
+#include "Renderer/YumeGpuResource.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeRenderer;
-	class YumeEnvironment;
 
-	class YumeAPIExport YumeEngine3D
+	/// Base class for GPU resources.
+	class YumeD3DExport YumeD3D11Resource : public YumeGpuResource
 	{
 	public:
-		YumeEngine3D();
+		YumeD3D11Resource();
+		/// Destruct. Remove from the graphics subsystem.
+		virtual ~YumeD3D11Resource();
 
-		bool Initialize();
+		/// Unconditionally release the GPU resource.
+		virtual void Release() { }
 
-		static YumeEngine3D* Get();
+		/// Clear the data lost flag. No-op on D3D11.
+		void ClearDataLost() { }
 
-		void Run();
+		/// Return whether data is lost due to device loss. Always false on D3D11.
+		bool IsDataLost() const { return false; }
 
-		void Exit();
-
-		void Update();
-		void Render();
-
-		bool IsExiting() const { return exiting_; }
-
-		void SetRenderer(YumeRenderer* renderer);
-		boost::shared_ptr<YumeRenderer> GetRenderer();
-
-	private:
-		boost::shared_ptr<YumeRenderer> graphics_;
-		boost::shared_ptr<YumeEnvironment> env_;
-	private:
-		bool initialized_;
-		bool exiting_;
+		/// Return whether has pending data assigned while device was lost. Always false on D3D11.
+		bool HasPendingData() const { return false; }
 	};
 }
 

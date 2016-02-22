@@ -19,8 +19,8 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeLinkedList_h__
-#define __YumeLinkedList_h__
+#ifndef __YumeGraphics_Api_h__
+#define __YumeGraphics_Api_h__
 //----------------------------------------------------------------------------
 
 #if defined(YUME_OPENGL)

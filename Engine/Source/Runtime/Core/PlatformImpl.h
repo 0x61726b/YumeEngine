@@ -34,22 +34,6 @@
 #include "YumeRequired.h"
 #include <boost/shared_ptr.hpp>
 
-namespace YumeEngine
-{
-	class Yume;
-}
-struct YumeAPIExport GlobalSystemInstances
-{
-	YumeEngine::Yume*			pYume;
-
-	~GlobalSystemInstances()
-	{
-		
-	}
-};
-
-extern YumeAPIExport boost::shared_ptr<GlobalSystemInstances> gYume;
-
 
 //---------------------------------------------------------------------------------
 
@@ -60,6 +44,10 @@ extern YumeAPIExport boost::shared_ptr<GlobalSystemInstances> gYume;
 #		endif
 #		if !defined(NOMINMAX) && defined(_MSC_VER)
 #			define NOMINMAX // required to stop windows.h messing up std::min
+#		endif
+
+#		ifdef CreateDirectory
+#			undef CreateDirectory
 #		endif
 #	endif
 

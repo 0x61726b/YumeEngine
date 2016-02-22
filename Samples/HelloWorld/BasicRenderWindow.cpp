@@ -41,6 +41,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR args, int ncmd)
 int main()
 	{
 #endif
+	
+
 	boost::shared_ptr<YumeEngine::HelloWorld> app(new YumeEngine::HelloWorld);
 
 	return app->Run();

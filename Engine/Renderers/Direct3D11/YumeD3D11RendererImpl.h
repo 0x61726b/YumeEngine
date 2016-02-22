@@ -22,31 +22,25 @@
 #ifndef __YumeD3D11RendererImpl_h__
 #define __YumeD3D11RendererImpl_h__
 //----------------------------------------------------------------------------
-#include "YumeRequired.h"
+#include "YumeD3D11Required.h"
 #include "Renderer/YumeRendererDefs.h"
+#include "Renderer/YumeRendererImpl.h"
 
 #include <boost/unordered_map.hpp>
-
-#include <D3D11.h>
-#include <DXGI.h>
-
-#include <SDL.h>
-
-#define D3D_SAFE_RELEASE(p) if (p) { ((IUnknown*)p)->Release();  p = 0; }
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeGraphics;
+	class YumeD3D11Renderer;
 
 	typedef boost::unordered_map<unsigned,ID3D11BlendState*> BlendStatesMap;
 	typedef boost::unordered_map<unsigned,ID3D11DepthStencilState*> DepthStatesMap;
 	typedef boost::unordered_map<unsigned,ID3D11RasterizerState*> RasterizerStatesMap;
 
-	class YumeAPIExport YumeRendererImpl
+	class YumeD3DExport YumeD3D11RendererImpl
 	{
-		friend class YumeGraphics;
+		friend class YumeD3D11Renderer;
 	public:
-		YumeRendererImpl();
+		YumeD3D11RendererImpl();
 
 
 		/// Return Direct3D device.

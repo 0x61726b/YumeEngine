@@ -20,25 +20,44 @@
 //
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
-
-#include "Renderer/YumeGraphicsApi.h"
-#include "YumeGLRendererImpl.h"
+#include "YumeD3D11RendererImpl.h"
 
 
 
 namespace YumeEngine
 {
-    YumeRendererImpl::YumeRendererImpl() :
-      window_(0),
-      context_(0),
-      systemFBO_(0),
-      activeTexture_(0),
-      enabledAttributes_(0),
-      boundFBO_(0),
-      boundVBO_(0),
-      boundUBO_(0),
-      pixelFormat_(0),
-      fboDirty_(false)
-  {
-  }
+	YumeD3D11RendererImpl::YumeD3D11RendererImpl()
+		: window_(0),
+		device_(0),
+		debug_(0),
+		deviceContext_(0),
+		swapChain_(0),
+		defaultRenderTargetView_(0),
+		defaultDepthTexture_(0),
+		defaultDepthStencilView_(0),
+		depthStencilView_(0),
+		resolveTexture_(0)
+	{
+		for(unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
+			renderTargetViews_[i] = 0;
+
+		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
+		{
+			shaderResourceViews_[i] = 0;
+			samplers_[i] = 0;
+		}
+
+		for(unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
+		{
+			vertexBuffers_[i] = 0;
+			vertexSizes_[i] = 0;
+			vertexOffsets_[i] = 0;
+		}
+
+		for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
+		{
+			constantBuffers_[VS][i] = 0;
+			constantBuffers_[PS][i] = 0;
+		}
+	}
 }

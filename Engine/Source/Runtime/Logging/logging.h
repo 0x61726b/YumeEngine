@@ -64,10 +64,10 @@ namespace YumeEngine
 
 		void YumeAPIExport trace(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);
 		void YumeAPIExport debug(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);
-		void  info(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);
-		void  warn(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);
-		void error(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);
-		void fatal(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);
+		void YumeAPIExport info(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);
+		void YumeAPIExport warn(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);
+		void YumeAPIExport error(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);
+		void YumeAPIExport fatal(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);
 
 		enum LogLevel {
 			// All log messages, no matter how small

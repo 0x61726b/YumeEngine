@@ -23,26 +23,11 @@ include(PrecompiledHeader)
 set(SRC_RENDERER
 	Renderer/YumeRendererDefs.h
 	Renderer/YumeGraphicsApi.h
-)
-set(SRC_RENDERER_D3D11
-	Renderer/Direct3D11/YumeD3D11ShaderVariation.h
-	Renderer/Direct3D11/YumeD3D11ShaderVariation.cc
-	Renderer/Direct3D11/YumeD3D11RendererImpl.h
-	Renderer/Direct3D11/YumeD3D11RendererImpl.cc
-	Renderer/Direct3D11/YumeD3D11ConstantBuffer.h
-	Renderer/Direct3D11/YumeD3D11ConstantBuffer.cc
-	Renderer/Direct3D11/YumeD3D11GpuResource.h
-	Renderer/Direct3D11/YumeD3D11GpuResource.cc
-	Renderer/Direct3D11/YumeD3D11Graphics.h
-	Renderer/Direct3D11/YumeD3D11Graphics.cc
-)
-set(SRC_RENDERER_GL
-	Renderer/OpenGL/YumeGLRendererImpl.h
-	Renderer/OpenGL/YumeGLRendererImpl.cc
-	Renderer/OpenGL/YumeGLGpuResource.h
-	Renderer/OpenGL/YumeGLGpuResource.cc
-	Renderer/OpenGL/YumeGLGraphics.h
-	Renderer/OpenGL/YumeGLGraphics.cc
+	Renderer/YumeRenderer.h
+	Renderer/YumeRenderer.cc
+	Renderer/YumeRendererImpl.h
+	Renderer/YumeGpuResource.h
+	Renderer/YumeGpuResource.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h
@@ -85,6 +70,8 @@ set( SRC_CORE
 	Core/PlatformImpl_Win32.cc
 	Core/YumeHeaderSuffix.h
 	Core/YumeHeaderPrefix.h
+	Core/YumeEnvironment.h
+	Core/YumeEnvironment.cc
 		)
 set( SRC_CORE_STL
 
@@ -120,8 +107,6 @@ set( SRC_ENGINE
 source_group(Yume\\\\Logging FILES ${SRC_LOGGING})
 source_group(Yume\\\\Math FILES ${SRC_MATH})
 source_group(Yume\\\\Renderer FILES ${SRC_RENDERER})
-source_group(Yume\\\\Renderer\\\\Direct3D11 FILES ${SRC_RENDERER_D3D11})
-source_group(Yume\\\\Renderer\\\\OpenGL FILES ${SRC_RENDERER_GL})
 source_group(Yume\\\\Core FILES ${SRC_CORE})
 source_group(Yume\\\\Core\\\\Config FILES ${SRC_CORE_CONFIG})
 source_group(Yume\\\\Core\\\\Memory FILES ${SRC_CORE_MEMORY})
@@ -135,20 +120,6 @@ include_directories(${YUME_3RDPARTY_PATH})
 include_directories(${YUME_SDL_INCLUDE_PATH})
 
 
-set(RENDERER_LIB "")
-
-
-
-if( YUME_BUILD_OPENGL )
-	add_definitions(-DYUME_OPENGL)
-	set(RENDERER_LIB ${SRC_RENDERER_GL})
-endif()
-
-if( YUME_BUILD_DIRECT3D11 )
-	add_definitions(-DYUME_DIRECT3D11)
-	set(RENDERER_LIB ${SRC_RENDERER_D3D11})
-endif()
-
 
 ADD_LIBRARY(${YUME} SHARED
 						${SRC_LOGGING}
@@ -159,18 +130,12 @@ ADD_LIBRARY(${YUME} SHARED
 					  ${SRC_CORE_UTILS}
 					  ${SRC_CORE_CONFIG}
 						${SRC_CORE_STL}
-						${RENDERER_LIB}
 						${SRC_RENDERER}
 						${SRC_ENGINE}
 						)
 
 add_definitions(-DBUILDING_YUME_ENGINE)
 
-
-if(OPENGL_FOUND)
-	target_link_libraries(${YUME} ${OPENGL_LIBRARIES})
-	add_definitions(-DGLEW_NO_GLU)
-endif()
 
 set(YUME_LIB_TYPE "SHARED")
 
@@ -201,12 +166,11 @@ link_boost_library(${YUME} thread)
 link_boost_library(${YUME} system)
 link_boost_library(${YUME} date_time)
 target_link_libraries(${YUME} SDL2-static)
-target_link_libraries(${YUME} FreeType)
-target_link_libraries(${YUME} GLEW)
 
 set(YUME_LIBRARIES ${YUME_LIBRARIES} boost_filesystem boost_thread boost_system boost_date_time log4cplus)
 
 include_directories(${Boost_INCLUDE_DIRS})
+
 
 set_target_properties(${YUME} PROPERTIES FOLDER "Yume")
 

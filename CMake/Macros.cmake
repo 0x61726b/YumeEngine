@@ -161,7 +161,7 @@ macro( add_yume_sample sample_name)
     include_directories(${YUME_3RDPARTY_PATH}/GLEW)
   endif()
 
-  target_link_libraries(${SAMPLE_TARGET} ${YUME_LIBRARIES})
+  target_link_libraries(${SAMPLE_TARGET} ${YUME})
 
   set_target_properties(${SAMPLE_TARGET} PROPERTIES FOLDER "Samples")
 
@@ -177,3 +177,16 @@ macro( add_yume_sample sample_name)
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
   )
 endmacro( add_yume_sample )
+
+macro( set_output_dir_to_yume TARGET_NAME)
+  set_target_properties( ${TARGET_NAME}
+      PROPERTIES
+      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
+      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
+  )
+endmacro( set_output_dir_to_yume)
+
+macro( set_folder_name TARGET_NAME FOLDERNAME)
+  set_target_properties(${TARGET_NAME} PROPERTIES FOLDER ${FOLDERNAME})
+endmacro( set_folder_name)

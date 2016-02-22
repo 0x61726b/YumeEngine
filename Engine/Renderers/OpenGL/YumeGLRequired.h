@@ -19,47 +19,54 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeEngine_h__
-#define __YumeEngine_h__
+#ifndef __YumeGLRequired_h__
+#define __YumeGLRequired_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 
-#include <boost/shared_ptr.hpp>
+#undef NOMINMAX
+#define NOMINMAX 
+
+
+#include <GLEW/glew.h>
+
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+#define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT 0x83f1
+#endif
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83f2
+#endif
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83f3
+#endif
+#ifndef GL_ETC1_RGB8_OES
+#define GL_ETC1_RGB8_OES 0x8d64
+#endif
+#ifndef COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+#define COMPRESSED_RGB_PVRTC_4BPPV1_IMG 0x8c00
+#endif
+#ifndef COMPRESSED_RGB_PVRTC_2BPPV1_IMG
+#define COMPRESSED_RGB_PVRTC_2BPPV1_IMG 0x8c01
+#endif
+#ifndef COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
+#define COMPRESSED_RGBA_PVRTC_4BPPV1_IMG 0x8c02
+#endif
+#ifndef COMPRESSED_RGBA_PVRTC_2BPPV1_IMG
+#define COMPRESSED_RGBA_PVRTC_2BPPV1_IMG 0x8c03
+#endif
+
+#include <SDL.h>
 //----------------------------------------------------------------------------
-namespace YumeEngine
-{
-	class YumeRenderer;
-	class YumeEnvironment;
 
-	class YumeAPIExport YumeEngine3D
-	{
-	public:
-		YumeEngine3D();
-
-		bool Initialize();
-
-		static YumeEngine3D* Get();
-
-		void Run();
-
-		void Exit();
-
-		void Update();
-		void Render();
-
-		bool IsExiting() const { return exiting_; }
-
-		void SetRenderer(YumeRenderer* renderer);
-		boost::shared_ptr<YumeRenderer> GetRenderer();
-
-	private:
-		boost::shared_ptr<YumeRenderer> graphics_;
-		boost::shared_ptr<YumeEnvironment> env_;
-	private:
-		bool initialized_;
-		bool exiting_;
-	};
-}
+#	if YUME_PLATFORM == YUME_PLATFORM_WIN32
+#		if defined(BUILDING_YUME_OPENGL)
+#			define YumeGLExport __declspec( dllexport )
+#		else
+#			define YumeGLExport __declspec( dllimport )
+#		endif
+#	else
+#	define YumeGLExport	
+#	endif
 
 
 //----------------------------------------------------------------------------

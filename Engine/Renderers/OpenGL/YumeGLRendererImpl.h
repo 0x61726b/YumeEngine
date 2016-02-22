@@ -22,46 +22,18 @@
 #ifndef __YumeGLRendererImpl_h__
 #define __YumeGLRendererImpl_h__
 //----------------------------------------------------------------------------
-#include "YumeRequired.h"
+#include "YumeGLRequired.h"
 
-#include <GLEW/glew.h>
-
-#ifndef GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
-#define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT 0x83f1
-#endif
-#ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
-#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83f2
-#endif
-#ifndef GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
-#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83f3
-#endif
-#ifndef GL_ETC1_RGB8_OES
-#define GL_ETC1_RGB8_OES 0x8d64
-#endif
-#ifndef COMPRESSED_RGB_PVRTC_4BPPV1_IMG
-#define COMPRESSED_RGB_PVRTC_4BPPV1_IMG 0x8c00
-#endif
-#ifndef COMPRESSED_RGB_PVRTC_2BPPV1_IMG
-#define COMPRESSED_RGB_PVRTC_2BPPV1_IMG 0x8c01
-#endif
-#ifndef COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
-#define COMPRESSED_RGBA_PVRTC_4BPPV1_IMG 0x8c02
-#endif
-#ifndef COMPRESSED_RGBA_PVRTC_2BPPV1_IMG
-#define COMPRESSED_RGBA_PVRTC_2BPPV1_IMG 0x8c03
-#endif
-
-#include <SDL.h>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-    class YumeGraphics;
+    class YumeGLRenderer;
 
-    class YumeAPIExport YumeRendererImpl
+    class YumeGLExport YumeGLRendererImpl
     {
-        friend class YumeGraphics;
+        friend class YumeGLRenderer;
       public:
-        YumeRendererImpl();
+        YumeGLRendererImpl();
 
         /// Return the SDL window.
         SDL_Window* GetWindow() const { return window_; }

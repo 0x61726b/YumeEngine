@@ -19,46 +19,54 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeEngine_h__
-#define __YumeEngine_h__
+#ifndef __YumeD3D11ConstantBuffer_h__
+#define __YumeD3D11ConstantBuffer_h__
 //----------------------------------------------------------------------------
-#include "YumeRequired.h"
+#include "YumeD3D11Required.h"
+#include "YumeD3D11GpuResource.h"
 
-#include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeRenderer;
-	class YumeEnvironment;
+	class YumeD3D11RendererImpl;
 
-	class YumeAPIExport YumeEngine3D
+	class YumeD3DExport YumeConstantBuffer : public YumeGpuResource
 	{
 	public:
-		YumeEngine3D();
+		YumeConstantBuffer(YumeD3D11RendererImpl* impl);
 
-		bool Initialize();
+		virtual ~YumeConstantBuffer();
 
-		static YumeEngine3D* Get();
+		virtual void Release();
 
-		void Run();
 
-		void Exit();
+		/// Set size and create GPU-side buffer. Return true on success.
+		bool SetSize(unsigned size);
+		/// Set a generic parameter and mark buffer dirty.
+		void SetParameter(unsigned offset,unsigned size,const void* data);
+		/// Set a Vector3 array parameter and mark buffer dirty.
+		void SetVector3ArrayParameter(unsigned offset,unsigned rows,const void* data);
+		/// Apply to GPU.
+		void Apply();
 
-		void Update();
-		void Render();
+		/// Return size.
+		unsigned GetSize() const { return size_; }
 
-		bool IsExiting() const { return exiting_; }
-
-		void SetRenderer(YumeRenderer* renderer);
-		boost::shared_ptr<YumeRenderer> GetRenderer();
+		/// Return whether has unapplied data.
+		bool IsDirty() const { return dirty_; }
 
 	private:
-		boost::shared_ptr<YumeRenderer> graphics_;
-		boost::shared_ptr<YumeEnvironment> env_;
-	private:
-		bool initialized_;
-		bool exiting_;
+		/// Shadow data.
+		boost::shared_array<unsigned char> shadowData_;
+		/// Buffer byte size.
+		unsigned size_;
+		/// Dirty flag.
+		bool dirty_;
+
+		YumeD3D11RendererImpl* impl_;
 	};
+
 }
 
 

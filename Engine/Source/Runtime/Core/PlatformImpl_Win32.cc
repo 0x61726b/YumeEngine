@@ -30,5 +30,3 @@
 
 #include "PlatformImpl.h"
 
-boost::shared_ptr<GlobalSystemInstances> gYume(new GlobalSystemInstances);
-

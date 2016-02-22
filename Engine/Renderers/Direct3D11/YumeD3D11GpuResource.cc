@@ -19,48 +19,21 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeEngine_h__
-#define __YumeEngine_h__
-//----------------------------------------------------------------------------
-#include "YumeRequired.h"
+#include "YumeHeaders.h"
+#include "YumeD3D11GpuResource.h"
+#include "YumeD3D11Renderer.h"
 
-#include <boost/shared_ptr.hpp>
-//----------------------------------------------------------------------------
+
 namespace YumeEngine
 {
-	class YumeRenderer;
-	class YumeEnvironment;
 
-	class YumeAPIExport YumeEngine3D
+	YumeD3D11Resource::YumeD3D11Resource()
 	{
-	public:
-		YumeEngine3D();
 
-		bool Initialize();
+	}
 
-		static YumeEngine3D* Get();
+	YumeD3D11Resource::~YumeD3D11Resource()
+	{
 
-		void Run();
-
-		void Exit();
-
-		void Update();
-		void Render();
-
-		bool IsExiting() const { return exiting_; }
-
-		void SetRenderer(YumeRenderer* renderer);
-		boost::shared_ptr<YumeRenderer> GetRenderer();
-
-	private:
-		boost::shared_ptr<YumeRenderer> graphics_;
-		boost::shared_ptr<YumeEnvironment> env_;
-	private:
-		bool initialized_;
-		bool exiting_;
-	};
+	}
 }
-
-
-//----------------------------------------------------------------------------
-#endif

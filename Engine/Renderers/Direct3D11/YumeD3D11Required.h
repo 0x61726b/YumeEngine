@@ -19,51 +19,33 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeD3D11ConstantBuffer_h__
-#define __YumeD3D11ConstantBuffer_h__
+#ifndef __YumeD3D11Required_h__
+#define __YumeD3D11Required_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeD3D11GpuResource.h"
 
-#include <boost/shared_array.hpp>
+#undef NOMINMAX
+#define NOMINMAX 
+
+#include <D3D11.h>
+#include <DXGI.h>
+#include <d3d11shader.h>
+#include <D3Dcompiler.h>
+
+#include <SDL.h>
+
+#define D3D_SAFE_RELEASE(p) if (p) { ((IUnknown*)p)->Release();  p = 0; }
 //----------------------------------------------------------------------------
-namespace YumeEngine
-{
-	class YumeAPIExport YumeConstantBuffer : public YumeGpuResource
-	{
-	public:
-		YumeConstantBuffer();
 
-		virtual ~YumeConstantBuffer();
-
-		virtual void Release();
-
-
-		/// Set size and create GPU-side buffer. Return true on success.
-		bool SetSize(unsigned size);
-		/// Set a generic parameter and mark buffer dirty.
-		void SetParameter(unsigned offset,unsigned size,const void* data);
-		/// Set a Vector3 array parameter and mark buffer dirty.
-		void SetVector3ArrayParameter(unsigned offset,unsigned rows,const void* data);
-		/// Apply to GPU.
-		void Apply();
-
-		/// Return size.
-		unsigned GetSize() const { return size_; }
-
-		/// Return whether has unapplied data.
-		bool IsDirty() const { return dirty_; }
-
-	private:
-		/// Shadow data.
-		boost::shared_array<unsigned char> shadowData_;
-		/// Buffer byte size.
-		unsigned size_;
-		/// Dirty flag.
-		bool dirty_;
-	};
-
-}
+#	if YUME_PLATFORM == YUME_PLATFORM_WIN32
+#		if defined(BUILDING_YUME_DIRECT3D11)
+#			define YumeD3DExport __declspec( dllexport )
+#		else
+#			define YumeD3DExport __declspec( dllimport )
+#		endif
+#	else
+#	define YumeD3DExport	
+#	endif
 
 
 //----------------------------------------------------------------------------

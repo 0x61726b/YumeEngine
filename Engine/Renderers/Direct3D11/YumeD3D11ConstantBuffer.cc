@@ -22,14 +22,16 @@
 #include "YumeHeaders.h"
 #include "YumeD3D11ConstantBuffer.h"
 #include "YumeD3D11RendererImpl.h"
-#include "YumeD3D11Graphics.h"
+#include "YumeD3D11Renderer.h"
+#include "Engine/YumeEngine.h"
 
 #include "Logging/logging.h"
 
 namespace YumeEngine
 {
 
-	YumeConstantBuffer::YumeConstantBuffer()
+	YumeConstantBuffer::YumeConstantBuffer(YumeD3D11RendererImpl* impl)
+		: impl_(impl)
 	{
 	}
 
@@ -65,7 +67,7 @@ namespace YumeEngine
 		shadowData_ = boost::shared_array<unsigned char>(new unsigned char[size_]);
 		memset(shadowData_.get(),0,size_);
 
-		if(YumeGraphics::Get())
+		if(YumeEngine3D::Get()->GetRenderer())
 		{
 			D3D11_BUFFER_DESC bufferDesc;
 			memset(&bufferDesc,0,sizeof bufferDesc);
@@ -76,7 +78,7 @@ namespace YumeEngine
 			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
 			
-			HRESULT hr = YumeGraphics::Get()->GetImpl()->GetDevice()->CreateBuffer(&bufferDesc,0,(ID3D11Buffer**)&object_);
+			HRESULT hr = impl_->GetDevice()->CreateBuffer(&bufferDesc,0,(ID3D11Buffer**)&object_);
 			if(FAILED(hr))
 			{
 				D3D_SAFE_RELEASE(object_);
@@ -120,7 +122,7 @@ namespace YumeEngine
 	{
 		if(dirty_ && object_)
 		{
-			YumeGraphics::Get()->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,0,shadowData_.get(),0,0);
+			impl_->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,0,shadowData_.get(),0,0);
 			dirty_ = false;
 		}
 	}
