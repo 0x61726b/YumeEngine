@@ -42,7 +42,7 @@ matrix:
       env: COMPILER=g++-4.8 CMAKE_OPTIONS="-DYUME_BUILD_OPENGL=1 -DYUME_BUILD_DIRECT3D11=0"
       compiler: gcc
       after_success:
-        - codecov
+        - sudo codecov --token=9a11d4e0-571e-4df4-bfa6-7295aee52df2
       before_install:
         - sudo pip install codecov
         - set -e

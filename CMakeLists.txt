@@ -85,7 +85,7 @@ if(OS_LINUX)
 
   set(YUME_C_COMPILER_FLAGS        "-std=c99")
   set(YUME_CXX_COMPILER_FLAGS "-std=gnu++11")
-  
+
 
   add_definitions(-fPIC)
 endif ()
@@ -179,7 +179,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${YUME_LINKER_FLAGS_RELEASE} ${YUME_SHARE
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DBOOST_ALL_NO_LIB=1 -g -O0 -fprofile-arcs -ftest-coverage")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_ALL_NO_LIB=1")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lgcov --coverage")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ADD_SUBDIRECTORY(Engine)
