@@ -41,7 +41,7 @@ typedef struct HINSTANCE__* hInstance;
 
 #elif YUME_PLATFORM  == YUME_PLATFORM_APPLE
 #    define DYNLIB_HANDLE void*
-#    define DYNLIB_LOAD( a ) mac_loadDylib( a, RTLD_LAZY | RTLD_GLOBAL )
+#    define DYNLIB_LOAD( a ) dlopen( a, RTLD_LAZY | RTLD_GLOBAL )
 #    define DYNLIB_GETSYM( a, b ) dlsym( a, b )
 #    define DYNLIB_UNLOAD( a ) dlclose( a )
 

@@ -37,7 +37,7 @@ namespace YumeEngine
 #elif YUME_PLATFORM == YUME_PLATFORM_LINUX
 		appData = std::string(std::getenv("HOME"));
 #elif YUME_PLATFORM == YUME_PLATFORM_APPLE
-		appData = std::string(std::getenv("APPDATA"));
+		appData = std::string(std::getenv("HOME"));
 #endif
 
 
@@ -85,7 +85,7 @@ namespace YumeEngine
 			YumeDynamicLibrary* pLib = YumeAPINew YumeDynamicLibrary(name);
 			if(!pLib->Load())
 				return NULL;
-			dynLibMap_[name] = pLib;
+            dynLibMap_.insert( std::make_pair(name,pLib) );
 			return pLib;
 		}
 	}

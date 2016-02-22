@@ -75,9 +75,19 @@ namespace YumeEngine
 		YUMELOG_INFO("Initializing Yume Engine...");
 
         YUMELOG_INFO("Initialized environment...");
+        
+        std::string currentOs;
+        
+#if YUME_PLATFORM == YUME_PLATFORM_WIN32
+        currentOs = "Win32";
+#elif YUME_PLATFORM == YUME_PLATFORM_LINUX
+        currentOs = "Linux";
+#elif YUME_PLATFORM == YUME_PLATFORM_APPLE
+        currentOs = "Osx";
+#endif
 
         YUMELOG_INFO("Engine Config Path: " << env_->GetRoot().generic_string().c_str());
-
+        YUMELOG_INFO("Running on: " << currentOs.c_str());
 
 		initialized_ = LoadExternalLibrary("libYumeOpenGL");
 

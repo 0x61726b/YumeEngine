@@ -36,8 +36,7 @@ namespace YumeEngine
 #include <Windows.h>
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR args, int ncmd)
 {
-#endif
-#if YUME_PLATFORM == YUME_PLATFORM_LINUX
+#else
 int main()
 	{
 #endif

@@ -79,7 +79,7 @@ namespace YumeEngine
         if( !mInst )
 		{
             YUMELOG_FATAL(
-                "Could not load dynamic library " + mName +
+                "Could not load dynamic library " + name +
                 ".  System Error: " + dynlibError());
 			return false;
 		}

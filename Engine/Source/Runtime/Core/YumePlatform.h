@@ -105,8 +105,8 @@ namespace YumeEngine
 	//--------------------------------------------------------------------------------
 #if defined( __WIN32__ ) || defined( _WIN32 )
 #   define YUME_PLATFORM YUME_PLATFORM_WIN32
-#elif defined(__ANDROID__)
-#	define YUME_PLATFORM YUME_PLATFORM_ANDROID
+#elif defined( __clang__ )
+#	define YUME_PLATFORM YUME_PLATFORM_APPLE
 #elif defined( __native_client__ ) 
 #   define YUME_PLATFORM OGRE_PLATFORM_NACL
 #   ifndef ARKEN_STATIC_LIB
@@ -160,12 +160,15 @@ namespace YumeEngine
 #endif
 #if YUME_PLATFORM == YUME_PLATFORM_LINUX
 #   if defined( YUME_GCC_VISIBILITY )
-#define YumeAPIExport  __attribute__ ((visibility("default")))
-#define YumeAPIPrivate __attribute__ ((visibility("hidden")))
+#       define YumeAPIExport  __attribute__ ((visibility("default")))
+#       define YumeAPIPrivate __attribute__ ((visibility("hidden")))
 #   else
 #       define YumeAPIExport
 #       define YumeAPIPrivate
 #   endif
+#endif
+#if YUME_PLATFORM == YUME_PLATFORM_APPLE
+    #define YumeAPIExport
 #endif
 
 #define YUME_CPU_UNKNOWN    0
