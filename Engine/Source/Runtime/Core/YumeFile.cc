@@ -54,15 +54,15 @@ namespace YumeEngine
 
 		std::ios_base::openmode fileMode;
 		if(filemode == FILEMODE_READ)
-			fileMode = fs::ifstream::in;
+			fileMode = fs::fstream::in;
 		else
-			fileMode = fs::ifstream::in || fs::ifstream::out;
+			fileMode = fs::fstream::in || fs::fstream::out;
 
 		fs::path p = fs::path(file);
 
 		if(fs::exists(p))
 		{
-			fileStream.open(p,fileMode);
+			fileStream.open(p,std::fstream::in);
 
 
 			return fileStream.is_open();
