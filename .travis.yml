@@ -35,6 +35,7 @@ matrix:
       after_success:
         - cd Yume
         - ./TestSuite --testing
+        - cd ${TRAVIS_BUILD_DIR}
         - sudo codecov --token=9a11d4e0-571e-4df4-bfa6-7295aee52df2
       before_install:
         - sudo pip install codecov
@@ -62,4 +63,3 @@ script:
   - ./Engine/Source/3rdParty/log4cplus/configure
   - cd build
   - make
-
