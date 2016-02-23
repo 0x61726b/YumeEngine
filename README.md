@@ -3,8 +3,10 @@
 [![codecov.io](https://codecov.io/github/arkenthera/YumeEngine/coverage.svg?branch=master)](https://codecov.io/github/arkenthera/YumeEngine?branch=master)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Analytics](https://ga-beacon.appspot.com/UA-74178547-1/welcome-page)](https://github.com/igrigorik/ga-beacon)
+[![todofy badge](https://todofy.org/b/arkenthera/YumeEngine/master)](https://todofy.org/r/arkenthera/YumeEngine/master)
+
 # Synopsis
-Modern Cross Platform Renderer
+Yume Engine
 Exploring new renderer design ideas,trying to implement as simple as possible.Heavily inspired by other open source renderers I aim to support D3D11,D3D12 and OpenGL(Vulkan in the future), this engine strives to be as platform dependent as possible.After initial planned platforms' work has been done,I'm aiming to add more platform support.
 
 For updates from this engine development(and my other silly posts) you can check out my <a href="http://arkenthera.github.io">website</a>
