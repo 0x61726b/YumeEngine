@@ -20,11 +20,95 @@
 //
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
+#include "YumeFile.h"
+
+#include "Logging/logging.h"
 
 
 
+
+namespace fs = boost::filesystem;
 
 namespace YumeEngine
 {
+	YumeFile::YumeFile(const YumeString& file,FileMode fileMode)
+		: fileName_(file),fileMode_(fileMode)
+	{
+		Open(fileName_,fileMode_);
+	}
+
+	YumeFile::YumeFile(const boost::filesystem::path& file,FileMode filemode) :
+		fileName_(file.generic_string()),fileMode_(filemode)
+	{
+		Open(fileName_,fileMode_);
+	}
+
+	YumeFile::~YumeFile()
+	{
+	}
+
+	bool YumeFile::Open(const std::string& file,FileMode filemode)
+	{
+		fileName_ = file;
+		fileMode_ = filemode;
+
+		int fileMode;
+		if(filemode == FILEMODE_READ)
+			fileMode = fs::ifstream::in;
+		else
+			fileMode = fs::ifstream::in || fs::ifstream::out;
+
+		fs::path p = fs::path(file);
+
+		if(fs::exists(p))
+		{
+			fileStream.open(p,fileMode);
+
+
+			return fileStream.is_open();
+		}
+		else
+		{
+			YUMELOG_WARN("Trying to read nonexistent file " << fileName_.c_str());
+			return false;
+		}
+		return fileStream.is_open();
+	}
+
+	void YumeFile::Close()
+	{
+		if(fileStream.is_open())
+			fileStream.close();
+	}
+
+	void YumeFile::Write(const YumeString& str)
+	{
+		if(!fileStream.is_open())
+			return;
+
+		fileStream << str;
+		fileStream.flush();
+	}
+
+	unsigned YumeFile::Read(void* dest,int size)
+	{
+		char* destPtr = (char*)dest;
+		fileStream.read(destPtr,size);
+
+		return size;
+	}
+
+	YumeString YumeFile::Read()
+	{
+		YumeString str;
+		YumeStringStream sstr;
+		while(fileStream)
+		{
+			std::getline(fileStream,str);
+			sstr << str;
+		}
+		return sstr.str();
+	}
+
 
 }

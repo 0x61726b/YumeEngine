@@ -74,6 +74,7 @@ set( SRC_CORE
 	Core/YumeEnvironment.cc
 	Core/YumeDynamicLibrary.h
 	Core/YumeDynamicLibrary.cc
+	Core/YumeMain.h
 		)
 set( SRC_CORE_IO
 	Core/YumeIO.h
@@ -89,7 +90,10 @@ set( SRC_CORE_CONFIG
 	Core/YumePlatform.h
 )
 set( SRC_CORE_UTILS
-
+	Core/YumeXmlParser.h
+	Core/YumeXmlParser.cc
+	Core/YumeDefaults.h
+	Core/YumeDefaults.cc
 )
 set( SRC_CORE_MEMORY
 	Core/YumeMemoryAllocatorSTL.h
@@ -119,6 +123,7 @@ source_group(Yume\\\\Core FILES ${SRC_CORE})
 source_group(Yume\\\\Core\\\\Config FILES ${SRC_CORE_CONFIG})
 source_group(Yume\\\\Core\\\\Memory FILES ${SRC_CORE_MEMORY})
 source_group(Yume\\\\Core\\\\IO FILES ${SRC_CORE_IO})
+source_group(Yume\\\\Core\\\\Utils FILES ${SRC_CORE_UTILS})
 source_group(Yume\\\\Engine FILES ${SRC_ENGINE})
 
 
@@ -133,6 +138,10 @@ if(OS_LINUX OR OS_MACOSX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
+
+if(YUME_TEST_MODE)
+	add_definitions(-DYUME_TEST_MODE)
+endif()
 ADD_LIBRARY(${YUME} SHARED
 						${SRC_LOGGING}
  						${SRC_MATH}
@@ -140,6 +149,7 @@ ADD_LIBRARY(${YUME} SHARED
 						${SRC_GRAPHICS}
 					  ${SRC_CORE_MEMORY}
 					  ${SRC_CORE_CONFIG}
+						${SRC_CORE_UTILS}
 						${SRC_CORE_IO}
 						${SRC_RENDERER}
 						${SRC_ENGINE}

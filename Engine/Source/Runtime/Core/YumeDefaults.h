@@ -19,13 +19,26 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
+#ifndef __YumeDefaults_h__
+#define __YumeDefaults_h__
+//----------------------------------------------------------------------------
+#include "YumeRequired.h"
 
-#include "Engine/YumeApplication.h"
-
-int main(void)
+#include <boost/filesystem.hpp>
+//----------------------------------------------------------------------------
+namespace YumeEngine
 {
-	YumeEngine::YumeApplication* app(new YumeEngine::YumeApplication);
+	void CreateConfigFile(const boost::filesystem::path& path);
+	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(const YumeString&,bool skipFirst = true);
+	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(const char* cmdLine);
+	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(const std::wstring& cmdLine);
+	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(int argc,char** argv);
 
-	app->Run();
-	return 0;
+	YumeAPIExport const YumeString& WCharToUtf8(const std::wstring&);
+
+	const YumeVector<YumeString>::type& GetArguments();
 }
+
+
+//----------------------------------------------------------------------------
+#endif

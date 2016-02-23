@@ -20,49 +20,25 @@
 //
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
-#include "Engine/YumeApplication.h"
-#include "Engine/YumeEngine.h"
-
-
-#include <boost/filesystem.hpp>
-
+#include "YumeXmlParser.h"
+#include "YumeEnvironment.h"
 namespace YumeEngine
 {
-	YumeApplication::YumeApplication()
-		: exitCode_(0)
+	
+
+	YumeMap<YumeString,YumeString>::type Parsers::ParseConfig(const YumeString& content)
 	{
-		engine_ = boost::shared_ptr<YumeEngine3D>(new YumeEngine3D);
-	}
+		ConfigMap ret;
 
-	YumeApplication::~YumeApplication()
-	{
+		pugi::xml_document doc;
+		doc.load(content.c_str());
 
-	}
+		XmlNode root = doc.child("Yume");
+		XmlNode renderer = root.child("Renderer");
 
-	int YumeApplication::Run()
-	{
-		Setup();
-
-		if(!engine_->Initialize())
-		{
-			exitCode_ = -1;
-			return exitCode_;
-		}
+		ret.insert( ConfigMap::value_type("Renderer",renderer.text().get()));
 
 
-		Start();
-		if(exitCode_ == 1)
-			return exitCode_;
-
-#ifndef YUME_TEST_MODE
-		while(!engine_->IsExiting())
-			engine_->Run();
-#else
-		if(!engine_->IsExiting())
-			engine_->Run();
-#endif
-		engine_->Exit();
-
-		return exitCode_;
+		return ret;
 	}
 }

@@ -19,13 +19,34 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
+#ifndef __YumeMain_h__
+#define __YumeMain_h__
+//----------------------------------------------------------------------------
+#include "YumeRequired.h"
 
+#include "Core/YumeDefaults.h"
 
-#include "MainDll.h"
-
-
-
-void Kappa()
+//----------------------------------------------------------------------------
+namespace YumeEngine
 {
-
+#if defined(_MSC_VER)
+#define YUME_MAIN(function) \
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR cmdLine, int showCmd) \
+{ \
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); \
+    YumeEngine::ParseArguments(GetCommandLineA()); \
+    return function; \
 }
+#elif
+#define YUME_MAIN(function) \
+int main(int argc, char** argv) \
+{ \
+    YumeEngine::ParseArguments(argc, argv); \
+    return function; \
+}
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+#endif

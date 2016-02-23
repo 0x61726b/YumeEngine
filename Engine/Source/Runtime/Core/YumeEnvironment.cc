@@ -22,6 +22,10 @@
 #include "YumeHeaders.h"
 #include "YumeEnvironment.h"
 
+#include "Core/YumeFile.h"
+#include "Core/YumeXmlParser.h"
+#include "Core/YumeDefaults.h"
+
 #include "YumeDynamicLibrary.h"
 
 #include "Logging/logging.h"
@@ -48,7 +52,8 @@ namespace YumeEngine
 		appDataPath_ = boost::filesystem::path(appData);
 #endif
 
-
+		//On Windows this will be C:/User/AppData/Roaming/YumeEngine
+		//On linux this will be /home/user/YumeEngine
 		root_ = appDataPath_ / "YumeEngine";
 
 
@@ -57,6 +62,17 @@ namespace YumeEngine
 
 		configFile_ = root_ / "Yume.config";
 		logFile_ = root_ / "Yume.log";
+
+		ReadAndParseConfig();
+
+		//Append command line arguments to engine config
+		StringVector commandLine = GetArguments();
+
+		for(int i=0; i < commandLine.size(); ++i)
+		{
+			engineConfig_.insert( ConfigMap::value_type(commandLine[i],"1"));
+		}
+			
 	}
 
 	YumeEnvironment::~YumeEnvironment()
@@ -100,6 +116,34 @@ namespace YumeEngine
 		lib->Unload();
 		YumeAPIDelete lib;
 	}
+
+	const YumeString& YumeEnvironment::GetParameter(const YumeString& param)
+	{
+		return engineConfig_[param];
+	}
+
+	void YumeEnvironment::ReadAndParseConfig()
+	{
+		if(!boost::filesystem::exists(configFile_))
+		{
+			CreateConfigFile(configFile_);
+		}
+		YumeFile file(configFile_);
+
+		YumeString configContent = file.Read();
+		file.Close();
+
+		ConfigMap configMap = Parsers::ParseConfig(configContent);
+
+		ConfigMap::iterator It = configMap.begin();
+
+		for(It;It != configMap.end(); ++It)
+		{
+			engineConfig_.insert(*It);
+		}
+		
+	}
+
 
 	bool YumeEnvironment::CreateDirectory(const boost::filesystem::path& path)
 	{

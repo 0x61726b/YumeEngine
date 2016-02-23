@@ -150,7 +150,6 @@ namespace YumeEngine
 			return;
 
 		impl_->swapChain_->Present(vsync_ ? 1 : 0,0);
-
 	}
 
 	void YumeD3D11Renderer::Clear(unsigned flags,const Vector4& color,float depth,unsigned stencil)
@@ -280,9 +279,9 @@ namespace YumeEngine
 	}
 
 
-	void YumeD3D11Renderer::SetFlushGPU(bool flushGpu_)
+	void YumeD3D11Renderer::SetFlushGPU(bool flushGpu)
 	{
-		flushGpu_ = flushGpu_;
+		flushGpu_ = flushGpu;
 
 		if(impl_->device_)
 		{
@@ -450,15 +449,15 @@ namespace YumeEngine
 		Clear(CLEAR_COLOR);
 		impl_->swapChain_->Present(0,0);
 
-		YUMELOG_INFO("Graphics Mode: " << std::endl <<
-			"Width: " << width << std::endl <<
-			"Height: " << height << std::endl <<
-			"Fullscreen: " << fullscreen << std::endl <<
-			"Borderless: " << borderless << std::endl <<
-			"Vsync: " << vsync << std::endl <<
-			"Multisample: " << multiSample <<
-			"Triple Buffer: " << tripleBuffer
-			);
+		YUMELOG_INFO("Graphics Mode: ");
+		YUMELOG_INFO("Width: " << width);
+		YUMELOG_INFO("Height: " << height);
+		YUMELOG_INFO("Fullscreen: " << fullscreen);
+		YUMELOG_INFO("Borderless: " << borderless);
+		YUMELOG_INFO("Vsync: " << vsync);
+		YUMELOG_INFO("Multisample: " << multiSample);
+		YUMELOG_INFO("Triple Buffer: " << tripleBuffer);
+
 
 		initialized_ = true;
 		return true;

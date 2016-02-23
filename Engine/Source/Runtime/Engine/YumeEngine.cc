@@ -72,24 +72,37 @@ namespace YumeEngine
 
 		YumeEngine::Log::InitLogging(env_->GetLogFile().generic_string().c_str());
 
-		YUMELOG_INFO("Initializing Yume Engine...");
+		YUMELOG_INFO("Initialized environment...");
 
-        YUMELOG_INFO("Initialized environment...");
-        
-        std::string currentOs;
-        
+		std::string currentOs;
+
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
-        currentOs = "Win32";
+		currentOs = "Win32";
 #elif YUME_PLATFORM == YUME_PLATFORM_LINUX
-        currentOs = "Linux";
+		currentOs = "Linux";
 #elif YUME_PLATFORM == YUME_PLATFORM_APPLE
-        currentOs = "Osx";
+		currentOs = "Osx";
 #endif
 
-        YUMELOG_INFO("Engine Config Path: " << env_->GetRoot().generic_string().c_str());
-        YUMELOG_INFO("Running on: " << currentOs.c_str());
+		YUMELOG_INFO("Engine Config Path: " << env_->GetRoot().generic_string().c_str());
+		YUMELOG_INFO("Running on: " << currentOs.c_str());
 
-		initialized_ = LoadExternalLibrary("libYumeOpenGL");
+		std::string fullRendererLibName;
+		std::string renderer = env_->GetParameter("Renderer");
+
+		if(env_->GetParameter("testing") == "1")
+		{
+			renderer = "Null";
+		}
+
+#if YUME_PLATFORM == YUME_PLATFORM_WIN32
+		fullRendererLibName = "Yume" + renderer;
+#else
+		fullRendererLibName = "libYume" + renderer;
+#endif
+
+		//This is where renderer library is getting loaded!
+		initialized_ = LoadExternalLibrary(fullRendererLibName);
 
 		if(!initialized_)
 			return false;
@@ -100,7 +113,7 @@ namespace YumeEngine
 		if(!graphics_->SetGraphicsMode(1280,720,false,false,true,true,false,1))
 			return false;
 
-		YUMELOG_INFO("Engine initializing succesfull..");
+		YUMELOG_INFO("Initialized Yume Engine...");
 
 		return initialized_;
 	}

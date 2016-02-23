@@ -9,7 +9,7 @@
 
 #include "Core/YumeHeaders.h"
 
-#include "BasicRenderWindow.h"
+#include "TestSuite.h"
 
 #include "Logging/logging.h"
 
@@ -17,24 +17,28 @@
 
 #include <boost/shared_ptr.hpp>
 
-YUME_DEFINE_ENTRY_POINT(YumeEngine::HelloWorld);
+YUME_DEFINE_ENTRY_POINT(YumeEngine::TestSuite);
 
 namespace YumeEngine
 {
-	
 
 
-	HelloWorld::HelloWorld()
+
+	TestSuite::TestSuite()
 	{
 
 	}
 
-	HelloWorld::~HelloWorld()
+	TestSuite::~TestSuite()
+	{
+
+	}
+	void TestSuite::Stop()
 	{
 
 	}
 
-	void HelloWorld::Start()
+	void TestSuite::Start()
 	{
 		BaseApplication::Start();
 	}

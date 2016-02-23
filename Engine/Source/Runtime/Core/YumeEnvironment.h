@@ -31,6 +31,9 @@ namespace YumeEngine
 {
 	class YumeDynamicLibrary;
 	typedef boost::filesystem::path FsPath;
+	typedef YumeMap<YumeString,YumeString>::type ConfigMap;
+
+	class YumeFile;
 
 	class YumeAPIExport YumeEnvironment
 	{
@@ -41,14 +44,18 @@ namespace YumeEngine
 		bool Exists(boost::filesystem::path path);
 		bool CreateDirectory(const boost::filesystem::path& path);
 
-
+		void ReadAndParseConfig();
+		
 
 		const FsPath& GetLogFile() { return logFile_; }
 		const FsPath& GetRoot() { return root_; }
 
+		const YumeString& GetParameter(const YumeString&);
 
 		YumeDynamicLibrary* LoadDynLib(const YumeString& name);
 		void UnloadDynLib(YumeDynamicLibrary*);
+	private:
+		ConfigMap engineConfig_;
 	private:
 		boost::filesystem::path		appDataPath_;
 		boost::filesystem::path		root_;

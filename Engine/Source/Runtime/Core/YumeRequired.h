@@ -166,6 +166,8 @@ namespace YumeEngine
 		typedef typename std::multimap<K, V, P>::const_iterator const_iterator;
 #endif
 	};
+
+	typedef YumeVector<YumeString>::type StringVector;
 }
 
 namespace YumeEngine

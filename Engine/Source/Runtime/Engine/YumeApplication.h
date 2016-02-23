@@ -23,6 +23,8 @@
 #define __YumeApplication_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+#include "YumeMain.h"
+#include "YumeDefaults.h"
 
 #include <boost/shared_ptr.hpp>
 //----------------------------------------------------------------------------
@@ -49,7 +51,26 @@ namespace YumeEngine
 
 		int exitCode_;
 	};
+
+#define YUME_DEFINE_ENTRY_POINT(className) \
+int RunApplication() \
+	{ \
+    boost::shared_ptr<className> application(new className); \
+    return application->Run(); \
+	} \
+YUME_MAIN(RunApplication());
+
+#define YUME_TEST_SUITE_ENTRY(className) \
+int RunTestSuite() \
+	{ \
+    boost::shared_ptr<className> application(new className); \
+    application->Run(); \
+	application->Stop(); \
+	return 0 \
+	} \
+YUME_MAIN(RunTestSuite());
 }
+
 
 
 //----------------------------------------------------------------------------

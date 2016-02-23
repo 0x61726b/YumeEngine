@@ -14,16 +14,28 @@
 # all copies or substantial portions of the Software.
 #
 # File : CMakeLists.txt
-# Date : 2.21.2016
+# Date : 8.27.2015
 # Comments :
 ################################################################################
 
-if(YUME_BUILD_DIRECT3D11)
-  add_subdirectory(Direct3D11)
-endif()
+set(RENDERER_TARGET "YumeNull")
 
-if(YUME_BUILD_OPENGL)
-  add_subdirectory(OpenGL)
-endif()
+set(SRC_RENDERER_NULL
+	YumeNullRenderer.h
+	YumeNullRenderer.cc
+)
 
-add_subdirectory(Null)
+add_definitions(-DBUILDING_YUME_NULL)
+
+source_group(Renderer\\\\Null FILES ${SRC_RENDERER_NULL})
+
+add_library(${RENDERER_TARGET} SHARED ${SRC_RENDERER_NULL})
+
+target_link_libraries(${RENDERER_TARGET} ${YUME})
+include_directories(${YUME_INCLUDE_DIR})
+include_directories(${YUME_BOOST_PATH})
+include_directories(${YUME_3RDPARTY_PATH}/log4cplus/include)
+
+set_output_dir_to_yume(${RENDERER_TARGET})
+
+set_folder_name(${RENDERER_TARGET} "Renderers")

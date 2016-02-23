@@ -18,3 +18,7 @@
 	path = Engine/Source/3rdParty/pugixml
 	url = https://github.com/zeux/pugixml
 	branch = master
+[submodule "Engine/Source/3rdParty/Mustache"]
+	path = Engine/Source/3rdParty/Mustache
+	url = https://github.com/kainjow/Mustache
+	branch = master

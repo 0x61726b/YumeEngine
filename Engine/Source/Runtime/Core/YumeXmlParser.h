@@ -19,12 +19,24 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
+#ifndef __YumeXmlParser_h__
+#define __YumeXmlParser_h__
+//----------------------------------------------------------------------------
+#include "YumeRequired.h"
+
+#include <pugixml/src/pugixml.hpp>
+
+//----------------------------------------------------------------------------
+namespace YumeEngine
+{
+	typedef pugi::xml_node XmlNode;
+
+	namespace Parsers {
+		YumeMap<YumeString,YumeString>::type ParseConfig(const YumeString&);
+	}
+	
+}
 
 
-#		if defined(BUILDING)
-#			define Export __declspec( dllexport )
-#		else
-#			define Export__declspec( dllimport )
-#		endif
-
-Export void Kappa();
+//----------------------------------------------------------------------------
+#endif

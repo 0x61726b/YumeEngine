@@ -20,5 +20,4 @@
 
 #Minimal application with empty window
 add_subdirectory(HelloWorld)
-
-# add_subdirectory(EmptyProject)
+add_subdirectory(TestSuite)
