@@ -128,10 +128,11 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${YUME_3RDPARTY_PATH})
 include_directories(${YUME_SDL_INCLUDE_PATH})
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DBOOST_ALL_NO_LIB=1 -g -O0 --coverage")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
-
+if(OS_LINUX OR OS_MACOSX)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DBOOST_ALL_NO_LIB=1 -g -O0 --coverage")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage")
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
+endif()
 ADD_LIBRARY(${YUME} SHARED
 						${SRC_LOGGING}
  						${SRC_MATH}
