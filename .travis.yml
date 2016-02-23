@@ -54,7 +54,6 @@ matrix:
             - gcc-4.8
             - g++-4.8
 after_success:
-  - cd build
   - cd Yume
   - ./TestSuite --testing
   - sudo codecov --token=9a11d4e0-571e-4df4-bfa6-7295aee52df2
