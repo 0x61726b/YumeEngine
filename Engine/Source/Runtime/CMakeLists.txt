@@ -94,6 +94,8 @@ set( SRC_CORE_UTILS
 	Core/YumeXmlParser.cc
 	Core/YumeDefaults.h
 	Core/YumeDefaults.cc
+	Core/YumeTimer.h
+	Core/YumeTimer.cc
 )
 set( SRC_CORE_MEMORY
 	Core/YumeMemoryAllocatorSTL.h

@@ -27,6 +27,8 @@
 #include "Core/YumeDynamicLibrary.h"
 #include "Core/YumeEnvironment.h"
 
+#include "Core/YumeTimer.h"
+
 #include "Math/YumeVector2.h"
 #include "Logging/logging.h"
 
@@ -45,7 +47,12 @@ namespace YumeEngine
 
 	YumeEngine3D::YumeEngine3D()
 		: exiting_(false),
-		initialized_(false)
+		initialized_(false),
+		inactiveFps_(60),
+		maxFps_(200),
+		minFps_(10),
+		timeStepSmoothing_(2),
+		timeStep_(0)
 	{
 		YumeEngineGlobal = this;
 
@@ -69,10 +76,11 @@ namespace YumeEngine
 		initialized_ = true;
 
 		env_ = boost::shared_ptr<YumeEnvironment>(YumeAPINew YumeEnvironment);
+		timer_ = boost::shared_ptr<YumeTime>(YumeAPINew YumeTime);
 
 		YumeEngine::Log::InitLogging(env_->GetLogFile().generic_string().c_str());
 
-		YUMELOG_INFO("Initialized environment...");
+		YUMELOG_INFO("Initialized environment...Current system time " << timer_->GetTimeStamp());
 
 		std::string currentOs;
 
@@ -110,12 +118,104 @@ namespace YumeEngine
 		graphics_->SetWindowTitle("Yume Engine");
 		graphics_->SetWindowPos(Vector2(250,250));
 
-		if(!graphics_->SetGraphicsMode(1280,720,false,false,true,true,false,1))
+		if(!graphics_->SetGraphicsMode(1280,720,false,false,false,false,false,1))
 			return false;
+
+		frameTimer_.Reset();
 
 		YUMELOG_INFO("Initialized Yume Engine...");
 
 		return initialized_;
+	}
+
+	void YumeEngine3D::Render()
+	{
+		if(!graphics_->BeginFrame())
+			return;
+
+		//Renderer
+		Vector4 clearColor(0,0,0,0);
+
+		graphics_->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL,clearColor);
+
+		graphics_->EndFrame();
+	}
+
+
+	void YumeEngine3D::Update()
+	{
+		SDL_Event evt;
+		while(SDL_PollEvent(&evt))
+			if(evt.type == SDL_QUIT)
+				exiting_ = true;
+	}
+
+	void YumeEngine3D::Run()
+	{
+		assert(initialized_);
+
+		if(exiting_)
+			return;
+
+		timer_->BeginFrame(timeStep_);
+
+		Update();
+		Render();
+
+		LimitFrames();
+
+		timer_->EndFrame();
+	}
+
+	void YumeEngine3D::LimitFrames()
+	{
+		if(!initialized_)
+			return;
+
+		long long elapsed = 0;
+
+		if(maxFps_ != 0)
+		{
+			long long targetMax = 1000000LL / maxFps_;
+
+			for(;;)
+			{
+				elapsed = frameTimer_.GetUSec(false);
+				if(elapsed >= targetMax)
+					break;
+
+				if(targetMax - elapsed >= 1000LL)
+				{
+					unsigned sleepTime = (unsigned)((targetMax - elapsed) / 1000LL);
+					YumeTime::Sleep(sleepTime);
+				}
+			}
+		}
+
+		elapsed = frameTimer_.GetUSec(true);
+
+		if(minFps_)
+		{
+			long long targetMin = 1000000LL / minFps_;
+			if(elapsed > targetMin)
+				elapsed = targetMin;
+		}
+
+		timeStep_ = 0.0f;
+		lastTimeSteps_.push_back(elapsed / 1000000.0f);
+		if(lastTimeSteps_.size() > timeStepSmoothing_)
+		{
+			// If the smoothing configuration was changed, ensure correct amount of samples
+			
+
+			lastTimeSteps_.erase(lastTimeSteps_.begin() + lastTimeSteps_.size() - timeStepSmoothing_,lastTimeSteps_.end());
+			for(unsigned i = 0; i < lastTimeSteps_.size(); ++i)
+				timeStep_ += lastTimeSteps_[i];
+			timeStep_ /= lastTimeSteps_.size();
+		}
+		else
+			timeStep_ = lastTimeSteps_.back();
+
 	}
 
 	bool YumeEngine3D::LoadExternalLibrary(const YumeString& lib)
@@ -182,40 +282,6 @@ namespace YumeEngine
 		extLibs_.clear();
 	}
 
-
-	void YumeEngine3D::Render()
-	{
-		if(!graphics_->BeginFrame())
-			return;
-
-		//Renderer
-		Vector4 clearColor(0,0,0,0);
-
-		graphics_->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL,clearColor);
-
-		graphics_->EndFrame();
-	}
-
-
-	void YumeEngine3D::Update()
-	{
-		SDL_Event evt;
-		while(SDL_PollEvent(&evt))
-			if(evt.type == SDL_QUIT)
-				exiting_ = true;
-	}
-
-	void YumeEngine3D::Run()
-	{
-		assert(initialized_);
-
-		if(exiting_)
-			return;
-
-		Update();
-		Render();
-	}
-
 	void YumeEngine3D::SetRenderer(YumeRenderer* renderer)
 	{
 		graphics_ = renderer;
@@ -230,8 +296,15 @@ namespace YumeEngine
 	{
 		exiting_ = true;
 
+		YUMELOG_INFO("Exiting Yume Engine...");
+
 		UnloadExternalLibraries();
 
+		YUMELOG_INFO("Engine stats: ");
+		YUMELOG_INFO("Total frames: " << timer_->GetFrameNumber());
+		YUMELOG_INFO("Time elapsed since start: " << timer_->GetElapsedTime());
+
+		YUMELOG_INFO("Exited at time " << timer_->GetTimeStamp());
 		YumeEngine::Log::StopLogging();
 
 

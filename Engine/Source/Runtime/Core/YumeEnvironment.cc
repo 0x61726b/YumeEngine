@@ -123,6 +123,8 @@ namespace YumeEngine
 
 		if(It != engineConfig_.end())
 			return It->second;
+		else
+			return "-";
 	}
 
 	void YumeEnvironment::ReadAndParseConfig()

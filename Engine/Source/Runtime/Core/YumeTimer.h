@@ -19,74 +19,66 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeEngine_h__
-#define __YumeEngine_h__
+#ifndef __YumeTimer_h__
+#define __YumeTimer_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+#include <boost/timer.hpp>
 
-#include "Core/YumeTimer.h"
-
-#include <boost/shared_ptr.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeRenderer;
-	class YumeEnvironment;
-	class YumeDynamicLibrary;
-	class YumeTime;
 
-	class YumeAPIExport YumeEngine3D
+	class YumeAPIExport YumeHiresTimer
+	{
+		friend class YumeTime;
+
+	public:
+		/// Construct. Get the starting high-resolution clock value.
+		YumeHiresTimer();
+
+		/// Return elapsed microseconds and optionally reset.
+		long long GetUSec(bool reset);
+		/// Reset the timer.
+		void Reset();
+
+		/// Return if high-resolution timer is supported.
+		static bool IsSupported() { return supported; }
+
+		/// Return high-resolution timer frequency if supported.
+		static long long GetFrequency() { return frequency; }
+
+	private:
+		/// Starting clock value in CPU ticks.
+		long long startTime_;
+
+		/// High-resolution timer support flag.
+		static bool supported;
+		/// High-resolution timer frequency.
+		static long long frequency;
+	};
+	class YumeAPIExport YumeTime
 	{
 	public:
-		YumeEngine3D();
+		YumeTime();
+		~YumeTime();
 
-		virtual ~YumeEngine3D();
-		bool Initialize();
+		void BeginFrame(float dt);
+		void EndFrame();
 
-		static YumeEngine3D* Get();
+		static void Sleep(unsigned mSce);
+		int GetFrameNumber() const { return frameNumber_; }
+		float GetTimeStep() const { return timeStep_; }
 
-		void Run();
+		YumeString GetTimeStamp();
+		double GetElapsedTime();
+	protected:
+		int frameNumber_;
+		double timeStep_;
+		boost::timer totalTime_;
 
-		void Exit();
-
-		void Update();
-		void Render();
-
-		bool LoadExternalLibrary(const YumeString& libName);
-		void UnloadExternalLibrary(const YumeString& libName);
-
-		void UnloadExternalLibraries();
-
-		bool IsExiting() const { return exiting_; }
-
-		void SetRenderer(YumeRenderer* renderer);
-		YumeRenderer* GetRenderer();
-
-	private:
-		YumeRenderer* graphics_;
-
-
-		boost::shared_ptr<YumeEnvironment> env_;
-		boost::shared_ptr<YumeTime> timer_;
-
-	private:
-		void LimitFrames();
-		unsigned inactiveFps_;
-		unsigned maxFps_;
-		unsigned minFps_;
-		float timeStep_;
-		float timeStepSmoothing_;
-		YumeVector<float>::type lastTimeSteps_;
-		YumeHiresTimer frameTimer_;
-
-		typedef YumeVector<YumeDynamicLibrary*>::type ExtLibList;
-		ExtLibList extLibs_;
-	private:
-		bool initialized_;
-		bool exiting_;
 	};
 }
-
 
 //----------------------------------------------------------------------------
 #endif
