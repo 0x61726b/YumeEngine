@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/arkenthera/YumeEngine.svg?branch=master)](https://travis-ci.org/arkenthera/YumeEngine)
 [![Build status](https://ci.appveyor.com/api/projects/status/w0lrpofmuuycgjso?svg=true)](https://ci.appveyor.com/project/arkenthera/yumeengine)
 [![codecov.io](https://codecov.io/github/arkenthera/YumeEngine/coverage.svg?branch=master)](https://codecov.io/github/arkenthera/YumeEngine?branch=master)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Analytics](https://ga-beacon.appspot.com/UA-74178547-1/welcome-page)](https://github.com/igrigorik/ga-beacon)
 # Synopsis
 Modern Cross Platform Renderer
 Exploring new renderer design ideas,trying to implement as simple as possible.Heavily inspired by other open source renderers I aim to support D3D11,D3D12 and OpenGL(Vulkan in the future), this engine strives to be as platform dependent as possible.After initial planned platforms' work has been done,I'm aiming to add more platform support.
