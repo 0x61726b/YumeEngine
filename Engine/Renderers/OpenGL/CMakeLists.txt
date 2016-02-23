@@ -39,6 +39,8 @@ add_definitions(-DBUILDING_YUME_OPENGL)
 
 source_group(Renderer\\\\OpenGL FILES ${SRC_RENDERER_GL})
 
+add_coverage()
+
 add_library(${RENDERER_TARGET} SHARED ${SRC_RENDERER_GL})
 
 target_link_libraries(${RENDERER_TARGET} ${YUME})

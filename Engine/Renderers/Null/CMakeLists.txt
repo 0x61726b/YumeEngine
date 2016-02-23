@@ -29,6 +29,8 @@ add_definitions(-DBUILDING_YUME_NULL)
 
 source_group(Renderer\\\\Null FILES ${SRC_RENDERER_NULL})
 
+add_coverage()
+
 add_library(${RENDERER_TARGET} SHARED ${SRC_RENDERER_NULL})
 
 target_link_libraries(${RENDERER_TARGET} ${YUME})
