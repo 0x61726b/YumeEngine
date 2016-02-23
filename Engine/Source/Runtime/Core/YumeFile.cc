@@ -52,7 +52,7 @@ namespace YumeEngine
 		fileName_ = file;
 		fileMode_ = filemode;
 
-		int fileMode;
+		std::ios_base::openmode fileMode;
 		if(filemode == FILEMODE_READ)
 			fileMode = fs::ifstream::in;
 		else

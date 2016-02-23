@@ -119,7 +119,10 @@ namespace YumeEngine
 
 	const YumeString& YumeEnvironment::GetParameter(const YumeString& param)
 	{
-		return engineConfig_[param];
+		ConfigMap::iterator It = engineConfig_.find(param);
+
+		if(It != engineConfig_.end())
+			return It->second;
 	}
 
 	void YumeEnvironment::ReadAndParseConfig()
