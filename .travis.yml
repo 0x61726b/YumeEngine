@@ -32,6 +32,10 @@ matrix:
     - os: linux
       env: COMPILER=g++-4.8 CMAKE_OPTIONS="-DYUME_BUILD_OPENGL=1 -DYUME_TEST_MODE=1"
       compiler: gcc
+      after_success:
+        - cd Yume
+        - ./TestSuite --testing
+        - sudo codecov --token=9a11d4e0-571e-4df4-bfa6-7295aee52df2
       before_install:
         - sudo pip install codecov
         - set -e
@@ -53,12 +57,9 @@ matrix:
           packages:
             - gcc-4.8
             - g++-4.8
-after_success:
-  - cd Yume
-  - ./TestSuite --testing
-  - sudo codecov --token=9a11d4e0-571e-4df4-bfa6-7295aee52df2
 script:
   - cd ${TRAVIS_BUILD_DIR}
   - ./Engine/Source/3rdParty/log4cplus/configure
   - cd build
   - make
+
