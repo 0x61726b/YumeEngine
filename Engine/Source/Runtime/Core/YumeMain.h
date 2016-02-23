@@ -37,7 +37,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR cmdLine, i
     YumeEngine::ParseArguments(GetCommandLineA()); \
     return function; \
 }
-#elif
+#else
 #define YUME_MAIN(function) \
 int main(int argc, char** argv) \
 { \
