@@ -36,6 +36,8 @@ matrix:
         - cd Yume
         - ./TestSuite --testing
         - cd ${TRAVIS_BUILD_DIR}
+        - find . -type f -name "*.gcno"
+        - find . -type f -name "*.gcda"
         - sudo codecov --token=9a11d4e0-571e-4df4-bfa6-7295aee52df2
       before_install:
         - sudo pip install codecov
