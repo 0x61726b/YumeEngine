@@ -7,19 +7,6 @@ env:
    #   via the "travis encrypt" command using the project repo's public key
    - secure: "p5uIS+AlTfeCxdh2v+c24gSFQhRv1GRu03+Qw5lTus1dHQH/+qbMwRbFrIhNcJcBdL8CmaYmjcOT4HhwD08HlZmoPQaoGc/ZA1Tq6FLELVg1xIRMnMhlB/Q15ocaTL5QFI69FVRtpo1sxH2LsGgSptJWDEIQYt96uWthrr1r1Eh2fprQFm6BRNPwFna5FlRD7uSpL8PeQpzJHmr1Y51qP1gcouJ4wULcqJ7xTtdPcCh59oj/gIhJ6yX2C8DwEGlGzmYpsnow8amXZo4Xzz1k8Qc1Ug1yzRhuEuJFosjjKj9QmWHqFWByt1lLdQFiLNTyKTWIvw+oC+TpiuabVu5kAWXfHRlIRg7WZ754LTJVuqpINTj/rEJToxUf9dxWvUredeE72hc7fAV2y4ETxKYPxY9E+VF3l3KXylHiohQmh/LX5iIekM7mEUMY4OQe/jcECj1GzDeBWFW1ZRVeOiX+BGuuq7z4qXpBeGaGBQlbG8ogi4iYdznsWaFOYodjuZJkypx7bDtfIY9DoR3LpI13yKaC6+DbVAeA9JgEdr5Y9LSYT5hnMySKw0iZFqdoMDuv9IaSyoXQ2iXrgOLoHFohlM9Xb5LumXBdHJ1qBhbOwpnWsRAhN2gs90TTIciHtntIzgDbbrKn+fsovqXlUAkDZByt4LpzukFmBX4mXAxFSTk="
 
-addons:
-  coverity_scan:
-    project:
-      name: "arkenthera/YumeEngine"
-      description: "Modern 3D Renderer"
-    notification_email: arkenthera@gmail.com
-    build_command_prepend: "./Engine/Source/3rdParty/log4cplus/configure"
-    build_command:
-      - cd ${TRAVIS_BUILD_DIR}
-      - cd build
-      - make
-    branch_pattern: coverity_scan
-
 notifications:
   email: false
 
@@ -51,6 +38,18 @@ matrix:
     - os: linux
       env: COMPILER=g++-4.8 CMAKE_OPTIONS="-DYUME_BUILD_OPENGL=1 -DYUME_TEST_MODE=1"
       compiler: gcc
+      addons:
+        coverity_scan:
+          project:
+            name: "arkenthera/YumeEngine"
+            description: "Modern 3D Renderer"
+          notification_email: arkenthera@gmail.com
+          build_command_prepend: "./Engine/Source/3rdParty/log4cplus/configure"
+          build_command:
+            - cd ${TRAVIS_BUILD_DIR}
+            - cd build
+            - make
+          branch_pattern: master
       after_success:
         - cd Yume
         - ./TestSuite --testing
