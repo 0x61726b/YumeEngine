@@ -46,7 +46,7 @@ namespace YumeEngine
 
 		for(XmlNode graphicsChild = graphics.first_child(); graphicsChild; graphicsChild = graphicsChild.next_sibling())
 		{
-			/* TODO Check if values are valid */
+			// #todo - Check if values are valid
 
 			const char* name = graphicsChild.name();
 			const char* val = graphicsChild.text().get();
