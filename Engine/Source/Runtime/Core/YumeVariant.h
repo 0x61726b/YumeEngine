@@ -19,53 +19,53 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeEnvironment_h__
-#define __YumeEnvironment_h__
+#ifndef __YumeVariant_h__
+#define __YumeVariant_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 
-#include <boost/filesystem.hpp>
-
-
+#include <boost/variant.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/contains.hpp>
+#include <boost/utility/enable_if.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeDynamicLibrary;
-	typedef boost::filesystem::path FsPath;
-	typedef YumeMap<YumeString,YumeString>::type ConfigMap;
+	typedef boost::variant<char,int,double,float,bool> YumeVariant;
 
-	class YumeFile;
-
-
-	class YumeAPIExport YumeEnvironment
+	template <typename Visitor,typename TypeList>
+	struct picky_visitor :
+		public boost::static_visitor<void>,
+		public Visitor
 	{
-	public:
-		YumeEnvironment();
-		virtual ~YumeEnvironment();
+		template <typename T>
+		inline void
+			operator () (T v,typename boost::enable_if< typename boost::mpl::contains< TypeList,T >::type >::type *dummy = NULL) const
+		{
+			Visitor::operator () (v);
+		}
 
-		bool Exists(boost::filesystem::path path);
-		bool CreateDirectory(const boost::filesystem::path& path);
+		template <typename T>
+		inline void
+			operator () (T v,typename boost::disable_if<typename boost::mpl::contains< TypeList,T >::type >::type *dummy = NULL) const
+		{
+		}
+	};
+	
 
-		void ReadAndParseConfig();
+	struct example_visitor
+	{
+		typedef picky_visitor< example_visitor,boost::mpl::vector<char,int> > value_type;
 
+		inline void operator () (char v) const
+		{
+			std::cout << "character detected" << std::endl;
+		}
 
-		const FsPath& GetLogFile() { return logFile_; }
-		const FsPath& GetRoot() { return root_; }
-
-		const YumeString& GetParameter(const YumeString&);
-
-		YumeDynamicLibrary* LoadDynLib(const YumeString& name);
-		void UnloadDynLib(YumeDynamicLibrary*);
-	private:
-		ConfigMap engineConfig_;
-	private:
-		boost::filesystem::path		appDataPath_;
-		boost::filesystem::path		root_;
-		boost::filesystem::path		configFile_;
-		boost::filesystem::path		logFile_;
-
-		typedef YumeMap<YumeString,YumeDynamicLibrary*>::type DynLibMap;
-		DynLibMap dynLibMap_;
+		inline void operator () (int v) const
+		{
+			std::cout << "integer detected" << std::endl;
+		}
 	};
 }
 

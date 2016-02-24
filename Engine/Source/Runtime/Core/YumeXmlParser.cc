@@ -24,7 +24,7 @@
 #include "YumeEnvironment.h"
 namespace YumeEngine
 {
-	
+
 
 	YumeMap<YumeString,YumeString>::type Parsers::ParseConfig(const YumeString& content)
 	{
@@ -34,9 +34,26 @@ namespace YumeEngine
 		doc.load(content.c_str());
 
 		XmlNode root = doc.child("Yume");
-		XmlNode renderer = root.child("Renderer");
+		XmlNode graphics = root.child("Graphics");
+		XmlNode renderer = graphics.child("Renderer");
+		XmlNode fullscreen = graphics.child("Fullscreen");
+		XmlNode width = graphics.child("WindowWidth");
+		XmlNode height = graphics.child("WindowHeight");
+		XmlNode borderlessWindow = graphics.child("BorderlessWindow");
+		XmlNode vsync = graphics.child("Vsync");
+		XmlNode tripleBuffer = graphics.child("TripleBuffer");
+		XmlNode multisample = graphics.child("MultiSample");
 
-		ret.insert( ConfigMap::value_type("Renderer",renderer.text().get()));
+		for(XmlNode graphicsChild = graphics.first_child(); graphicsChild; graphicsChild = graphicsChild.next_sibling())
+		{
+			//ToDo(arkenthera): Check if values are valid
+
+			const char* name = graphicsChild.name();
+			const char* val = graphicsChild.text().get();
+
+			ret.insert(ConfigMap::value_type(name,val));
+		}
+
 
 
 		return ret;

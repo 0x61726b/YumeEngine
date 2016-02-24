@@ -118,12 +118,20 @@ namespace YumeEngine
 		graphics_->SetWindowTitle("Yume Engine");
 		graphics_->SetWindowPos(Vector2(250,250));
 
-		if(!graphics_->SetGraphicsMode(1280,720,false,false,false,false,false,1))
+		if(!graphics_->SetGraphicsMode(1280,
+			720,
+			false,
+			false,
+			false,
+			false,
+			false,
+			1))
 			return false;
 
 		frameTimer_.Reset();
 
 		YUMELOG_INFO("Initialized Yume Engine...");
+
 
 		return initialized_;
 	}
@@ -206,7 +214,7 @@ namespace YumeEngine
 		if(lastTimeSteps_.size() > timeStepSmoothing_)
 		{
 			// If the smoothing configuration was changed, ensure correct amount of samples
-			
+
 
 			lastTimeSteps_.erase(lastTimeSteps_.begin() + lastTimeSteps_.size() - timeStepSmoothing_,lastTimeSteps_.end());
 			for(unsigned i = 0; i < lastTimeSteps_.size(); ++i)

@@ -38,10 +38,27 @@ namespace YumeEngine
 		pugi::xml_document doc;
 
 		XmlNode root = doc.append_child("Yume");
-		XmlNode renderer = root.append_child("Renderer");
+		XmlNode graphics = root.append_child("Graphics");
+		XmlNode renderer = graphics.append_child("Renderer");
+		XmlNode fullscreen = graphics.append_child("Fullscreen");
+		XmlNode width = graphics.append_child("WindowWidth");
+		XmlNode height = graphics.append_child("WindowHeight");
+		XmlNode borderlessWindow = graphics.append_child("BorderlessWindow");
+		XmlNode vsync = graphics.append_child("Vsync");
+		XmlNode tripleBuffer = graphics.append_child("TripleBuffer");
+		XmlNode multisample = graphics.append_child("MultiSample");
 
 		//Set default values
 		renderer.text().set("Direct3D11");
+		fullscreen.text().set(0);
+		width.text().set(1280);
+		height.text().set(720);
+		borderlessWindow.text().set(0);
+		vsync.text().set(0);
+		tripleBuffer.text().set(0);
+		multisample.text().set(1);
+		fullscreen.text().set(0);
+
 
 		doc.save_file(path.generic_wstring().c_str());
 	}
