@@ -50,8 +50,8 @@ namespace YumeEngine
 			YumeHiresTimer::supported = true;
 		}
 #else
-		HiresTimer::frequency = 1000000;
-		HiresTimer::supported = true;
+		YumeHiresTimer::frequency = 1000000;
+		YumeHiresTimer::supported = true;
 #endif
 	}
 
