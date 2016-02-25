@@ -127,12 +127,12 @@ namespace YumeEngine
 		graphics_->SetWindowTitle("Yume Engine");
 		graphics_->SetWindowPos(Vector2(250,250));
 
-		YumeFile file(YumeString("D:/Arken/C++/Yume/v2/YumeEngine/Engine/Assets/Textures/appIcon.png"));
+		//YumeFile file(YumeString("D:/Arken/C++/Yume/v2/YumeEngine/Engine/Assets/Textures/appIcon.png"));
 
-		YumeImage* p = new YumeImage;
-		p->BeginLoad(file);
+		//YumeImage* p = new YumeImage;
+		//p->BeginLoad(file);
 
-		graphics_->SetWindowIcon(p);
+		//graphics_->SetWindowIcon(p);
 
 		
 

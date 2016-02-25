@@ -54,11 +54,14 @@ namespace YumeEngine
 		YumeHiresTimer::frequency = 1000000;
 		YumeHiresTimer::supported = true;
 #endif
+
+		
+		
 	}
 
 	YumeTime::~YumeTime()
 	{
-
+		
 	}
 
 	void YumeTime::BeginFrame(float dt)
@@ -68,13 +71,11 @@ namespace YumeEngine
 		++frameNumber_;
 		if(!frameNumber_)
 			++frameNumber_;
-
-
 	}
 
 	void YumeTime::EndFrame()
 	{
-
+		
 	}
 
 	double YumeTime::GetElapsedTime()

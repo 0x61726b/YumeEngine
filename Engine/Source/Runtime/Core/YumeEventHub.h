@@ -19,61 +19,17 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeResourceManager_h__
-#define __YumeResourceManager_h__
+#ifndef __YumeEventHub_h__
+#define __YumeEventHub_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeBackgroundWorker.h"
-#include "YumeResource.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-
-
-	/// Sets to priority so that a package or file is pushed to the end of the vector.
-	static const unsigned PRIORITY_LAST = 0xffffffff;
-
-	/// Container of resources with specific type.
-	struct ResourceGroup
+	enum YumeGeneralEvents
 	{
-		/// Construct with defaults.
-		ResourceGroup():
-			memoryBudget_(0),
-			memoryUse_(0)
-		{
-		}
-
-		/// Memory budget.
-		unsigned long long memoryBudget_;
-		/// Current memory use.
-		unsigned long long memoryUse_;
-		/// Resources.
-		YumeMap<YumeString,boost::shared_ptr<YumeResource> > resources_;
-	};
-
-	/// Resource request types.
-	enum ResourceRequest
-	{
-		RESOURCE_CHECKEXISTS = 0,
-		RESOURCE_GETFILE = 1
-	};
-
-	class YumeAPIExport YumeResourceManager
-	{
-	public:
-		YumeResourceManager();
-
-		void AddResourcePath(const YumeString&);
-
-		bool AddManualResource(YumeResource* resource);
-		boost::shared_ptr<YumeFile> GetFile(const YumeString& name,bool sendEventOnFailure = true);
-
-	private:
-		boost::mutex resourceMutex_;
-		YumeMap<YumeString,ResourceGroup> resourceGroups_;
-		YumeVector<YumeString> resourcePaths_;
-		boost::shared_ptr<YumeBackgroundWorker> backgroundWorker_;
-
+		R_BEGINFRAME,
+		R_ENDFRAME
 	};
 }
 

@@ -265,7 +265,7 @@ namespace YumeEngine
 		resource->SetAsyncLoadingState(ASYNC_DONE);
 
 		// Store to the cache; use same mechanism as for manual resources
-		if(success || owner_->GetReturnFailedResources())
+		if(success)
 			owner_->AddManualResource(resource);
 	}
 

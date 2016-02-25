@@ -23,6 +23,8 @@
 #define __YumeTimer_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+
+#include "YumeEventHub.h"
 #include <boost/timer.hpp>
 
 //----------------------------------------------------------------------------
@@ -73,6 +75,7 @@ namespace YumeEngine
 		/// High-resolution timer frequency.
 		static long long frequency;
 	};
+
 	class YumeAPIExport YumeTime
 	{
 	public:
@@ -92,7 +95,6 @@ namespace YumeEngine
 		int frameNumber_;
 		double timeStep_;
 		boost::timer totalTime_;
-
 	};
 }
 

@@ -114,6 +114,7 @@ set( SRC_CORE_UTILS
 	Core/YumeThread.cc
 	Core/YumeDecompresser.h
 	Core/YumeDecompresser.cc
+	Core/YumeEventHub.h
 )
 set( SRC_CORE_MEMORY
 	Core/YumeMemoryAllocatorSTL.h
@@ -216,7 +217,6 @@ target_link_libraries(${YUME} JO)
 set(YUME_LIBRARIES ${YUME_LIBRARIES} boost_filesystem boost_thread boost_system boost_date_time log4cplus)
 
 include_directories(${Boost_INCLUDE_DIRS})
-
 
 set_target_properties(${YUME} PROPERTIES FOLDER "Yume")
 

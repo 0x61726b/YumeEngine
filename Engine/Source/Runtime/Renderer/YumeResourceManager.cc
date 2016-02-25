@@ -26,7 +26,21 @@
 
 namespace YumeEngine
 {
+
+	static const char* resourceDirs[] =
+	{
+		"Shaders",
+		"Textures",
+		0
+	};
+
 	YumeResourceManager::YumeResourceManager()
+	{
+		backgroundWorker_ = boost::shared_ptr<YumeBackgroundWorker>(YumeAPINew YumeBackgroundWorker(this));
+
+	}
+
+	void YumeResourceManager::AddResourcePath(const YumeString&)
 	{
 
 	}
