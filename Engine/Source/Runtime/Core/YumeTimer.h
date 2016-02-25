@@ -14,7 +14,7 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
+// File : <Filename> YumeGraphics.h
 // Date : 2.19.2016
 // Comments :
 //
@@ -28,6 +28,22 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	/// Low-resolution operating system timer.
+	class YumeAPIExport YumeLowresTimer
+	{
+	public:
+		/// Construct. Get the starting clock value.
+		YumeLowresTimer();
+
+		/// Return elapsed milliseconds and optionally reset.
+		unsigned GetMSec(bool reset);
+		/// Reset the timer.
+		void Reset();
+
+	private:
+		/// Starting clock value in milliseconds.
+		unsigned startTime_;
+	};
 
 	class YumeAPIExport YumeHiresTimer
 	{

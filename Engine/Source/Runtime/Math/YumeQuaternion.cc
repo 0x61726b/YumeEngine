@@ -21,7 +21,7 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeQuaternion.cpp
+/// File : <Filename> YumeQuaternion.cpp
 /// Date : 6.9.2015
 /// Comments : 
 ///--------------------------------------------------------------------------------

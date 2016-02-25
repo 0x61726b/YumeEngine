@@ -14,7 +14,7 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
+// File : <Filename> YumeGraphics.h
 // Date : 2.19.2016
 // Comments :
 //
@@ -22,13 +22,27 @@
 #include "YumeHeaders.h"
 #include "YumeXmlParser.h"
 #include "YumeEnvironment.h"
+
+#include <boost/lexical_cast.hpp>
+
 namespace YumeEngine
 {
-
-
-	YumeMap<YumeString,YumeString>::type Parsers::ParseConfig(const YumeString& content)
+	template <typename T>
+	T CastToType(const YumeString& str)
 	{
-		ConfigMap ret;
+		return boost::lexical_cast<T>(str);
+	}
+
+
+	YumeString GetStringValueFromXPath(const XmlNode& str)
+	{
+		return str.text().get();
+	}
+
+
+	VariantMap Parsers::ParseConfig(const YumeString& content)
+	{
+		VariantMap vm;
 
 		pugi::xml_document doc;
 		doc.load(content.c_str());
@@ -44,18 +58,24 @@ namespace YumeEngine
 		XmlNode tripleBuffer = graphics.child("TripleBuffer");
 		XmlNode multisample = graphics.child("MultiSample");
 
-		for(XmlNode graphicsChild = graphics.first_child(); graphicsChild; graphicsChild = graphicsChild.next_sibling())
-		{
-			// #todo - Check if values are valid
+		vm.insert( VariantMap::value_type("Renderer",YumeVariant(YumeString(renderer.text().get()))));
+		
+		vm.insert( VariantMap::value_type("Fullscreen",YumeVariant(CastToType<bool>(GetStringValueFromXPath(fullscreen)))));
 
-			const char* name = graphicsChild.name();
-			const char* val = graphicsChild.text().get();
+		vm.insert( VariantMap::value_type("WindowWidth",YumeVariant(CastToType<int>(GetStringValueFromXPath(width)))));
 
-			ret.insert(ConfigMap::value_type(name,val));
-		}
+		vm.insert( VariantMap::value_type("WindowHeight",YumeVariant(CastToType<int>(GetStringValueFromXPath(height)))));
 
+		vm.insert( VariantMap::value_type("Borderless",YumeVariant(CastToType<bool>(GetStringValueFromXPath(borderlessWindow)))));
 
+		vm.insert( VariantMap::value_type("Vsync",YumeVariant(CastToType<bool>(GetStringValueFromXPath(vsync)))));
 
-		return ret;
+		vm.insert( VariantMap::value_type("TripleBuffer",YumeVariant(CastToType<int>(GetStringValueFromXPath(tripleBuffer)))));
+
+		vm.insert( VariantMap::value_type("Multisample",YumeVariant(CastToType<int>(GetStringValueFromXPath(multisample)))));
+
+		// #todo - Check if values are valid
+
+		return vm;
 	}
 }

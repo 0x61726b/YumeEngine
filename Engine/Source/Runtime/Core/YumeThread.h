@@ -14,63 +14,60 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : <Filename> YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeApplication_h__
-#define __YumeApplication_h__
+#ifndef __YumeThread_h__
+#define __YumeThread_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeMain.h"
-#include "YumeDefaults.h"
 
-#include <boost/shared_ptr.hpp>
+#ifndef _WIN32
+#include <pthread.h>
+typedef pthread_t ThreadID;
+#else
+typedef unsigned ThreadID;
+#endif
+
+
+#include <boost/thread.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeEngine3D;
-
-	class YumeAPIExport YumeApplication
+	//Just wraps boost::thread and few utility functions
+	class YumeAPIExport YumeThreadWrapper
 	{
 	public:
-		YumeApplication();
-		~YumeApplication();
+		YumeThreadWrapper();
 
-		virtual void Setup() { }
+		virtual ~YumeThreadWrapper();
 
-		virtual void Start() { }
+		virtual void ThreadRunner() = 0;
 
-		virtual void Stop() { }
+		bool Run();
 
-		int Run();
+		void Stop();
+
+		void SetPriority(int priority);
+
+		static void SetMainThread();
+
+		static ThreadID GetCurrentThreadID();
+		/// Return whether is executing in the main thread.
+		static bool IsMainThread();
 
 	protected:
-		boost::shared_ptr<YumeEngine3D> engine_;
+		/// Thread handle.
+		boost::thread* threadHandle;
+		/// Running flag.
+		volatile bool shouldRun_;
 
-		int exitCode_;
+		/// Main thread's thread ID.
+		static ThreadID mainThreadID;
 	};
-
-#define YUME_DEFINE_ENTRY_POINT(className) \
-int RunApplication() \
-	{ \
-    boost::shared_ptr<className> application(new className); \
-    return application->Run(); \
-	} \
-YUME_MAIN(RunApplication());
-
-#define YUME_TEST_SUITE_ENTRY(className) \
-int RunTestSuite() \
-	{ \
-    boost::shared_ptr<className> application(new className); \
-    application->Run(); \
-	application->Stop(); \
-	return 0 \
-	} \
-YUME_MAIN(RunTestSuite());
 }
-
 
 
 //----------------------------------------------------------------------------

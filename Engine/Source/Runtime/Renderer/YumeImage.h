@@ -19,58 +19,15 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeApplication_h__
-#define __YumeApplication_h__
+#ifndef __YumeImage_h__
+#define __YumeImage_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeMain.h"
-#include "YumeDefaults.h"
-
-#include <boost/shared_ptr.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeEngine3D;
 
-	class YumeAPIExport YumeApplication
-	{
-	public:
-		YumeApplication();
-		~YumeApplication();
-
-		virtual void Setup() { }
-
-		virtual void Start() { }
-
-		virtual void Stop() { }
-
-		int Run();
-
-	protected:
-		boost::shared_ptr<YumeEngine3D> engine_;
-
-		int exitCode_;
-	};
-
-#define YUME_DEFINE_ENTRY_POINT(className) \
-int RunApplication() \
-	{ \
-    boost::shared_ptr<className> application(new className); \
-    return application->Run(); \
-	} \
-YUME_MAIN(RunApplication());
-
-#define YUME_TEST_SUITE_ENTRY(className) \
-int RunTestSuite() \
-	{ \
-    boost::shared_ptr<className> application(new className); \
-    application->Run(); \
-	application->Stop(); \
-	return 0 \
-	} \
-YUME_MAIN(RunTestSuite());
 }
-
 
 
 //----------------------------------------------------------------------------

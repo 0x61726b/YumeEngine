@@ -21,7 +21,7 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeMemoryAllocatorNedPooling.h
+/// File : <Filename> YumeMemoryAllocatorNedPooling.h
 /// Date : 8.28.2015
 /// Comments : 
 ///

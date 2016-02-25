@@ -21,7 +21,7 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeVector3.cpp
+/// File : <Filename> YumeVector3.cpp
 /// Date : 6.9.2015
 /// Comments : 
 ///--------------------------------------------------------------------------------

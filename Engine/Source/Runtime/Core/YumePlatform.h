@@ -21,7 +21,7 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumePlatform.h
+/// File : <Filename> YumePlatform.h
 /// Date : 8.27.2015
 /// Comments : Used to identify which platform we are running on.
 ///

@@ -14,7 +14,7 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
+// File : <Filename> YumeGraphics.h
 // Date : 2.19.2016
 // Comments :
 //
@@ -31,7 +31,8 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	typedef boost::variant<char,int,double,float,bool> YumeVariant;
+	typedef boost::variant<int,double,float,bool,YumeString> YumeVariant;
+	typedef YumeMap<YumeString,YumeVariant>::type VariantMap;
 
 	template <typename Visitor,typename TypeList>
 	struct picky_visitor :
@@ -42,7 +43,7 @@ namespace YumeEngine
 		inline void
 			operator () (T v,typename boost::enable_if< typename boost::mpl::contains< TypeList,T >::type >::type *dummy = NULL) const
 		{
-			Visitor::operator () (v);
+			
 		}
 
 		template <typename T>
@@ -55,17 +56,7 @@ namespace YumeEngine
 
 	struct example_visitor
 	{
-		typedef picky_visitor< example_visitor,boost::mpl::vector<char,int> > value_type;
-
-		inline void operator () (char v) const
-		{
-			std::cout << "character detected" << std::endl;
-		}
-
-		inline void operator () (int v) const
-		{
-			std::cout << "integer detected" << std::endl;
-		}
+		typedef picky_visitor< example_visitor,boost::mpl::vector<int,double,float,bool,char*> > value_type;
 	};
 }
 

@@ -14,35 +14,17 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : <Filename> YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeXmlParser_h__
-#define __YumeXmlParser_h__
-//----------------------------------------------------------------------------
-#include "YumeRequired.h"
-#include "YumeVariant.h"
+#include "YumeHeaders.h"
+#include "YumeImage.h"
 
-#include <pugixml/src/pugixml.hpp>
 
-//----------------------------------------------------------------------------
+
 namespace YumeEngine
 {
-	typedef pugi::xml_node XmlNode;
 
-	template <typename T>
-	T CastToType(const YumeString& str);
-
-	YumeString GetStringValueFromXPath(const XmlNode& str);
-
-	namespace Parsers {
-		VariantMap ParseConfig(const YumeString&);
-	}
-	
 }
-
-
-//----------------------------------------------------------------------------
-#endif

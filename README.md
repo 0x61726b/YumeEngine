@@ -2,7 +2,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/w0lrpofmuuycgjso?svg=true)](https://ci.appveyor.com/project/arkenthera/yumeengine)
 [![codecov.io](https://codecov.io/github/arkenthera/YumeEngine/coverage.svg?branch=master)](https://codecov.io/github/arkenthera/YumeEngine?branch=master)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Analytics](https://ga-beacon.appspot.com/UA-74178547-1/welcome-page)](https://github.com/igrigorik/ga-beacon)
+[![Analytics](https://ga-beacon.appspot.com/UA-74178547-1/welcome-page)](https://github.com/arkenthera/YumeEngine)
 [![todofy badge](https://todofy.org/b/arkenthera/YumeEngine/master)](https://todofy.org/r/arkenthera/YumeEngine/master)
 [![Coverity](https://scan.coverity.com/projects/8038/badge.svg)](https://scan.coverity.com/projects/arkenthera-yumeengine)
 

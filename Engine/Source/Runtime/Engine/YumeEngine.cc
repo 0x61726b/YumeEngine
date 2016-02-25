@@ -14,7 +14,7 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
+// File : <Filename> YumeGraphics.h
 // Date : 2.19.2016
 // Comments :
 //
@@ -24,6 +24,7 @@
 #include "Renderer/YumeGraphicsApi.h"
 #include "Renderer/YumeRenderer.h"
 
+#include "YumeVariant.h"
 #include "Core/YumeDynamicLibrary.h"
 #include "Core/YumeEnvironment.h"
 
@@ -96,9 +97,9 @@ namespace YumeEngine
 		YUMELOG_INFO("Running on: " << currentOs.c_str());
 
 		std::string fullRendererLibName;
-		std::string renderer = env_->GetParameter("Renderer");
+		YumeString renderer = env_->GetVariant<YumeString>("Renderer");
 
-		if(env_->GetParameter("testing") == "1")
+		if(env_->GetVariant<bool>("testing"))
 		{
 			renderer = "Null";
 		}

@@ -14,7 +14,7 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
+// File : <Filename> YumeGraphics.h
 // Date : 2.19.2016
 // Comments :
 //
@@ -23,6 +23,7 @@
 #define __YumeEnvironment_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+#include "YumeVariant.h"
 
 #include <boost/filesystem.hpp>
 
@@ -54,10 +55,15 @@ namespace YumeEngine
 
 		const YumeString& GetParameter(const YumeString&);
 
+		template< typename T >
+		T& GetVariant(const YumeString&);
+
 		YumeDynamicLibrary* LoadDynLib(const YumeString& name);
 		void UnloadDynLib(YumeDynamicLibrary*);
 	private:
 		ConfigMap engineConfig_;
+		VariantMap engineVariants_;
+
 	private:
 		boost::filesystem::path		appDataPath_;
 		boost::filesystem::path		root_;

@@ -14,7 +14,7 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
+// File : <Filename> YumeGraphics.h
 // Date : 2.19.2016
 // Comments :
 //
@@ -37,6 +37,7 @@ namespace YumeEngine
 {
 	bool YumeHiresTimer::supported(false);
 	long long YumeHiresTimer::frequency(1000);
+
 
 	YumeTime::YumeTime():
 		frameNumber_(0),
@@ -119,7 +120,7 @@ namespace YumeEngine
 			LARGE_INTEGER counter;
 			QueryPerformanceCounter(&counter);
 			return counter.QuadPart;
-	}
+		}
 		else
 			return timeGetTime();
 #else
@@ -127,6 +128,26 @@ namespace YumeEngine
 		gettimeofday(&time,NULL);
 		return time.tv_sec * 1000000LL + time.tv_usec;
 #endif
+	}
+
+	YumeLowresTimer::YumeLowresTimer()
+	{
+		Reset();
+	}
+
+	unsigned YumeLowresTimer::GetMSec(bool reset)
+	{
+		unsigned currentTime = Tick();
+		unsigned elapsedTime = currentTime - startTime_;
+		if(reset)
+			startTime_ = currentTime;
+
+		return elapsedTime;
+	}
+
+	void YumeLowresTimer::Reset()
+	{
+		startTime_ = Tick();
 	}
 
 	YumeHiresTimer::YumeHiresTimer()

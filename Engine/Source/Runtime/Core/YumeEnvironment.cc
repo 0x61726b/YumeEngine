@@ -14,7 +14,7 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
+// File : <Filename> YumeGraphics.h
 // Date : 2.19.2016
 // Comments :
 //
@@ -71,8 +71,12 @@ namespace YumeEngine
 		for(int i=0; i < commandLine.size(); ++i)
 		{
 			engineConfig_.insert( ConfigMap::value_type(commandLine[i],"1"));
+			engineVariants_.insert( VariantMap::value_type(commandLine[i],YumeVariant("1") ));
 		}
-			
+
+		
+		YumeString& renderer = GetVariant<YumeString>("Renderer");
+		bool testing = GetVariant<bool>("testing");
 	}
 
 	YumeEnvironment::~YumeEnvironment()
@@ -88,6 +92,21 @@ namespace YumeEngine
 		dynLibMap_.clear();
 	}
 
+	template< typename T >
+	T& YumeEnvironment::GetVariant(const YumeString& key)
+	{
+		VariantMap::iterator It = engineVariants_.find(key);
+
+		if( It != engineVariants_.end())
+		{
+			return boost::get<T>(It->second);
+		}
+		else
+		{
+			T obj = T();
+			return obj;
+		}
+	}
 
 	YumeDynamicLibrary* YumeEnvironment::LoadDynLib(const YumeString& name)
 	{
@@ -138,13 +157,13 @@ namespace YumeEngine
 		YumeString configContent = file.Read();
 		file.Close();
 
-		ConfigMap configMap = Parsers::ParseConfig(configContent);
+		VariantMap configMap = Parsers::ParseConfig(configContent);
 
-		ConfigMap::iterator It = configMap.begin();
+		VariantMap::iterator It = configMap.begin();
 
 		for(It;It != configMap.end(); ++It)
 		{
-			engineConfig_.insert(*It);
+			engineVariants_.insert(*It);
 		}
 		
 	}

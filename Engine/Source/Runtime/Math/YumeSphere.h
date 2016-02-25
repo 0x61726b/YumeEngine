@@ -22,7 +22,7 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 /// 
-/// File : YumeSphere.h
+/// File : <Filename> YumeSphere.h
 /// Date : 6.9.2015
 /// Comments : 
 ///--------------------------------------------------------------------------------

@@ -28,6 +28,10 @@ set(SRC_RENDERER
 	Renderer/YumeRendererImpl.h
 	Renderer/YumeGpuResource.h
 	Renderer/YumeGpuResource.cc
+	Renderer/YumeImage.h
+	Renderer/YumeImage.cc
+	Renderer/YumeResource.h
+	Renderer/YumeResource.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h
@@ -97,6 +101,8 @@ set( SRC_CORE_UTILS
 	Core/YumeTimer.h
 	Core/YumeTimer.cc
 	Core/YumeVariant.h
+	Core/YumeThread.h
+	Core/YumeThread.cc
 )
 set( SRC_CORE_MEMORY
 	Core/YumeMemoryAllocatorSTL.h

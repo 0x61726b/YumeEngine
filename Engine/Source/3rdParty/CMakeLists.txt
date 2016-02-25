@@ -35,8 +35,6 @@ ADD_SUBDIRECTORY(pugixml/scripts)
 
 # ADD_SUBDIRECTORY(yume-boost)
 
-ADD_SUBDIRECTORY(Mustache)
-
 if(YUME_BUILD_OPENGL)
   ADD_SUBDIRECTORY(GLEW)
 endif()
@@ -60,7 +58,6 @@ set_target_properties(JO PROPERTIES FOLDER "3rdParty" )
 set_target_properties(JO PROPERTIES FOLDER "3rdParty" )
 
 setup_lib("pugixml")
-
 
 if(OS_LINUX)
   target_compile_options(boost_system PUBLIC "-fPIC")
