@@ -14,82 +14,63 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : <Filename> YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeEngine_h__
-#define __YumeEngine_h__
+#ifndef __YumeBackgroundWorker_h__
+#define __YumeBackgroundWorker_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+#include "Core/YumeThread.h"
 
-#include "Core/YumeTimer.h"
-
-#include <boost/shared_ptr.hpp>
+#include <boost/thread/mutex.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeRenderer;
-	class YumeEnvironment;
-	class YumeDynamicLibrary;
-	class YumeTime;
-	class YumeIO;
+	class YumeResource;
+	class YumeResourceManager;
 
-	class YumeAPIExport YumeEngine3D
+	struct WorkItem
+	{
+		boost::shared_ptr<YumeResource> resource_;
+		
+		YumeSet<std::pair<YumeHash,YumeHash> >::type dependencies_;
+		YumeSet<std::pair<YumeHash,YumeHash> >::type dependents_;
+		bool sendEventOnFailure_;
+	};
+
+	class YumeAPIExport YumeBackgroundWorker : public YumeThreadWrapper
 	{
 	public:
-		YumeEngine3D();
+		YumeBackgroundWorker(YumeResourceManager* cache);
 
-		virtual ~YumeEngine3D();
-		bool Initialize();
+		~YumeBackgroundWorker();
 
-		static YumeEngine3D* Get();
-
-		void Run();
-
-		void Exit();
-
-		void Update();
-		void Render();
-
-		bool LoadExternalLibrary(const YumeString& libName);
-		void UnloadExternalLibrary(const YumeString& libName);
-
-		void UnloadExternalLibraries();
-
-		bool IsExiting() const { return exiting_; }
-
-		void SetRenderer(YumeRenderer* renderer);
-		YumeRenderer* GetRenderer();
+		virtual void ThreadRunner();
 
 
+		bool QueueResource(YumeHash type,const YumeString& name,bool sendEventOnFailure,YumeResource* caller);
 
-	public:
-		boost::shared_ptr<YumeIO> GetIO() const;
+		void WaitForResource(YumeHash type,YumeHash nameHash);
+
+		void FinishResources(int maxMs);
+
+		/// Return amount of resources in the load queue.
+		unsigned GetNumQueuedResources() const;
+
 
 	private:
-		YumeRenderer* graphics_;
+		/// Finish one background loaded resource.
+		void FinishBackgroundLoading(WorkItem& item);
 
-
-		boost::shared_ptr<YumeEnvironment> env_;
-		boost::shared_ptr<YumeTime> timer_;
-		boost::shared_ptr<YumeIO> io_;
-	private:
-		void LimitFrames();
-		unsigned inactiveFps_;
-		unsigned maxFps_;
-		unsigned minFps_;
-		float timeStep_;
-		float timeStepSmoothing_;
-		YumeVector<float>::type lastTimeSteps_;
-		YumeHiresTimer frameTimer_;
-
-		typedef YumeVector<YumeDynamicLibrary*>::type ExtLibList;
-		ExtLibList extLibs_;
-	private:
-		bool initialized_;
-		bool exiting_;
+		/// Resource cache.
+		YumeResourceManager* owner_;
+		/// Mutex for thread-safe access to the background load queue.
+		mutable boost::mutex backgroundLoadMutex_;
+		/// Resources that are queued for background loading.
+		YumeMap<std::pair<YumeHash,YumeHash>,WorkItem>::type backgroundLoadQueue_;
 	};
 }
 

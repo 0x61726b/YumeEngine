@@ -203,3 +203,10 @@ macro( add_coverage )
   	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
   endif()
 endmacro( add_coverage)
+
+macro( copy_assets )
+  add_custom_command(TARGET ${YUME} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    "${CMAKE_SOURCE_DIR}/Engine/Assets"
+                  "${CMAKE_BINARY_DIR}/Engine/Assets" COMMENT "Copying assets...")
+endmacro( copy_assets )

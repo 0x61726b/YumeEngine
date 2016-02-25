@@ -25,6 +25,7 @@
 #include "YumeRequired.h"
 #include "YumeVariant.h"
 
+#include "YumeIO.h"
 #include <boost/filesystem.hpp>
 
 
@@ -32,7 +33,6 @@
 namespace YumeEngine
 {
 	class YumeDynamicLibrary;
-	typedef boost::filesystem::path FsPath;
 	typedef YumeMap<YumeString,YumeString>::type ConfigMap;
 
 	class YumeFile;
@@ -52,6 +52,7 @@ namespace YumeEngine
 
 		const FsPath& GetLogFile() { return logFile_; }
 		const FsPath& GetRoot() { return root_; }
+		const FsPath& GetAssetsPath() { return assetsPath_;}
 
 		YumeVariant GetVariant(const YumeString&);
 

@@ -168,6 +168,7 @@ namespace YumeEngine
 	};
 
 	typedef YumeVector<YumeString>::type StringVector;
+	typedef size_t YumeHash;
 }
 
 namespace YumeEngine

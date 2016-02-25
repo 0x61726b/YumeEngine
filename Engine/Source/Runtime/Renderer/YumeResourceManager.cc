@@ -14,34 +14,30 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : <Filename> YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeIO_h__
-#define __YumeIO_h__
-//----------------------------------------------------------------------------
-#include "YumeRequired.h"
+#include "YumeHeaders.h"
+#include "YumeResourceManager.h"
 
-#include <boost/filesystem.hpp>
-//----------------------------------------------------------------------------
+
+
 namespace YumeEngine
 {
-	typedef boost::filesystem::path FsPath;
-
-	class YumeAPIExport YumeIO : public GeneralObjAlloc
+	YumeResourceManager::YumeResourceManager()
 	{
-	public:
-		YumeIO();
-		virtual ~YumeIO();
 
-		FsPath GetBinaryRoot();
-		FsPath GetCurrentPath() const;
-	};
+	}
 
+	boost::shared_ptr<YumeFile> YumeResourceManager::GetFile(const YumeString& name,bool sendEventOnFailure)
+	{
+		return boost::shared_ptr<YumeFile>();
+	}
+
+	bool YumeResourceManager::AddManualResource(YumeResource* resource)
+	{
+		return false;
+	}
 }
-
-
-//----------------------------------------------------------------------------
-#endif

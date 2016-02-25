@@ -21,7 +21,8 @@
 //----------------------------------------------------------------------------
 #include "Common.h"
 
-
+#include "Engine/YumeEngine.h"
+#include "Renderer/YumeRenderer.h"
 
 namespace YumeEngine
 {
@@ -34,6 +35,11 @@ namespace YumeEngine
 	{
 	}
 
+	void BaseApplication::SetupWindowProperties()
+	{
+		engine_->GetRenderer()->SetWindowTitle("Yume Engine Sample App");
+	}
+
 	void BaseApplication::Setup()
 	{
 		//Set engine parameters
@@ -41,6 +47,9 @@ namespace YumeEngine
 
 	void BaseApplication::Start()
 	{
+		SetupWindowProperties();
+
+		
 	}
 
 	void BaseApplication::Exit()

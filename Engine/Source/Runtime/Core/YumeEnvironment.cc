@@ -26,6 +26,8 @@
 #include "Core/YumeXmlParser.h"
 #include "Core/YumeDefaults.h"
 
+#include "Engine/YumeEngine.h"
+
 #include "YumeDynamicLibrary.h"
 
 #include "Logging/logging.h"
@@ -63,18 +65,18 @@ namespace YumeEngine
 		configFile_ = root_ / "Yume.config";
 		logFile_ = root_ / "Yume.log";
 
-		FsPath currentPath = boost::filesystem::current_path();
+		FsPath absPath = YumeEngine3D::Get()->GetIO()->GetBinaryRoot();
 
-		assetsPath_ = currentPath / ".." / ".." / ".." / "Engine" / "Assets";
+		assetsPath_ = absPath / "Engine" / "Assets";
+
 		ReadAndParseConfig();
 
 		//Append command line arguments to engine config
 		StringVector commandLine = GetArguments();
 
 		for(int i=0; i < commandLine.size(); ++i)
-		{
-			engineConfig_.insert(ConfigMap::value_type(commandLine[i],"1"));
-			/*engineVariants_.insert( VariantMap::value_type(commandLine[i],YumeVariant("1") ));*/
+		{	
+			engineVariants_.insert( VariantMap::value_type(commandLine[i],YumeVariant("1") ));
 		}
 	}
 

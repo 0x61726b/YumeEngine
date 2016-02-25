@@ -35,6 +35,8 @@ namespace YumeEngine
 		virtual void Setup();
 		virtual void Start();
 		virtual void Exit();
+
+		void SetupWindowProperties();
 	};
 }
 

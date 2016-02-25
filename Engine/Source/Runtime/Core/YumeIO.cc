@@ -33,5 +33,21 @@ namespace YumeEngine
 	YumeIO::~YumeIO()
 	{
 	}
+	FsPath YumeIO::GetBinaryRoot()
+	{
+		FsPath current = GetCurrentPath();
 
+		//ToDo(arkenthera) fix this by working around Debug/Release that vs uses
+#if YUME_PLATFORM == YUME_PLATFORM_WIN32
+		FsPath root = current / ".." / ".." / "..";
+#else
+		FsPath root = current / ".." / "..";
+#endif
+		return boost::filesystem::absolute(root);
+	}
+
+	boost::filesystem::path YumeIO::GetCurrentPath() const
+	{
+		return boost::filesystem::current_path();
+	}
 }

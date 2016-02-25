@@ -32,6 +32,10 @@ set(SRC_RENDERER
 	Renderer/YumeImage.cc
 	Renderer/YumeResource.h
 	Renderer/YumeResource.cc
+	Renderer/YumeBackgroundWorker.h
+	Renderer/YumeBackgroundWorker.cc
+	Renderer/YumeResourceManager.h
+	Renderer/YumeResourceManager.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h
@@ -223,3 +227,5 @@ set_target_properties( ${YUME} SDL2 SDL2main
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
 )
+
+copy_assets()

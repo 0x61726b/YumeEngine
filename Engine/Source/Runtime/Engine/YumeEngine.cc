@@ -36,6 +36,8 @@
 #include "Math/YumeVector2.h"
 #include "Logging/logging.h"
 
+#include "Core/YumeIO.h"
+
 #include <log4cplus/initializer.h>
 
 #include <boost/filesystem.hpp>
@@ -79,8 +81,11 @@ namespace YumeEngine
 
 		initialized_ = true;
 
-		env_ = boost::shared_ptr<YumeEnvironment>(YumeAPINew YumeEnvironment);
+		io_ = boost::shared_ptr<YumeIO>(YumeAPINew YumeIO);
 		timer_ = boost::shared_ptr<YumeTime>(YumeAPINew YumeTime);
+		env_ = boost::shared_ptr<YumeEnvironment>(YumeAPINew YumeEnvironment);
+		
+		
 
 		YumeEngine::Log::InitLogging(env_->GetLogFile().generic_string().c_str());
 
@@ -302,6 +307,11 @@ namespace YumeEngine
 			env_->UnloadDynLib(*i);
 		}
 		extLibs_.clear();
+	}
+
+	boost::shared_ptr<YumeIO> YumeEngine3D::GetIO() const
+	{
+		return io_;
 	}
 
 	void YumeEngine3D::SetRenderer(YumeRenderer* renderer)

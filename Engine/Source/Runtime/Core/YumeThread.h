@@ -58,6 +58,8 @@ namespace YumeEngine
 		/// Return whether is executing in the main thread.
 		static bool IsMainThread();
 
+		bool IsStarted() const { return threadHandle != 0; }
+
 	protected:
 		/// Thread handle.
 		boost::thread* threadHandle;
