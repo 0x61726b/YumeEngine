@@ -50,7 +50,7 @@ namespace YumeEngine
 
 		bool BeginFrame();
 		void EndFrame();
-		void Clear(unsigned flags, const Vector4& color = Vector4(0.0f, 1.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
+		void Clear(unsigned flags, const Vector4& color = Vector4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
 
 		bool CreateD3D11Device(int width,int height,int multisample);
 		bool UpdateSwapchain(int width,int height);

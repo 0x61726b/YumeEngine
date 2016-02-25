@@ -14,61 +14,31 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : <Filename> YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeFile_h__
-#define __YumeFile_h__
+#ifndef __YumeDecompresser_h__
+#define __YumeDecompresser_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
+#include "Renderer/YumeImage.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	enum FileMode
-	{
-		FILEMODE_READ,
-		FILEMODE_WRITE,
-		FILEMODE_READWRITE
-	};
-	class YumeAPIExport YumeFile : public GeneralObjAlloc
-	{
-	public:
-		YumeFile(const std::string& file,FileMode = FILEMODE_READ);
-		YumeFile(const boost::filesystem::path& file,FileMode = FILEMODE_READ);
-
-		virtual ~YumeFile();
-
-		bool Open(const std::string& file,FileMode filemode = FILEMODE_READ);
-		unsigned Read(void* dest,int size);
-
-		void Write(const YumeString& str);
-		unsigned Write(const void* str,unsigned len);
-
-		YumeString Read();
-
-		unsigned GetSize();
-
-		void Seek(unsigned);
-
-		void Close();
-		const YumeString& GetName() const { return fileName_; }
-
-
-		YumeString GetFileExtension();
-	private:
-		YumeString fileName_;
-		FileMode fileMode_;
-
-		unsigned int position_;
-		unsigned int size_;
-
-		boost::filesystem::fstream fileStream;
-	};
+	/// Decompress a DXT compressed image to RGBA.
+	YumeAPIExport void
+		DecompressImageDXT(unsigned char* dest,const void* blocks,int width,int height,int depth,CompressedFormat format);
+	/// Decompress an ETC1 compressed image to RGBA.
+	YumeAPIExport void DecompressImageETC(unsigned char* dest,const void* blocks,int width,int height);
+	/// Decompress a PVRTC compressed image to RGBA.
+	YumeAPIExport void DecompressImagePVRTC(unsigned char* dest,const void* blocks,int width,int height,CompressedFormat format);
+	/// Flip a compressed block vertically.
+	YumeAPIExport void FlipBlockVertical(unsigned char* dest,unsigned char* src,CompressedFormat format);
+	/// Flip a compressed block horizontally.
+	YumeAPIExport void FlipBlockHorizontal(unsigned char* dest,unsigned char* src,CompressedFormat format);
 }
 
 

@@ -115,11 +115,11 @@ namespace YumeEngine
 			D3D_SAFE_RELEASE(impl_->debug_);
 		}
 
-		if(impl_->window_)
+		if(window_)
 		{
 			SDL_ShowCursor(SDL_TRUE);
-			SDL_DestroyWindow(impl_->window_);
-			impl_->window_ = 0;
+			SDL_DestroyWindow(window_);
+			window_ = 0;
 		}
 
 		delete impl_;
@@ -135,7 +135,7 @@ namespace YumeEngine
 		if(!IsInitialized())
 			return false;
 
-		if(fullscreen_ && (SDL_GetWindowFlags(impl_->window_) & SDL_WINDOW_MINIMIZED))
+		if(fullscreen_ && (SDL_GetWindowFlags(window_) & SDL_WINDOW_MINIMIZED))
 			return false;
 
 		numPrimitives_	= 0;
@@ -297,16 +297,16 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::SetWindowPos(const Vector2& pos)
 	{
-		if(impl_->window_)
-			SDL_SetWindowPosition(impl_->window_,pos.x,pos.y);
+		if(window_)
+			SDL_SetWindowPosition(window_,pos.x,pos.y);
 		else
 			windowPos_ = pos; // Sets as initial position for OpenWindow()
 	}
 	void YumeD3D11Renderer::SetWindowTitle(const YumeString& title)
 	{
 		windowTitle_ = title;
-		if(impl_->window_)
-			SDL_SetWindowTitle(impl_->window_,title.c_str());
+		if(window_)
+			SDL_SetWindowTitle(window_,title.c_str());
 	}
 	bool YumeD3D11Renderer::OpenWindow(int width,int height,bool resizable,bool borderless)
 	{
@@ -316,16 +316,16 @@ namespace YumeEngine
 		if(borderless)
 			flags |= SDL_WINDOW_BORDERLESS;
 
-		impl_->window_ = SDL_CreateWindow(windowTitle_.c_str(),windowPos_.x,windowPos_.y,width,height,flags);
+		window_ = SDL_CreateWindow(windowTitle_.c_str(),windowPos_.x,windowPos_.y,width,height,flags);
 
-		if(!impl_->window_)
+		if(!window_)
 		{
 			YUMELOG_ERROR("Rendering window couldn't be created! Error:" << std::endl << SDL_GetError());
 			return false;
 		}
 		int *x = new int;
 		int *y = new int;
-		SDL_GetWindowPosition(impl_->window_,x,y);
+		SDL_GetWindowPosition(window_,x,y);
 
 		windowPos_.x = (float)*x;
 		windowPos_.y = (float)*y;
@@ -338,23 +338,23 @@ namespace YumeEngine
 	{
 		if(!newWidth || !newHeight)
 		{
-			SDL_MaximizeWindow(impl_->window_);
-			SDL_GetWindowSize(impl_->window_,&newWidth,&newHeight);
+			SDL_MaximizeWindow(window_);
+			SDL_GetWindowSize(window_,&newWidth,&newHeight);
 		}
 		else
-			SDL_SetWindowSize(impl_->window_,newWidth,newHeight);
+			SDL_SetWindowSize(window_,newWidth,newHeight);
 
-		SDL_SetWindowFullscreen(impl_->window_,newFullscreen ? SDL_TRUE : SDL_FALSE);
-		SDL_SetWindowBordered(impl_->window_,newBorderless ? SDL_FALSE : SDL_TRUE);
+		SDL_SetWindowFullscreen(window_,newFullscreen ? SDL_TRUE : SDL_FALSE);
+		SDL_SetWindowBordered(window_,newBorderless ? SDL_FALSE : SDL_TRUE);
 	}
 
 	void YumeD3D11Renderer::Close()
 	{
-		if(impl_->window_)
+		if(window_)
 		{
 			SDL_ShowCursor(SDL_TRUE);
-			SDL_DestroyWindow(impl_->window_);
-			impl_->window_ = 0;
+			SDL_DestroyWindow(window_);
+			window_ = 0;
 		}
 	}
 
@@ -399,7 +399,7 @@ namespace YumeEngine
 
 		SDL_SetHint(SDL_HINT_ORIENTATIONS,"LandscapeLeft");
 
-		if(!impl_->window_)
+		if(!window_)
 		{
 			if(!OpenWindow(width,height,resizable,borderless))
 				return false;
@@ -428,12 +428,14 @@ namespace YumeEngine
 			}
 		}
 
+		YumeRenderer::SetGraphicsMode(width,height,fullscreen,borderless,resizable,vsync,tripleBuffer,multiSample);
+
 		AdjustWindow(width,height,fullscreen,borderless);
 
 		if(maximize)
 		{
 			Maximize();
-			SDL_GetWindowSize(impl_->window_,&width,&height);
+			SDL_GetWindowSize(window_,&width,&height);
 		}
 
 		if(!impl_->device_ || multiSample_ != multiSample)
@@ -516,7 +518,7 @@ namespace YumeEngine
 		swapChainDesc.BufferDesc.Height = (UINT)height;
 		swapChainDesc.BufferDesc.Format = sRGB_ ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.OutputWindow = GetWindowHandle(impl_->window_);
+		swapChainDesc.OutputWindow = GetWindowHandle(window_);
 		swapChainDesc.SampleDesc.Count = (UINT)multisample;
 		swapChainDesc.SampleDesc.Quality = multisample > 1 ? 0xffffffff : 0;
 		swapChainDesc.Windowed = TRUE;
@@ -531,7 +533,7 @@ namespace YumeEngine
 		HRESULT hr = dxgiFactory->CreateSwapChain(impl_->device_,&swapChainDesc,&impl_->swapChain_);
 		// After creating the swap chain, disable automatic Alt-Enter fullscreen/windowed switching
 		// (the application will switch manually if it wants to)
-		dxgiFactory->MakeWindowAssociation(GetWindowHandle(impl_->window_),DXGI_MWA_NO_ALT_ENTER);
+		dxgiFactory->MakeWindowAssociation(GetWindowHandle(window_),DXGI_MWA_NO_ALT_ENTER);
 
 		dxgiFactory->Release();
 		dxgiAdapter->Release();
@@ -650,10 +652,10 @@ namespace YumeEngine
 	}
 	void YumeD3D11Renderer::Maximize()
 	{
-		if(!impl_->window_)
+		if(!window_)
 			return;
 
-		SDL_MaximizeWindow(impl_->window_);
+		SDL_MaximizeWindow(window_);
 	}
 
 	YumeVector<Vector2>::type YumeD3D11Renderer::GetScreenResolutions()

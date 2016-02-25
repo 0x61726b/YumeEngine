@@ -21,18 +21,50 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 
+#include "YumeImage.h"
+
 #include "YumeRenderer.h"
 #include "YumeGpuResource.h"
 
 
 namespace YumeEngine
 {
-	YumeRenderer::YumeRenderer()
+	YumeRenderer::YumeRenderer():
+		windowIcon_(0),
+		window_(0)
 	{
 
 	}
 	YumeRenderer::~YumeRenderer()
 	{
+		YumeAPIDelete windowIcon_;
+	}
 
+	bool YumeRenderer::SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
+			int multiSample)
+	{
+		CreateWindowIcon();
+
+		return true;
+	}
+	void YumeRenderer::SetWindowIcon(YumeImage* image)
+	{
+		windowIcon_ = image;
+
+		if(window_)
+			CreateWindowIcon();
+	}
+
+	void YumeRenderer::CreateWindowIcon()
+	{
+		if(windowIcon_)
+		{
+			SDL_Surface* surface = windowIcon_->GetSDLSurface();
+			if(surface)
+			{
+				SDL_SetWindowIcon(window_,surface);
+				SDL_FreeSurface(surface);
+			}
+		}
 	}
 }

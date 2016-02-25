@@ -32,13 +32,13 @@ namespace fs = boost::filesystem;
 namespace YumeEngine
 {
 	YumeFile::YumeFile(const YumeString& file,FileMode fileMode)
-		: fileName_(file),fileMode_(fileMode)
+		: fileName_(file),fileMode_(fileMode),position_(0),size_(0)
 	{
 		Open(fileName_,fileMode_);
 	}
 
 	YumeFile::YumeFile(const boost::filesystem::path& file,FileMode filemode) :
-		fileName_(file.generic_string()),fileMode_(filemode)
+		fileName_(file.generic_string()),fileMode_(filemode),position_(0),size_(0)
 	{
 		Open(fileName_,fileMode_);
 	}
@@ -62,8 +62,9 @@ namespace YumeEngine
 
 		if(fs::exists(p))
 		{
-			fileStream.open(p,std::fstream::in);
+			fileStream.open(p,std::fstream::in | std::fstream::binary);
 
+			size_ = GetSize();
 
 			return fileStream.is_open();
 		}
@@ -92,8 +93,15 @@ namespace YumeEngine
 
 	unsigned YumeFile::Read(void* dest,int size)
 	{
+		if(size + position_ > size_)
+			size = size_ - position_;
+		if(!size)
+			return 0;
+
 		char* destPtr = (char*)dest;
 		fileStream.read(destPtr,size);
+
+		position_ += size;
 
 		return size;
 	}
@@ -109,6 +117,40 @@ namespace YumeEngine
 		}
 		return sstr.str();
 	}
+	unsigned YumeFile::Write(const void* str,unsigned size)
+	{
+		if(fileMode_ == FILEMODE_READ)
+		{
+			YUMELOG_ERROR("File isn't open for writing!");
+			return 0;
+		}
 
+		if(!size)
+			return 0;
+
+		fileStream.write((char*)str,size);
+		fileStream.flush();
+
+		return size;
+	}
+
+	void YumeFile::Seek(unsigned s)
+	{
+		fileStream.seekg(s);
+		position_ = s;
+	}
+
+	unsigned YumeFile::GetSize()
+	{
+		return boost::filesystem::file_size(fileName_);
+	}
+
+	YumeString YumeFile::GetFileExtension()
+	{
+		YumeString ret;
+		ret.resize(4);
+		Read(&ret[0],4);
+		return ret;
+	}
 
 }

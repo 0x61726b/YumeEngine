@@ -26,11 +26,15 @@
 #include "Renderer/YumeRendererDefs.h"
 
 #include "Math/YumeVector4.h"
+
+#include <SDL.h>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class YumeGpuResource;
 	class YumeRendererImpl;
+	class YumeImage;
+
 
 	class YumeAPIExport YumeRenderer : public RenderObjAlloc
 	{
@@ -44,7 +48,7 @@ namespace YumeEngine
 
 		virtual bool BeginFrame() = 0;
 		virtual void EndFrame() = 0;
-		virtual void Clear(unsigned flags,const Vector4& color = Vector4(0.0f,1.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) = 0;
+		virtual void Clear(unsigned flags,const Vector4& color = Vector4(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) = 0;
 
 		virtual void ResetRenderTargets() = 0;
 		virtual void SetViewport(const Vector4&) = 0;
@@ -63,6 +67,16 @@ namespace YumeEngine
 
 		virtual void AddGpuResource(YumeGpuResource* object) = 0;
 		virtual void RemoveGpuResource(YumeGpuResource* object) = 0;
+
+		void SetWindowIcon(YumeImage* image);
+
+	protected:
+		void CreateWindowIcon();
+
+	protected:
+		SDL_Window* window_;
+
+		YumeImage*	windowIcon_;
 	};
 }
 

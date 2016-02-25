@@ -60,6 +60,10 @@ set( SRC_MATH
 	Math/YumeAxisAlignedBox.h
 	Math/YumeMath.h
 	Math/YumeMath.cc
+	Math/YumeRect.h
+	Math/YumeRect.cc
+	Math/YumeColor.h
+	Math/YumeColor.cc
 )
 
 set( SRC_CORE
@@ -101,8 +105,11 @@ set( SRC_CORE_UTILS
 	Core/YumeTimer.h
 	Core/YumeTimer.cc
 	Core/YumeVariant.h
+	Core/YumeVariant.cc
 	Core/YumeThread.h
 	Core/YumeThread.cc
+	Core/YumeDecompresser.h
+	Core/YumeDecompresser.cc
 )
 set( SRC_CORE_MEMORY
 	Core/YumeMemoryAllocatorSTL.h
@@ -199,6 +206,8 @@ link_boost_library(${YUME} date_time)
 target_link_libraries(${YUME} SDL2)
 target_link_libraries(${YUME} SDL2main)
 target_link_libraries(${YUME} pugixml)
+target_link_libraries(${YUME} STB)
+target_link_libraries(${YUME} JO)
 
 set(YUME_LIBRARIES ${YUME_LIBRARIES} boost_filesystem boost_thread boost_system boost_date_time log4cplus)
 

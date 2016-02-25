@@ -27,8 +27,7 @@
 namespace YumeEngine
 {
 	YumeD3D11RendererImpl::YumeD3D11RendererImpl()
-		: window_(0),
-		device_(0),
+		: device_(0),
 		debug_(0),
 		deviceContext_(0),
 		swapChain_(0),

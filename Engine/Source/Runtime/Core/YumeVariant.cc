@@ -14,30 +14,41 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
+#include "YumeVariant.h"
 
-#include "Renderer/YumeGraphicsApi.h"
-#include "YumeGLRendererImpl.h"
-
+#include <boost/mpl/contains.hpp>
 
 
 namespace YumeEngine
 {
-    YumeGLRendererImpl::YumeGLRendererImpl() :
-      context_(0),
-      systemFBO_(0),
-      activeTexture_(0),
-      enabledAttributes_(0),
-      boundFBO_(0),
-      boundVBO_(0),
-      boundUBO_(0),
-      pixelFormat_(0),
-      fboDirty_(false)
-  {
-  }
+	template <> int YumeVariant::Get<int>() const
+	{
+		return boost::get<int>(inner_);
+	}
+
+	template <> double YumeVariant::Get<double>() const
+	{
+		return boost::get<double>(inner_);
+	}
+
+	template <> float YumeVariant::Get<float>() const
+	{
+		return boost::get<float>(inner_);
+	}
+
+	template <> bool YumeVariant::Get<bool>() const
+	{
+		return boost::get<bool>(inner_);
+	}
+
+	template <> YumeString YumeVariant::Get<YumeString>() const
+	{
+		return boost::get<YumeString>(inner_);
+	}
 }

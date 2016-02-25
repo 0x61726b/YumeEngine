@@ -63,6 +63,9 @@ namespace YumeEngine
 		configFile_ = root_ / "Yume.config";
 		logFile_ = root_ / "Yume.log";
 
+		FsPath currentPath = boost::filesystem::current_path();
+
+		assetsPath_ = currentPath / ".." / ".." / ".." / "Engine" / "Assets";
 		ReadAndParseConfig();
 
 		//Append command line arguments to engine config
@@ -70,13 +73,9 @@ namespace YumeEngine
 
 		for(int i=0; i < commandLine.size(); ++i)
 		{
-			engineConfig_.insert( ConfigMap::value_type(commandLine[i],"1"));
-			engineVariants_.insert( VariantMap::value_type(commandLine[i],YumeVariant("1") ));
+			engineConfig_.insert(ConfigMap::value_type(commandLine[i],"1"));
+			/*engineVariants_.insert( VariantMap::value_type(commandLine[i],YumeVariant("1") ));*/
 		}
-
-		
-		YumeString& renderer = GetVariant<YumeString>("Renderer");
-		bool testing = GetVariant<bool>("testing");
 	}
 
 	YumeEnvironment::~YumeEnvironment()
@@ -92,22 +91,6 @@ namespace YumeEngine
 		dynLibMap_.clear();
 	}
 
-	template< typename T >
-	T& YumeEnvironment::GetVariant(const YumeString& key)
-	{
-		VariantMap::iterator It = engineVariants_.find(key);
-
-		if( It != engineVariants_.end())
-		{
-			return boost::get<T>(It->second);
-		}
-		else
-		{
-			T obj = T();
-			return obj;
-		}
-	}
-
 	YumeDynamicLibrary* YumeEnvironment::LoadDynLib(const YumeString& name)
 	{
 		DynLibMap::iterator i = dynLibMap_.find(name);
@@ -120,7 +103,7 @@ namespace YumeEngine
 			YumeDynamicLibrary* pLib = YumeAPINew YumeDynamicLibrary(name);
 			if(!pLib->Load())
 				return NULL;
-            dynLibMap_.insert( std::make_pair(name,pLib) );
+			dynLibMap_.insert(std::make_pair(name,pLib));
 			return pLib;
 		}
 	}
@@ -136,14 +119,13 @@ namespace YumeEngine
 		YumeAPIDelete lib;
 	}
 
-	const YumeString& YumeEnvironment::GetParameter(const YumeString& param)
+	YumeVariant YumeEnvironment::GetVariant(const YumeString& key)
 	{
-		ConfigMap::iterator It = engineConfig_.find(param);
+		VariantMap::iterator It = engineVariants_.find(key);
 
-		if(It != engineConfig_.end())
+		if(It != engineVariants_.end())
 			return It->second;
-		else
-			return "-";
+		return YumeVariant(false);
 	}
 
 	void YumeEnvironment::ReadAndParseConfig()

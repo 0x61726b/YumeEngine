@@ -53,10 +53,7 @@ namespace YumeEngine
 		const FsPath& GetLogFile() { return logFile_; }
 		const FsPath& GetRoot() { return root_; }
 
-		const YumeString& GetParameter(const YumeString&);
-
-		template< typename T >
-		T& GetVariant(const YumeString&);
+		YumeVariant GetVariant(const YumeString&);
 
 		YumeDynamicLibrary* LoadDynLib(const YumeString& name);
 		void UnloadDynLib(YumeDynamicLibrary*);
@@ -69,11 +66,13 @@ namespace YumeEngine
 		boost::filesystem::path		root_;
 		boost::filesystem::path		configFile_;
 		boost::filesystem::path		logFile_;
+		boost::filesystem::path		assetsPath_;
 
 		typedef YumeMap<YumeString,YumeDynamicLibrary*>::type DynLibMap;
 		DynLibMap dynLibMap_;
 	};
 }
+
 
 
 //----------------------------------------------------------------------------

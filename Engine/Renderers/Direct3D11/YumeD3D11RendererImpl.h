@@ -51,12 +51,8 @@ namespace YumeEngine
 
 		/// Return swapchain.
 		IDXGISwapChain* GetSwapChain() const { return swapChain_; }
-
-		/// Return window.
-		SDL_Window* GetWindow() const { return window_; }
-
 	private:
-		SDL_Window* window_;
+		
 
 		ID3D11Device* device_;
 

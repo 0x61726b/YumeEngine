@@ -31,33 +31,55 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	typedef boost::variant<int,double,float,bool,YumeString> YumeVariant;
+	typedef boost::variant<int,double,float,bool,YumeString> Variant;
+	class YumeVariant;
 	typedef YumeMap<YumeString,YumeVariant>::type VariantMap;
 
-	template <typename Visitor,typename TypeList>
-	struct picky_visitor :
-		public boost::static_visitor<void>,
-		public Visitor
+	class YumeAPIExport YumeVariant
 	{
-		template <typename T>
-		inline void
-			operator () (T v,typename boost::enable_if< typename boost::mpl::contains< TypeList,T >::type >::type *dummy = NULL) const
+	public:
+		YumeVariant()
 		{
-			
+			inner_ = Variant(false);
 		}
-
-		template <typename T>
-		inline void
-			operator () (T v,typename boost::disable_if<typename boost::mpl::contains< TypeList,T >::type >::type *dummy = NULL) const
+		YumeVariant(int var)
 		{
-		}
-	};
-	
+			inner_ = Variant(var);
+		};
 
-	struct example_visitor
-	{
-		typedef picky_visitor< example_visitor,boost::mpl::vector<int,double,float,bool,char*> > value_type;
+		YumeVariant(double var)
+		{
+			inner_ = Variant(var);
+		};
+
+		YumeVariant(float var)
+		{
+			inner_ = Variant(var);
+		};
+
+		YumeVariant(bool var)
+		{
+			inner_ = Variant(var);
+		};
+
+		YumeVariant(YumeString var)
+		{
+			inner_ = Variant(var);
+		};
+
+		
+		template< class T> T Get() const;
+		
+
+	protected:
+		Variant inner_;
 	};
+
+	template <> YumeAPIExport int YumeVariant::Get<int>() const;
+	template <> YumeAPIExport double YumeVariant::Get<double>() const;
+	template <> YumeAPIExport float YumeVariant::Get<float>() const;
+	template <> YumeAPIExport bool YumeVariant::Get<bool>() const;
+	template <> YumeAPIExport YumeString YumeVariant::Get<YumeString>() const;
 }
 
 

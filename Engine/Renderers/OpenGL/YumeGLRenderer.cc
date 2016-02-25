@@ -99,11 +99,11 @@ namespace YumeEngine
 			gpuResources_.clear();
 		}
 
-		if(impl_->window_)
+		if(window_)
 		{
 			SDL_ShowCursor(SDL_TRUE);
-			SDL_DestroyWindow(impl_->window_);
-			impl_->window_ = 0;
+			SDL_DestroyWindow(window_);
+			window_ = 0;
 		}
 
 		delete impl_;
@@ -119,7 +119,7 @@ namespace YumeEngine
 		if(!IsInitialized())
 			return false;
 
-		if(fullscreen_ && (SDL_GetWindowFlags(impl_->window_) & SDL_WINDOW_MINIMIZED))
+		if(fullscreen_ && (SDL_GetWindowFlags(window_) & SDL_WINDOW_MINIMIZED))
 			return false;
 
 		numPrimitives_	= 0;
@@ -271,39 +271,39 @@ namespace YumeEngine
 
 	void YumeGLRenderer::SetWindowPos(const Vector2& pos)
 	{
-		if(impl_->window_)
-			SDL_SetWindowPosition(impl_->window_,pos.x,pos.y);
+		if(window_)
+			SDL_SetWindowPosition(window_,pos.x,pos.y);
 		else
 			windowPos_ = pos; // Sets as initial position for OpenWindow()
 	}
 	void YumeGLRenderer::SetWindowTitle(const YumeString& title)
 	{
 		windowTitle_ = title;
-		if(impl_->window_)
-			SDL_SetWindowTitle(impl_->window_,title.c_str());
+		if(window_)
+			SDL_SetWindowTitle(window_,title.c_str());
 	}
 
 	void YumeGLRenderer::AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless)
 	{
 		if(!newWidth || !newHeight)
 		{
-			SDL_MaximizeWindow(impl_->window_);
-			SDL_GetWindowSize(impl_->window_,&newWidth,&newHeight);
+			SDL_MaximizeWindow(window_);
+			SDL_GetWindowSize(window_,&newWidth,&newHeight);
 		}
 		else
-			SDL_SetWindowSize(impl_->window_,newWidth,newHeight);
+			SDL_SetWindowSize(window_,newWidth,newHeight);
 
-		SDL_SetWindowFullscreen(impl_->window_,newFullscreen ? SDL_TRUE : SDL_FALSE);
-		SDL_SetWindowBordered(impl_->window_,newBorderless ? SDL_FALSE : SDL_TRUE);
+		SDL_SetWindowFullscreen(window_,newFullscreen ? SDL_TRUE : SDL_FALSE);
+		SDL_SetWindowBordered(window_,newBorderless ? SDL_FALSE : SDL_TRUE);
 	}
 
 	void YumeGLRenderer::Close()
 	{
-		if(impl_->window_)
+		if(window_)
 		{
 			SDL_ShowCursor(SDL_TRUE);
-			SDL_DestroyWindow(impl_->window_);
-			impl_->window_ = 0;
+			SDL_DestroyWindow(window_);
+			window_ = 0;
 		}
 	}
 
@@ -400,7 +400,7 @@ namespace YumeEngine
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,2);
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_CORE);
-		}
+			}
 			else
 			{
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,2);
@@ -438,9 +438,9 @@ namespace YumeEngine
 
 			for(;;)
 			{
-				impl_->window_ = SDL_CreateWindow(windowTitle_.c_str(),x,y,width,height,flags);
+				window_ = SDL_CreateWindow(windowTitle_.c_str(),x,y,width,height,flags);
 
-				if(impl_->window_)
+				if(window_)
 					break;
 				else
 				{
@@ -462,14 +462,16 @@ namespace YumeEngine
 			if(maximize)
 			{
 				Maximize();
-				SDL_GetWindowSize(impl_->window_,&width,&height);
+				SDL_GetWindowSize(window_,&width,&height);
 			}
 
 			Restore();
 
 			if(!impl_->context_)
 				return false;
-	}
+		}
+
+		YumeRenderer::SetGraphicsMode(width,height,fullscreen,borderless,resizable,vsync,tripleBuffer,multiSample);
 
 		SDL_GL_SetSwapInterval(vsync ? 1 : 0);
 
@@ -484,14 +486,14 @@ namespace YumeEngine
 		int *y = new int;
 
 		if(!fullscreen)
-			SDL_GetWindowPosition(impl_->window_,x,y);
+			SDL_GetWindowPosition(window_,x,y);
 
 		// Reset rendertargets and viewport for the new screen mode
 		ResetRenderTargets();
 
 		// Clear the initial window contents to black
 		Clear(CLEAR_COLOR);
-		SDL_GL_SwapWindow(impl_->window_);
+		SDL_GL_SwapWindow(window_);
 
 		YUMELOG_INFO("Graphics Mode: " << std::endl <<
 			"Width: " << width << std::endl <<
@@ -507,17 +509,17 @@ namespace YumeEngine
 
 		initialized_ = true;
 		return true;
-}
+	}
 
 	void YumeGLRenderer::Restore()
 	{
-		if(!impl_->window_)
+		if(!window_)
 			return;
 
 		// Ensure first that the context exists
 		if(!impl_->context_)
 		{
-			impl_->context_ = SDL_GL_CreateContext(impl_->window_);
+			impl_->context_ = SDL_GL_CreateContext(window_);
 
 #ifndef GL_ES_VERSION_2_0
 			// If we're trying to use OpenGL 3, but context creation fails, retry with 2
@@ -527,7 +529,7 @@ namespace YumeEngine
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,2);
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,0);
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,0);
-				impl_->context_ = SDL_GL_CreateContext(impl_->window_);
+				impl_->context_ = SDL_GL_CreateContext(window_);
 			}
 #endif
 
@@ -586,10 +588,10 @@ namespace YumeEngine
 
 	void YumeGLRenderer::Maximize()
 	{
-		if(!impl_->window_)
+		if(!window_)
 			return;
 
-		SDL_MaximizeWindow(impl_->window_);
+		SDL_MaximizeWindow(window_);
 	}
 
 	YumeVector<Vector2>::type YumeGLRenderer::GetScreenResolutions()

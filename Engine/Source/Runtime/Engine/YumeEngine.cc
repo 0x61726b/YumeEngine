@@ -28,6 +28,9 @@
 #include "Core/YumeDynamicLibrary.h"
 #include "Core/YumeEnvironment.h"
 
+#include "Renderer/YumeImage.h"
+#include "Core/YumeFile.h"
+
 #include "Core/YumeTimer.h"
 
 #include "Math/YumeVector2.h"
@@ -97,9 +100,9 @@ namespace YumeEngine
 		YUMELOG_INFO("Running on: " << currentOs.c_str());
 
 		std::string fullRendererLibName;
-		YumeString renderer = env_->GetVariant<YumeString>("Renderer");
+		YumeString renderer = env_->GetVariant("Renderer").Get<YumeString>();
 
-		if(env_->GetVariant<bool>("testing"))
+		if(env_->GetVariant("testing").Get<bool>())
 		{
 			renderer = "Null";
 		}
@@ -119,17 +122,27 @@ namespace YumeEngine
 		graphics_->SetWindowTitle("Yume Engine");
 		graphics_->SetWindowPos(Vector2(250,250));
 
-		if(!graphics_->SetGraphicsMode(1280,
-			720,
-			false,
-			false,
-			false,
-			false,
-			false,
-			1))
-			return false;
+		YumeFile file(YumeString("D:/Arken/C++/Yume/v2/YumeEngine/Engine/Assets/Textures/appIcon.png"));
 
+		YumeImage* p = new YumeImage;
+		p->BeginLoad(file);
+
+		graphics_->SetWindowIcon(p);
+
+		
+
+		if(!graphics_->SetGraphicsMode(env_->GetVariant("WindowWidth").Get<int>(),
+			env_->GetVariant("WindowHeight").Get<int>(),
+			env_->GetVariant("Fullscreen").Get<bool>(),
+			env_->GetVariant("Borderless").Get<bool>(),
+			true,
+			env_->GetVariant("Vsync").Get<bool>(),
+			env_->GetVariant("TripleBuffer").Get<bool>(),
+			env_->GetVariant("MultiSample").Get<int>()))
+			return false;
 		frameTimer_.Reset();
+
+
 
 		YUMELOG_INFO("Initialized Yume Engine...");
 

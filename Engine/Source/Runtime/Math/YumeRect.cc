@@ -14,30 +14,54 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
-
-#include "Renderer/YumeGraphicsApi.h"
-#include "YumeGLRendererImpl.h"
+#include "YumeRect.h"
 
 
 
 namespace YumeEngine
 {
-    YumeGLRendererImpl::YumeGLRendererImpl() :
-      context_(0),
-      systemFBO_(0),
-      activeTexture_(0),
-      enabledAttributes_(0),
-      boundFBO_(0),
-      boundVBO_(0),
-      boundUBO_(0),
-      pixelFormat_(0),
-      fboDirty_(false)
-  {
-  }
+
+	const Rect Rect::FULL(-1.0f,-1.0f,1.0f,1.0f);
+	const Rect Rect::POSITIVE(0.0f,0.0f,1.0f,1.0f);
+	const Rect Rect::ZERO(0.0f,0.0f,0.0f,0.0f);
+
+	const IntRect IntRect::ZERO(0,0,0,0);
+
+	YumeString Rect::ToString() const
+	{
+		char tempBuffer[128];
+		sprintf(tempBuffer,"%g %g %g %g",min_.x,min_.y,max_.x,max_.y);
+		return YumeString (tempBuffer);
+	}
+
+	YumeString  IntRect::ToString() const
+	{
+		char tempBuffer[128];
+		sprintf(tempBuffer,"%d %d %d %d",left_,top_,right_,bottom_);
+		return YumeString (tempBuffer);
+	}
+
+	void Rect::Clip(const Rect& rect)
+	{
+		if(rect.min_.x > min_.x)
+			min_.x = rect.min_.x;
+		if(rect.max_.x < max_.x)
+			max_.x = rect.max_.x;
+		if(rect.min_.y > min_.y)
+			min_.y = rect.min_.y;
+		if(rect.max_.y < max_.y)
+			max_.y = rect.max_.y;
+
+		if(min_.x > max_.x || min_.y > max_.y)
+		{
+			min_ = Vector2(Math::POS_INFINITY,Math::POS_INFINITY);
+			max_ = Vector2(Math::NEG_INFINITY,Math::NEG_INFINITY);
+		}
+	}
 }

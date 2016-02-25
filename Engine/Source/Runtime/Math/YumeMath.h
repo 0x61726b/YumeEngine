@@ -33,12 +33,19 @@
 
 namespace YumeEngine
 {
+	enum Intersection
+	{
+		OUTSIDE,
+		INTERSECTS,
+		INSIDE
+	};
+
 	class Radian
 	{
 		Real mRad;
 
 	public:
-		explicit Radian(Real r = 0) : mRad(r) {}
+		explicit Radian(Real r = 0): mRad(r) {}
 		Radian(const Degree& d);
 		Radian& operator = (const Real& f) { mRad = f; return *this; }
 		Radian& operator = (const Radian& r) { mRad = r.mRad; return *this; }
@@ -69,10 +76,10 @@ namespace YumeEngine
 		bool operator == (const Radian& r) const { return mRad == r.mRad; }
 		bool operator != (const Radian& r) const { return mRad != r.mRad; }
 		bool operator >= (const Radian& r) const { return mRad >= r.mRad; }
-		bool operator >  (const Radian& r) const { return mRad >  r.mRad; }
+		bool operator >(const Radian& r) const { return mRad >  r.mRad; }
 
 		inline YumeAPIExport friend std::ostream& operator <<
-			(std::ostream& o, const Radian& v)
+			(std::ostream& o,const Radian& v)
 		{
 			o << "Radian(" << v.valueRadians() << ")";
 			return o;
@@ -83,8 +90,8 @@ namespace YumeEngine
 		Real mDeg; // if you get an error here - make sure to define/typedef 'Real' first
 
 	public:
-		explicit Degree(Real d = 0) : mDeg(d) {}
-		Degree(const Radian& r) : mDeg(r.valueDegrees()) {}
+		explicit Degree(Real d = 0): mDeg(d) {}
+		Degree(const Radian& r): mDeg(r.valueDegrees()) {}
 		Degree& operator = (const Real& f) { mDeg = f; return *this; }
 		Degree& operator = (const Degree& d) { mDeg = d.mDeg; return *this; }
 		Degree& operator = (const Radian& r) { mDeg = r.valueDegrees(); return *this; }
@@ -114,10 +121,10 @@ namespace YumeEngine
 		bool operator == (const Degree& d) const { return mDeg == d.mDeg; }
 		bool operator != (const Degree& d) const { return mDeg != d.mDeg; }
 		bool operator >= (const Degree& d) const { return mDeg >= d.mDeg; }
-		bool operator >  (const Degree& d) const { return mDeg >  d.mDeg; }
+		bool operator >(const Degree& d) const { return mDeg >  d.mDeg; }
 
 		inline YumeAPIExport friend std::ostream& operator <<
-			(std::ostream& o, const Degree& v)
+			(std::ostream& o,const Degree& v)
 		{
 			o << "Degree(" << v.valueDegrees() << ")";
 			return o;
@@ -128,14 +135,14 @@ namespace YumeEngine
 	{
 		Real mAngle;
 	public:
-		explicit Angle(Real angle) : mAngle(angle) {}
+		explicit Angle(Real angle): mAngle(angle) {}
 		operator Radian() const;
 		operator Degree() const;
 	};
 
 	// these functions could not be defined within the class definition of class
 	// Radian because they required class Degree to be defined
-	inline Radian::Radian(const Degree& d) : mRad(d.valueRadians()) {
+	inline Radian::Radian(const Degree& d): mRad(d.valueRadians()) {
 	}
 	inline Radian& Radian::operator = (const Degree& d) {
 		mRad = d.valueRadians(); return *this;
@@ -246,7 +253,7 @@ namespace YumeEngine
 		@param
 		fX The second value to calculate the arc tangent with.
 		*/
-		static inline Radian ATan2(Real fY, Real fX) { return Radian(atan2(fY, fX)); }
+		static inline Radian ATan2(Real fY,Real fX) { return Radian(atan2(fY,fX)); }
 
 		/** Ceiling function
 		Returns the smallest following integer. (example: Ceil(1.1) = 2)
@@ -269,7 +276,7 @@ namespace YumeEngine
 		useTables If true, uses lookup tables rather than
 		calculation - faster but less accurate.
 		*/
-		static inline Real Cos(const Radian& fValue, bool useTables = false) {
+		static inline Real Cos(const Radian& fValue,bool useTables = false) {
 			return (!useTables) ? Real(cos(fValue.valueRadians())) : SinTable(fValue.valueRadians() + HALF_PI);
 		}
 		/** Cosine function.
@@ -279,7 +286,7 @@ namespace YumeEngine
 		useTables If true, uses lookup tables rather than
 		calculation - faster but less accurate.
 		*/
-		static inline Real Cos(Real fValue, bool useTables = false) {
+		static inline Real Cos(Real fValue,bool useTables = false) {
 			return (!useTables) ? Real(cos(fValue)) : SinTable(fValue + HALF_PI);
 		}
 
@@ -300,9 +307,9 @@ namespace YumeEngine
 
 		static inline Real Log2(Real fValue) { return Real(log(fValue) / LOG2); }
 
-		static inline Real LogN(Real base, Real fValue) { return Real(log(fValue) / log(base)); }
+		static inline Real LogN(Real base,Real fValue) { return Real(log(fValue) / log(base)); }
 
-		static inline Real Pow(Real fBase, Real fExponent) { return Real(pow(fBase, fExponent)); }
+		static inline Real Pow(Real fBase,Real fExponent) { return Real(pow(fBase,fExponent)); }
 
 		static Real Sign(Real fValue);
 		static inline Radian Sign(const Radian& rValue)
@@ -321,7 +328,7 @@ namespace YumeEngine
 		useTables If true, uses lookup tables rather than
 		calculation - faster but less accurate.
 		*/
-		static inline Real Sin(const Radian& fValue, bool useTables = false) {
+		static inline Real Sin(const Radian& fValue,bool useTables = false) {
 			return (!useTables) ? Real(sin(fValue.valueRadians())) : SinTable(fValue.valueRadians());
 		}
 		/** Sine function.
@@ -331,7 +338,7 @@ namespace YumeEngine
 		useTables If true, uses lookup tables rather than
 		calculation - faster but less accurate.
 		*/
-		static inline Real Sin(Real fValue, bool useTables = false) {
+		static inline Real Sin(Real fValue,bool useTables = false) {
 			return (!useTables) ? Real(sin(fValue)) : SinTable(fValue);
 		}
 
@@ -384,7 +391,7 @@ namespace YumeEngine
 		@return
 		A random number in the range from [fLow,fHigh].
 		*/
-		static Real RangeRandom(Real fLow, Real fHigh);
+		static Real RangeRandom(Real fLow,Real fHigh);
 
 		/** Generate a random number in the range [-1,1].
 		@return
@@ -399,7 +406,7 @@ namespace YumeEngine
 		useTables If true, uses lookup tables rather than
 		calculation - faster but less accurate.
 		*/
-		static inline Real Tan(const Radian& fValue, bool useTables = false) {
+		static inline Real Tan(const Radian& fValue,bool useTables = false) {
 			return (!useTables) ? Real(tan(fValue.valueRadians())) : TanTable(fValue.valueRadians());
 		}
 		/** Tangent function.
@@ -409,7 +416,7 @@ namespace YumeEngine
 		useTables If true, uses lookup tables rather than
 		calculation - faster but less accurate.
 		*/
-		static inline Real Tan(Real fValue, bool useTables = false) {
+		static inline Real Tan(Real fValue,bool useTables = false) {
 			return (!useTables) ? Real(tan(fValue)) : TanTable(fValue);
 		}
 
@@ -456,8 +463,8 @@ namespace YumeEngine
 		If the point is outside the triangle, <b>false</b> is
 		returned.
 		*/
-		static bool pointInTri2D(const Vector2& p, const Vector2& a,
-			const Vector2& b, const Vector2& c);
+		static bool pointInTri2D(const Vector2& p,const Vector2& a,
+			const Vector2& b,const Vector2& c);
 
 		/** Checks whether a given 3D point is inside a triangle.
 		@remarks
@@ -483,17 +490,17 @@ namespace YumeEngine
 		If the point is outside the triangle, <b>false</b> is
 		returned.
 		*/
-		static bool pointInTri3D(const Vector3& p, const Vector3& a,
-			const Vector3& b, const Vector3& c, const Vector3& normal);
+		static bool pointInTri3D(const Vector3& p,const Vector3& a,
+			const Vector3& b,const Vector3& c,const Vector3& normal);
 		/** Ray / plane intersection, returns boolean result and distance. */
-		static std::pair<bool, Real> intersects(const Ray& ray, const Plane& plane);
+		static std::pair<bool,Real> intersects(const Ray& ray,const Plane& plane);
 
 		/** Ray / sphere intersection, returns boolean result and distance. */
-		static std::pair<bool, Real> intersects(const Ray& ray, const Sphere& sphere,
+		static std::pair<bool,Real> intersects(const Ray& ray,const Sphere& sphere,
 			bool discardInside = true);
 
 		/** Ray / box intersection, returns boolean result and distance. */
-		static std::pair<bool, Real> intersects(const Ray& ray, const AxisAlignedBox& box);
+		static std::pair<bool,Real> intersects(const Ray& ray,const AxisAlignedBox& box);
 
 		/** Ray / box intersection, returns boolean result and two intersection distance.
 		@param
@@ -517,8 +524,8 @@ namespace YumeEngine
 		If the ray isn't intersects the box, <b>false</b> is returned, and
 		<i>d1</i> and <i>d2</i> is unmodified.
 		*/
-		static bool intersects(const Ray& ray, const AxisAlignedBox& box,
-			Real* d1, Real* d2);
+		static bool intersects(const Ray& ray,const AxisAlignedBox& box,
+			Real* d1,Real* d2);
 
 		/** Ray / triangle intersection, returns boolean result and distance.
 		@param
@@ -544,9 +551,9 @@ namespace YumeEngine
 		If the ray isn't intersects the triangle, a pair of <b>false</b> and
 		<b>0</b> returned.
 		*/
-		static std::pair<bool, Real> intersects(const Ray& ray, const Vector3& a,
-			const Vector3& b, const Vector3& c, const Vector3& normal,
-			bool positiveSide = true, bool negativeSide = true);
+		static std::pair<bool,Real> intersects(const Ray& ray,const Vector3& a,
+			const Vector3& b,const Vector3& c,const Vector3& normal,
+			bool positiveSide = true,bool negativeSide = true);
 
 		/** Ray / triangle intersection, returns boolean result and distance.
 		@param
@@ -568,73 +575,73 @@ namespace YumeEngine
 		If the ray isn't intersects the triangle, a pair of <b>false</b> and
 		<b>0</b> returned.
 		*/
-		static std::pair<bool, Real> intersects(const Ray& ray, const Vector3& a,
-			const Vector3& b, const Vector3& c,
-			bool positiveSide = true, bool negativeSide = true);
+		static std::pair<bool,Real> intersects(const Ray& ray,const Vector3& a,
+			const Vector3& b,const Vector3& c,
+			bool positiveSide = true,bool negativeSide = true);
 
 		/** Sphere / box intersection test. */
-		static bool intersects(const Sphere& sphere, const AxisAlignedBox& box);
+		static bool intersects(const Sphere& sphere,const AxisAlignedBox& box);
 
 		/** Plane / box intersection test. */
-		static bool intersects(const Plane& plane, const AxisAlignedBox& box);
+		static bool intersects(const Plane& plane,const AxisAlignedBox& box);
 
 		/** Ray / convex plane list intersection test.
 		@param ray The ray to test with
 		@param plaeList List of planes which form a convex volume
 		@param normalIsOutside Does the normal point outside the volume
 		*/
-		static std::pair<bool, Real> intersects(
-			const Ray& ray, const YumeVector<Plane>::type& planeList,
+		static std::pair<bool,Real> intersects(
+			const Ray& ray,const YumeVector<Plane>::type& planeList,
 			bool normalIsOutside);
 		/** Ray / convex plane list intersection test.
 		@param ray The ray to test with
 		@param plaeList List of planes which form a convex volume
 		@param normalIsOutside Does the normal point outside the volume
 		*/
-		static std::pair<bool, Real> intersects(
-			const Ray& ray, const YumeList<Plane>::type& planeList,
+		static std::pair<bool,Real> intersects(
+			const Ray& ray,const YumeList<Plane>::type& planeList,
 			bool normalIsOutside);
 
 		/** Sphere / plane intersection test.
 		@remarks NB just do a plane.getDistance(sphere.getCenter()) for more detail!
 		*/
-		static bool intersects(const Sphere& sphere, const Plane& plane);
+		static bool intersects(const Sphere& sphere,const Plane& plane);
 
 		/** Compare 2 reals, using tolerance for inaccuracies.
 		*/
-		static bool RealEqual(Real a, Real b,
+		static bool RealEqual(Real a,Real b,
 			Real tolerance = std::numeric_limits<Real>::epsilon());
 
 		/** Calculates the tangent space vector for a given set of positions / texture coords. */
 		static Vector3 calculateTangentSpaceVector(
-			const Vector3& position1, const Vector3& position2, const Vector3& position3,
-			Real u1, Real v1, Real u2, Real v2, Real u3, Real v3);
+			const Vector3& position1,const Vector3& position2,const Vector3& position3,
+			Real u1,Real v1,Real u2,Real v2,Real u3,Real v3);
 
 		/** Build a reflection matrix for the passed in plane. */
 		static Matrix4 buildReflectionMatrix(const Plane& p);
 		/** Calculate a face normal, including the w component which is the offset from the origin. */
-		static Vector4 calculateFaceNormal(const Vector3& v1, const Vector3& v2, const Vector3& v3);
+		static Vector4 calculateFaceNormal(const Vector3& v1,const Vector3& v2,const Vector3& v3);
 		/** Calculate a face normal, no w-information. */
-		static Vector3 calculateBasicFaceNormal(const Vector3& v1, const Vector3& v2, const Vector3& v3);
+		static Vector3 calculateBasicFaceNormal(const Vector3& v1,const Vector3& v2,const Vector3& v3);
 		/** Calculate a face normal without normalize, including the w component which is the offset from the origin. */
-		static Vector4 calculateFaceNormalWithoutNormalize(const Vector3& v1, const Vector3& v2, const Vector3& v3);
+		static Vector4 calculateFaceNormalWithoutNormalize(const Vector3& v1,const Vector3& v2,const Vector3& v3);
 		/** Calculate a face normal without normalize, no w-information. */
-		static Vector3 calculateBasicFaceNormalWithoutNormalize(const Vector3& v1, const Vector3& v2, const Vector3& v3);
+		static Vector3 calculateBasicFaceNormalWithoutNormalize(const Vector3& v1,const Vector3& v2,const Vector3& v3);
 
 		/** Generates a value based on the Gaussian (normal) distribution function
 		with the given offset and scale parameters.
 		*/
-		static Real gaussianDistribution(Real x, Real offset = 0.0f, Real scale = 1.0f);
+		static Real gaussianDistribution(Real x,Real offset = 0.0f,Real scale = 1.0f);
 
 		/** Clamp a value within an inclusive range. */
 		template <typename T>
-		static T Clamp(T val, T minval, T maxval)
+		static T Clamp(T val,T minval,T maxval)
 		{
 			assert(minval <= maxval && "Invalid clamp range");
-			return std::max(std::min(val, maxval), minval);
+			return std::max(std::min(val,maxval),minval);
 		}
 
-		static Matrix4 makeViewMatrix(const Vector3& position, const Quaternion& orientation,
+		static Matrix4 makeViewMatrix(const Vector3& position,const Quaternion& orientation,
 			const Matrix4* reflectMatrix = 0);
 
 		/** Get a bounding radius value from a bounding box. */
@@ -649,6 +656,10 @@ namespace YumeEngine
 		static const Real HALF_PI;
 		static const Real fDeg2Rad;
 		static const Real fRad2Deg;
+		static const Real Epsilon;
+		static const Real M_LARGE_EPSILON;
+		static const Real M_MIN_NEARCLIP;
+		static const Real M_MAX_FOV;
 
 	};
 
@@ -685,22 +696,22 @@ namespace YumeEngine
 		return Degree(Math::AngleUnitsToDegrees(mAngle));
 	}
 
-	inline Radian operator * (Real a, const Radian& b)
+	inline Radian operator * (Real a,const Radian& b)
 	{
 		return Radian(a * b.valueRadians());
 	}
 
-	inline Radian operator / (Real a, const Radian& b)
+	inline Radian operator / (Real a,const Radian& b)
 	{
 		return Radian(a / b.valueRadians());
 	}
 
-	inline Degree operator * (Real a, const Degree& b)
+	inline Degree operator * (Real a,const Degree& b)
 	{
 		return Degree(a * b.valueDegrees());
 	}
 
-	inline Degree operator / (Real a, const Degree& b)
+	inline Degree operator / (Real a,const Degree& b)
 	{
 		return Degree(a / b.valueDegrees());
 	}

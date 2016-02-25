@@ -58,6 +58,7 @@ namespace YumeEngine
 		XmlNode tripleBuffer = graphics.child("TripleBuffer");
 		XmlNode multisample = graphics.child("MultiSample");
 
+
 		vm.insert( VariantMap::value_type("Renderer",YumeVariant(YumeString(renderer.text().get()))));
 		
 		vm.insert( VariantMap::value_type("Fullscreen",YumeVariant(CastToType<bool>(GetStringValueFromXPath(fullscreen)))));
@@ -70,11 +71,11 @@ namespace YumeEngine
 
 		vm.insert( VariantMap::value_type("Vsync",YumeVariant(CastToType<bool>(GetStringValueFromXPath(vsync)))));
 
-		vm.insert( VariantMap::value_type("TripleBuffer",YumeVariant(CastToType<int>(GetStringValueFromXPath(tripleBuffer)))));
+		vm.insert( VariantMap::value_type("TripleBuffer",YumeVariant(CastToType<bool>(GetStringValueFromXPath(tripleBuffer)))));
 
-		vm.insert( VariantMap::value_type("Multisample",YumeVariant(CastToType<int>(GetStringValueFromXPath(multisample)))));
+		vm.insert( VariantMap::value_type("MultiSample",YumeVariant(CastToType<int>(GetStringValueFromXPath(multisample)))));
 
-		// #todo - Check if values are valid
+		 // ToDo(arkenthera): Check if values are valid
 
 		return vm;
 	}
