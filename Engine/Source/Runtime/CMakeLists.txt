@@ -87,6 +87,8 @@ set( SRC_CORE
 	Core/YumeDynamicLibrary.h
 	Core/YumeDynamicLibrary.cc
 	Core/YumeMain.h
+	Core/YumeBase.h
+	Core/YumeBase.cc
 		)
 set( SRC_CORE_IO
 	Core/YumeIO.h

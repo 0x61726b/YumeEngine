@@ -30,7 +30,10 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	struct ResourceGroup;
 
+	typedef YumeMap<YumeHash,ResourceGroup>::type ResourceGroupHashMap;
+	typedef YumeMap<YumeHash,SharedPtr<YumeResource>>::type ResourceHashMap;
 
 	/// Sets to priority so that a package or file is pushed to the end of the vector.
 	static const unsigned PRIORITY_LAST = 0xffffffff;
@@ -50,7 +53,7 @@ namespace YumeEngine
 		/// Current memory use.
 		unsigned long long memoryUse_;
 		/// Resources.
-		YumeMap<YumeHash,boost::shared_ptr<YumeResource> > resources_;
+		YumeMap<YumeHash,boost::shared_ptr<YumeResource> >::type resources_;
 	};
 
 	/// Resource request types.
@@ -71,14 +74,19 @@ namespace YumeEngine
 		boost::shared_ptr<YumeFile> GetFile(const YumeString& name,bool sendEventOnFailure = true);
 
 		SharedPtr<YumeFile> SearchResourcesPath(const YumeString& resource);
-		SharedPtr<YumeResource> GetResource(const YumeString& resource,bool sendEventOnFailure = true);
+
+		YumeResource* GetResource(const YumeString& resource,bool sendEventOnFailure = true);
+
+	private:
+		void UpdateResourceGroup(YumeHash group);
 	private:
 		boost::mutex resourceMutex_;
-		YumeMap<YumeHash,ResourceGroup> resourceGroups_;
+		ResourceGroupHashMap resourceGroups_;
 		YumeVector<FsPath>::type resourcePaths_;
 		boost::shared_ptr<YumeBackgroundWorker> backgroundWorker_;
 
 	};
+
 }
 
 

@@ -141,7 +141,11 @@ namespace YumeEngine
 
 		resourceManager_->AddResourcePath(resourceTree);
 
-		InitFPU();
+		YumeThreadWrapper::SetMainThread();
+
+		
+
+		/*graphics_->SetWindowIcon(appIcon);*/
 
 		if(!graphics_->SetGraphicsMode(env_->GetVariant("WindowWidth").Get<int>(),
 			env_->GetVariant("WindowHeight").Get<int>(),

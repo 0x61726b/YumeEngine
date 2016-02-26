@@ -53,7 +53,7 @@ namespace YumeEngine
 
 		bool QueueResource(YumeHash type,const YumeString& name,bool sendEventOnFailure,YumeResource* caller);
 
-		void WaitForResource(const YumeString& resource);
+		void WaitForResource(YumeHash type,const YumeString& resource);
 
 		void FinishResources(int maxMs);
 

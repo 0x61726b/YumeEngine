@@ -194,7 +194,7 @@ macro( set_output_dir TARGET_NAME)
           RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Yume"
           ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Yume"
       )
-  elseif()
+  else()
     set_target_properties( ${TARGET_NAME}
       PROPERTIES
       ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
