@@ -23,6 +23,8 @@
 #define __YumeEventHub_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+
+#include <functional>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -31,6 +33,7 @@ namespace YumeEngine
 		R_BEGINFRAME,
 		R_ENDFRAME
 	};
+
 }
 
 

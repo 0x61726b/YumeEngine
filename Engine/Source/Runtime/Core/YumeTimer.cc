@@ -55,13 +55,13 @@ namespace YumeEngine
 		YumeHiresTimer::supported = true;
 #endif
 
-		
-		
+
+
 	}
 
 	YumeTime::~YumeTime()
 	{
-		
+		listenerList_.clear();
 	}
 
 	void YumeTime::BeginFrame(float dt)
@@ -71,11 +71,13 @@ namespace YumeEngine
 		++frameNumber_;
 		if(!frameNumber_)
 			++frameNumber_;
+
+		fireFrameBegin(frameNumber_);
 	}
 
 	void YumeTime::EndFrame()
 	{
-		
+		fireFrameEnd(frameNumber_);
 	}
 
 	double YumeTime::GetElapsedTime()
@@ -102,6 +104,39 @@ namespace YumeEngine
 #endif
 	}
 
+	void YumeTime::fireFrameBegin(int frameNumber)
+	{
+		for(TimeEventListeners::iterator l = listenerList_.begin(); l != listenerList_.end(); ++l)
+		{
+			(*l)->OnFrameBegin(frameNumber);
+		}
+	}
+
+	void YumeTime::fireFrameEnd(int frameNumber)
+	{
+		for(TimeEventListeners::iterator l = listenerList_.begin(); l != listenerList_.end(); ++l)
+		{
+			(*l)->OnFrameEnd(frameNumber);
+		}
+	}
+
+	void YumeTime::AddTimeEventListener(YumeTimerEventListener* listener)
+	{
+		listenerList_.push_back(listener);
+	}
+
+	void YumeTime::RemoveTimeEventListener(YumeTimerEventListener* listener)
+	{
+		for(TimeEventListeners::iterator l = listenerList_.begin(); l != listenerList_.end(); ++l)
+		{
+			if(*l == listener)
+			{
+				listenerList_.erase(l);
+				break;
+			}
+		}
+	}
+
 	static unsigned Tick()
 	{
 #ifdef _WIN32
@@ -121,7 +156,7 @@ namespace YumeEngine
 			LARGE_INTEGER counter;
 			QueryPerformanceCounter(&counter);
 			return counter.QuadPart;
-		}
+	}
 		else
 			return timeGetTime();
 #else
@@ -129,7 +164,7 @@ namespace YumeEngine
 		gettimeofday(&time,NULL);
 		return time.tv_sec * 1000000LL + time.tv_usec;
 #endif
-	}
+		}
 
 	YumeLowresTimer::YumeLowresTimer()
 	{
@@ -175,4 +210,4 @@ namespace YumeEngine
 	{
 		startTime_ = HiresTick();
 	}
-}
+	}

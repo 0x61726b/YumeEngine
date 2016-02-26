@@ -76,6 +76,15 @@ namespace YumeEngine
 		static long long frequency;
 	};
 
+	class YumeAPIExport YumeTimerEventListener
+	{
+	public:
+		virtual ~YumeTimerEventListener() { };
+
+		virtual void OnFrameBegin(int frameNumber) = 0;
+		virtual void OnFrameEnd(int frameNumber) = 0;
+	};
+
 	class YumeAPIExport YumeTime
 	{
 	public:
@@ -91,6 +100,16 @@ namespace YumeEngine
 
 		YumeString GetTimeStamp();
 		double GetElapsedTime();
+
+		void fireFrameBegin(int frameNumber);
+		void fireFrameEnd(int frameNumber);
+		
+	protected:
+		typedef YumeVector<YumeTimerEventListener*>::type TimeEventListeners;
+		TimeEventListeners listenerList_;
+
+		void AddTimeEventListener(YumeTimerEventListener* listener);
+		void RemoveTimeEventListener(YumeTimerEventListener* listener);
 	protected:
 		int frameNumber_;
 		double timeStep_;
