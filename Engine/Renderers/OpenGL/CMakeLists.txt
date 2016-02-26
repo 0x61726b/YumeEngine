@@ -52,6 +52,6 @@ include_directories(${YUME_INCLUDE_DIR})
 add_definitions(-DGLEW_NO_GLU)
 add_definitions(-DGLEW_STATIC)
 
-set_output_dir_to_yume(${RENDERER_TARGET})
+set_output_dir(${RENDERER_TARGET})
 
 set_folder_name(${RENDERER_TARGET} "Renderers")

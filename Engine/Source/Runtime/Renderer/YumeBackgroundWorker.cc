@@ -53,7 +53,7 @@ namespace YumeEngine
 		return true;
 	}
 
-	void YumeBackgroundWorker::WaitForResource(YumeHash type,YumeHash nameHash)
+	void YumeBackgroundWorker::WaitForResource(const YumeString& resource)
 	{
 		
 	}

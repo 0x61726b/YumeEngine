@@ -21,7 +21,7 @@ YUME_DEFINE_ENTRY_POINT(YumeEngine::HelloWorld);
 
 namespace YumeEngine
 {
-	
+
 
 
 	HelloWorld::HelloWorld()
@@ -37,5 +37,12 @@ namespace YumeEngine
 	void HelloWorld::Start()
 	{
 		BaseApplication::Start();
+	}
+
+	void HelloWorld::Setup()
+	{
+		BaseApplication::Setup();
+
+		engineVariants_["WindowWidth"] = 1600;
 	}
 }

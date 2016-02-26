@@ -57,6 +57,6 @@ include_directories(${YUME_BOOST_PATH})
 include_directories(${YUME_SDL_INCLUDE_PATH})
 include_directories(${YUME_3RDPARTY_PATH}/log4cplus/include)
 
-set_output_dir_to_yume(${RENDERER_TARGET})
+set_output_dir(${RENDERER_TARGET})
 
 set_folder_name(${RENDERER_TARGET} "Renderers")

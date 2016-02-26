@@ -66,7 +66,6 @@ namespace YumeEngine
 		{
 			inner_ = Variant(var);
 		};
-
 		
 		template< class T> T Get() const;
 		

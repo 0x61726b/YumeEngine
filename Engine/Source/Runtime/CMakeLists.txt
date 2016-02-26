@@ -220,12 +220,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 set_target_properties(${YUME} PROPERTIES FOLDER "Yume")
 
-
-set_target_properties( ${YUME} SDL2 SDL2main
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
-)
+set(CUSTOM_TARGET_OUTPUTS ${YUME} SDL2 SDL2main)
+set_output_dir( ${YUME} )
+set_output_dir( SDL2 )
+set_output_dir( SDL2main )
 
 copy_assets()

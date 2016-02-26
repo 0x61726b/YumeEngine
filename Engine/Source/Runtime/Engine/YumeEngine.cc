@@ -31,12 +31,15 @@
 #include "Renderer/YumeImage.h"
 #include "Core/YumeFile.h"
 
+#include "Renderer/YumeResourceManager.h"
+
 #include "Core/YumeTimer.h"
 
 #include "Math/YumeVector2.h"
 #include "Logging/logging.h"
 
 #include "Core/YumeIO.h"
+#include "Core/YumeDefaults.h"
 
 #include <log4cplus/initializer.h>
 
@@ -74,7 +77,7 @@ namespace YumeEngine
 		return YumeEngineGlobal;
 	}
 
-	bool YumeEngine3D::Initialize()
+	bool YumeEngine3D::Initialize(const VariantMap& variants)
 	{
 		if(initialized_)
 			return true;
@@ -84,8 +87,14 @@ namespace YumeEngine
 		io_ = boost::shared_ptr<YumeIO>(YumeAPINew YumeIO);
 		timer_ = boost::shared_ptr<YumeTime>(YumeAPINew YumeTime);
 		env_ = boost::shared_ptr<YumeEnvironment>(YumeAPINew YumeEnvironment);
+		resourceManager_ = SharedPtr<YumeResourceManager>(YumeAPINew YumeResourceManager);
 		
-		
+		VariantMap::const_iterator It = variants.begin();
+
+		for(It;It != variants.end(); ++It)
+		{
+			env_->AddParameter(It->first,It->second);
+		}
 
 		YumeEngine::Log::InitLogging(env_->GetLogFile().generic_string().c_str());
 
@@ -127,14 +136,12 @@ namespace YumeEngine
 		graphics_->SetWindowTitle("Yume Engine");
 		graphics_->SetWindowPos(Vector2(250,250));
 
-		//YumeFile file(YumeString("D:/Arken/C++/Yume/v2/YumeEngine/Engine/Assets/Textures/appIcon.png"));
+		FsPath resourceTree = FsPath(env_->GetVariant("ResourceTree").Get<YumeString>());
+		resourceTree = io_->GetBinaryRoot() / resourceTree;
 
-		//YumeImage* p = new YumeImage;
-		//p->BeginLoad(file);
+		resourceManager_->AddResourcePath(resourceTree);
 
-		//graphics_->SetWindowIcon(p);
-
-		
+		InitFPU();
 
 		if(!graphics_->SetGraphicsMode(env_->GetVariant("WindowWidth").Get<int>(),
 			env_->GetVariant("WindowHeight").Get<int>(),

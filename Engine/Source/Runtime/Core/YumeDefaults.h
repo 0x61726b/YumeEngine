@@ -36,6 +36,12 @@ namespace YumeEngine
 
 	YumeAPIExport const YumeString& WCharToUtf8(const std::wstring&);
 
+	YumeAPIExport void InitFPU();
+
+	YumeAPIExport void ErrorDialog(const YumeString& title,const YumeString& message);
+
+	YumeAPIExport void ErrorExit(const YumeString& message,int exitCode);
+
 	const YumeVector<YumeString>::type& GetArguments();
 }
 

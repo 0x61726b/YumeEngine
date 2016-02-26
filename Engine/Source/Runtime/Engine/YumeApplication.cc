@@ -43,7 +43,7 @@ namespace YumeEngine
 	{
 		Setup();
 
-		if(!engine_->Initialize())
+		if(!engine_->Initialize(engineVariants_))
 		{
 			exitCode_ = -1;
 			return exitCode_;

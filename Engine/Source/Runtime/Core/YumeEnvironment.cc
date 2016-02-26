@@ -65,18 +65,14 @@ namespace YumeEngine
 		configFile_ = root_ / "Yume.config";
 		logFile_ = root_ / "Yume.log";
 
-		FsPath absPath = YumeEngine3D::Get()->GetIO()->GetBinaryRoot();
-
-		assetsPath_ = absPath / "Engine" / "Assets";
-
 		ReadAndParseConfig();
 
 		//Append command line arguments to engine config
 		StringVector commandLine = GetArguments();
 
 		for(int i=0; i < commandLine.size(); ++i)
-		{	
-			engineVariants_.insert( VariantMap::value_type(commandLine[i],YumeVariant("1") ));
+		{
+			engineVariants_.insert(VariantMap::value_type(commandLine[i],YumeVariant("1")));
 		}
 	}
 
@@ -91,6 +87,21 @@ namespace YumeEngine
 
 		// Empty the list
 		dynLibMap_.clear();
+	}
+
+	void YumeEnvironment::AddParameter(const YumeString& var,const YumeVariant& value)
+	{
+		VariantMap::iterator It = engineVariants_.find(var);
+
+		//If the user wants to override the parameter,let them 
+		if(It != engineVariants_.end())
+		{
+			It->second = value;
+		}
+		else
+		{
+			engineVariants_.insert(VariantMap::value_type(var,value));
+		}
 	}
 
 	YumeDynamicLibrary* YumeEnvironment::LoadDynLib(const YumeString& name)
@@ -149,7 +160,7 @@ namespace YumeEngine
 		{
 			engineVariants_.insert(*It);
 		}
-		
+
 	}
 
 

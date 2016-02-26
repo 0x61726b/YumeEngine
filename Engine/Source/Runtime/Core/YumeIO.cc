@@ -33,6 +33,12 @@ namespace YumeEngine
 	YumeIO::~YumeIO()
 	{
 	}
+
+	bool YumeIO::IsDirectoryExist(const FsPath& path)
+	{
+		return boost::filesystem::exists(path);
+	}
+
 	FsPath YumeIO::GetBinaryRoot()
 	{
 		FsPath current = GetCurrentPath();

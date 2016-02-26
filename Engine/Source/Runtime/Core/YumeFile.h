@@ -57,7 +57,7 @@ namespace YumeEngine
 
 		void Close();
 		const YumeString& GetName() const { return fileName_; }
-
+		void SetName(const YumeString& name);
 
 		YumeString GetFileExtension();
 	private:

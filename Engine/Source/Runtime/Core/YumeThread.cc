@@ -52,7 +52,7 @@ namespace YumeEngine
 
 	ThreadID YumeThreadWrapper::mainThreadID;
 
-	YumeThreadWrapper::YumeThreadWrapper(): shouldRun_(false)
+	YumeThreadWrapper::YumeThreadWrapper(): shouldRun_(false), threadHandle(0)
 	{
 	}
 

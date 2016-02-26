@@ -23,6 +23,7 @@
 
 #include "Engine/YumeEngine.h"
 #include "Renderer/YumeRenderer.h"
+#include "Core/YumeEnvironment.h"
 
 namespace YumeEngine
 {
@@ -43,6 +44,8 @@ namespace YumeEngine
 	void BaseApplication::Setup()
 	{
 		//Set engine parameters
+
+		engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
 	}
 
 	void BaseApplication::Start()

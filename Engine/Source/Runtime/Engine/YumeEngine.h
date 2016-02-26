@@ -23,7 +23,7 @@
 #define __YumeEngine_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-
+#include "Core/YumeVariant.h"
 #include "Core/YumeTimer.h"
 
 #include <boost/shared_ptr.hpp>
@@ -35,6 +35,7 @@ namespace YumeEngine
 	class YumeDynamicLibrary;
 	class YumeTime;
 	class YumeIO;
+	class YumeResourceManager;
 
 	class YumeAPIExport YumeEngine3D
 	{
@@ -42,7 +43,7 @@ namespace YumeEngine
 		YumeEngine3D();
 
 		virtual ~YumeEngine3D();
-		bool Initialize();
+		bool Initialize(const VariantMap& variants);
 
 		static YumeEngine3D* Get();
 
@@ -67,6 +68,7 @@ namespace YumeEngine
 
 	public:
 		boost::shared_ptr<YumeIO> GetIO() const;
+		SharedPtr<YumeEnvironment> GetEnvironment() const { return env_; }
 
 	private:
 		YumeRenderer* graphics_;
@@ -75,6 +77,7 @@ namespace YumeEngine
 		boost::shared_ptr<YumeEnvironment> env_;
 		boost::shared_ptr<YumeTime> timer_;
 		boost::shared_ptr<YumeIO> io_;
+		SharedPtr<YumeResourceManager> resourceManager_;
 	private:
 		void LimitFrames();
 		unsigned inactiveFps_;

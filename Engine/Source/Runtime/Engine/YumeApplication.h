@@ -25,6 +25,7 @@
 #include "YumeRequired.h"
 #include "YumeMain.h"
 #include "YumeDefaults.h"
+#include "YumeVariant.h"
 
 #include <boost/shared_ptr.hpp>
 //----------------------------------------------------------------------------
@@ -48,7 +49,7 @@ namespace YumeEngine
 
 	protected:
 		boost::shared_ptr<YumeEngine3D> engine_;
-
+		VariantMap engineVariants_;
 		int exitCode_;
 	};
 

@@ -20,6 +20,7 @@ namespace YumeEngine
 		~HelloWorld();
 
 		virtual void Start();
+		virtual void Setup();
 	};
 }
 

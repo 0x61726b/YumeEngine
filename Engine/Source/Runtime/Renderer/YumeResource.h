@@ -45,6 +45,16 @@ namespace YumeEngine
 		ASYNC_FAIL = 4
 	};
 
+	class YumeAPIExport YumeObject
+	{
+	public:
+		YumeHash GetType() const { return type_; }
+		const YumeString& GetTypeName() const { return typeName_ ; }
+	private:
+		YumeHash type_;
+		YumeString typeName_;
+	};
+
 	class YumeAPIExport YumeResource
 	{
 	public:

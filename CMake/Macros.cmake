@@ -170,12 +170,7 @@ macro( add_yume_sample sample_name)
 
   include_directories(${CMAKE_SOURCE_DIR}/Samples)
 
-  set_target_properties( ${SAMPLE_TARGET}
-      PROPERTIES
-      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
-      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
-      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
-  )
+  set_output_dir(${SAMPLE_TARGET})
 endmacro( add_yume_sample )
 
 macro( set_output_dir_to_yume TARGET_NAME)
@@ -187,12 +182,32 @@ macro( set_output_dir_to_yume TARGET_NAME)
   )
 endmacro( set_output_dir_to_yume)
 
+macro( set_output_dir TARGET_NAME)
+  if(OS_WINDOWS)
+      set_target_properties( ${TARGET_NAME}
+          PROPERTIES
+          LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
+          LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Yume"
+          LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Yume"
+          RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Yume"
+          ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Yume"
+          RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Yume"
+          ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Yume"
+      )
+  elseif()
+    set_target_properties( ${TARGET_NAME}
+      PROPERTIES
+      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
+      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
+)
+  endif()
+endmacro(set_output_dir)
 macro( set_folder_name TARGET_NAME FOLDERNAME)
   set_target_properties(${TARGET_NAME} PROPERTIES FOLDER ${FOLDERNAME})
 endmacro( set_folder_name)
 
 macro( setup_lib TARGET_NAME)
-  set_output_dir_to_yume( ${TARGET_NAME} )
   set_folder_name( ${TARGET_NAME} "3rdParty")
 endmacro(setup_lib)
 
@@ -208,5 +223,5 @@ macro( copy_assets )
   add_custom_command(TARGET ${YUME} POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_directory
                     "${CMAKE_SOURCE_DIR}/Engine/Assets"
-                  "${CMAKE_BINARY_DIR}/Engine/Assets" COMMENT "Copying assets...")
+                  "${CMAKE_BINARY_DIR}/Yume/Engine/Assets" COMMENT "Copying assets...")
 endmacro( copy_assets )

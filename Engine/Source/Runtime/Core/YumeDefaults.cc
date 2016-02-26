@@ -28,6 +28,46 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/format.hpp>
 
+#include <cstdio>
+#include <fcntl.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
+#if defined(_MSC_VER)
+#include <float.h>
+#else
+// From http://stereopsis.com/FPU.html
+
+#define FPU_CW_PREC_MASK        0x0300
+#define FPU_CW_PREC_SINGLE      0x0000
+#define FPU_CW_PREC_DOUBLE      0x0200
+#define FPU_CW_PREC_EXTENDED    0x0300
+#define FPU_CW_ROUND_MASK       0x0c00
+#define FPU_CW_ROUND_NEAR       0x0000
+#define FPU_CW_ROUND_DOWN       0x0400
+#define FPU_CW_ROUND_UP         0x0800
+#define FPU_CW_ROUND_CHOP       0x0c00
+
+inline unsigned GetFPUState()
+{
+	unsigned control = 0;
+	__asm__ __volatile__ ("fnstcw %0" : "=m" (control));
+	return control;
+}
+
+inline void SetFPUState(unsigned control)
+{
+	__asm__ __volatile__ ("fldcw %0" : : "m" (control));
+}
+
+#endif
+
+#include <SDL.h>
 
 namespace YumeEngine
 {
@@ -128,6 +168,32 @@ namespace YumeEngine
 
 		return ParseArguments(cmdLine);
 	}
+
+	void InitFPU()
+	{
+#ifdef _MSC_VER
+		_controlfp(_RC_NEAR | _PC_24,_MCW_RC | _MCW_PC);
+#else
+		unsigned control = GetFPUState();
+		control &= ~(FPU_CW_PREC_MASK | FPU_CW_ROUND_MASK);
+		control |= (FPU_CW_PREC_SINGLE | FPU_CW_ROUND_NEAR);
+		SetFPUState(control);
+#endif
+	}
+
+	void ErrorDialog(const YumeString& title,const YumeString& message)
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,title.c_str(),message.c_str(),0);
+	}
+
+	void ErrorExit(const YumeString& message,int exitCode)
+	{
+		if(!message.empty())
+			ErrorDialog("Error!",message);
+
+		exit(exitCode);
+	}
+
 
 	const YumeVector<YumeString>::type& GetArguments()
 	{

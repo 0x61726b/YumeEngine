@@ -140,6 +140,11 @@ namespace YumeEngine
 		position_ = s;
 	}
 
+	void YumeFile::SetName(const YumeString& name)
+	{
+		fileName_ = name;
+	}
+
 	unsigned YumeFile::GetSize()
 	{
 		return boost::filesystem::file_size(fileName_);

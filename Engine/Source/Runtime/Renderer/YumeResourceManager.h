@@ -25,6 +25,8 @@
 #include "YumeRequired.h"
 #include "YumeBackgroundWorker.h"
 #include "YumeResource.h"
+
+#include "YumeIO.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -48,7 +50,7 @@ namespace YumeEngine
 		/// Current memory use.
 		unsigned long long memoryUse_;
 		/// Resources.
-		YumeMap<YumeString,boost::shared_ptr<YumeResource> > resources_;
+		YumeMap<YumeHash,boost::shared_ptr<YumeResource> > resources_;
 	};
 
 	/// Resource request types.
@@ -63,15 +65,17 @@ namespace YumeEngine
 	public:
 		YumeResourceManager();
 
-		void AddResourcePath(const YumeString&);
+		void AddResourcePath(const FsPath&);
 
 		bool AddManualResource(YumeResource* resource);
 		boost::shared_ptr<YumeFile> GetFile(const YumeString& name,bool sendEventOnFailure = true);
 
+		SharedPtr<YumeFile> SearchResourcesPath(const YumeString& resource);
+		SharedPtr<YumeResource> GetResource(const YumeString& resource,bool sendEventOnFailure = true);
 	private:
 		boost::mutex resourceMutex_;
-		YumeMap<YumeString,ResourceGroup> resourceGroups_;
-		YumeVector<YumeString> resourcePaths_;
+		YumeMap<YumeHash,ResourceGroup> resourceGroups_;
+		YumeVector<FsPath>::type resourcePaths_;
 		boost::shared_ptr<YumeBackgroundWorker> backgroundWorker_;
 
 	};
