@@ -72,7 +72,7 @@ namespace YumeEngine
 
 		for(int i=0; i < commandLine.size(); ++i)
 		{
-			engineVariants_.insert(VariantMap::value_type(commandLine[i],YumeVariant("1")));
+			engineVariants_.insert(VariantMap::value_type(commandLine[i].c_str(),YumeVariant("1")));
 		}
 	}
 
@@ -91,7 +91,7 @@ namespace YumeEngine
 
 	void YumeEnvironment::AddParameter(const YumeString& var,const YumeVariant& value)
 	{
-		VariantMap::iterator It = engineVariants_.find(var);
+		VariantMap::iterator It = engineVariants_.find(var.c_str());
 
 		//If the user wants to override the parameter,let them 
 		if(It != engineVariants_.end())
@@ -100,7 +100,7 @@ namespace YumeEngine
 		}
 		else
 		{
-			engineVariants_.insert(VariantMap::value_type(var,value));
+			engineVariants_.insert(VariantMap::value_type(var.c_str(),value));
 		}
 	}
 
@@ -134,7 +134,7 @@ namespace YumeEngine
 
 	YumeVariant YumeEnvironment::GetVariant(const YumeString& key)
 	{
-		VariantMap::iterator It = engineVariants_.find(key);
+		VariantMap::iterator It = engineVariants_.find(key.c_str());
 
 		if(It != engineVariants_.end())
 			return It->second;
