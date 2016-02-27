@@ -91,7 +91,7 @@ namespace YumeEngine
 
 	void YumeEnvironment::AddParameter(const YumeString& var,const YumeVariant& value)
 	{
-		VariantMap::iterator It = engineVariants_.find(var.c_str());
+		VariantMap::iterator It = engineVariants_.find(var);
 
 		//If the user wants to override the parameter,let them 
 		if(It != engineVariants_.end())
@@ -100,7 +100,7 @@ namespace YumeEngine
 		}
 		else
 		{
-			engineVariants_.insert(VariantMap::value_type(var.c_str(),value));
+			engineVariants_.insert(VariantMap::value_type(var,value));
 		}
 	}
 
@@ -134,7 +134,7 @@ namespace YumeEngine
 
 	YumeVariant YumeEnvironment::GetVariant(const YumeString& key)
 	{
-		VariantMap::iterator It = engineVariants_.find(key.c_str());
+		VariantMap::iterator It = engineVariants_.find(key);
 
 		if(It != engineVariants_.end())
 			return It->second;

@@ -33,12 +33,12 @@ namespace YumeEngine
 {
 	typedef boost::variant<int,double,float,bool,YumeString> Variant;
 	class YumeVariant;
-	typedef YumeMap<const char*,YumeVariant>::type VariantMap;
+	typedef YumeMap<YumeString,YumeVariant>::type VariantMap;
 
 	class YumeAPIExport YumeVariant
 	{
 	public:
-		YumeVariant()
+		explicit YumeVariant()
 		{
 			inner_ = Variant(false);
 		}
