@@ -32,8 +32,10 @@ namespace YumeEngine
 {
 	struct ResourceGroup;
 
+	class YumeImage;
+
 	typedef YumeMap<YumeHash,ResourceGroup>::type ResourceGroupHashMap;
-	typedef YumeMap<YumeHash,SharedPtr<YumeResource>>::type ResourceHashMap;
+	typedef YumeMap<YumeHash,SharedPtr<YumeResource> >::type ResourceHashMap;
 
 	/// Sets to priority so that a package or file is pushed to the end of the vector.
 	static const unsigned PRIORITY_LAST = 0xffffffff;
@@ -56,12 +58,6 @@ namespace YumeEngine
 		YumeMap<YumeHash,boost::shared_ptr<YumeResource> >::type resources_;
 	};
 
-	/// Resource request types.
-	enum ResourceRequest
-	{
-		RESOURCE_CHECKEXISTS = 0,
-		RESOURCE_GETFILE = 1
-	};
 
 	class YumeAPIExport YumeResourceManager
 	{
@@ -71,11 +67,17 @@ namespace YumeEngine
 		void AddResourcePath(const FsPath&);
 
 		bool AddManualResource(YumeResource* resource);
-		boost::shared_ptr<YumeFile> GetFile(const YumeString& name,bool sendEventOnFailure = true);
+		boost::shared_ptr<YumeFile> GetFile(const YumeString& name);
 
 		SharedPtr<YumeFile> SearchResourcesPath(const YumeString& resource);
 
-		YumeResource* GetResource(const YumeString& resource,bool sendEventOnFailure = true);
+		YumeResource* RetrieveResource(YumeHash type,const YumeString& resource);
+		
+		SharedPtr<YumeImage> GetImage(const YumeString& resource);
+
+
+		
+		bool PrepareResource(YumeResource* resource);
 
 	private:
 		void UpdateResourceGroup(YumeHash group);
@@ -85,7 +87,12 @@ namespace YumeEngine
 		YumeVector<FsPath>::type resourcePaths_;
 		boost::shared_ptr<YumeBackgroundWorker> backgroundWorker_;
 
+	private:
+		YumeMap<YumeString,YumeHash>::type cachedHashMap_;
+
 	};
+
+	
 
 }
 

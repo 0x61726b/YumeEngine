@@ -37,7 +37,7 @@ namespace YumeEngine
 	}
 	YumeRenderer::~YumeRenderer()
 	{
-		YumeAPIDelete windowIcon_;
+		
 	}
 
 	bool YumeRenderer::SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,

@@ -22,8 +22,17 @@
 #include "YumeHeaders.h"
 #include "YumeBase.h"
 
-#include <boost/functional/hash.hpp>
+#include "YumeDefaults.h"
 
 namespace YumeEngine
 {
+	YumeBase::YumeBase(const YumeString& key)
+	{
+		hash_ = GenerateHash(key);
+	}
+
+	YumeBase::~YumeBase()
+	{
+
+	}
 }

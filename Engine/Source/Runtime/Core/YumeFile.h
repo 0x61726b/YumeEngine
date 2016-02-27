@@ -62,6 +62,7 @@ namespace YumeEngine
 		YumeString GetFileExtension();
 	private:
 		YumeString fileName_;
+		YumeString file_;
 		FileMode fileMode_;
 
 		unsigned int position_;

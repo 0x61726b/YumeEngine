@@ -26,7 +26,16 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	class YumeAPIExport YumeBase
+	{
+	public:
+		YumeBase(const YumeString&);
+		~YumeBase();
 
+		YumeHash GetHash() const { return hash_; }
+	protected:
+		YumeHash hash_;
+	};
 }
 
 

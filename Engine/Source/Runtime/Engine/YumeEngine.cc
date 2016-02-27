@@ -143,9 +143,9 @@ namespace YumeEngine
 
 		YumeThreadWrapper::SetMainThread();
 
-		
+		SharedPtr<YumeImage> appIcon = resourceManager_->GetImage("Textures/appIcon.png");
 
-		/*graphics_->SetWindowIcon(appIcon);*/
+		graphics_->SetWindowIcon(appIcon.get());
 
 		if(!graphics_->SetGraphicsMode(env_->GetVariant("WindowWidth").Get<int>(),
 			env_->GetVariant("WindowHeight").Get<int>(),

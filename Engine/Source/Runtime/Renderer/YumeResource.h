@@ -46,7 +46,7 @@ namespace YumeEngine
 		ASYNC_FAIL = 4
 	};
 
-	class YumeAPIExport YumeResource
+	class YumeAPIExport YumeResource : public YumeBase
 	{
 	public:
 		YumeResource();

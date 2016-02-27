@@ -32,15 +32,15 @@ namespace fs = boost::filesystem;
 namespace YumeEngine
 {
 	YumeFile::YumeFile(const YumeString& file,FileMode fileMode)
-		: fileName_(file),fileMode_(fileMode),position_(0),size_(0)
+		: file_(file),fileMode_(fileMode),position_(0),size_(0)
 	{
-		Open(fileName_,fileMode_);
+		Open(file_,fileMode_);
 	}
 
 	YumeFile::YumeFile(const boost::filesystem::path& file,FileMode filemode) :
-		fileName_(file.generic_string()),fileMode_(filemode),position_(0),size_(0)
+		file_(file.generic_string()),fileMode_(filemode),position_(0),size_(0)
 	{
-		Open(fileName_,fileMode_);
+		Open(file_,fileMode_);
 	}
 
 	YumeFile::~YumeFile()
@@ -49,7 +49,7 @@ namespace YumeEngine
 
 	bool YumeFile::Open(const std::string& file,FileMode filemode)
 	{
-		fileName_ = file;
+		file_ = file;
 		fileMode_ = filemode;
 
 		//std::ios_base::openmode fileMode;
@@ -147,7 +147,7 @@ namespace YumeEngine
 
 	unsigned YumeFile::GetSize()
 	{
-		return boost::filesystem::file_size(fileName_);
+		return boost::filesystem::file_size(file_);
 	}
 
 	YumeString YumeFile::GetFileExtension()

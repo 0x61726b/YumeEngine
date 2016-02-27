@@ -25,6 +25,10 @@
 #include "Core/YumeFile.h"
 #include "Engine/YumeEngine.h"
 
+#include "Renderer/YumeImage.h"
+
+#include "Core/YumeDefaults.h"
+
 #include "Core/YumeThread.h"
 
 #include "Logging/logging.h"
@@ -32,16 +36,12 @@
 namespace YumeEngine
 {
 
-	static const char* resourceDirs[] =
-	{
-		"Shaders",
-		"Textures",
-		0
-	};
-
 	YumeResourceManager::YumeResourceManager()
 	{
 		backgroundWorker_ = boost::shared_ptr<YumeBackgroundWorker>(YumeAPINew YumeBackgroundWorker(this));
+
+		cachedHashMap_["Base"] = GenerateHash("Base");
+		cachedHashMap_["Image"] = GenerateHash("Image");
 
 	}
 
@@ -66,7 +66,7 @@ namespace YumeEngine
 
 	}
 
-	boost::shared_ptr<YumeFile> YumeResourceManager::GetFile(const YumeString& name,bool sendEventOnFailure)
+	boost::shared_ptr<YumeFile> YumeResourceManager::GetFile(const YumeString& name)
 	{
 		boost::mutex::scoped_lock lock(resourceMutex_);
 
@@ -83,46 +83,106 @@ namespace YumeEngine
 		return boost::shared_ptr<YumeFile>();
 	}
 
-	YumeResource* YumeResourceManager::GetResource(const YumeString& resource,bool sendEventOnFailure)
+	YumeResource* YumeResourceManager::RetrieveResource(YumeHash type,const YumeString& resource)
 	{
-		if(!YumeThreadWrapper::IsMainThread())
+		ResourceGroupHashMap::iterator It = resourceGroups_.find(type);
+
+		if(It != resourceGroups_.end())
 		{
-			YUMELOG_ERROR("Attemp to load resource " << resource.c_str() << " is ill eagle");
+			YumeHash nameHash = GenerateHash(resource);
+
+			YumeMap<YumeHash,boost::shared_ptr<YumeResource> >::iterator rgIt = It->second.resources_.find(nameHash);
+
+			if(rgIt != It->second.resources_.end())
+			{
+				return (rgIt->second.get());
+			}
+			else
+				return 0;
+		}
+		else
+		{
 			return 0;
 		}
+	}
 
-		if(resource.empty())
-			return 0;
 
-		/*backgroundWorker_->WaitForResource(type,resource);*/
+	SharedPtr<YumeImage> YumeResourceManager::GetImage(const YumeString& resource)
+	{
+		//Check if resource is loaded before
+		YumeHash type = cachedHashMap_["Image"];
 
-		//Check existing resources
+		YumeResource* resourceBase_ = RetrieveResource(type,resource);
 
-		SharedPtr<YumeResource> resource_ = SharedPtr<YumeResource>(new YumeResource);
+		SharedPtr<YumeImage> resource_ = 0;
+		if(resourceBase_)
+		{
+			resource_ = SharedPtr<YumeImage>(static_cast<YumeImage*>(resourceBase_));
+			return resource_;
+		}
 
-		SharedPtr<YumeFile> file_ = GetFile(resource,sendEventOnFailure);
+		//Resource doesnt exist yet
+
+		YumeHash nameHash = GenerateHash(resource);
+
+		resource_ = boost::shared_ptr<YumeImage>( new YumeImage );
+
+		SharedPtr<YumeFile> file_ = GetFile(resource);
 
 		if(!file_)
 			return 0;
-
-		YUMELOG_INFO("Loading resource " << resource.c_str());
 
 		resource_->SetName(resource);
 
 		if(!resource_->Load(*(file_.get())))
 		{
-			//Send event
+			//Log error
 		}
 
-		boost::hash<YumeString> hasher;
-		YumeHash nameHash = hasher(resource);
+		resourceGroups_[type].resources_[nameHash] = resource_;
 
-		//Cache the resource somehow
-		resource_->ResetUseTimer();
-		/*resourceGroups_[type].resources_[nameHash] = resource_;*/
-		/*UpdateResourceGroup(type);*/
+		return resource_;
+	}
 
-		return resource_.get();
+	bool YumeResourceManager::PrepareResource(YumeResource* resource)
+	{
+		//if(!YumeThreadWrapper::IsMainThread())
+		//{
+		//	YUMELOG_ERROR("Attemp to load resource from non-main thread is ill eagle");
+		//	return false;
+		//}
+
+		///*backgroundWorker_->WaitForResource(type,resource);*/
+
+		////Check existing resources
+
+		//
+		//
+
+		//SharedPtr<YumeFile> file_ = GetFile(resource);
+
+		//if(!file_)
+		//	return 0;
+
+		//YUMELOG_INFO("Loading resource " << resource.c_str());
+
+		//resource_->SetName(resource);
+
+		//if(!resource_->Load(*(file_.get())))
+		//{
+		//	//Send event
+		//}
+
+		//YumeHash uniqueHash = resource_->GetHash();
+		//YumeHash nameHash = GenerateHash(resource);
+
+		////Cache the resource somehow
+		//resource_->ResetUseTimer();
+		//resourceGroups_[uniqueHash].resources_[nameHash] = resource_;
+		///*UpdateResourceGroup(type);*/
+
+		//return resource_.get();
+		return true;
 	}
 
 	void YumeResourceManager::UpdateResourceGroup(YumeHash type)

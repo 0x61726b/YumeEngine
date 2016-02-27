@@ -25,6 +25,7 @@
 #include "Core/YumeFile.h"
 
 #include "Core/YumeDecompresser.h"
+#include "Core/YumeDefaults.h"
 
 #include <Logging/logging.h>
 
@@ -245,6 +246,7 @@ namespace YumeEngine
 		array_(false),
 		sRGB_(false)
 	{
+		hash_ = GenerateHash("Image");
 	}
 
 	YumeImage::~YumeImage()
