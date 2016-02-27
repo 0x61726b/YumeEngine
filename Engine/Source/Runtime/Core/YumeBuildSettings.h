@@ -30,14 +30,14 @@
 #ifndef __CMakeBuildSettingsTemplate_in__
 #define __CMakeBuildSettingsTemplate_in__
 
-#define YUME_BUILD_DIRECT3D11
+/* #undef YUME_BUILD_DIRECT3D11 */
 #define YUME_BUILD_OPENGL
 /* #undef YUME_STATIC_LIB */
 
 #define YUME_MEMORY_ALLOCATOR YUME_MEMORY_ALLOCATOR_STD
 
-#define YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR 1
+//#define YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR 1
 
-#define YUME_USE_PCH
+/* #undef YUME_USE_PCH */
 
 #endif
