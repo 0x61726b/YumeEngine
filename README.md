@@ -6,6 +6,7 @@
 [![todofy badge](https://todofy.org/b/arkenthera/YumeEngine/master)](https://todofy.org/r/arkenthera/YumeEngine/master)
 [![Coverity](https://scan.coverity.com/projects/8038/badge.svg)](https://scan.coverity.com/projects/arkenthera-yumeengine)
 
+
 # Synopsis
 Yume Engine
 Exploring new renderer design ideas,trying to implement as simple as possible.Heavily inspired by other open source renderers I aim to support D3D11,D3D12 and OpenGL(Vulkan in the future), this engine strives to be as platform dependent as possible.After initial planned platforms' work has been done,I'm aiming to add more platform support.
@@ -68,5 +69,3 @@ Tested on Win10 x64 Vs2013
 [Frank Luna's D3D11 Book](http://www.amazon.com/Introduction-3D-Game-Programming-DirectX/dp/1936420228)
 
 <img src = "http://i.imgur.com/mPVCTYw.png" />
-
-Logo credits go to julesawdupin
