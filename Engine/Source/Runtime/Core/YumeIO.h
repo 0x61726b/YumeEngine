@@ -40,8 +40,14 @@ namespace YumeEngine
 
 		FsPath GetBinaryRoot();
 		FsPath GetCurrentPath() const;
+
+		unsigned GetLastModifiedTime(const YumeString& fileName) const;
 	};
 
+	YumeAPIExport void SplitPath(const YumeString& fullPath, YumeString& pathName, YumeString& fileName, YumeString& extension, bool lowercaseExtension = true);
+	YumeAPIExport YumeString GetPath(const YumeString& fullPath);
+	YumeAPIExport YumeString GetFileName(const YumeString& fullPath);
+	YumeAPIExport YumeString GetExtension(const YumeString& fullPath,bool lowercaseExtension = true);
 }
 
 

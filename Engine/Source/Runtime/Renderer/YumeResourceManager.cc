@@ -39,9 +39,10 @@ namespace YumeEngine
 	YumeResourceManager::YumeResourceManager()
 	{
 		backgroundWorker_ = boost::shared_ptr<YumeBackgroundWorker>(YumeAPINew YumeBackgroundWorker(this));
+	}
 
-
-
+	YumeResourceManager::~YumeResourceManager()
+	{
 	}
 
 	void YumeResourceManager::AddResourcePath(const FsPath& path)
@@ -105,42 +106,51 @@ namespace YumeEngine
 		}
 	}
 
-
-	SharedPtr<YumeImage> YumeResourceManager::GetImage(const YumeString& resource)
+	bool YumeResourceManager::Exists(const YumeString& name)
 	{
-		//Check if resource is loaded before
-		YumeHash type = 123123;
+		boost::mutex::scoped_lock lock(resourceMutex_);
 
-		SharedPtr<YumeResource> resourceBase_ = RetrieveResource(type,resource);
+		if(name.empty())
+			return false;
 
-		SharedPtr<YumeImage> resource_ = 0;
-		if(resourceBase_)
+		SharedPtr<YumeIO> io_ = YumeEngine3D::Get()->GetIO();
+
+		for(size_t i = 0; i < resourcePaths_.size(); ++i)
 		{
-			return boost::static_pointer_cast<YumeImage>(resourceBase_);
+			if(!io_->IsDirectoryExist(resourcePaths_[i] / name))
+			{
+				return false;
+			}
 		}
+		return true;
+	}
 
-		//Resource doesnt exist yet
+	YumeString YumeResourceManager::GetFullPath(const YumeString& resource)
+	{
+		boost::mutex::scoped_lock lock(resourceMutex_);
 
-		YumeHash nameHash = GenerateHash(resource);
+		SharedPtr<YumeIO> io_ = YumeEngine3D::Get()->GetIO();
 
-		resource_ = boost::shared_ptr<YumeImage>(new YumeImage);
-
-		SharedPtr<YumeFile> file_ = GetFile(resource);
-
-		if(!file_)
-			return 0;
-
-		resource_->SetName(resource);
-
-		YUMELOG_INFO("Loading resource " << resource.c_str() << "...");
-		if(!resource_->Load(*(file_.get())))
+		for(size_t i = 0; i < resourcePaths_.size(); ++i)
 		{
-			//Log error
+			if(io_->IsDirectoryExist(resourcePaths_[i] / resource))
+			{
+				return (resourcePaths_[i] / resource).generic_string();
+			}
 		}
+		return YumeString();
+	}
 
-		resourceGroups_[type].resources_[nameHash] = resource_;
+	void YumeResourceManager::StoreResourceDependency(YumeResource* resource,const YumeString& dep)
+	{
+		boost::mutex::scoped_lock lock(resourceMutex_);
 
-		return resource_;
+		if(!resource)
+			return;
+
+		YumeHash nameHash = GenerateHash(resource->GetName());
+		YumeVector<YumeHash>::type& dependents = dependentResources_[GenerateHash(dep)];
+		dependents.push_back(nameHash);
 	}
 
 	SharedPtr<YumeResource> YumeResourceManager::PrepareResource(YumeHash type,const YumeString& resource)
@@ -159,6 +169,12 @@ namespace YumeEngine
 
 		resource_ = boost::static_pointer_cast<YumeResource>(YumeObjectFactory::Get()->Create(type));
 
+		if(!resource_)
+		{
+			YUMELOG_ERROR("Couldn't create object type " << type);
+			return 0;
+		}
+
 		SharedPtr<YumeFile> file_ = GetFile(resource);
 
 		if(!file_)
@@ -173,6 +189,8 @@ namespace YumeEngine
 		}
 
 		resourceGroups_[type].resources_[nameHash] = resource_;
+
+		YUMELOG_INFO("Resource " << resource.c_str() << " is loaded succesfully");
 
 		return resource_;
 	}

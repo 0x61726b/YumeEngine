@@ -36,6 +36,10 @@ set(SRC_RENDERER
 	Renderer/YumeBackgroundWorker.cc
 	Renderer/YumeResourceManager.h
 	Renderer/YumeResourceManager.cc
+	Renderer/YumeShaderVariation.h
+	Renderer/YumeShaderVariation.cc
+	Renderer/YumeShader.h
+	Renderer/YumeShader.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

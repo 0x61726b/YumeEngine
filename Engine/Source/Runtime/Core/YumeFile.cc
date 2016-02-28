@@ -106,6 +106,20 @@ namespace YumeEngine
 		return size;
 	}
 
+	YumeString YumeFile::ReadLine()
+	{
+		YumeString line;
+		if(std::getline(fileStream,line))
+		{
+			return line;
+		}
+	}
+
+	bool YumeFile::Eof() const
+	{
+		return fileStream.eof();
+	}
+
 	YumeString YumeFile::Read()
 	{
 		YumeString str;

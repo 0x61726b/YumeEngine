@@ -30,6 +30,8 @@
 
 #include "Renderer/YumeRenderer.h"
 
+#include "Renderer/YumeShader.h"
+
 #include <boost/thread/mutex.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
@@ -75,10 +77,20 @@ namespace YumeEngine
 		void AddGpuResource(YumeGpuResource* object);
 		void RemoveGpuResource(YumeGpuResource* object);
 
+		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const;
+		
+		YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const;
+
+		void SetShaders(YumeShaderVariation* vs, YumeShaderVariation* ps);
+
 
 		bool IsInitialized() const { return initialized_; }
 
 		YumeD3D11RendererImpl* GetImpl() const { return impl_; }
+
+	private:
+		void RegisterFactories();
+		void UnregisterFactories();
 	private:
 		YumeVector<Vector2>::type				GetScreenResolutions();
 	private:
@@ -127,6 +139,8 @@ namespace YumeEngine
 		GpuResourceVector						gpuResources_;
 
 		YumeD3D11RendererImpl*						impl_;
+
+
 	};
 }
 

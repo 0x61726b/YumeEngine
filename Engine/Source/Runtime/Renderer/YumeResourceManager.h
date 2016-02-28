@@ -63,20 +63,24 @@ namespace YumeEngine
 	{
 	public:
 		YumeResourceManager();
+		virtual ~YumeResourceManager();
 
 		void AddResourcePath(const FsPath&);
 
 		bool AddManualResource(YumeResource* resource);
 		boost::shared_ptr<YumeFile> GetFile(const YumeString& name);
 
+		YumeString GetFullPath(const YumeString& resource);
+
 		SharedPtr<YumeFile> SearchResourcesPath(const YumeString& resource);
 
 		SharedPtr<YumeResource> RetrieveResource(YumeHash type,const YumeString& resource);
-		
-		SharedPtr<YumeImage> GetImage(const YumeString& resource);
-
 
 		SharedPtr<YumeResource> PrepareResource(YumeHash type,const YumeString& resource);
+
+		void StoreResourceDependency(YumeResource* resource,const YumeString& dep);
+
+		bool Exists(const YumeString& name);
 
 		template< class T >
 		SharedPtr<T> PrepareResource(const YumeString& resource);
@@ -86,6 +90,8 @@ namespace YumeEngine
 		ResourceGroupHashMap resourceGroups_;
 		YumeVector<FsPath>::type resourcePaths_;
 		boost::shared_ptr<YumeBackgroundWorker> backgroundWorker_;
+
+		YumeMap<YumeHash, YumeVector<YumeHash>::type >::type dependentResources_;
 
 
 	};

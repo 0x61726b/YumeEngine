@@ -19,53 +19,66 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeBase_h__
-#define __YumeBase_h__
+#ifndef __YumeShaderVariation_h__
+#define __YumeShaderVariation_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 
-#include <boost/shared_ptr.hpp>
+#include "YumeRendererDefs.h"
+#include "YumeGpuResource.h"
+#include "YumeShader.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class YumeShader;
-
-	class YumeAPIExport YumeBase
+	/// Vertex or pixel shader on the GPU.
+	class YumeAPIExport YumeShaderVariation
 	{
 	public:
-		YumeBase(){};
-		virtual ~YumeBase() {};
+		/// Construct.
+		YumeShaderVariation();
+		/// Destruct.
+		virtual ~YumeShaderVariation();
+
+		virtual void Release() { };
+
+		/// Compile the shader. Return true if successful.
+		virtual bool Create() = 0;
+		/// Set name.
+		void SetName(const YumeString& name);
+		/// Set defines.
+		void SetDefines(const YumeString& defines) ;
+
+		/// Return the owner resource.
+		YumeShader* GetOwner() const;
+
+		/// Return shader type.
+		ShaderType GetShaderType() const { return type_; }
+
+		/// Return name.
+		const YumeString& GetName() const { return name_; }
+
+		/// Return defines.
+		const YumeString& GetDefines() const { return defines_; }
+
+		/// Return full shader name.
+		YumeString GetFullName() const { return name_ + "(" + defines_ + ")"; }
+
+		/// Return compile error/warning string.
+		const YumeString& GetCompilerOutput() const { return compilerOutput_; }
+
+	protected:
+		/// Shader this variation belongs to.
+		YumeShader* owner_;
+		/// Shader type.
+		ShaderType type_;
+		/// Shader name.
+		YumeString name_;
+		/// Defines to use in compiling.
+		YumeString defines_;
+		/// Shader compile error string.
+		YumeString compilerOutput_;
 	};
-	class YumeAPIExport YumeObjectFactory
-	{
-	public:
-		YumeObjectFactory();
-		virtual ~YumeObjectFactory();
-
-		SharedPtr<YumeBase> Create(YumeHash type);
-		void RegisterFactoryFunction(YumeHash type,std::function<YumeBase*(void)> classFactoryFunction);
-		void UnRegisterFactoryFunction(YumeHash type);
-
-		typedef YumeMap<YumeHash,std::function<YumeBase*(void)> >::type ObjRegistry;
-
-		ObjRegistry functionRegistry;
-
-		static YumeObjectFactory* Get();
-	};
-
-
-	template<class T>
-	class YumeAPIExport YumeObjectRegistrar 
-	{
-	public:
-		YumeObjectRegistrar(YumeHash type)
-		{
-			YumeObjectFactory::Get()->RegisterFactoryFunction(type,[](void) -> YumeBase * { return new T();});
-		}
-	};
-	
-
-#define REGISTER_CLASS(c,t) static YumeObjectRegistrar<c> registrar(t)
 }
 
 

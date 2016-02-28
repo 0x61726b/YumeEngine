@@ -56,4 +56,66 @@ namespace YumeEngine
 	{
 		return boost::filesystem::current_path();
 	}
+
+	unsigned YumeIO::GetLastModifiedTime(const YumeString& fileName) const
+	{
+		if(fileName.empty())
+			return 0;
+
+#ifdef _WIN32
+		struct _stat st;
+		if(!_stat(fileName.c_str(),&st))
+			return (unsigned)st.st_mtime;
+		else
+			return 0;
+#else
+		struct stat st;
+		if (!stat(fileName.c_str(), &st))
+			return (unsigned)st.st_mtime;
+		else
+			return 0;
+#endif
+	}
+
+	void SplitPath(const YumeString& fullPath,YumeString& pathName,YumeString& fileName,YumeString& extension,bool lowercaseExtension)
+	{
+		//Shaders/HLSL/LitSolid.hlsl
+		YumeString copy = fullPath;
+
+		size_t extensionPos = copy.find_last_of(".");
+		size_t pathPos = copy.find_last_of("/");
+
+		size_t size = copy.size();
+
+		extension = copy.substr(extensionPos,size - extensionPos);
+
+		copy = copy.substr(0,extensionPos);
+
+		size = copy.size();
+
+		fileName = copy.substr(pathPos+1,size - pathPos +1);
+
+		pathName = copy.substr(0,pathPos+1);
+	}
+
+	YumeString GetPath(const YumeString& fullPath)
+	{
+		YumeString path,file,extension;
+		SplitPath(fullPath,path,file,extension);
+		return path;
+	}
+
+	YumeString GetFileName(const YumeString& fullPath)
+	{
+		YumeString path,file,extension;
+		SplitPath(fullPath,path,file,extension);
+		return file;
+	}
+
+	YumeString GetExtension(const YumeString& fullPath,bool lowercaseExtension)
+	{
+		YumeString path,file,extension;
+		SplitPath(fullPath,path,file,extension,lowercaseExtension);
+		return extension;
+	}
 }

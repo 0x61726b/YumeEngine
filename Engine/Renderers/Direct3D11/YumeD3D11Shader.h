@@ -19,57 +19,39 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#include "YumeHeaders.h"
-#include "YumeBase.h"
+#ifndef __YumeD3D11Shader_h__
+#define __YumeD3D11Shader_h__
+//----------------------------------------------------------------------------
+#include "YumeD3D11Required.h"
 
-#include "YumeDefaults.h"
-
+#include "Renderer/YumeShader.h"
+//----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	
-
-	YumeObjectFactory* GlobalFactoryObject = 0;
-
-	YumeObjectFactory::YumeObjectFactory()
+	class YumeD3D11ShaderVariation;
+	class YumeD3DExport YumeD3D11Shader : public YumeShader
 	{
-		GlobalFactoryObject = this;
-	}
+	public:
+		YumeD3D11Shader();
+		virtual ~YumeD3D11Shader();
 
-	YumeObjectFactory::~YumeObjectFactory()
-	{
+		virtual bool BeginLoad(YumeFile& source);
 
-	}
+		virtual bool EndLoad();
 
-	SharedPtr<YumeBase> YumeObjectFactory::Create(YumeHash type)
-	{
-		YumeBase* instance = nullptr;
+		/// Return a variation with defines.
+		virtual YumeShaderVariation* GetVariation(ShaderType type,const YumeString& defines);
+		/// Return a variation with defines.
+		virtual YumeShaderVariation* GetVariation(ShaderType type,const char* defines);
 
-		ObjRegistry::iterator It = functionRegistry.find(type);
+		virtual void RefreshMemoryUse() ;
 
-		if(It != functionRegistry.end())
-			instance = It->second();
-
-		if(instance != nullptr)
-			return SharedPtr<YumeBase>(instance);
-		else
-			return nullptr;
-	}
-
-	YumeObjectFactory* YumeObjectFactory::Get()
-	{
-		return GlobalFactoryObject;
-	}
-
-	void YumeObjectFactory::RegisterFactoryFunction(YumeHash type,std::function<YumeBase*(void)> classFactoryFunction)
-	{
-		functionRegistry.insert(std::make_pair(type,classFactoryFunction));
-	}
-
-	void YumeObjectFactory::UnRegisterFactoryFunction(YumeHash type)
-	{
-		ObjRegistry::iterator It = functionRegistry.find(type);
-
-		if(It != functionRegistry.end())
-			functionRegistry.erase(It);
-	}
+		YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> >::type vsVariations_;
+		/// Pixel shader variations.
+		YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> >::type psVariations_;
+	};
 }
+
+
+//----------------------------------------------------------------------------
+#endif

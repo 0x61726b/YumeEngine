@@ -45,6 +45,9 @@ namespace YumeEngine
 
 		bool Open(const std::string& file,FileMode filemode = FILEMODE_READ);
 		unsigned Read(void* dest,int size);
+		YumeString ReadLine();
+
+		bool Eof() const;
 
 		void Write(const YumeString& str);
 		unsigned Write(const void* str,unsigned len);

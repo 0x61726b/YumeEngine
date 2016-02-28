@@ -25,6 +25,7 @@
 #include "YumeRequired.h"
 
 #include <boost/filesystem.hpp>
+
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {

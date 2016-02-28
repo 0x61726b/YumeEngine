@@ -14,28 +14,41 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : <Filename> YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
-#include "YumeGpuResource.h"
-#include "YumeRenderer.h"
-#include "Engine/YumeEngine.h"
+#include "YumeShaderVariation.h"
+
+
 
 
 namespace YumeEngine
 {
-
-	YumeGpuResource::YumeGpuResource():
-		object_(0)
+	YumeShaderVariation::YumeShaderVariation()
 	{
 		
 	}
 
-	YumeGpuResource::~YumeGpuResource()
+	YumeShaderVariation::~YumeShaderVariation()
 	{
+		Release();
+	}
 
+	YumeShader* YumeShaderVariation::GetOwner() const
+	{
+		return owner_;
+	}
+
+	void YumeShaderVariation::SetName(const YumeString& name)
+	{
+		name_ = name;
+	}
+
+	void YumeShaderVariation::SetDefines(const YumeString& defines)
+	{
+		defines_ = defines;
 	}
 }

@@ -26,7 +26,14 @@
 #include "YumeD3D11GpuResource.h"
 #include "YumeD3D11RendererImpl.h"
 
+#include "Renderer/YumeResourceManager.h"
 #include "Math/YumeMath.h"
+
+#include "YumeD3D11Shader.h"
+#include "YumeD3D11ShaderVariation.h"
+
+#include "Core/YumeBase.h"
+#include "Core/YumeDefaults.h"
 
 #include "Logging/logging.h"
 
@@ -65,13 +72,16 @@ namespace YumeEngine
 		vsync_(false),
 		tripleBuffer_(false)
 	{
-
-
+		shaderPath_ = "Shaders/HLSL/";
+		shaderExtension_ = ".hlsl";
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
+
+		RegisterFactories();
 	}
 
 	YumeD3D11Renderer::~YumeD3D11Renderer()
 	{
+		
 		{
 			boost::mutex::scoped_lock lock(gpuResourceMutex_);
 
@@ -124,6 +134,8 @@ namespace YumeEngine
 
 		delete impl_;
 		impl_ = 0;
+
+		UnregisterFactories();
 
 		// Shut down SDL now. Graphics should be the last SDL-using subsystem to be destroyed
 		SDL_Quit();
@@ -650,6 +662,34 @@ namespace YumeEngine
 		ResetRenderTargets();
 		return success;
 	}
+
+	YumeShaderVariation* YumeD3D11Renderer::GetShader(ShaderType type,const YumeString& name,const YumeString& defines) const
+	{
+		return GetShader(type,name.c_str(),defines.c_str());
+	}
+
+	YumeShaderVariation* YumeD3D11Renderer::GetShader(ShaderType type,const char* name,const char* defines) const
+	{
+		if(lastShaderName_ != name || !lastShader_)
+		{
+			YumeResourceManager* resource_ = YumeEngine3D::Get()->GetResourceManager();
+			YumeString fullShaderName = shaderPath_ + name + shaderExtension_;
+			// Try to reduce repeated error log prints because of missing shaders
+			if(lastShaderName_ == name && !resource_->Exists(fullShaderName))
+				return 0;
+
+			lastShader_ = resource_->PrepareResource<YumeD3D11Shader>(fullShaderName);
+			lastShaderName_ = name;
+		}
+
+		return lastShader_ ? lastShader_->GetVariation(type,defines) : (YumeD3D11ShaderVariation*)0;
+	}
+
+	void YumeD3D11Renderer::SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps)
+	{
+
+	}
+
 	void YumeD3D11Renderer::Maximize()
 	{
 		if(!window_)
@@ -705,5 +745,14 @@ namespace YumeEngine
 
 		if(It != gpuResources_.end())
 			gpuResources_.erase(It);
+	}
+
+	void YumeD3D11Renderer::RegisterFactories()
+	{
+		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(GenerateHash("Shader"),[](void) -> YumeBase * { return new YumeD3D11Shader();});
+	}
+	void YumeD3D11Renderer::UnregisterFactories()
+	{
+		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(GenerateHash("Shader"));
 	}
 }

@@ -22,11 +22,133 @@
 #ifndef __YumeD3D11ShaderVariation_h__
 #define __YumeD3D11ShaderVariation_h__
 //----------------------------------------------------------------------------
-#include "YumeRequired.h"
+#include "YumeD3D11Required.h"
+
+#include "Renderer/YumeRendererDefs.h"
+#include "Renderer/YumeGpuResource.h"
+#include "Renderer/YumeShaderVariation.h"
+#include "YumeD3D11GpuResource.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	
+	class YumeConstantBuffer;
+	class YumeShader;
 
+	/// %Shader parameter definition.
+	struct ShaderParameter
+	{
+		/// Construct with defaults.
+		ShaderParameter():
+			type_(VS),
+			buffer_(0),
+			offset_(0),
+			size_(0),
+			bufferPtr_(0)
+		{
+		}
+
+		/// Construct with parameters.
+		ShaderParameter(ShaderType type,const YumeString& name,unsigned buffer,unsigned offset,unsigned size,YumeConstantBuffer* ptr = 0):
+			type_(type),
+			name_(name),
+			buffer_(buffer),
+			offset_(offset),
+			size_(size),
+			bufferPtr_(ptr)
+		{
+		}
+
+		/// %Shader type.
+		ShaderType type_;
+		/// Name of the parameter.
+		YumeString name_;
+		/// Constant buffer index.
+		unsigned buffer_;
+		/// Offset in constant buffer.
+		unsigned offset_;
+		/// Size of parameter in bytes.
+		unsigned size_;
+		/// Constant buffer pointer. Defined only in shader programs.
+		YumeConstantBuffer* bufferPtr_;
+	};
+
+	/// Vertex or pixel shader on the GPU.
+	class YumeD3DExport YumeD3D11ShaderVariation : public YumeShaderVariation,public YumeD3D11Resource
+	{
+	public:
+		/// Construct.
+		YumeD3D11ShaderVariation (YumeShader* owner,ShaderType type);
+		/// Destruct.
+		virtual ~YumeD3D11ShaderVariation ();
+
+		/// Release the shader.
+		virtual void Release();
+
+		/// Compile the shader. Return true if successful.
+		virtual bool Create();
+
+		/// Return shader type.
+		ShaderType GetShaderType() const { return type_; }
+
+		/// Return shader name.
+		const YumeString& GetName() const { return name_; }
+
+		/// Return full shader name.
+		YumeString GetFullName() const { return name_ + "(" + defines_ + ")"; }
+
+		/// Return whether uses a parameter.
+		bool HasParameter(YumeHash param) const {
+			return parameters_.find(param) != parameters_.end() ? true : false;
+		}
+
+		/// Return whether uses a texture unit (only for pixel shaders.)
+		bool HasTextureUnit(TextureUnit unit) const { return useTextureUnit_[unit]; }
+
+		/// Return all parameter definitions.
+		const YumeMap<YumeHash,ShaderParameter>::type& GetParameters() const { return parameters_; }
+
+		/// Return vertex element mask.
+		unsigned GetElementMask() const { return elementMask_; }
+
+		/// Return shader bytecode.
+		const YumeVector<unsigned char>::type& GetByteCode() const { return byteCode_; }
+
+		/// Return defines.
+		const YumeString& GetDefines() const { return defines_; }
+
+		/// Return compile error/warning string.
+		const YumeString& GetCompilerOutput() const { return compilerOutput_; }
+
+		/// Return constant buffer data sizes.
+		const unsigned* GetConstantBufferSizes() const { return &constantBufferSizes_[0]; }
+
+	private:
+		/// Load bytecode from a file. Return true if successful.
+		bool LoadByteCode(const YumeString& binaryShaderName);
+		/// Compile from source. Return true if successful.
+		bool Compile();
+		/// Inspect the constant parameters and input layout (if applicable) from the shader bytecode.
+		void ParseParameters(unsigned char* bufData,unsigned bufSize);
+		/// Save bytecode to a file.
+		void SaveByteCode(const YumeString& binaryShaderName);
+		/// Calculate constant buffer sizes from parameters.
+		void CalculateConstantBufferSizes();
+		/// Vertex element mask for vertex shaders. Zero for pixel shaders.
+		unsigned elementMask_;
+		/// Shader parameters.
+		YumeMap<YumeHash,ShaderParameter>::type parameters_;
+		/// Texture unit use flags.
+		bool useTextureUnit_[MAX_TEXTURE_UNITS];
+		/// Constant buffer sizes. 0 if a constant buffer slot is not in use.
+		unsigned constantBufferSizes_[MAX_SHADER_PARAMETER_GROUPS];
+		/// Bytecode. Needed for inspecting the input signature and parameters.
+		YumeVector<unsigned char>::type byteCode_;
+		/// Defines to use in compiling.
+		YumeString defines_;
+		/// Shader compile error string.
+		YumeString compilerOutput_;
+	};
 }
 
 

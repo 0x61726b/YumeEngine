@@ -39,7 +39,7 @@ namespace YumeEngine
 		virtual ~YumeGpuResource();
 
 		/// Unconditionally release the GPU resource.
-		virtual void Release() = 0;
+		virtual void Release() {};
 
 		/// Clear the data lost flag. No-op on D3D11.
 		virtual void ClearDataLost() = 0;

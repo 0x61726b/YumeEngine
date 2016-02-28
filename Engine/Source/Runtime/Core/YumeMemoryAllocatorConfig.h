@@ -109,6 +109,7 @@ namespace YumeEngine
 //---------------------------------------------------------------------------------
 
 #define SharedPtr boost::shared_ptr
+#define WeakPtr boost::weak_ptr
 
 #if YUME_DEBUG_MODE
 #	define YUME_DEALLOC(ptr, category) ::YumeEngine::YumeCategorisedAllocPolicy<category>::deallocateBytes((void*)ptr)

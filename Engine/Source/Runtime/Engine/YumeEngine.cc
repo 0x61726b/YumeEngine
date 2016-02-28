@@ -42,6 +42,8 @@
 #include "Core/YumeDefaults.h"
 #include "Core/YumeBase.h"
 
+#include "Renderer/YumeShader.h"
+
 #include <log4cplus/initializer.h>
 
 #include <boost/filesystem.hpp>
@@ -87,11 +89,11 @@ namespace YumeEngine
 
 		RegisterFactories();
 
+
 		io_ = boost::shared_ptr<YumeIO>(YumeAPINew YumeIO);
 		timer_ = boost::shared_ptr<YumeTime>(YumeAPINew YumeTime);
 		env_ = boost::shared_ptr<YumeEnvironment>(YumeAPINew YumeEnvironment);
-		resourceManager_ = SharedPtr<YumeResourceManager>(YumeAPINew YumeResourceManager);
-
+		resourceManager_ = YumeAPINew YumeResourceManager;
 		VariantMap::const_iterator It = variants.begin();
 
 		for(It;It != variants.end(); ++It)
@@ -160,8 +162,12 @@ namespace YumeEngine
 			return false;
 		frameTimer_.Reset();
 
+		/*SharedPtr<YumeShader> test_ = resourceManager_->PrepareResource<YumeShader>("Shaders/Basic.hlsl");*/
 
+		
+		graphics_->GetShader(VS,"Basic","NORMALMAP PERPIXEL DIRLIGHT");
 
+		
 		YUMELOG_INFO("Initialized Yume Engine...");
 
 
@@ -178,11 +184,7 @@ namespace YumeEngine
 		YumeObjectRegistrar<YumeBase> baseObj(GenerateHash("Base"));
 		YumeObjectRegistrar<YumeResource> resourceObj(GenerateHash("Resource"));
 		YumeObjectRegistrar<YumeImage> imageObj(GenerateHash("Image"));
-
-		SharedPtr<YumeImage> img = boost::static_pointer_cast<YumeImage>((YumeObjectFactory::Get()->Create(GenerateHash("Image"))));
-
-		assert(img);
-
+		
 
 	}
 	void YumeEngine3D::Render()
@@ -359,6 +361,8 @@ namespace YumeEngine
 		exiting_ = true;
 
 		YUMELOG_INFO("Exiting Yume Engine...");
+
+		YumeAPIDelete resourceManager_;
 
 		UnloadExternalLibraries();
 

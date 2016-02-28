@@ -27,6 +27,8 @@
 
 #include "Math/YumeVector4.h"
 
+#include <boost/weak_ptr.hpp>
+
 #include <SDL.h>
 //----------------------------------------------------------------------------
 namespace YumeEngine
@@ -34,6 +36,8 @@ namespace YumeEngine
 	class YumeGpuResource;
 	class YumeRendererImpl;
 	class YumeImage;
+	class YumeShaderVariation;
+	class YumeShader;
 
 
 	class YumeAPIExport YumeRenderer : public RenderObjAlloc
@@ -68,6 +72,12 @@ namespace YumeEngine
 		virtual void AddGpuResource(YumeGpuResource* object) = 0;
 		virtual void RemoveGpuResource(YumeGpuResource* object) = 0;
 
+		virtual YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const = 0;
+
+		virtual YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const = 0;
+
+		virtual void SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps) = 0;
+
 		void SetWindowIcon(YumeImage* image);
 
 	protected:
@@ -77,6 +87,12 @@ namespace YumeEngine
 		SDL_Window* window_;
 
 		YumeImage*	windowIcon_;
+
+		mutable SharedPtr<YumeShader> lastShader_;
+		mutable YumeString lastShaderName_;
+
+		YumeString shaderPath_;
+		YumeString shaderExtension_;
 	};
 }
 

@@ -71,6 +71,8 @@ namespace YumeEngine
 	public:
 		boost::shared_ptr<YumeIO> GetIO() const;
 		SharedPtr<YumeEnvironment> GetEnvironment() const { return env_; }
+		YumeResourceManager* GetResourceManager() const { return resourceManager_; }
+		SharedPtr<YumeObjectFactory> GetObjFactory() const { return factory_; }
 
 	private:
 		YumeRenderer* graphics_;
@@ -82,7 +84,7 @@ namespace YumeEngine
 		boost::shared_ptr<YumeObjectFactory> factory_;
 
 
-		SharedPtr<YumeResourceManager> resourceManager_;
+		YumeResourceManager* resourceManager_;
 	private:
 		void LimitFrames();
 		unsigned inactiveFps_;
