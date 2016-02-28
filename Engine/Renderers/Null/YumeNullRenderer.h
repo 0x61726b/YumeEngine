@@ -51,7 +51,7 @@ namespace YumeEngine
 
 		bool BeginFrame();
 		void EndFrame();
-		void Clear(unsigned flags, const Vector4& color = Vector4(0.0f, 1.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
+		void Clear(unsigned flags,const Vector4& color = Vector4(0.0f,1.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0);
 
 		bool CreateD3D11Device(int width,int height,int multisample);
 		bool UpdateSwapchain(int width,int height);
@@ -64,6 +64,12 @@ namespace YumeEngine
 		void SetFlushGPU(bool flushGpu);
 		void CreateRendererCapabilities();
 		YumeVector<int>::type GetMultiSampleLevels() const;
+
+		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const { return 0; }
+
+		YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const { return 0; }
+
+		void SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps) {}
 
 		//Window ops
 		void Close();
