@@ -236,6 +236,7 @@ namespace YumeEngine
 		}
 	}
 
+	YumeHash YumeImage::imageHash_ = 0;
 
 	YumeImage::YumeImage():
 		width_(0),
@@ -246,11 +247,16 @@ namespace YumeEngine
 		array_(false),
 		sRGB_(false)
 	{
-		hash_ = GenerateHash("Image");
+		imageHash_ = GenerateHash("Image");
 	}
 
 	YumeImage::~YumeImage()
 	{
+	}
+
+	YumeHash YumeImage::GetType()
+	{
+		return imageHash_;
 	}
 
 	bool YumeImage::BeginLoad(YumeFile& source)

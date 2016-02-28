@@ -26,13 +26,40 @@
 
 namespace YumeEngine
 {
-	YumeBase::YumeBase(const YumeString& key)
+	YumeObjectFactory* GlobalFactoryObject = 0;
+
+	YumeObjectFactory::YumeObjectFactory()
 	{
-		hash_ = GenerateHash(key);
+		GlobalFactoryObject = this;
 	}
 
-	YumeBase::~YumeBase()
+	YumeObjectFactory::~YumeObjectFactory()
 	{
+		
+	}
 
+	SharedPtr<YumeBase> YumeObjectFactory::Create(YumeHash type)
+	{
+		YumeBase* instance = nullptr;
+
+		ObjRegistry::iterator It = functionRegistry.find(type);
+
+		if(It != functionRegistry.end())
+			instance = It->second();
+
+		if(instance != nullptr)
+			return SharedPtr<YumeBase>(instance);
+		else
+			return nullptr;
+	}
+
+	YumeObjectFactory* YumeObjectFactory::Get()
+	{
+		return GlobalFactoryObject;
+	}
+
+	void YumeObjectFactory::RegisterFactoryFunction(YumeHash type,std::function<YumeBase*(void)> classFactoryFunction)
+	{
+		functionRegistry.insert(std::make_pair(type,classFactoryFunction));
 	}
 }

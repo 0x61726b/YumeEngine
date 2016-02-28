@@ -71,28 +71,31 @@ namespace YumeEngine
 
 		SharedPtr<YumeFile> SearchResourcesPath(const YumeString& resource);
 
-		YumeResource* RetrieveResource(YumeHash type,const YumeString& resource);
+		SharedPtr<YumeResource> RetrieveResource(YumeHash type,const YumeString& resource);
 		
 		SharedPtr<YumeImage> GetImage(const YumeString& resource);
 
 
-		
-		bool PrepareResource(YumeResource* resource);
+		SharedPtr<YumeResource> PrepareResource(YumeHash type,const YumeString& resource);
 
-	private:
-		void UpdateResourceGroup(YumeHash group);
+		template< class T >
+		SharedPtr<T> PrepareResource(const YumeString& resource);
+
 	private:
 		boost::mutex resourceMutex_;
 		ResourceGroupHashMap resourceGroups_;
 		YumeVector<FsPath>::type resourcePaths_;
 		boost::shared_ptr<YumeBackgroundWorker> backgroundWorker_;
 
-	private:
-		YumeMap<YumeString,YumeHash>::type cachedHashMap_;
 
 	};
 
-	
+	template< class T > SharedPtr<T> YumeResourceManager::PrepareResource(const YumeString& resource)
+	{
+		YumeHash type = T::GetType();
+
+		return boost::static_pointer_cast<T>(PrepareResource(type,resource));
+	}
 
 }
 

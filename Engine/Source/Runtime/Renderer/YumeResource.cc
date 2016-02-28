@@ -27,7 +27,6 @@
 namespace YumeEngine
 {
 	YumeResource::YumeResource():
-		YumeBase("Resource"),
 		memoryUse_(0),
 		asyncLoadState_(ASYNC_DONE)
 	{

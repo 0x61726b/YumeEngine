@@ -40,8 +40,7 @@ namespace YumeEngine
 	{
 		backgroundWorker_ = boost::shared_ptr<YumeBackgroundWorker>(YumeAPINew YumeBackgroundWorker(this));
 
-		cachedHashMap_["Base"] = GenerateHash("Base");
-		cachedHashMap_["Image"] = GenerateHash("Image");
+
 
 	}
 
@@ -83,7 +82,7 @@ namespace YumeEngine
 		return boost::shared_ptr<YumeFile>();
 	}
 
-	YumeResource* YumeResourceManager::RetrieveResource(YumeHash type,const YumeString& resource)
+	SharedPtr<YumeResource> YumeResourceManager::RetrieveResource(YumeHash type,const YumeString& resource)
 	{
 		ResourceGroupHashMap::iterator It = resourceGroups_.find(type);
 
@@ -95,7 +94,7 @@ namespace YumeEngine
 
 			if(rgIt != It->second.resources_.end())
 			{
-				return (rgIt->second.get());
+				return (rgIt->second);
 			}
 			else
 				return 0;
@@ -110,22 +109,21 @@ namespace YumeEngine
 	SharedPtr<YumeImage> YumeResourceManager::GetImage(const YumeString& resource)
 	{
 		//Check if resource is loaded before
-		YumeHash type = cachedHashMap_["Image"];
+		YumeHash type = 123123;
 
-		YumeResource* resourceBase_ = RetrieveResource(type,resource);
+		SharedPtr<YumeResource> resourceBase_ = RetrieveResource(type,resource);
 
 		SharedPtr<YumeImage> resource_ = 0;
 		if(resourceBase_)
 		{
-			resource_ = SharedPtr<YumeImage>(static_cast<YumeImage*>(resourceBase_));
-			return resource_;
+			return boost::static_pointer_cast<YumeImage>(resourceBase_);
 		}
 
 		//Resource doesnt exist yet
 
 		YumeHash nameHash = GenerateHash(resource);
 
-		resource_ = boost::shared_ptr<YumeImage>( new YumeImage );
+		resource_ = boost::shared_ptr<YumeImage>(new YumeImage);
 
 		SharedPtr<YumeFile> file_ = GetFile(resource);
 
@@ -134,6 +132,7 @@ namespace YumeEngine
 
 		resource_->SetName(resource);
 
+		YUMELOG_INFO("Loading resource " << resource.c_str() << "...");
 		if(!resource_->Load(*(file_.get())))
 		{
 			//Log error
@@ -144,88 +143,39 @@ namespace YumeEngine
 		return resource_;
 	}
 
-	bool YumeResourceManager::PrepareResource(YumeResource* resource)
+	SharedPtr<YumeResource> YumeResourceManager::PrepareResource(YumeHash type,const YumeString& resource)
 	{
-		//if(!YumeThreadWrapper::IsMainThread())
-		//{
-		//	YUMELOG_ERROR("Attemp to load resource from non-main thread is ill eagle");
-		//	return false;
-		//}
+		SharedPtr<YumeResource> resourceBase_ = RetrieveResource(type,resource);
 
-		///*backgroundWorker_->WaitForResource(type,resource);*/
+		SharedPtr<YumeResource> resource_ = 0;
+		if(resourceBase_)
+		{
+			return resourceBase_;
+		}
 
-		////Check existing resources
+		//Resource doesnt exist yet
 
-		//
-		//
+		YumeHash nameHash = GenerateHash(resource);
 
-		//SharedPtr<YumeFile> file_ = GetFile(resource);
+		resource_ = boost::static_pointer_cast<YumeResource>(YumeObjectFactory::Get()->Create(type));
 
-		//if(!file_)
-		//	return 0;
+		SharedPtr<YumeFile> file_ = GetFile(resource);
 
-		//YUMELOG_INFO("Loading resource " << resource.c_str());
+		if(!file_)
+			return 0;
 
-		//resource_->SetName(resource);
+		resource_->SetName(resource);
 
-		//if(!resource_->Load(*(file_.get())))
-		//{
-		//	//Send event
-		//}
+		YUMELOG_INFO("Loading resource " << resource.c_str() << "...");
+		if(!resource_->Load(*(file_.get())))
+		{
+			//Log error
+		}
 
-		//YumeHash uniqueHash = resource_->GetHash();
-		//YumeHash nameHash = GenerateHash(resource);
+		resourceGroups_[type].resources_[nameHash] = resource_;
 
-		////Cache the resource somehow
-		//resource_->ResetUseTimer();
-		//resourceGroups_[uniqueHash].resources_[nameHash] = resource_;
-		///*UpdateResourceGroup(type);*/
-
-		//return resource_.get();
-		return true;
+		return resource_;
 	}
-
-	void YumeResourceManager::UpdateResourceGroup(YumeHash type)
-	{
-		//ResourceGroupHashMap::iterator i = resourceGroups_.find(type);
-		//if(i == resourceGroups_.end())
-		//	return;
-
-		//for(;;)
-		//{
-		//	unsigned totalSize = 0;
-		//	unsigned oldestTimer = 0;
-		//	ResourceHashMap::iterator oldestResource = i->second.resources_.end();
-
-		//	for(ResourceHashMap::iterator j = i->second.resources_.begin();
-		//		j != i->second.resources_.end(); ++j)
-		//	{
-		//		totalSize += j->second->GetMemoryUse();
-		//		unsigned useTimer = j->second->GetUseTimer();
-		//		if(useTimer > oldestTimer)
-		//		{
-		//			oldestTimer = useTimer;
-		//			oldestResource = j;
-		//		}
-		//	}
-
-		//	i->second.memoryUse_ = totalSize;
-
-		//	// If memory budget defined and is exceeded, remove the oldest resource and loop again
-		//	// (resources in use always return a zero timer and can not be removed)
-		//	if(i->second.memoryBudget_ && i->second.memoryUse_ > i->second.memoryBudget_ &&
-		//		oldestResource != i->second.resources_.end())
-		//	{
-		//		YUMELOG_WARN("Resource group " + oldestResource->second->GetTypeName() + " over memory budget, releasing resource " +
-		//			oldestResource->second->GetName());
-
-		//		i->second.resources_.erase(oldestResource);
-		//	}
-		//	else
-		//		break;
-		//}
-	}
-
 
 	SharedPtr<YumeFile> YumeResourceManager::SearchResourcesPath(const YumeString& resource)
 	{

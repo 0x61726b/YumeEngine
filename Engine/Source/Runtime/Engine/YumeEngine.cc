@@ -40,6 +40,7 @@
 
 #include "Core/YumeIO.h"
 #include "Core/YumeDefaults.h"
+#include "Core/YumeBase.h"
 
 #include <log4cplus/initializer.h>
 
@@ -84,11 +85,13 @@ namespace YumeEngine
 
 		initialized_ = true;
 
+		RegisterFactories();
+
 		io_ = boost::shared_ptr<YumeIO>(YumeAPINew YumeIO);
 		timer_ = boost::shared_ptr<YumeTime>(YumeAPINew YumeTime);
 		env_ = boost::shared_ptr<YumeEnvironment>(YumeAPINew YumeEnvironment);
 		resourceManager_ = SharedPtr<YumeResourceManager>(YumeAPINew YumeResourceManager);
-		
+
 		VariantMap::const_iterator It = variants.begin();
 
 		for(It;It != variants.end(); ++It)
@@ -143,8 +146,7 @@ namespace YumeEngine
 
 		YumeThreadWrapper::SetMainThread();
 
-		SharedPtr<YumeImage> appIcon = resourceManager_->GetImage("Textures/appIcon.png");
-
+		SharedPtr<YumeImage> appIcon = resourceManager_->PrepareResource<YumeImage>("Textures/appIcon.png");
 		graphics_->SetWindowIcon(appIcon.get());
 
 		if(!graphics_->SetGraphicsMode(env_->GetVariant("WindowWidth").Get<int>(),
@@ -165,7 +167,24 @@ namespace YumeEngine
 
 		return initialized_;
 	}
+	void YumeEngine3D::RegisterFactories()
+	{
+		/*cachedHashMap_["Base"] = GenerateHash("Base");
+		cachedHashMap_["Image"] = GenerateHash("Image");*/
 
+		factory_ = SharedPtr<YumeObjectFactory>(new YumeObjectFactory);
+
+
+		YumeObjectRegistrar<YumeBase> baseObj(GenerateHash("Base"));
+		YumeObjectRegistrar<YumeResource> resourceObj(GenerateHash("Resource"));
+		YumeObjectRegistrar<YumeImage> imageObj(GenerateHash("Image"));
+
+		SharedPtr<YumeImage> img = boost::static_pointer_cast<YumeImage>((YumeObjectFactory::Get()->Create(GenerateHash("Image"))));
+
+		assert(img);
+
+
+	}
 	void YumeEngine3D::Render()
 	{
 		if(!graphics_->BeginFrame())

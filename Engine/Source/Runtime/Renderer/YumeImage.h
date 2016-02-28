@@ -147,6 +147,9 @@ namespace YumeEngine
 		/// Whether this texture is in sRGB, only relevant for DDS.
 		bool IsSRGB() const { return sRGB_; }
 
+		static YumeHash GetType();
+		static YumeHash imageHash_;
+
 		/// Return a 2D pixel color.
 		YumeColor GetPixel(int x,int y) const;
 		/// Return a 3D pixel color.
