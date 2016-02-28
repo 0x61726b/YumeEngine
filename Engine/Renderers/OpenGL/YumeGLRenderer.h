@@ -51,6 +51,11 @@ namespace YumeEngine
 		void EndFrame();
 		void Clear(unsigned flags, const Vector4& color = Vector4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
 
+		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const { return 0;}
+		
+		YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const {return 0;}
+
+		void SetShaders(YumeShaderVariation* vs, YumeShaderVariation* ps) {}
 		
 
 		void ResetRenderTargets();
