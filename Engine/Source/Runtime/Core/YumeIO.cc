@@ -47,7 +47,7 @@ namespace YumeEngine
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
 		FsPath root = current / ".." / "..";
 #else
-		FsPath root = current; / "..";
+		FsPath root = current / "..";
 #endif
 		return boost::filesystem::absolute(root);
 	}
