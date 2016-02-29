@@ -25,7 +25,9 @@
 #include "YumeD3D11Required.h"
 #include "Renderer/YumeRendererDefs.h"
 
+#include "Math/YumeColor.h"
 #include "Math/YumeVector2.h"
+#include "Math/YumeVector3.h"
 #include "Math/YumeVector4.h"
 
 #include "Renderer/YumeRenderer.h"
@@ -38,8 +40,12 @@ namespace YumeEngine
 {
 	class YumeGpuResource;
 	class YumeD3D11RendererImpl;
+	class YumeShaderVariation;
+	class YumeD3D11ShaderProgram;
 
 	typedef std::vector<YumeGpuResource*> GpuResourceVector;
+	typedef YumeMap<std::pair<YumeShaderVariation*,YumeShaderVariation*>,SharedPtr<YumeD3D11ShaderProgram> >::type ShaderProgramMap;
+
 	class YumeD3DExport YumeD3D11Renderer : public YumeRenderer
 	{
 	public:
@@ -88,12 +94,36 @@ namespace YumeEngine
 
 		YumeD3D11RendererImpl* GetImpl() const { return impl_; }
 
+		YumeConstantBuffer* GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size);
+
 		//Getters
 		YumeVertexBuffer* GetVertexBuffer(unsigned index) const;
 
+		void CleanUpShaderPrograms(YumeShaderVariation* variation);
 
 		//Setters
 		void SetVertexBuffer(YumeVertexBuffer* buffer);
+
+		void SetShaderParameter(YumeHash  param,const float* data,unsigned count);
+		/// Set shader float constant.
+		void SetShaderParameter(YumeHash  param,float value);
+		/// Set shader boolean constant.
+		void SetShaderParameter(YumeHash  param,bool value);
+		/// Set shader color constant.
+		void SetShaderParameter(YumeHash  param,const YumeColor& color);
+		/// Set shader 2D vector constant.
+		void SetShaderParameter(YumeHash  param,const Vector2& vector);
+		/// Set shader 3x3 matrix constant.
+		void SetShaderParameter(YumeHash  param,const Matrix3& matrix);
+		/// Set shader 3D vector constant.
+		void SetShaderParameter(YumeHash  param,const Vector3& vector);
+		/// Set shader 4x4 matrix constant.
+		void SetShaderParameter(YumeHash  param,const Matrix4& matrix);
+		/// Set shader 4D vector constant.
+		void SetShaderParameter(YumeHash param,const Vector4& vector);
+
+		void SetShaderParameter(YumeHash param, const YumeVariant& value);
+
 		/// Set multiple vertex buffers.
 		bool SetVertexBuffers
 			(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0);
@@ -151,9 +181,9 @@ namespace YumeEngine
 		boost::mutex							gpuResourceMutex_;
 		GpuResourceVector						gpuResources_;
 
-		YumeD3D11RendererImpl*						impl_;
-
-
+		YumeD3D11RendererImpl*					impl_;
+		ShaderProgramMap						shaderPrograms_;
+		YumeD3D11ShaderProgram*					shaderProgram_;
 	};
 }
 

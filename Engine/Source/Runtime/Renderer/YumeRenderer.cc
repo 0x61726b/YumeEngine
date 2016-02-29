@@ -27,6 +27,7 @@
 #include "YumeGpuResource.h"
 
 #include "Renderer/YumeShaderVariation.h"
+#include "Renderer/YumeConstantBuffer.h"
 
 #include "Logging/logging.h"
 
@@ -35,7 +36,8 @@ namespace YumeEngine
 	YumeRenderer::YumeRenderer():
 		windowIcon_(0),
 		window_(0),
-		maxScratchBufferRequest_(0)
+		maxScratchBufferRequest_(0),
+		useClipPlane_(false)
 	{
 		firstDirtyVB_ = lastDirtyVB_ = Math::M_MAX_UNSIGNED;
 	}
@@ -134,6 +136,8 @@ namespace YumeEngine
 
 		YUMELOG_WARN("Reserved scratch buffer not found");
 	}
+
+
 
 	void YumeRenderer::CleanupScratchBuffers()
 	{

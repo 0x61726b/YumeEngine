@@ -31,7 +31,7 @@ namespace YumeEngine
 {
 	enum FileMode
 	{
-		FILEMODE_READ,
+		FILEMODE_READ = 0,
 		FILEMODE_WRITE,
 		FILEMODE_READWRITE
 	};
@@ -49,30 +49,28 @@ namespace YumeEngine
 
 		bool Eof() const;
 
-
-		void Write(const YumeString& str);
+		bool WriteString(const YumeString& str);
 		unsigned Write(const void* str,unsigned len);
 		bool WriteFileID(const YumeString& str);
 		bool WriteByte(signed char value);
 		bool WriteUInt(unsigned value);
-		bool WriteUByte(signed char value);
+		bool WriteUByte(unsigned char value);
 		bool WriteShort(short value);
 		bool WriteUShort(unsigned short value);
 
-
-
-		YumeString Read();
+		YumeString ReadString();
 		YumeString ReadFileID();
 		signed char ReadByte();
 		unsigned ReadUInt();
-		unsigned ReadUByte();
+		unsigned char ReadUByte();
 		short ReadShort();
 		unsigned short ReadUShort();
 
 		unsigned GetSize();
 
-		void Seek(unsigned);
+		unsigned Seek(unsigned);
 
+		void Flush();
 		void Close();
 		const YumeString& GetName() const { return fileName_; }
 		void SetName(const YumeString& name);
@@ -83,10 +81,14 @@ namespace YumeEngine
 		YumeString file_;
 		FileMode fileMode_;
 
+		void* handle_;
+
 		unsigned int position_;
 		unsigned int size_;
-
-		boost::filesystem::fstream fileStream;
+		unsigned int checksum_;
+		unsigned int offset_;
+		bool readSyncNeeded_;
+		bool writeSyncNeeded_;
 	};
 }
 

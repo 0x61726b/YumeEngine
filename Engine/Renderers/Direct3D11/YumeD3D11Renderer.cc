@@ -27,11 +27,17 @@
 #include "YumeD3D11RendererImpl.h"
 
 #include "Renderer/YumeResourceManager.h"
+#include "Renderer/YumeRendererDefs.h"
+
+#include "Math/YumeMatrix3.h"
+#include "Math/YumeMatrix4.h"
 #include "Math/YumeMath.h"
 
 #include "YumeD3D11Shader.h"
 #include "YumeD3D11ShaderVariation.h"
 #include "YumeD3D11VertexBuffer.h"
+#include "YumeD3D11ConstantBuffer.h"
+#include "YumeD3D11ShaderProgram.h"
 
 #include "Core/YumeBase.h"
 #include "Core/YumeDefaults.h"
@@ -71,7 +77,8 @@ namespace YumeEngine
 		borderless_(false),
 		resizeable_(false),
 		vsync_(false),
-		tripleBuffer_(false)
+		tripleBuffer_(false),
+		shaderProgram_(0)
 	{
 		shaderPath_ = "Shaders/HLSL/";
 		shaderExtension_ = ".hlsl";
@@ -87,11 +94,20 @@ namespace YumeEngine
 			boost::mutex::scoped_lock lock(gpuResourceMutex_);
 
 			for(int i=0; i < gpuResources_.size(); ++i)
-				gpuResources_[i]->Release();
+			{
+				if(gpuResources_[i])
+					gpuResources_[i]->Release();
+			}
 
 			gpuResources_.clear();
 		}
 		impl_->blendStates_.clear();
+
+		// ToDo(arkenthera) not sure about this..
+		int size = constantBuffers_.size();
+		for(int i=0; i < size; ++i)
+			 constantBuffers_[i].reset();
+		constantBuffers_.clear();
 
 		BlendStatesMap::iterator blendIt;
 
@@ -688,9 +704,282 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps)
 	{
+		// Switch to the clip plane variations if necessary
+		/// \todo Causes overhead and string manipulation per drawcall
+		if(useClipPlane_)
+		{
+			if(vs)
+				vs = vs->GetOwner()->GetVariation(VS,vs->GetDefines() + " CLIPPLANE");
+			if(ps)
+				ps = ps->GetOwner()->GetVariation(PS,ps->GetDefines() + " CLIPPLANE");
+		}
 
+		if(vs == vertexShader_ && ps == pixelShader_)
+			return;
+
+		if(vs != vertexShader_)
+		{
+			YumeD3D11ShaderVariation* vsVar_ = static_cast<YumeD3D11ShaderVariation*>(vs);
+			// Create the shader now if not yet created. If already attempted, do not retry
+			if(vsVar_ && !vsVar_->GetGPUObject())
+			{
+				if(vsVar_->GetCompilerOutput().empty())
+				{
+					bool success = vs->Create();
+					if(!success)
+					{
+						YUMELOG_ERROR("Failed to compile vertex shader " + vs->GetFullName() + ":\n" + vs->GetCompilerOutput());
+						vs = 0;
+					}
+				}
+				else
+					vs = 0;
+			}
+
+			impl_->deviceContext_->VSSetShader((ID3D11VertexShader*)(vs ? vsVar_->GetGPUObject() : 0),0,0);
+			vertexShader_ = vsVar_;
+			vertexDeclarationDirty_ = true;
+		}
+
+		if(ps != pixelShader_)
+		{
+			YumeD3D11ShaderVariation* psVar_ = static_cast<YumeD3D11ShaderVariation*>(ps);
+			if(psVar_ && !psVar_->GetGPUObject())
+			{
+				if(ps->GetCompilerOutput().empty())
+				{
+					bool success = ps->Create();
+					if(!success)
+					{
+						YUMELOG_ERROR("Failed to compile pixel shader " + ps->GetFullName() + ":\n" + ps->GetCompilerOutput());
+						ps = 0;
+					}
+				}
+				else
+					ps = 0;
+			}
+
+			impl_->deviceContext_->PSSetShader((ID3D11PixelShader*)(psVar_ ? psVar_->GetGPUObject() : 0),0,0);
+			pixelShader_ = psVar_;
+		}
+
+		// Update current shader parameters & constant buffers
+		if(vertexShader_ && pixelShader_)
+		{
+			std::pair<YumeShaderVariation*,YumeShaderVariation*> key = std::make_pair(vertexShader_,pixelShader_);
+			ShaderProgramMap::iterator i = shaderPrograms_.find(key);
+			if(i != shaderPrograms_.end())
+				shaderProgram_ = i->second.get();
+			else
+			{
+				SharedPtr<YumeD3D11ShaderProgram> newProgram = shaderPrograms_[key] = SharedPtr<YumeD3D11ShaderProgram>(new YumeD3D11ShaderProgram(this,vertexShader_,pixelShader_));
+				shaderProgram_ = newProgram.get();
+			}
+
+			bool vsBuffersChanged = false;
+			bool psBuffersChanged = false;
+
+			for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
+			{
+				if(shaderProgram_->vsConstantBuffers_[i])
+				{
+					ID3D11Buffer* vsBuffer = shaderProgram_->vsConstantBuffers_[i] ? (ID3D11Buffer*)static_cast<YumeD3D11ConstantBuffer*>(shaderProgram_->vsConstantBuffers_[i])->
+						GetGPUObject() : 0;
+					if(vsBuffer != impl_->constantBuffers_[VS][i])
+					{
+						impl_->constantBuffers_[VS][i] = vsBuffer;
+						shaderParameterSources_[i] = (const void*)0xffffffff;
+						vsBuffersChanged = true;
+					}
+				}
+
+				if(shaderProgram_->psConstantBuffers_[i])
+				{
+					ID3D11Buffer* psBuffer = shaderProgram_->psConstantBuffers_[i] ? (ID3D11Buffer*)static_cast<YumeD3D11ConstantBuffer*>(shaderProgram_->psConstantBuffers_[i])->
+						GetGPUObject() : 0;
+					if(psBuffer != impl_->constantBuffers_[PS][i])
+					{
+						impl_->constantBuffers_[PS][i] = psBuffer;
+						shaderParameterSources_[i] = (const void*)0xffffffff;
+						psBuffersChanged = true;
+					}
+				}
+
+
+			}
+
+			if(vsBuffersChanged)
+				impl_->deviceContext_->VSSetConstantBuffers(0,MAX_SHADER_PARAMETER_GROUPS,&impl_->constantBuffers_[VS][0]);
+			if(psBuffersChanged)
+				impl_->deviceContext_->PSSetConstantBuffers(0,MAX_SHADER_PARAMETER_GROUPS,&impl_->constantBuffers_[PS][0]);
+		}
+		else
+			shaderProgram_ = 0;
+
+		// Store shader combination if shader dumping in progress
+		/*if(shaderPrecache_)
+			shaderPrecache_->StoreShaders(vertexShader_,pixelShader_);*/
+
+		// Update clip plane parameter if necessary
+		if(useClipPlane_)
+			SetShaderParameter(VSP_CLIPPLANE,clipPlane_);
 	}
 
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const float* data,unsigned count)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,(unsigned)(count * sizeof(float)),data);
+	}
+	/// Set shader float constant.
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,float value)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(float),&value);
+	}
+	/// Set shader boolean constant.
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,bool value)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(bool),&value);
+	}
+	/// Set shader color constant.
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const YumeColor& color)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(YumeColor),&color);
+	}
+	/// Set shader 2D vector constant.
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Vector2& vector)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(Vector2),&vector);
+	}
+	/// Set shader 3x3 matrix constant.
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Matrix3& matrix)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(Matrix3),&matrix);
+	}
+	/// Set shader 3D vector constant.
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Vector3& vector)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(Vector3),&vector);
+	}
+	/// Set shader 4x4 matrix constant.
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Matrix4& matrix)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(Matrix4),&matrix);
+	}
+	/// Set shader 4D vector constant.
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const Vector4& vector)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(Vector4),&vector);
+	}
+
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const YumeVariant& value)
+	{
+		switch(value.GetType())
+		{
+		case VAR_BOOL:
+			SetShaderParameter(param,value.Get<bool>());
+			break;
+
+		case VAR_FLOAT:
+			SetShaderParameter(param,value.Get<float>());
+			break;
+		default:
+			break;
+		}
+	}
+
+	void YumeD3D11Renderer::CleanUpShaderPrograms(YumeShaderVariation* variation)
+	{
+		for(ShaderProgramMap::iterator i = shaderPrograms_.begin(); i != shaderPrograms_.end();)
+		{
+			if(i->first.first == variation || i->first.second == variation)
+				i = shaderPrograms_.erase(i);
+			else
+				++i;
+		}
+
+		if(vertexShader_ == variation || pixelShader_ == variation)
+			shaderProgram_ = 0;
+	}
+
+
+
+	YumeConstantBuffer* YumeD3D11Renderer::GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size)
+	{
+		// Ensure that different shader types and index slots get unique buffers, even if the size is same
+		unsigned key = type | (index << 1) | (size << 4);
+		YumeMap<unsigned,SharedPtr<YumeConstantBuffer> >::iterator i = constantBuffers_.find(key);
+		if(i != constantBuffers_.end())
+			return i->second.get();
+		else
+		{
+			SharedPtr<YumeConstantBuffer> newConstantBuffer(new YumeD3D11ConstantBuffer(this));
+			newConstantBuffer->SetSize(size);
+			constantBuffers_[key] = newConstantBuffer;
+			return newConstantBuffer.get();
+		}
+	}
 
 	void YumeD3D11Renderer::SetVertexBuffer(YumeVertexBuffer* buffer)
 	{
@@ -766,7 +1055,7 @@ namespace YumeEngine
 
 	bool YumeD3D11Renderer::SetVertexBuffers(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset)
 	{
-		return SetVertexBuffers(reinterpret_cast<const YumeVector<YumeVertexBuffer*>::type&>(buffers), elementMasks, instanceOffset);
+		return SetVertexBuffers(reinterpret_cast<const YumeVector<YumeVertexBuffer*>::type&>(buffers),elementMasks,instanceOffset);
 	}
 
 	void YumeD3D11Renderer::Maximize()

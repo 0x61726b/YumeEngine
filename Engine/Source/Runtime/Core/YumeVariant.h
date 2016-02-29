@@ -35,43 +35,59 @@ namespace YumeEngine
 	class YumeVariant;
 	typedef YumeMap<YumeString,YumeVariant>::type VariantMap;
 
+	enum VariantType
+	{
+		VAR_BOOL,
+		VAR_INT,
+		VAR_DOUBLE,
+		VAR_FLOAT,
+		VAR_STRING
+	};
+
 	class YumeAPIExport YumeVariant
 	{
 	public:
 		explicit YumeVariant()
 		{
 			inner_ = Variant(false);
+			type_ = VAR_BOOL;
 		}
 		YumeVariant(int var)
 		{
 			inner_ = Variant(var);
+			type_ = VAR_INT;
 		};
 
 		YumeVariant(double var)
 		{
 			inner_ = Variant(var);
+			type_ = VAR_DOUBLE;
 		};
 
 		YumeVariant(float var)
 		{
 			inner_ = Variant(var);
+			type_ = VAR_FLOAT;
 		};
 
 		YumeVariant(bool var)
 		{
 			inner_ = Variant(var);
+			type_ = VAR_BOOL;
 		};
 
 		YumeVariant(YumeString var)
 		{
 			inner_ = Variant(var);
+			type_ = VAR_STRING;
 		};
 		
 		template< class T> T Get() const;
 		
-
+		VariantType GetType() const { return type_; }
 	protected:
 		Variant inner_;
+		VariantType type_;
 	};
 
 	template <> YumeAPIExport int YumeVariant::Get<int>() const;

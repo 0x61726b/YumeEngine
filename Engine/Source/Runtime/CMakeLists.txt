@@ -22,6 +22,7 @@ include(PrecompiledHeader)
 
 set(SRC_RENDERER
 	Renderer/YumeRendererDefs.h
+	Renderer/YumeRendererDefs.cc
 	Renderer/YumeGraphicsApi.h
 	Renderer/YumeRenderer.h
 	Renderer/YumeRenderer.cc
@@ -42,6 +43,8 @@ set(SRC_RENDERER
 	Renderer/YumeShader.cc
 	Renderer/YumeVertexBuffer.h
 	Renderer/YumeVertexBuffer.cc
+	Renderer/YumeConstantBuffer.h
+	Renderer/YumeConstantBuffer.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

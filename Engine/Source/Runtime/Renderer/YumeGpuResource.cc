@@ -32,7 +32,8 @@ namespace YumeEngine
 		object_(0),
 		rhi_(rhi)
 	{
-		
+		if(rhi_)
+			rhi_->AddGpuResource(this);
 	}
 
 	YumeGpuResource::~YumeGpuResource()

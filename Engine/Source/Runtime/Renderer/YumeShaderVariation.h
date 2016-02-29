@@ -31,6 +31,7 @@
 namespace YumeEngine
 {
 	class YumeShader;
+	struct ShaderParameter;
 	/// Vertex or pixel shader on the GPU.
 	class YumeAPIExport YumeShaderVariation
 	{
@@ -68,6 +69,10 @@ namespace YumeEngine
 		const YumeString& GetCompilerOutput() const { return compilerOutput_; }
 
 		bool HasTextureUnit(TextureUnit unit) const { return useTextureUnit_[unit]; }
+
+		virtual const YumeMap<YumeHash,ShaderParameter>::type& GetParameters() const = 0;
+
+		virtual const unsigned* GetConstantBufferSizes() const = 0;
 
 	protected:
 		/// Shader this variation belongs to.

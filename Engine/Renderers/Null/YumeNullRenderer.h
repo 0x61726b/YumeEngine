@@ -82,6 +82,27 @@ namespace YumeEngine
 		void RemoveGpuResource(YumeGpuResource* object);
 
 		YumeVertexBuffer* GetVertexBuffer(unsigned index) const { return 0; }
+		YumeConstantBuffer* GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size) { return 0; }
+		
+		void SetShaderParameter(YumeHash  param,const float* data,unsigned count) { };
+		/// Set shader float constant.
+		void SetShaderParameter(YumeHash  param,float value) { };
+		/// Set shader boolean constant.
+		void SetShaderParameter(YumeHash  param,bool value) { };
+		/// Set shader color constant.
+		void SetShaderParameter(YumeHash  param,const YumeColor& color) { };
+		/// Set shader 2D vector constant.
+		void SetShaderParameter(YumeHash  param,const Vector2& vector) { };
+		/// Set shader 3x3 matrix constant.
+		void SetShaderParameter(YumeHash  param,const Matrix3& matrix) { };
+		/// Set shader 3D vector constant.
+		void SetShaderParameter(YumeHash  param,const Vector3& vector) { };
+		/// Set shader 4x4 matrix constant.
+		void SetShaderParameter(YumeHash  param,const Matrix4& matrix) { };
+		/// Set shader 4D vector constant.
+		void SetShaderParameter(YumeHash param,const Vector4& vector) { };
+
+		void SetShaderParameter(YumeHash param,const YumeVariant& value) { };
 
 
 		//Setters

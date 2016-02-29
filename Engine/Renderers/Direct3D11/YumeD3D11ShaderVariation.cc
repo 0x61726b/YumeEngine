@@ -26,7 +26,8 @@
 #include "Core/YumeIO.h"
 
 #include "Renderer/YumeRendererDefs.h"
-#include "Renderer/YumeRendererImpl.h"
+#include "YumeD3D11RendererImpl.h"
+#include "YumeD3D11Renderer.h"
 
 #include "Engine/YumeEngine.h"
 
@@ -48,7 +49,7 @@
 namespace YumeEngine
 {
 	YumeD3D11ShaderVariation::YumeD3D11ShaderVariation(YumeShader* owner,ShaderType type):
-		YumeD3D11Resource(0),
+		YumeD3D11Resource(static_cast<YumeD3D11Renderer*>(YumeEngine3D::Get()->GetRenderer())),
 		elementMask_(0)
 	{
 		owner_ = owner;
@@ -62,22 +63,48 @@ namespace YumeEngine
 
 	YumeD3D11ShaderVariation::~YumeD3D11ShaderVariation()
 	{
-
+		Release();
 	}
 
 	void YumeD3D11ShaderVariation::Release()
 	{
+		if(object_)
+		{
+			if(!rhi_)
+				return;
 
+			static_cast<YumeD3D11Renderer*>(rhi_)->CleanUpShaderPrograms(this);
+
+			if(type_ == VS)
+			{
+				if(rhi_->GetVertexShader() == this)
+					rhi_->SetShaders(0,0);
+			}
+			else
+			{
+				if(rhi_->GetPixelShader() == this)
+					rhi_->SetShaders(0,0);
+			}
+
+			D3D_SAFE_RELEASE(object_);
+		}
+
+		compilerOutput_.clear();
+
+		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
+			useTextureUnit_[i] = false;
+		for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
+			constantBufferSizes_[i] = 0;
+		parameters_.clear();
+		byteCode_.clear();
+		elementMask_ = 0;
 	}
 
 	bool YumeD3D11ShaderVariation::Create()
 	{
 		Release();
 
-		YumeRenderer* graphics_ = YumeEngine3D::Get()->GetRenderer();
-
-
-		if(!graphics_)
+		if(!rhi_)
 			return false;
 
 		if(!owner_)
@@ -100,7 +127,39 @@ namespace YumeEngine
 			if(owner_->GetTimeStamp())
 				SaveByteCode(binaryShaderName);
 		}
-		return false;
+
+		// Then create shader from the bytecode
+		ID3D11Device* device = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice();
+		if(type_ == VS)
+		{
+			if(device && byteCode_.size())
+			{
+				HRESULT hr = device->CreateVertexShader(&byteCode_[0],byteCode_.size(),0,(ID3D11VertexShader**)&object_);
+				if(FAILED(hr))
+				{
+					D3D_SAFE_RELEASE(object_);
+					compilerOutput_ = "Could not create vertex shader (HRESULT " + std::to_string(hr) + ")";
+				}
+			}
+			else
+				compilerOutput_ = "Could not create vertex shader, empty bytecode";
+		}
+		else
+		{
+			if(device && byteCode_.size())
+			{
+				HRESULT hr = device->CreatePixelShader(&byteCode_[0],byteCode_.size(),0,(ID3D11PixelShader**)&object_);
+				if(FAILED(hr))
+				{
+					D3D_SAFE_RELEASE(object_);
+					compilerOutput_ = "Could not create pixel shader (HRESULT " + std::to_string(hr) + ")";
+				}
+			}
+			else
+				compilerOutput_ = "Could not create pixel shader, empty bytecode";
+		}
+
+		return object_ != 0;
 	}
 
 	bool YumeD3D11ShaderVariation::LoadByteCode(const YumeString& binaryShaderName)
@@ -129,7 +188,7 @@ namespace YumeEngine
 		unsigned numParameters = file_->ReadUInt();
 		for(unsigned i = 0; i < numParameters; ++i)
 		{
-			YumeString name = file_->Read();
+			YumeString name = file_->ReadString();
 			unsigned buffer = file_->ReadUByte();
 			unsigned offset = file_->ReadUInt();
 			unsigned size = file_->ReadUInt();
@@ -141,7 +200,7 @@ namespace YumeEngine
 		unsigned numTextureUnits = file_->ReadUInt();
 		for(unsigned i = 0; i < numTextureUnits; ++i)
 		{
-			/*String unitName = */file_->Read();
+			/*String unitName = */file_->ReadString();
 			unsigned reg = file_->ReadUByte();
 
 			if(reg < MAX_TEXTURE_UNITS)
@@ -373,7 +432,7 @@ namespace YumeEngine
 		file_->WriteUInt(parameters_.size());
 		for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
 		{
-			file_->Write(i->second.name_);
+			file_->WriteString(i->second.name_);
 			file_->WriteUByte((unsigned char)i->second.buffer_);
 			file_->WriteUInt(i->second.offset_);
 			file_->WriteUInt(i->second.size_);
@@ -390,7 +449,7 @@ namespace YumeEngine
 		{
 			if(useTextureUnit_[i])
 			{
-				file_->Write(rhi_->GetTextureUnitName((TextureUnit)i));
+				file_->WriteString(rhi_->GetTextureUnitName((TextureUnit)i));
 				file_->WriteUByte((unsigned char)i);
 			}
 		}

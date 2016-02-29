@@ -43,6 +43,8 @@ namespace YumeEngine
 
 	YumeAPIExport void ErrorExit(const YumeString& message,int exitCode);
 
+	YumeAPIExport unsigned CStringLength(const char* str);
+
 	const YumeVector<YumeString>::type& GetArguments();
 }
 

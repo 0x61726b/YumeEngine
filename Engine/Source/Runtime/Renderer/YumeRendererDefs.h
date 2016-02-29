@@ -270,6 +270,61 @@ namespace YumeEngine
 		SHADOWQUALITY_VSM,
 		SHADOWQUALITY_BLUR_VSM
 	};
+
+
+	extern YumeAPIExport const YumeHash VSP_AMBIENTSTARTCOLOR;
+	extern YumeAPIExport const YumeHash VSP_AMBIENTENDCOLOR;
+	extern YumeAPIExport const YumeHash VSP_BILLBOARDROT;
+	extern YumeAPIExport const YumeHash VSP_CAMERAPOS;
+	extern YumeAPIExport const YumeHash VSP_CAMERAROT;
+	extern YumeAPIExport const YumeHash VSP_CLIPPLANE;
+	extern YumeAPIExport const YumeHash VSP_NEARCLIP;
+	extern YumeAPIExport const YumeHash VSP_FARCLIP;
+	extern YumeAPIExport const YumeHash VSP_DEPTHMODE;
+	extern YumeAPIExport const YumeHash VSP_DELTATIME;
+	extern YumeAPIExport const YumeHash VSP_ELAPSEDTIME;
+	extern YumeAPIExport const YumeHash VSP_FRUSTUMSIZE;
+	extern YumeAPIExport const YumeHash VSP_GBUFFEROFFSETS;
+	extern YumeAPIExport const YumeHash VSP_LIGHTDIR;
+	extern YumeAPIExport const YumeHash VSP_LIGHTPOS;
+	extern YumeAPIExport const YumeHash VSP_MODEL;
+	extern YumeAPIExport const YumeHash VSP_VIEW;
+	extern YumeAPIExport const YumeHash VSP_VIEWINV;
+	extern YumeAPIExport const YumeHash VSP_VIEWPROJ;
+	extern YumeAPIExport const YumeHash VSP_UOFFSET;
+	extern YumeAPIExport const YumeHash VSP_VOFFSET;
+	extern YumeAPIExport const YumeHash VSP_ZONE;
+	extern YumeAPIExport const YumeHash VSP_LIGHTMATRICES;
+	extern YumeAPIExport const YumeHash VSP_SKINMATRICES;
+	extern YumeAPIExport const YumeHash VSP_VERTEXLIGHTS;
+	extern YumeAPIExport const YumeHash PSP_AMBIENTCOLOR;
+	extern YumeAPIExport const YumeHash PSP_CAMERAPOS;
+	extern YumeAPIExport const YumeHash PSP_DELTATIME;
+	extern YumeAPIExport const YumeHash PSP_DEPTHRECONSTRUCT;
+	extern YumeAPIExport const YumeHash PSP_ELAPSEDTIME;
+	extern YumeAPIExport const YumeHash PSP_FOGCOLOR;
+	extern YumeAPIExport const YumeHash PSP_FOGPARAMS;
+	extern YumeAPIExport const YumeHash PSP_GBUFFERINVSIZE;
+	extern YumeAPIExport const YumeHash PSP_LIGHTCOLOR;
+	extern YumeAPIExport const YumeHash PSP_LIGHTDIR;
+	extern YumeAPIExport const YumeHash PSP_LIGHTPOS;
+	extern YumeAPIExport const YumeHash PSP_MATDIFFCOLOR;
+	extern YumeAPIExport const YumeHash PSP_MATEMISSIVECOLOR;
+	extern YumeAPIExport const YumeHash PSP_MATENVMAPCOLOR;
+	extern YumeAPIExport const YumeHash PSP_MATSPECCOLOR;
+	extern YumeAPIExport const YumeHash PSP_NEARCLIP;
+	extern YumeAPIExport const YumeHash PSP_FARCLIP;
+	extern YumeAPIExport const YumeHash PSP_SHADOWCUBEADJUST;
+	extern YumeAPIExport const YumeHash PSP_SHADOWDEPTHFADE;
+	extern YumeAPIExport const YumeHash PSP_SHADOWINTENSITY;
+	extern YumeAPIExport const YumeHash PSP_SHADOWMAPINVSIZE;
+	extern YumeAPIExport const YumeHash PSP_SHADOWSPLITS;
+	extern YumeAPIExport const YumeHash PSP_LIGHTMATRICES;
+	extern YumeAPIExport const YumeHash PSP_VSMSHADOWPARAMS;
+
+	// Scale calculation from bounding box diagonal.
+	extern YumeAPIExport const Vector3 DOT_SCALE;
+
 	static const int QUALITY_LOW = 0;
 	static const int QUALITY_MEDIUM = 1;
 	static const int QUALITY_HIGH = 2;

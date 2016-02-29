@@ -30,100 +30,72 @@
 namespace YumeEngine
 {
 
-	//YumeConstantBuffer::YumeConstantBuffer(YumeD3D11RendererImpl* impl)
-	//	: impl_(impl)
-	//{
-	//}
+	YumeD3D11ConstantBuffer::YumeD3D11ConstantBuffer(YumeRenderer* impl)
+		: YumeD3D11Resource(static_cast<YumeD3D11Renderer*>(impl))
+	{
+	}
 
-	//YumeConstantBuffer::~YumeConstantBuffer()
-	//{
-	//	Release();
-	//}
+	YumeD3D11ConstantBuffer::~YumeD3D11ConstantBuffer()
+	{
+		Release();
+	}
 
-	//void YumeConstantBuffer::Release()
-	//{
-	//	D3D_SAFE_RELEASE(object_);
+	void YumeD3D11ConstantBuffer::Release()
+	{
+		D3D_SAFE_RELEASE(object_);
 
-	//	shadowData_.reset();
-	//	size_ = 0;
-	//}
+		shadowData_.reset();
+		size_ = 0;
+	}
 
-	//bool YumeConstantBuffer::SetSize(unsigned size)
-	//{
-	//	Release();
+	bool YumeD3D11ConstantBuffer::SetSize(unsigned size)
+	{
+		Release();
 
-	//	if(!size)
-	//	{
-	//		YUMELOG_ERROR("Can not create zero-sized constant buffer");
-	//		return false;
-	//	}
+		if(!size)
+		{
+			YUMELOG_ERROR("Can not create zero-sized constant buffer");
+			return false;
+		}
 
-	//	// Round up to next 16 bytes
-	//	size += 15;
-	//	size &= 0xfffffff0;
+		// Round up to next 16 bytes
+		size += 15;
+		size &= 0xfffffff0;
 
-	//	size_ = size;
-	//	dirty_ = false;
-	//	shadowData_ = boost::shared_array<unsigned char>(new unsigned char[size_]);
-	//	memset(shadowData_.get(),0,size_);
+		size_ = size;
+		dirty_ = false;
+		shadowData_ = boost::shared_array<unsigned char>(new unsigned char[size_]);
+		memset(shadowData_.get(),0,size_);
 
-	//	if(YumeEngine3D::Get()->GetRenderer())
-	//	{
-	//		D3D11_BUFFER_DESC bufferDesc;
-	//		memset(&bufferDesc,0,sizeof bufferDesc);
+		if(rhi_)
+		{
+			D3D11_BUFFER_DESC bufferDesc;
+			memset(&bufferDesc,0,sizeof bufferDesc);
 
-	//		bufferDesc.ByteWidth = size_;
-	//		bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//		bufferDesc.CPUAccessFlags = 0;
-	//		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufferDesc.ByteWidth = size_;
+			bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			bufferDesc.CPUAccessFlags = 0;
+			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
-	//		
-	//		HRESULT hr = impl_->GetDevice()->CreateBuffer(&bufferDesc,0,(ID3D11Buffer**)&object_);
-	//		if(FAILED(hr))
-	//		{
-	//			D3D_SAFE_RELEASE(object_);
-	//			YUMELOG_ERROR("Failed to create constant buffer " << hr);
-	//			return false;
-	//		}
-	//	}
+			
+			HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateBuffer(&bufferDesc,0,(ID3D11Buffer**)&object_);
+			if(FAILED(hr))
+			{
+				D3D_SAFE_RELEASE(object_);
+				YUMELOG_ERROR("Failed to create constant buffer " << hr);
+				return false;
+			}
+		}
 
-	//	return true;
-	//}
+		return true;
+	}
 
-	//void YumeConstantBuffer::SetParameter(unsigned offset,unsigned size,const void* data)
-	//{
-	//	if(offset + size > size_)
-	//		return; // Would overflow the buffer
-
-	//	memcpy(&shadowData_[offset],data,size);
-	//	dirty_ = true;
-	//}
-
-	//void YumeConstantBuffer::SetVector3ArrayParameter(unsigned offset,unsigned rows,const void* data)
-	//{
-	//	if(offset + rows * 4 * sizeof(float) > size_)
-	//		return; // Would overflow the buffer
-
-	//	float* dest = (float*)&shadowData_[offset];
-	//	const float* src = (const float*)data;
-
-	//	while(rows--)
-	//	{
-	//		*dest++ = *src++;
-	//		*dest++ = *src++;
-	//		*dest++ = *src++;
-	//		++dest; // Skip over the w coordinate
-	//	}
-
-	//	dirty_ = true;
-	//}
-
-	//void YumeConstantBuffer::Apply()
-	//{
-	//	if(dirty_ && object_)
-	//	{
-	//		impl_->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,0,shadowData_.get(),0,0);
-	//		dirty_ = false;
-	//	}
-	//}
+	void YumeD3D11ConstantBuffer::Apply()
+	{
+		if(dirty_ && object_)
+		{
+			static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,0,shadowData_.get(),0,0);
+			dirty_ = false;
+		}
+	}
 }

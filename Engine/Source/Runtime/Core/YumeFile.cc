@@ -24,33 +24,53 @@
 
 #include "Logging/logging.h"
 
+#include "YumeDefaults.h"
 
+#include "Math/YumeMath.h"
 
 
 namespace fs = boost::filesystem;
 
 namespace YumeEngine
 {
+
+	static const char* openMode[] =
+	{
+		"rb",
+		"wb",
+		"r+b",
+		"w+b"
+	};
+
+
 	YumeFile::YumeFile(const YumeString& file,FileMode fileMode)
-		: file_(file),fileMode_(fileMode),position_(0),size_(0)
+		: file_(file),fileMode_(fileMode),position_(0),size_(0),handle_(0)
 	{
 		Open(file_,fileMode_);
 	}
 
 	YumeFile::YumeFile(const boost::filesystem::path& file,FileMode filemode) :
-		file_(file.generic_string()),fileMode_(filemode),position_(0),size_(0)
+		file_(file.generic_string()),fileMode_(filemode),position_(0),size_(0),handle_(0)
 	{
 		Open(file_,fileMode_);
 	}
 
 	YumeFile::~YumeFile()
 	{
+		Close();
 	}
 
 	bool YumeFile::Open(const std::string& file,FileMode filemode)
 	{
+		Close();
+
 		file_ = file;
 		fileMode_ = filemode;
+		position_ = 0;
+		offset_ = 0;
+		checksum_ = 0;
+		readSyncNeeded_ = false;
+		writeSyncNeeded_ = false;
 
 		//std::ios_base::openmode fileMode;
 		//if(filemode == FILEMODE_READ)
@@ -60,92 +80,192 @@ namespace YumeEngine
 
 		fs::path p = fs::path(file);
 
-		if(fs::exists(p))
+		if(!fs::exists(p) && filemode == FILEMODE_READ)
 		{
-			fileStream.open(p,std::fstream::in | std::fstream::out | std::fstream::binary);
-
-			size_ = GetSize();
-
-			return fileStream.is_open();
+			YUMELOG_ERROR("Can't open non-existent file for reading." << file);
+			return false;
 		}
-		else
+
+		handle_ = fopen(file.c_str(),openMode[filemode]);
+
+		if(filemode == FILEMODE_READWRITE && !handle_)
 		{
-			if(fileMode_ == FILEMODE_WRITE)
-			{
-				fileStream.open(p,std::fstream::in | std::fstream::out | std::fstream::binary | std::fstream::trunc);
-
-				return fileStream.is_open();
-			}
+			handle_ = fopen(file.c_str(),openMode[filemode + 1]);
 		}
-		return fileStream.is_open();
+
+		if(!handle_)
+		{
+			YUMELOG_ERROR("Could not open file " << file.c_str());
+			return false;
+		}
+
+
+		fseek((FILE*)handle_,0,SEEK_END);
+		long size = ftell((FILE*)handle_);
+		fseek((FILE*)handle_,0,SEEK_SET);
+		if(size > Math::M_MAX_UNSIGNED)
+		{
+			YUMELOG_ERROR("Could not open file which is larger than 4GB" << file_.c_str());
+			Close();
+			size_ = 0;
+			return false;
+		}
+		size_ = (unsigned)size;
+		return true;
 	}
 
 	void YumeFile::Close()
 	{
-		if(fileStream.is_open())
-			fileStream.close();
+		if(handle_)
+		{
+			fclose((FILE*)handle_);
+			handle_ = 0;
+			position_ = 0;
+			size_ = 0;
+			offset_ = 0;
+			checksum_ = 0;
+		}
 	}
 
-	void YumeFile::Write(const YumeString& str)
+	void YumeFile::Flush()
 	{
-		if(!fileStream.is_open())
-			return;
+		if(handle_)
+			fflush((FILE*)handle_);
+	}
 
-		fileStream << str;
+	bool YumeFile::WriteString(const YumeString& str)
+	{
+		const char* chars = str.c_str();
+		// Count length to the first zero, because ReadString() does the same
+		unsigned length = CStringLength(chars);
+		return Write(chars,length + 1) == length + 1;
 	}
 
 	unsigned YumeFile::Read(void* dest,int size)
 	{
+		if(!handle_)
+		{
+			// Do not log the error further here to prevent spamming the stderr stream
+			return 0;
+		}
+
+		if(fileMode_ == FILEMODE_WRITE)
+		{
+			YUMELOG_ERROR("File not opened for reading");
+			return 0;
+		}
+
 		if(size + position_ > size_)
 			size = size_ - position_;
 		if(!size)
 			return 0;
 
-		char* destPtr = (char*)dest;
-		fileStream.read(destPtr,size);
+		// Need to reassign the position due to internal buffering when transitioning from writing to reading
+		if(readSyncNeeded_)
+		{
+			fseek((FILE*)handle_,position_ + offset_,SEEK_SET);
+			readSyncNeeded_ = false;
+		}
 
+		size_t ret = fread(dest,size,1,(FILE*)handle_);
+		if(ret != 1)
+		{
+			// Return to the position where the read began
+			fseek((FILE*)handle_,position_ + offset_,SEEK_SET);
+			YUMELOG_ERROR("Error while reading from file " + GetName());
+			return 0;
+		}
+
+		writeSyncNeeded_ = true;
 		position_ += size;
-
 		return size;
 	}
 
 	YumeString YumeFile::ReadLine()
 	{
-		YumeString line;
-		if(std::getline(fileStream,line))
+		YumeString ret;
+
+		while(!Eof())
 		{
-			return line;
+			char c = ReadByte();
+			if(c == 10)
+				break;
+			if(c == 13)
+			{
+				// Peek next char to see if it's 10, and skip it too
+				if(!Eof())
+				{
+					char next = ReadByte();
+					if(next != 10)
+						Seek(position_ - 1);
+				}
+				break;
+			}
+
+			ret += c;
 		}
+
+		return ret;
 	}
 
 	bool YumeFile::Eof() const
 	{
-		return fileStream.eof();
+		return position_ >= size_;
 	}
 
-	YumeString YumeFile::Read()
+	YumeString YumeFile::ReadString()
 	{
-		YumeString str;
-		YumeStringStream sstr;
-		while(fileStream)
+		YumeString ret;
+
+		while(!Eof())
 		{
-			std::getline(fileStream,str);
-			sstr << str;
+			char c = ReadByte();
+			if(!c)
+				break;
+			else
+				ret += c;
 		}
-		return sstr.str();
+
+		return ret;
 	}
-	unsigned YumeFile::Write(const void* str,unsigned size)
+
+
+	unsigned YumeFile::Write(const void* data,unsigned size)
 	{
+		if(!handle_)
+		{
+			// Do not log the error further here to prevent spamming the stderr stream
+			return 0;
+		}
+
 		if(fileMode_ == FILEMODE_READ)
 		{
-			YUMELOG_ERROR("File isn't open for writing!");
+			YUMELOG_ERROR("File not opened for writing");
 			return 0;
 		}
 
 		if(!size)
 			return 0;
 
-		fileStream.write((char*)str,size);
+		// Need to reassign the position due to internal buffering when transitioning from reading to writing
+		if(writeSyncNeeded_)
+		{
+			fseek((FILE*)handle_,position_ + offset_,SEEK_SET);
+			writeSyncNeeded_ = false;
+		}
+
+		if(fwrite(data,size,1,(FILE*)handle_) != 1)
+		{
+			// Return to the position where the write began
+			fseek((FILE*)handle_,position_ + offset_,SEEK_SET);
+			YUMELOG_ERROR("Error while writing to file " + GetName());
+			return 0;
+		}
+
+		readSyncNeeded_ = true;
+		position_ += size;
+		if(position_ > size_)
+			size_ = position_;
 
 		return size;
 	}
@@ -169,7 +289,7 @@ namespace YumeEngine
 	{
 		return Write(&value,sizeof value) == sizeof value;
 	}
-	bool YumeFile::WriteUByte(signed char value)
+	bool YumeFile::WriteUByte(unsigned char value)
 	{
 		return Write(&value,sizeof value) == sizeof value;
 	}
@@ -191,14 +311,14 @@ namespace YumeEngine
 
 	unsigned YumeFile::ReadUInt()
 	{
-		unsigned ret;
+		unsigned ret = 0;
 		Read(&ret,sizeof ret);
 		return ret;
 	}
 
-	unsigned YumeFile::ReadUByte()
+	unsigned char YumeFile::ReadUByte()
 	{
-		unsigned ret;
+		unsigned char ret;
 		Read(&ret,sizeof ret);
 		return ret;
 	}
@@ -216,10 +336,23 @@ namespace YumeEngine
 		Read(&ret,sizeof ret);
 		return ret;
 	}
-	void YumeFile::Seek(unsigned s)
+	unsigned YumeFile::Seek(unsigned position)
 	{
-		fileStream.seekg(s);
-		position_ = s;
+		if(!handle_)
+		{
+			// Do not log the error further here to prevent spamming the stderr stream
+			return 0;
+		}
+
+		// Allow sparse seeks if writing
+		if(fileMode_ == FILEMODE_READ && position > size_)
+			position = size_;
+
+		fseek((FILE*)handle_,position + offset_,SEEK_SET);
+		position_ = position;
+		readSyncNeeded_ = false;
+		writeSyncNeeded_ = false;
+		return position_;
 	}
 
 	void YumeFile::SetName(const YumeString& name)

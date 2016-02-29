@@ -168,9 +168,12 @@ namespace YumeEngine
 		/*SharedPtr<YumeShader> test_ = resourceManager_->PrepareResource<YumeShader>("Shaders/Basic.hlsl");*/
 
 		
-		YumeShaderVariation* var = graphics_->GetShader(VS,"Basic","DIFFMAP ALPHAMAP VERTEXCOLOR");
+		YumeShaderVariation* vs = graphics_->GetShader(VS,"Basic","VERTEXCOLOR");
+		YumeShaderVariation* ps = graphics_->GetShader(PS,"Basic","VERTEXCOLOR");
+		
+		graphics_->SetShaders(vs,ps);
 
-		var->Create();
+		
 		
 		YUMELOG_INFO("Initialized Yume Engine...");
 

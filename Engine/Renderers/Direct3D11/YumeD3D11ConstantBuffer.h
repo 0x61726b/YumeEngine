@@ -23,49 +23,26 @@
 #define __YumeD3D11ConstantBuffer_h__
 //----------------------------------------------------------------------------
 #include "YumeD3D11Required.h"
+#include "Renderer/YumeConstantBuffer.h"
 #include "YumeD3D11GpuResource.h"
 
 #include <boost/shared_array.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	/*class YumeD3D11RendererImpl;
+	class YumeRenderer;
 
-	class YumeD3DExport YumeConstantBuffer : public YumeD3D11Resource
+	class YumeD3DExport YumeD3D11ConstantBuffer : public YumeConstantBuffer,public YumeD3D11Resource
 	{
 	public:
-		YumeConstantBuffer(YumeD3D11RendererImpl* impl);
+		YumeD3D11ConstantBuffer(YumeRenderer* renderer);
 
-		virtual ~YumeConstantBuffer();
+		virtual ~YumeD3D11ConstantBuffer();
 
-		virtual void Release();
-
-
-		/// Set size and create GPU-side buffer. Return true on success.
+		void Release();
 		bool SetSize(unsigned size);
-		/// Set a generic parameter and mark buffer dirty.
-		void SetParameter(unsigned offset,unsigned size,const void* data);
-		/// Set a Vector3 array parameter and mark buffer dirty.
-		void SetVector3ArrayParameter(unsigned offset,unsigned rows,const void* data);
-		/// Apply to GPU.
 		void Apply();
-
-		/// Return size.
-		unsigned GetSize() const { return size_; }
-
-		/// Return whether has unapplied data.
-		bool IsDirty() const { return dirty_; }
-
-	private:
-		/// Shadow data.
-		boost::shared_array<unsigned char> shadowData_;
-		/// Buffer byte size.
-		unsigned size_;
-		/// Dirty flag.
-		bool dirty_;
-
-		YumeD3D11RendererImpl* impl_;
-	};*/
+	};
 
 }
 

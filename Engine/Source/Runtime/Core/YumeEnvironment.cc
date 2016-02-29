@@ -149,8 +149,8 @@ namespace YumeEngine
 		}
 		YumeFile file(configFile_);
 
-		YumeString configContent = file.Read();
-		file.Close();
+		YumeString configContent = file.ReadString();
+		
 
 		VariantMap configMap = Parsers::ParseConfig(configContent);
 

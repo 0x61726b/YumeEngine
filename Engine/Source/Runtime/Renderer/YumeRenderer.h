@@ -25,7 +25,9 @@
 #include "YumeRequired.h"
 #include "Renderer/YumeRendererDefs.h"
 
+#include "Math/YumeColor.h"
 #include "Math/YumeVector4.h"
+#include "Core/YumeVariant.h"
 
 #include <boost/shared_array.hpp>
 #include <boost/weak_ptr.hpp>
@@ -40,6 +42,7 @@ namespace YumeEngine
 	class YumeShaderVariation;
 	class YumeShader;
 	class YumeVertexBuffer;
+	class YumeConstantBuffer;
 
 	struct ScratchBuffer
 	{
@@ -91,13 +94,15 @@ namespace YumeEngine
 		virtual void RemoveGpuResource(YumeGpuResource* object) = 0;
 
 
-
+		virtual YumeConstantBuffer* GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size) = 0;
 
 
 		//Getters
+		YumeShaderVariation* GetVertexShader() const { return vertexShader_; }
+		YumeShaderVariation* GetPixelShader() const { return pixelShader_; }
+
 		YumeVertexBuffer* GetVertexBuffer(unsigned index) const;
 		virtual YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const = 0;
-
 		virtual YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const = 0;
 
 
@@ -105,6 +110,27 @@ namespace YumeEngine
 		//Setters
 		void SetWindowIcon(YumeImage* image);
 		virtual void SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps) = 0;
+
+		virtual void SetShaderParameter(YumeHash  param,const float* data,unsigned count) = 0;
+		/// Set shader float constant.
+		virtual void SetShaderParameter(YumeHash  param,float value) = 0;
+		/// Set shader boolean constant.
+		virtual void SetShaderParameter(YumeHash  param,bool value) = 0;
+		/// Set shader color constant.
+		virtual void SetShaderParameter(YumeHash  param,const YumeColor& color) = 0;
+		/// Set shader 2D vector constant.
+		virtual void SetShaderParameter(YumeHash  param,const Vector2& vector) = 0;
+		/// Set shader 3x3 matrix constant.
+		virtual void SetShaderParameter(YumeHash  param,const Matrix3& matrix) = 0;
+		/// Set shader 3D vector constant.
+		virtual void SetShaderParameter(YumeHash  param,const Vector3& vector) = 0;
+		/// Set shader 4x4 matrix constant.
+		virtual void SetShaderParameter(YumeHash  param,const Matrix4& matrix) = 0;
+		/// Set shader 4D vector constant.
+		virtual void SetShaderParameter(YumeHash param,const Vector4& vector) = 0;
+
+		virtual void SetShaderParameter(YumeHash param, const YumeVariant& value) = 0;
+	
 		virtual void SetVertexBuffer(YumeVertexBuffer* buffer) = 0;
 		/// Set multiple vertex buffers.
 		virtual bool SetVertexBuffers
@@ -123,7 +149,8 @@ namespace YumeEngine
 
 	protected:
 		void CreateWindowIcon();
-
+		bool useClipPlane_;
+		Vector4 clipPlane_;
 	protected:
 		SDL_Window* window_;
 
@@ -146,8 +173,11 @@ namespace YumeEngine
 		unsigned maxScratchBufferRequest_;
 		/// Scratch buffers.
 		YumeVector<ScratchBuffer>::type scratchBuffers_;
-
+		YumeMap<unsigned,SharedPtr<YumeConstantBuffer> >::type constantBuffers_;
+		YumeVector<YumeConstantBuffer*>::type dirtyConstantBuffers_;
 		YumeMap<YumeString,TextureUnit>::type textureUnits_;
+
+		const void* shaderParameterSources_[MAX_SHADER_PARAMETER_GROUPS];
 
 		YumeShaderVariation* vertexShader_;
 		YumeShaderVariation* pixelShader_;

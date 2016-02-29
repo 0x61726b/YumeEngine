@@ -160,6 +160,20 @@ namespace YumeEngine
 		exit(exitCode);
 	}
 
+	unsigned CStringLength(const char* str)
+	{
+		if(!str)
+			return 0;
+#ifdef _MSC_VER
+		return (unsigned)strlen(str);
+#else
+		const char* ptr = str;
+		while(*ptr)
+			++ptr;
+		return (unsigned)(ptr - str);
+#endif
+	}
+
 
 	const YumeVector<YumeString>::type& GetArguments()
 	{
