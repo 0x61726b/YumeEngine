@@ -144,10 +144,7 @@ namespace YumeEngine
 		unsigned constantBufferSizes_[MAX_SHADER_PARAMETER_GROUPS];
 		/// Bytecode. Needed for inspecting the input signature and parameters.
 		YumeVector<unsigned char>::type byteCode_;
-		/// Defines to use in compiling.
-		YumeString defines_;
-		/// Shader compile error string.
-		YumeString compilerOutput_;
+
 	};
 }
 

@@ -62,7 +62,7 @@ namespace YumeEngine
 
 		if(fs::exists(p))
 		{
-			fileStream.open(p,std::fstream::in | std::fstream::binary);
+			fileStream.open(p,std::fstream::in | std::fstream::out | std::fstream::binary);
 
 			size_ = GetSize();
 
@@ -70,8 +70,12 @@ namespace YumeEngine
 		}
 		else
 		{
-			YUMELOG_WARN("Trying to read nonexistent file " << fileName_.c_str());
-			return false;
+			if(fileMode_ == FILEMODE_WRITE)
+			{
+				fileStream.open(p,std::fstream::in | std::fstream::out | std::fstream::binary | std::fstream::trunc);
+
+				return fileStream.is_open();
+			}
 		}
 		return fileStream.is_open();
 	}
@@ -143,10 +147,42 @@ namespace YumeEngine
 			return 0;
 
 		fileStream.write((char*)str,size);
-		fileStream.flush();
 
 		return size;
 	}
+
+	bool YumeFile::WriteFileID(const YumeString& value)
+	{
+		bool success = true;
+		unsigned length = (unsigned)std::min((int)value.length(),4);
+
+		success &= Write(value.c_str(),length) == length;
+		for(unsigned i = value.length(); i < 4; ++i)
+			success &= WriteByte(' ');
+		return success;
+	}
+
+	bool YumeFile::WriteByte(signed char value)
+	{
+		return Write(&value,sizeof value) == sizeof value;
+	}
+	bool YumeFile::WriteUInt(unsigned value)
+	{
+		return Write(&value,sizeof value) == sizeof value;
+	}
+	bool YumeFile::WriteUByte(signed char value)
+	{
+		return Write(&value,sizeof value) == sizeof value;
+	}
+	bool YumeFile::WriteShort(short value)
+	{
+		return Write(&value,sizeof value) == sizeof value;
+	}
+	bool YumeFile::WriteUShort(unsigned short value)
+	{
+		return Write(&value,sizeof value) == sizeof value;
+	}
+
 
 	void YumeFile::Seek(unsigned s)
 	{

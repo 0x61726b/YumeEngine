@@ -106,7 +106,7 @@ namespace YumeEngine
 	{
 		YumeHash definesHash = GenerateHash(defines);
 		typedef YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> > ShaderMap;
-		ShaderMap::type variations = (type == VS ? vsVariations_ : psVariations_);
+		ShaderMap::type& variations = (type == VS ? vsVariations_ : psVariations_);
 
 		ShaderMap::iterator i = variations.find(definesHash);
 
@@ -136,13 +136,9 @@ namespace YumeEngine
 				++numVariations_;
 				RefreshMemoryUse();
 
-				if(type == VS)
-					vsVariations_ = variations;
-				else
-					psVariations_ = variations;
+				return boost::static_pointer_cast<YumeShaderVariation>(ret.first->second).get();
 			}
 		}
-
 		return 0;
 	}
 

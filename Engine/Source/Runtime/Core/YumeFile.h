@@ -49,8 +49,15 @@ namespace YumeEngine
 
 		bool Eof() const;
 
+
 		void Write(const YumeString& str);
 		unsigned Write(const void* str,unsigned len);
+		bool WriteFileID(const YumeString& str);
+		bool WriteByte(signed char value);
+		bool WriteUInt(unsigned value);
+		bool WriteUByte(signed char value);
+		bool WriteShort(short value);
+		bool WriteUShort(unsigned short value);
 
 		YumeString Read();
 

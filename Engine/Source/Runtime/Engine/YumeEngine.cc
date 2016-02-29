@@ -42,7 +42,10 @@
 #include "Core/YumeDefaults.h"
 #include "Core/YumeBase.h"
 
+
+
 #include "Renderer/YumeShader.h"
+#include "Renderer/YumeShaderVariation.h"
 
 #include <log4cplus/initializer.h>
 
@@ -142,7 +145,7 @@ namespace YumeEngine
 		graphics_->SetWindowPos(Vector2(250,250));
 
 		FsPath resourceTree = FsPath(env_->GetVariant("ResourceTree").Get<YumeString>());
-		resourceTree = io_->GetBinaryRoot() / resourceTree;
+		resourceTree = io_->GetBinaryRoot() / "Yume" / resourceTree;
 
 		resourceManager_->AddResourcePath(resourceTree);
 
@@ -165,8 +168,9 @@ namespace YumeEngine
 		/*SharedPtr<YumeShader> test_ = resourceManager_->PrepareResource<YumeShader>("Shaders/Basic.hlsl");*/
 
 		
-		graphics_->GetShader(VS,"Basic","NORMALMAP PERPIXEL DIRLIGHT");
+		YumeShaderVariation* var = graphics_->GetShader(VS,"Basic","DIFFMAP ALPHAMAP VERTEXCOLOR");
 
+		var->Create();
 		
 		YUMELOG_INFO("Initialized Yume Engine...");
 

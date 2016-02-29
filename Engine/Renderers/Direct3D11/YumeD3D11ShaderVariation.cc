@@ -32,6 +32,15 @@
 
 #include "Core/YumeDefaults.h"
 
+#include "Logging/logging.h"
+
+#include "Renderer/YumeResourceManager.h"
+
+
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace YumeEngine
 {
@@ -81,6 +90,9 @@ namespace YumeEngine
 		if(!Compile())
 			return false;
 
+		if(owner_->GetTimeStamp())
+			SaveByteCode(binaryShaderName);
+
 		return false;
 	}
 
@@ -91,7 +103,104 @@ namespace YumeEngine
 
 	bool YumeD3D11ShaderVariation::Compile()
 	{
-		return false;
+		const YumeString& sourceCode = owner_->GetSourceCode(type_);
+		YumeVector<YumeString>::type defines;
+
+		boost::split(defines,defines_,boost::is_any_of(" "));
+
+		const char* entryPoint = 0;
+		const char* profile = 0;
+		unsigned flags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
+
+		defines.push_back("D3D11");
+
+		if(type_ == VS)
+		{
+			entryPoint = "VS";
+			defines.push_back("COMPILEVS");
+			profile = "vs_4_0";
+		}
+		else
+		{
+			entryPoint = "PS";
+			defines.push_back("COMPILEPS");
+			profile = "ps_4_0";
+			flags |= D3DCOMPILE_PREFER_FLOW_CONTROL;
+		}
+
+		YUMELOG_INFO("Compiling shader " << GetFullName());
+
+		YumeVector<YumeString>::type defineValues;
+		YumeVector<D3D_SHADER_MACRO>::type macros;
+
+		for(unsigned i = 0; i < defines.size(); ++i)
+		{
+			unsigned equalsPos = defines[i].find('=');
+			if(equalsPos != 0xffffffff)
+			{
+				defineValues.push_back(defines[i].substr(equalsPos + 1));
+				defines[i].resize(equalsPos);
+			}
+			else
+				defineValues.push_back("1");
+		}
+
+		for(unsigned i = 0; i < defines.size(); ++i)
+		{
+			D3D_SHADER_MACRO macro;
+			macro.Name = defines[i].c_str();
+			macro.Definition = defineValues[i].c_str();
+			macros.push_back(macro);
+
+			// In debug mode, check that all defines are referenced by the shader code
+#ifdef _DEBUG
+			if(sourceCode.find(defines[i]) == 0xffffffff)
+				YUMELOG_WARN("Shader " + GetFullName() + " does not use the define " + defines[i]);
+#endif
+		}
+
+		D3D_SHADER_MACRO endMacro;
+		endMacro.Name = 0;
+		endMacro.Definition = 0;
+		macros.push_back(endMacro);
+
+		// Compile using D3DCompile
+		ID3DBlob* shaderCode = 0;
+		ID3DBlob* errorMsgs = 0;
+
+		HRESULT hr = D3DCompile(sourceCode.c_str(),sourceCode.length(),owner_->GetName().c_str(),&macros.front(),0,
+			entryPoint,profile,flags,0,&shaderCode,&errorMsgs);
+		if(FAILED(hr))
+		{
+			// Do not include end zero unnecessarily
+			compilerOutput_ = YumeString((const char*)errorMsgs->GetBufferPointer(),(unsigned)errorMsgs->GetBufferSize() - 1);
+		}
+		else
+		{
+			if(type_ == VS)
+				YUMELOG_DEBUG("Compiled vertex shader " + GetFullName());
+			else
+				YUMELOG_DEBUG("Compiled pixel shader " + GetFullName());
+
+			unsigned char* bufData = (unsigned char*)shaderCode->GetBufferPointer();
+			unsigned bufSize = (unsigned)shaderCode->GetBufferSize();
+			// Use the original bytecode to reflect the parameters
+			ParseParameters(bufData,bufSize);
+			CalculateConstantBufferSizes();
+
+			// Then strip everything not necessary to use the shader
+			ID3DBlob* strippedCode = 0;
+			D3DStripShader(bufData,bufSize,
+				D3DCOMPILER_STRIP_REFLECTION_DATA | D3DCOMPILER_STRIP_DEBUG_INFO | D3DCOMPILER_STRIP_TEST_BLOBS,&strippedCode);
+			byteCode_.resize((unsigned)strippedCode->GetBufferSize());
+			memcpy(&byteCode_[0],strippedCode->GetBufferPointer(),byteCode_.size());
+			strippedCode->Release();
+		}
+
+		D3D_SAFE_RELEASE(shaderCode);
+		D3D_SAFE_RELEASE(errorMsgs);
+
+		return !byteCode_.empty();;
 	}
 
 	void YumeD3D11ShaderVariation::ParseParameters(unsigned char* bufData,unsigned bufSize)
@@ -101,6 +210,31 @@ namespace YumeEngine
 
 	void YumeD3D11ShaderVariation::SaveByteCode(const YumeString& binaryShaderName)
 	{
+		SharedPtr<YumeIO> io_ = YumeEngine3D::Get()->GetIO();
+		YumeResourceManager* rm_ = YumeEngine3D::Get()->GetResourceManager();
+
+		YumeString path = GetPath(rm_->GetFullPath(owner_->GetName())) + "Cache/";
+
+		if(!io_->IsDirectoryExist(path))
+			io_->CreateDir(path);
+
+		YumeString p,file,extension;
+		SplitPath(binaryShaderName,p,file,extension);
+		YumeString fullName = p+ file + extension;
+
+
+
+		SharedPtr<YumeFile> file_ = SharedPtr<YumeFile>(new YumeFile(path + file + extension,FILEMODE_WRITE));
+
+		
+		if(!file_)
+			return;
+
+		file_->WriteFileID("USHD");
+		file_->WriteShort((unsigned short)type_);
+		file_->WriteShort(4);
+		file_->WriteUInt(elementMask_);
+
 	}
 
 	void YumeD3D11ShaderVariation::CalculateConstantBufferSizes()

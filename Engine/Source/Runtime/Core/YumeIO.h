@@ -37,7 +37,8 @@ namespace YumeEngine
 		virtual ~YumeIO();
 
 		static bool IsDirectoryExist(const FsPath&);
-
+		
+		bool CreateDir(const FsPath&);
 		FsPath GetBinaryRoot();
 		FsPath GetCurrentPath() const;
 

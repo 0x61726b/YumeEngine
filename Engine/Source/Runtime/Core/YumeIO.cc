@@ -45,7 +45,7 @@ namespace YumeEngine
 
 		//ToDo(arkenthera) fix this by working around Debug/Release that vs uses
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
-		FsPath root = current / ".." / ".." / "..";
+		FsPath root = current / ".." / "..";
 #else
 		FsPath root = current / ".." / "..";
 #endif
@@ -75,6 +75,11 @@ namespace YumeEngine
 		else
 			return 0;
 #endif
+	}
+
+	bool YumeIO::CreateDir(const FsPath& path)
+	{
+		return boost::filesystem::create_directory(path);
 	}
 
 	void SplitPath(const YumeString& fullPath,YumeString& pathName,YumeString& fileName,YumeString& extension,bool lowercaseExtension)
