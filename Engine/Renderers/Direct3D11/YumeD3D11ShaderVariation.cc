@@ -36,6 +36,8 @@
 
 #include "Renderer/YumeResourceManager.h"
 
+#include "YumeD3D11VertexBuffer.h"
+
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/replace.hpp>
@@ -205,7 +207,72 @@ namespace YumeEngine
 
 	void YumeD3D11ShaderVariation::ParseParameters(unsigned char* bufData,unsigned bufSize)
 	{
+		ID3D11ShaderReflection* reflection = 0;
+		D3D11_SHADER_DESC shaderDesc;
 
+		HRESULT hr = D3DReflect(bufData,bufSize,IID_ID3D11ShaderReflection,(void**)&reflection);
+		if(FAILED(hr) || !reflection)
+		{
+			D3D_SAFE_RELEASE(reflection);
+			YUMELOG_ERROR("Failed to reflect vertex shader's input signature",hr);
+			return;
+		}
+
+		reflection->GetDesc(&shaderDesc);
+
+		if(type_ == VS)
+		{
+			for(unsigned i = 0; i < shaderDesc.InputParameters; ++i)
+			{
+				D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
+				reflection->GetInputParameterDesc((UINT)i,&paramDesc);
+				for(unsigned j = 0; j < MAX_VERTEX_ELEMENTS; ++j)
+				{
+					if(!strcmp(paramDesc.SemanticName,YumeD3D11VertexBuffer::elementSemantics[j]) == 0 &&
+						paramDesc.SemanticIndex == YumeD3D11VertexBuffer::elementSemanticIndices[j])
+					{
+						elementMask_ |= (1 << j);
+						break;
+					}
+				}
+			}
+		}
+
+		YumeMap<YumeString,unsigned> cbRegisterMap;
+
+		for(unsigned i = 0; i < shaderDesc.BoundResources; ++i)
+		{
+			D3D11_SHADER_INPUT_BIND_DESC resourceDesc;
+			reflection->GetResourceBindingDesc(i,&resourceDesc);
+			YumeString resourceName(resourceDesc.Name);
+			if(resourceDesc.Type == D3D_SIT_CBUFFER)
+				cbRegisterMap[resourceName] = resourceDesc.BindPoint;
+			else if(resourceDesc.Type == D3D_SIT_SAMPLER && resourceDesc.BindPoint < MAX_TEXTURE_UNITS)
+				useTextureUnit_[resourceDesc.BindPoint] = true;
+		}
+
+		for(unsigned i = 0; i < shaderDesc.ConstantBuffers; ++i)
+		{
+			ID3D11ShaderReflectionConstantBuffer* cb = reflection->GetConstantBufferByIndex(i);
+			D3D11_SHADER_BUFFER_DESC cbDesc;
+			cb->GetDesc(&cbDesc);
+			unsigned cbRegister = cbRegisterMap[YumeString(cbDesc.Name)];
+
+			for(unsigned j = 0; j < cbDesc.Variables; ++j)
+			{
+				ID3D11ShaderReflectionVariable* var = cb->GetVariableByIndex(j);
+				D3D11_SHADER_VARIABLE_DESC varDesc;
+				var->GetDesc(&varDesc);
+				YumeString varName(varDesc.Name);
+				if(varName[0] == 'c')
+				{
+					varName = varName.substr(1); // Strip the c to follow Urho3D constant naming convention
+					parameters_[varName] = ShaderParameter(type_,varName,cbRegister,varDesc.StartOffset,varDesc.Size);
+				}
+			}
+		}
+
+		reflection->Release();
 	}
 
 	void YumeD3D11ShaderVariation::SaveByteCode(const YumeString& binaryShaderName)
@@ -226,7 +293,7 @@ namespace YumeEngine
 
 		SharedPtr<YumeFile> file_ = SharedPtr<YumeFile>(new YumeFile(path + file + extension,FILEMODE_WRITE));
 
-		
+
 		if(!file_)
 			return;
 
@@ -234,6 +301,35 @@ namespace YumeEngine
 		file_->WriteShort((unsigned short)type_);
 		file_->WriteShort(4);
 		file_->WriteUInt(elementMask_);
+
+		file_->WriteUInt(parameters_.size());
+		for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
+		{
+			file_->Write(i->second.name_);
+			file_->WriteUByte((unsigned char)i->second.buffer_);
+			file_->WriteUInt(i->second.offset_);
+			file_->WriteUInt(i->second.size_);
+		}
+
+		unsigned usedTextureUnits = 0;
+		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
+		{
+			if(useTextureUnit_[i])
+				++usedTextureUnits;
+		}
+		file_->WriteUInt(usedTextureUnits);
+		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
+		{
+			if(useTextureUnit_[i])
+			{
+				//file_->Write(graphics_->GetTextureUnitName((TextureUnit)i));
+				file_->WriteUByte((unsigned char)i);
+			}
+		}
+
+		file_->WriteUInt(byteCode_.size());
+		if(byteCode_.size())
+			file_->Write(&byteCode_[0],byteCode_.size());
 
 	}
 

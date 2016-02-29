@@ -51,7 +51,8 @@ namespace YumeEngine
 
 		if(!YumeIO::IsDirectoryExist(path))
 		{
-			YUMELOG_ERROR("Trying to add non-existent resource path");
+			YUMELOG_ERROR("Trying to add non-existent resource path " << path);
+			return;
 		}
 
 		for(int i=0; i < resourcePaths_.size(); ++i)

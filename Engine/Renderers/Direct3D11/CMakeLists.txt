@@ -34,6 +34,8 @@ set(SRC_RENDERER_D3D11
 	YumeD3D11Renderer.cc
   YumeD3D11Shader.h
   YumeD3D11Shader.cc
+  YumeD3D11VertexBuffer.h
+  YumeD3D11VertexBuffer.cc
 )
 
 if(DirectX_FOUND)

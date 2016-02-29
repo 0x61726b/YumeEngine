@@ -92,7 +92,6 @@ namespace YumeEngine
 			return;
 
 		fileStream << str;
-		fileStream.flush();
 	}
 
 	unsigned YumeFile::Read(void* dest,int size)
