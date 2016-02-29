@@ -27,7 +27,8 @@
 namespace YumeEngine
 {
 
-	YumeGLGpuResource::YumeGLGpuResource():
+	YumeGLGpuResource::YumeGLGpuResource(YumeRenderer* renderer):
+		YumeGpuResource(renderer),
 		object_(0),
 		dataPending_(false),
 		dataLost_(false)

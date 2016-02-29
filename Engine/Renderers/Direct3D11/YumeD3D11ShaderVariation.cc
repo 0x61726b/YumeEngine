@@ -37,6 +37,7 @@
 #include "Renderer/YumeResourceManager.h"
 
 #include "YumeD3D11VertexBuffer.h"
+#include "Renderer/YumeRenderer.h"
 
 
 #include <boost/algorithm/string/predicate.hpp>
@@ -47,6 +48,7 @@
 namespace YumeEngine
 {
 	YumeD3D11ShaderVariation::YumeD3D11ShaderVariation(YumeShader* owner,ShaderType type):
+		YumeD3D11Resource(0),
 		elementMask_(0)
 	{
 		owner_ = owner;
@@ -86,20 +88,86 @@ namespace YumeEngine
 
 		YumeString path,name,extension;
 		SplitPath(owner_->GetName(),path,name,extension);
+		extension = type_ == VS ? ".vs4" : ".ps4";
 
 		YumeString binaryShaderName = path + "Cache/" + name + "_" + std::to_string(GenerateHash(defines_)) + extension;
 
-		if(!Compile())
-			return false;
+		if(!LoadByteCode(binaryShaderName))
+		{
+			if(!Compile())
+				return false;
 
-		if(owner_->GetTimeStamp())
-			SaveByteCode(binaryShaderName);
-
+			if(owner_->GetTimeStamp())
+				SaveByteCode(binaryShaderName);
+		}
 		return false;
 	}
 
 	bool YumeD3D11ShaderVariation::LoadByteCode(const YumeString& binaryShaderName)
 	{
+		SharedPtr<YumeIO> io_ = YumeEngine3D::Get()->GetIO();
+		YumeResourceManager* rm_ = YumeEngine3D::Get()->GetResourceManager();
+		if(!rm_->Exists(binaryShaderName))
+			return false;
+
+		unsigned sourceTimeStamp = owner_->GetTimeStamp();
+
+		if(sourceTimeStamp && io_->GetLastModifiedTime(rm_->GetFullPath(binaryShaderName)) < sourceTimeStamp)
+			return false;
+
+		SharedPtr<YumeFile> file_ = rm_->GetFile(binaryShaderName);
+
+		if(!file_ || file_->GetFileExtension() != "USHD")
+		{
+			YUMELOG_ERROR(binaryShaderName + " is not a valid shader bytecode file");
+			return false;
+		}
+		file_->ReadUShort();
+		file_->ReadUShort();
+		elementMask_ = file_->ReadUInt();
+
+		unsigned numParameters = file_->ReadUInt();
+		for(unsigned i = 0; i < numParameters; ++i)
+		{
+			YumeString name = file_->Read();
+			unsigned buffer = file_->ReadUByte();
+			unsigned offset = file_->ReadUInt();
+			unsigned size = file_->ReadUInt();
+
+			ShaderParameter parameter(type_,name_,buffer,offset,size);
+			parameters_[GenerateHash(name)] = parameter;
+		}
+
+		unsigned numTextureUnits = file_->ReadUInt();
+		for(unsigned i = 0; i < numTextureUnits; ++i)
+		{
+			/*String unitName = */file_->Read();
+			unsigned reg = file_->ReadUByte();
+
+			if(reg < MAX_TEXTURE_UNITS)
+				useTextureUnit_[reg] = true;
+		}
+
+		unsigned byteCodeSize = file_->ReadUInt();
+		if(byteCodeSize)
+		{
+			byteCode_.resize(byteCodeSize);
+			file_->Read(&byteCode_[0],byteCodeSize);
+
+			if(type_ == VS)
+				YUMELOG_DEBUG("Loaded cached vertex shader " + GetFullName());
+			else
+				YUMELOG_DEBUG("Loaded cached pixel shader " + GetFullName());
+
+			CalculateConstantBufferSizes();
+			return true;
+		}
+		else
+		{
+			YUMELOG_DEBUG(binaryShaderName + " has zero length bytecode");
+			return false;
+		}
+
 		return false;
 	}
 
@@ -214,7 +282,7 @@ namespace YumeEngine
 		if(FAILED(hr) || !reflection)
 		{
 			D3D_SAFE_RELEASE(reflection);
-			YUMELOG_ERROR("Failed to reflect vertex shader's input signature",hr);
+			YUMELOG_ERROR("Failed to reflect vertex shader's input signature " << hr);
 			return;
 		}
 
@@ -238,7 +306,7 @@ namespace YumeEngine
 			}
 		}
 
-		YumeMap<YumeString,unsigned> cbRegisterMap;
+		YumeMap<YumeString,unsigned>::type cbRegisterMap;
 
 		for(unsigned i = 0; i < shaderDesc.BoundResources; ++i)
 		{
@@ -267,7 +335,7 @@ namespace YumeEngine
 				if(varName[0] == 'c')
 				{
 					varName = varName.substr(1); // Strip the c to follow Urho3D constant naming convention
-					parameters_[varName] = ShaderParameter(type_,varName,cbRegister,varDesc.StartOffset,varDesc.Size);
+					parameters_[GenerateHash(varName)] = ShaderParameter(type_,varName,cbRegister,varDesc.StartOffset,varDesc.Size);
 				}
 			}
 		}
@@ -322,7 +390,7 @@ namespace YumeEngine
 		{
 			if(useTextureUnit_[i])
 			{
-				//file_->Write(graphics_->GetTextureUnitName((TextureUnit)i));
+				file_->Write(rhi_->GetTextureUnitName((TextureUnit)i));
 				file_->WriteUByte((unsigned char)i);
 			}
 		}
@@ -335,6 +403,18 @@ namespace YumeEngine
 
 	void YumeD3D11ShaderVariation::CalculateConstantBufferSizes()
 	{
+		for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
+			constantBufferSizes_[i] = 0;
 
+		for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
+		{
+			if(i->second.buffer_ < MAX_SHADER_PARAMETER_GROUPS)
+			{
+				unsigned oldSize = constantBufferSizes_[i->second.buffer_];
+				unsigned paramEnd = i->second.offset_ + i->second.size_;
+				if(paramEnd > oldSize)
+					constantBufferSizes_[i->second.buffer_] = paramEnd;
+			}
+		}
 	}
 }

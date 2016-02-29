@@ -182,7 +182,40 @@ namespace YumeEngine
 		return Write(&value,sizeof value) == sizeof value;
 	}
 
+	signed char YumeFile::ReadByte()
+	{
+		signed char ret;
+		Read(&ret,sizeof ret);
+		return ret;
+	}
 
+	unsigned YumeFile::ReadUInt()
+	{
+		unsigned ret;
+		Read(&ret,sizeof ret);
+		return ret;
+	}
+
+	unsigned YumeFile::ReadUByte()
+	{
+		unsigned ret;
+		Read(&ret,sizeof ret);
+		return ret;
+	}
+
+	unsigned short YumeFile::ReadUShort()
+	{
+		unsigned short ret;
+		Read(&ret,sizeof ret);
+		return ret;
+	}
+
+	short YumeFile::ReadShort()
+	{
+		short ret;
+		Read(&ret,sizeof ret);
+		return ret;
+	}
 	void YumeFile::Seek(unsigned s)
 	{
 		fileStream.seekg(s);

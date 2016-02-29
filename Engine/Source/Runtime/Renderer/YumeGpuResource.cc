@@ -28,8 +28,9 @@
 namespace YumeEngine
 {
 
-	YumeGpuResource::YumeGpuResource():
-		object_(0)
+	YumeGpuResource::YumeGpuResource(YumeRenderer* rhi):
+		object_(0),
+		rhi_(rhi)
 	{
 		
 	}

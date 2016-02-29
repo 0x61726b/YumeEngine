@@ -80,6 +80,22 @@ namespace YumeEngine
 
 		void AddGpuResource(YumeGpuResource* object);
 		void RemoveGpuResource(YumeGpuResource* object);
+
+		YumeVertexBuffer* GetVertexBuffer(unsigned index) const { return 0; }
+
+
+		//Setters
+		void SetVertexBuffer(YumeVertexBuffer* buffer) { }
+		/// Set multiple vertex buffers.
+		bool SetVertexBuffers
+			(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) {
+			return false;
+		}
+		/// Set multiple vertex buffers.
+		bool SetVertexBuffers
+			(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) {
+			return false;
+		}
 	};
 }
 

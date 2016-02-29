@@ -54,6 +54,8 @@ namespace YumeEngine
 	const Real Math::M_LARGE_EPSILON = 0.00005f;
 	const Real Math::M_MIN_NEARCLIP = 0.01f;
 	const Real Math::M_MAX_FOV = 160.0f;
+	const Real Math::M_MAX_UNSIGNED = 0xffffffff;
+	const Real Math::M_MIN_UNSIGNED = 0x00000000;
 
 	int Math::mTrigTableSize;
 	Math::AngleUnit Math::msAngleUnit;

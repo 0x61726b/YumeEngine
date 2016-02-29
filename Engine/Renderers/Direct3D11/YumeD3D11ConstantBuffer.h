@@ -29,9 +29,9 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeD3D11RendererImpl;
+	/*class YumeD3D11RendererImpl;
 
-	class YumeD3DExport YumeConstantBuffer : public YumeGpuResource
+	class YumeD3DExport YumeConstantBuffer : public YumeD3D11Resource
 	{
 	public:
 		YumeConstantBuffer(YumeD3D11RendererImpl* impl);
@@ -65,7 +65,7 @@ namespace YumeEngine
 		bool dirty_;
 
 		YumeD3D11RendererImpl* impl_;
-	};
+	};*/
 
 }
 

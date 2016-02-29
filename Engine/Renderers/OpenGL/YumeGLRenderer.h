@@ -49,14 +49,14 @@ namespace YumeEngine
 
 		bool BeginFrame();
 		void EndFrame();
-		void Clear(unsigned flags, const Vector4& color = Vector4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
+		void Clear(unsigned flags,const Vector4& color = Vector4(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0);
 
-		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const { return 0;}
-		
-		YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const {return 0;}
+		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const { return 0; }
 
-		void SetShaders(YumeShaderVariation* vs, YumeShaderVariation* ps) {}
-		
+		YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const { return 0; }
+
+		void SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps) {}
+
 
 		void ResetRenderTargets();
 		void SetViewport(const Vector4&);
@@ -82,6 +82,22 @@ namespace YumeEngine
 		bool IsInitialized() const { return initialized_; }
 
 		YumeGLRendererImpl* GetImpl() const { return impl_; }
+
+		YumeVertexBuffer* GetVertexBuffer(unsigned index) const { return 0; }
+
+
+		//Setters
+		void SetVertexBuffer(YumeVertexBuffer* buffer) { }
+		/// Set multiple vertex buffers.
+		bool SetVertexBuffers
+			(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) {
+			return false;
+		}
+		/// Set multiple vertex buffers.
+		bool SetVertexBuffers
+			(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) {
+			return false;
+		}
 	private:
 		YumeVector<Vector2>::type				GetScreenResolutions();
 	private:

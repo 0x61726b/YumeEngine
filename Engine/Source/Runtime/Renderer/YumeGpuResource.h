@@ -34,7 +34,7 @@ namespace YumeEngine
 	class YumeAPIExport YumeGpuResource
 	{
 	public:
-		YumeGpuResource();
+		YumeGpuResource(YumeRenderer*);
 		/// Destruct. Remove from the graphics subsystem.
 		virtual ~YumeGpuResource();
 
@@ -54,6 +54,9 @@ namespace YumeEngine
 		virtual bool HasPendingData() const = 0;
 
 		void* object_;
+
+	protected:
+		YumeRenderer* rhi_;
 	};
 }
 

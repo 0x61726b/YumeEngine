@@ -40,6 +40,8 @@ set(SRC_RENDERER
 	Renderer/YumeShaderVariation.cc
 	Renderer/YumeShader.h
 	Renderer/YumeShader.cc
+	Renderer/YumeVertexBuffer.h
+	Renderer/YumeVertexBuffer.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

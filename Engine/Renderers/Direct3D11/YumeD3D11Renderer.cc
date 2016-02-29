@@ -31,6 +31,7 @@
 
 #include "YumeD3D11Shader.h"
 #include "YumeD3D11ShaderVariation.h"
+#include "YumeD3D11VertexBuffer.h"
 
 #include "Core/YumeBase.h"
 #include "Core/YumeDefaults.h"
@@ -81,7 +82,7 @@ namespace YumeEngine
 
 	YumeD3D11Renderer::~YumeD3D11Renderer()
 	{
-		
+
 		{
 			boost::mutex::scoped_lock lock(gpuResourceMutex_);
 
@@ -688,6 +689,84 @@ namespace YumeEngine
 	void YumeD3D11Renderer::SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps)
 	{
 
+	}
+
+
+	void YumeD3D11Renderer::SetVertexBuffer(YumeVertexBuffer* buffer)
+	{
+		static YumeVector<YumeVertexBuffer*>::type vertexBuffers(1);
+		static YumeVector<unsigned>::type elementMasks(1);
+		vertexBuffers[0] = buffer;
+		elementMasks[0] = MASK_DEFAULT;
+		SetVertexBuffers(vertexBuffers,elementMasks);
+	}
+
+	bool YumeD3D11Renderer::SetVertexBuffers(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset)
+	{
+		if(buffers.size() > MAX_VERTEX_STREAMS)
+		{
+			YUMELOG_ERROR("Too many vertex buffers");
+			return false;
+		}
+		if(buffers.size() != elementMasks.size())
+		{
+			YUMELOG_ERROR("Amount of element masks and vertex buffers does not match");
+			return false;
+		}
+
+		for(unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
+		{
+			YumeD3D11VertexBuffer* buffer = 0;
+			bool changed = false;
+
+			buffer = i < buffers.size() ? static_cast<YumeD3D11VertexBuffer*>(buffers[i]) : 0;
+			if(buffer)
+			{
+				unsigned elementMask = buffer->GetElementMask() & elementMasks[i];
+				unsigned offset = (elementMask & MASK_INSTANCEMATRIX1) ? instanceOffset * buffer->GetVertexSize() : 0;
+
+				if(buffer != vertexBuffers_[i] || elementMask != elementMasks_[i] || offset != impl_->vertexOffsets_[i])
+				{
+					vertexBuffers_[i] = buffer;
+					elementMasks_[i] = elementMask;
+					impl_->vertexBuffers_[i] = (ID3D11Buffer*)buffer->GetGPUObject();
+					impl_->vertexSizes_[i] = buffer->GetVertexSize();
+					impl_->vertexOffsets_[i] = offset;
+					changed = true;
+				}
+			}
+			else if(vertexBuffers_[i])
+			{
+				vertexBuffers_[i] = 0;
+				elementMasks_[i] = 0;
+				impl_->vertexBuffers_[i] = 0;
+				impl_->vertexSizes_[i] = 0;
+				impl_->vertexOffsets_[i] = 0;
+				changed = true;
+			}
+
+			if(changed)
+			{
+				vertexDeclarationDirty_ = true;
+
+				if(firstDirtyVB_ == Math::M_MAX_UNSIGNED)
+					firstDirtyVB_ = lastDirtyVB_ = i;
+				else
+				{
+					if(i < firstDirtyVB_)
+						firstDirtyVB_ = i;
+					if(i > lastDirtyVB_)
+						lastDirtyVB_ = i;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	bool YumeD3D11Renderer::SetVertexBuffers(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset)
+	{
+		return SetVertexBuffers(reinterpret_cast<const YumeVector<YumeVertexBuffer*>::type&>(buffers), elementMasks, instanceOffset);
 	}
 
 	void YumeD3D11Renderer::Maximize()

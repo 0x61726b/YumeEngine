@@ -67,6 +67,8 @@ namespace YumeEngine
 		/// Return compile error/warning string.
 		const YumeString& GetCompilerOutput() const { return compilerOutput_; }
 
+		bool HasTextureUnit(TextureUnit unit) const { return useTextureUnit_[unit]; }
+
 	protected:
 		/// Shader this variation belongs to.
 		YumeShader* owner_;
@@ -78,6 +80,8 @@ namespace YumeEngine
 		YumeString defines_;
 		/// Shader compile error string.
 		YumeString compilerOutput_;
+
+		bool useTextureUnit_[MAX_TEXTURE_UNITS];
 	};
 }
 

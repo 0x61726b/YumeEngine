@@ -102,9 +102,6 @@ namespace YumeEngine
 			return parameters_.find(param) != parameters_.end() ? true : false;
 		}
 
-		/// Return whether uses a texture unit (only for pixel shaders.)
-		bool HasTextureUnit(TextureUnit unit) const { return useTextureUnit_[unit]; }
-
 		/// Return all parameter definitions.
 		const YumeMap<YumeHash,ShaderParameter>::type& GetParameters() const { return parameters_; }
 
@@ -138,8 +135,6 @@ namespace YumeEngine
 		unsigned elementMask_;
 		/// Shader parameters.
 		YumeMap<YumeHash,ShaderParameter>::type parameters_;
-		/// Texture unit use flags.
-		bool useTextureUnit_[MAX_TEXTURE_UNITS];
 		/// Constant buffer sizes. 0 if a constant buffer slot is not in use.
 		unsigned constantBufferSizes_[MAX_SHADER_PARAMETER_GROUPS];
 		/// Bytecode. Needed for inspecting the input signature and parameters.

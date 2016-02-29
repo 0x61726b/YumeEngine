@@ -660,6 +660,8 @@ namespace YumeEngine
 		static const Real M_LARGE_EPSILON;
 		static const Real M_MIN_NEARCLIP;
 		static const Real M_MAX_FOV;
+		static const Real M_MAX_UNSIGNED;
+		static const Real M_MIN_UNSIGNED;
 
 	};
 

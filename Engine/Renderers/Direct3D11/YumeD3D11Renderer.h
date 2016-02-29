@@ -52,7 +52,7 @@ namespace YumeEngine
 
 		bool BeginFrame();
 		void EndFrame();
-		void Clear(unsigned flags, const Vector4& color = Vector4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
+		void Clear(unsigned flags,const Vector4& color = Vector4(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0);
 
 		bool CreateD3D11Device(int width,int height,int multisample);
 		bool UpdateSwapchain(int width,int height);
@@ -78,15 +78,28 @@ namespace YumeEngine
 		void RemoveGpuResource(YumeGpuResource* object);
 
 		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const;
-		
+
 		YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const;
 
-		void SetShaders(YumeShaderVariation* vs, YumeShaderVariation* ps);
+		void SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps);
 
 
 		bool IsInitialized() const { return initialized_; }
 
 		YumeD3D11RendererImpl* GetImpl() const { return impl_; }
+
+		//Getters
+		YumeVertexBuffer* GetVertexBuffer(unsigned index) const;
+
+
+		//Setters
+		void SetVertexBuffer(YumeVertexBuffer* buffer);
+		/// Set multiple vertex buffers.
+		bool SetVertexBuffers
+			(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0);
+		/// Set multiple vertex buffers.
+		bool SetVertexBuffers
+			(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0);
 
 	private:
 		void RegisterFactories();

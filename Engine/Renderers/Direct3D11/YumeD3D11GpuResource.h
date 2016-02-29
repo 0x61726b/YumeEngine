@@ -28,12 +28,12 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-
+	class YumeD3D11Renderer;
 	/// Base class for GPU resources.
 	class YumeD3DExport YumeD3D11Resource : public YumeGpuResource
 	{
 	public:
-		YumeD3D11Resource();
+		YumeD3D11Resource(YumeD3D11Renderer*);
 		/// Destruct. Remove from the graphics subsystem.
 		virtual ~YumeD3D11Resource();
 

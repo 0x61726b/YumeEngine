@@ -27,6 +27,7 @@
 
 #include "Math/YumeVector4.h"
 
+#include <boost/shared_array.hpp>
 #include <boost/weak_ptr.hpp>
 
 #include <SDL.h>
@@ -38,6 +39,23 @@ namespace YumeEngine
 	class YumeImage;
 	class YumeShaderVariation;
 	class YumeShader;
+	class YumeVertexBuffer;
+
+	struct ScratchBuffer
+	{
+		ScratchBuffer():
+			size_(0),
+			reserved_(false)
+		{
+		}
+
+		/// Buffer data.
+		boost::shared_array<unsigned char> data_;
+		/// Data size.
+		unsigned size_;
+		/// Reserved flag.
+		bool reserved_;
+	};
 
 
 	class YumeAPIExport YumeRenderer : public RenderObjAlloc
@@ -72,13 +90,36 @@ namespace YumeEngine
 		virtual void AddGpuResource(YumeGpuResource* object) = 0;
 		virtual void RemoveGpuResource(YumeGpuResource* object) = 0;
 
+
+
+
+
+		//Getters
+		YumeVertexBuffer* GetVertexBuffer(unsigned index) const;
 		virtual YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const = 0;
 
 		virtual YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const = 0;
 
-		virtual void SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps) = 0;
 
+
+		//Setters
 		void SetWindowIcon(YumeImage* image);
+		virtual void SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps) = 0;
+		virtual void SetVertexBuffer(YumeVertexBuffer* buffer) = 0;
+		/// Set multiple vertex buffers.
+		virtual bool SetVertexBuffers
+			(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) = 0;
+		/// Set multiple vertex buffers.
+		virtual bool SetVertexBuffers
+			(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) = 0;
+
+		void* ReserveScratchBuffer(unsigned size);
+		void FreeScratchBuffer(void* buffer);
+		void CleanupScratchBuffers();
+
+		bool HasTextureUnit(TextureUnit unit);
+		TextureUnit GetTextureUnit(const YumeString& name);
+		const YumeString& GetTextureUnitName(TextureUnit unit);
 
 	protected:
 		void CreateWindowIcon();
@@ -93,6 +134,23 @@ namespace YumeEngine
 
 		YumeString shaderPath_;
 		YumeString shaderExtension_;
+
+		YumeVertexBuffer* vertexBuffers_[MAX_VERTEX_STREAMS];
+		unsigned elementMasks_[MAX_VERTEX_STREAMS];
+
+	protected:
+		unsigned firstDirtyVB_;
+		unsigned lastDirtyVB_;
+
+		/// Largest scratch buffer request this frame.
+		unsigned maxScratchBufferRequest_;
+		/// Scratch buffers.
+		YumeVector<ScratchBuffer>::type scratchBuffers_;
+
+		YumeMap<YumeString,TextureUnit>::type textureUnits_;
+
+		YumeShaderVariation* vertexShader_;
+		YumeShaderVariation* pixelShader_;
 	};
 }
 

@@ -59,7 +59,15 @@ namespace YumeEngine
 		bool WriteShort(short value);
 		bool WriteUShort(unsigned short value);
 
+
+
 		YumeString Read();
+		YumeString ReadFileID();
+		signed char ReadByte();
+		unsigned ReadUInt();
+		unsigned ReadUByte();
+		short ReadShort();
+		unsigned short ReadUShort();
 
 		unsigned GetSize();
 
