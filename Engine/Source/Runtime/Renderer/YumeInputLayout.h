@@ -14,48 +14,37 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#include "Common.h"
-
-#include "Engine/YumeEngine.h"
-#include "Renderer/YumeRHI.h"
-#include "Core/YumeEnvironment.h"
-
+#ifndef __YumeInputLayout_h__
+#define __YumeInputLayout_h__
+//----------------------------------------------------------------------------
+#include "YumeRequired.h"
+//----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	BaseApplication::BaseApplication()
+	class YumeRHI;
+	class YumeShaderVariation;
+	class YumeVertexBuffer;
+
+	class YumeAPIExport YumeInputLayout
 	{
-
-	}
-
-	BaseApplication::~BaseApplication()
-	{
-	}
-
-	void BaseApplication::SetupWindowProperties()
-	{
-		engine_->GetRenderer()->SetWindowTitle("Yume Engine Sample App");
-	}
-
-	void BaseApplication::Setup()
-	{
-		//Set engine parameters
-
-		engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
-	}
-
-	void BaseApplication::Start()
-	{
-		SetupWindowProperties();
+	public:
+		YumeInputLayout(YumeRHI* graphics,YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks) { };
+		virtual ~YumeInputLayout() { };
 
 		
-	}
+		void* GetInputLayout() const { return inputLayout_; }
 
-	void BaseApplication::Exit()
-	{
-	}
+	protected:
+		/// Input layout object.
+		void* inputLayout_;
+	};
 }
+
+
+//----------------------------------------------------------------------------
+#endif

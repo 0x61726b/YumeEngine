@@ -30,7 +30,7 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeRenderer;
+	class YumeRHI;
 	class YumeEnvironment;
 	class YumeDynamicLibrary;
 	class YumeTime;
@@ -62,8 +62,8 @@ namespace YumeEngine
 
 		bool IsExiting() const { return exiting_; }
 
-		void SetRenderer(YumeRenderer* renderer);
-		YumeRenderer* GetRenderer();
+		void SetRenderer(YumeRHI* renderer);
+		YumeRHI* GetRenderer();
 
 
 		void RegisterFactories();
@@ -75,7 +75,7 @@ namespace YumeEngine
 		SharedPtr<YumeObjectFactory> GetObjFactory() const { return factory_; }
 
 	private:
-		YumeRenderer* graphics_;
+		YumeRHI* graphics_;
 
 
 		boost::shared_ptr<YumeEnvironment> env_;

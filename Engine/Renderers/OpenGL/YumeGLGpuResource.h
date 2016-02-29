@@ -28,11 +28,11 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeRenderer;
+	class YumeRHI;
 	class YumeGLExport YumeGLGpuResource : public YumeGpuResource
 	{
 	public:
-		YumeGLGpuResource(YumeRenderer* renderer);
+		YumeGLGpuResource(YumeRHI* renderer);
 		/// Destruct. Remove from the graphics subsystem.
 		virtual ~YumeGLGpuResource();
 

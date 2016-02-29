@@ -21,14 +21,14 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 #include "YumeGpuResource.h"
-#include "YumeRenderer.h"
+#include "YumeRHI.h"
 #include "Engine/YumeEngine.h"
 
 
 namespace YumeEngine
 {
 
-	YumeGpuResource::YumeGpuResource(YumeRenderer* rhi):
+	YumeGpuResource::YumeGpuResource(YumeRHI* rhi):
 		object_(0),
 		rhi_(rhi)
 	{

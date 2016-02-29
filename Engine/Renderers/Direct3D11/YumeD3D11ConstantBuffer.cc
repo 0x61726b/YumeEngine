@@ -30,7 +30,7 @@
 namespace YumeEngine
 {
 
-	YumeD3D11ConstantBuffer::YumeD3D11ConstantBuffer(YumeRenderer* impl)
+	YumeD3D11ConstantBuffer::YumeD3D11ConstantBuffer(YumeRHI* impl)
 		: YumeD3D11Resource(static_cast<YumeD3D11Renderer*>(impl))
 	{
 	}

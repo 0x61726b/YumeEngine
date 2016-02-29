@@ -36,7 +36,7 @@ namespace YumeEngine
 	{
 	public:
 		/// Construct.
-		YumeD3D11VertexBuffer(YumeRenderer* rhi);
+		YumeD3D11VertexBuffer(YumeRHI* rhi);
 		/// Destruct.
 		virtual ~YumeD3D11VertexBuffer();
 

@@ -88,7 +88,7 @@ namespace YumeEngine
 	};
 
 
-	YumeD3D11VertexBuffer::YumeD3D11VertexBuffer(YumeRenderer* rhi)
+	YumeD3D11VertexBuffer::YumeD3D11VertexBuffer(YumeRHI* rhi)
 		: YumeD3D11Resource(static_cast<YumeD3D11Renderer*>(rhi))
 	{
 		UpdateOffsets();

@@ -38,7 +38,7 @@
 #include "Renderer/YumeResourceManager.h"
 
 #include "YumeD3D11VertexBuffer.h"
-#include "Renderer/YumeRenderer.h"
+#include "Renderer/YumeRHI.h"
 
 
 #include <boost/algorithm/string/predicate.hpp>

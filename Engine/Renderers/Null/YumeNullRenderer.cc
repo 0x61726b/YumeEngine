@@ -36,13 +36,13 @@ namespace YumeEngine
 {
 	extern "C" void YumeNullExport LoadModule(YumeEngine3D* engine) throw()
 	{
-		YumeRenderer* graphics_ = new YumeNullRenderer;
+		YumeRHI* graphics_ = new YumeNullRenderer;
 		engine->SetRenderer(graphics_);
 	}
 	//---------------------------------------------------------------------	
 	extern "C" void YumeNullExport UnloadModule(YumeEngine3D* engine) throw()
 	{
-		YumeRenderer* graphics_ = engine->GetRenderer();
+		YumeRHI* graphics_ = engine->GetRenderer();
 		delete graphics_;
 	}
 	//---------------------------------------------------------------------
@@ -81,7 +81,7 @@ namespace YumeEngine
 		
 	}
 
-	void YumeNullRenderer::SetViewport(const Vector4& rect)
+	void YumeNullRenderer::SetViewport(const IntRect& rect)
 	{
 		
 	}

@@ -74,6 +74,8 @@ namespace YumeEngine
 
 		virtual const unsigned* GetConstantBufferSizes() const = 0;
 
+		const YumeVector<unsigned char>::type& GetByteCode() const { return byteCode_; }
+
 	protected:
 		/// Shader this variation belongs to.
 		YumeShader* owner_;
@@ -87,6 +89,8 @@ namespace YumeEngine
 		YumeString compilerOutput_;
 
 		bool useTextureUnit_[MAX_TEXTURE_UNITS];
+
+		YumeVector<unsigned char>::type byteCode_;
 	};
 }
 

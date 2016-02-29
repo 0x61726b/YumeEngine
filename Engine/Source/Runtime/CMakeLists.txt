@@ -24,8 +24,8 @@ set(SRC_RENDERER
 	Renderer/YumeRendererDefs.h
 	Renderer/YumeRendererDefs.cc
 	Renderer/YumeGraphicsApi.h
-	Renderer/YumeRenderer.h
-	Renderer/YumeRenderer.cc
+	Renderer/YumeRHI.h
+	Renderer/YumeRHI.cc
 	Renderer/YumeRendererImpl.h
 	Renderer/YumeGpuResource.h
 	Renderer/YumeGpuResource.cc
@@ -45,6 +45,8 @@ set(SRC_RENDERER
 	Renderer/YumeVertexBuffer.cc
 	Renderer/YumeConstantBuffer.h
 	Renderer/YumeConstantBuffer.cc
+	Renderer/YumeInputLayout.h
+	Renderer/YumeInputLayout.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

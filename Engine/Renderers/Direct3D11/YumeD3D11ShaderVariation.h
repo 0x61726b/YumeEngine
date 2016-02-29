@@ -108,9 +108,6 @@ namespace YumeEngine
 		/// Return vertex element mask.
 		unsigned GetElementMask() const { return elementMask_; }
 
-		/// Return shader bytecode.
-		const YumeVector<unsigned char>::type& GetByteCode() const { return byteCode_; }
-
 		/// Return defines.
 		const YumeString& GetDefines() const { return defines_; }
 
@@ -137,8 +134,6 @@ namespace YumeEngine
 		YumeMap<YumeHash,ShaderParameter>::type parameters_;
 		/// Constant buffer sizes. 0 if a constant buffer slot is not in use.
 		unsigned constantBufferSizes_[MAX_SHADER_PARAMETER_GROUPS];
-		/// Bytecode. Needed for inspecting the input signature and parameters.
-		YumeVector<unsigned char>::type byteCode_;
 
 	};
 }

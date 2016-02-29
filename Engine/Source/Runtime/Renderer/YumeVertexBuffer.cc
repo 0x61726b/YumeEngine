@@ -21,7 +21,7 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 #include "Renderer/YumeVertexBuffer.h"
-#include "Renderer/YumeRenderer.h"
+#include "Renderer/YumeRHI.h"
 
 
 

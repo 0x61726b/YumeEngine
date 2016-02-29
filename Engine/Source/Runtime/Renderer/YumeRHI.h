@@ -25,6 +25,7 @@
 #include "YumeRequired.h"
 #include "Renderer/YumeRendererDefs.h"
 
+#include "Math/YumeRect.h"
 #include "Math/YumeColor.h"
 #include "Math/YumeVector4.h"
 #include "Core/YumeVariant.h"
@@ -61,12 +62,12 @@ namespace YumeEngine
 	};
 
 
-	class YumeAPIExport YumeRenderer : public RenderObjAlloc
+	class YumeAPIExport YumeRHI : public RenderObjAlloc
 	{
 	public:
-		YumeRenderer();
+		YumeRHI();
 
-		virtual ~YumeRenderer();
+		virtual ~YumeRHI();
 
 		virtual bool SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
 			int multiSample) = 0;
@@ -76,7 +77,7 @@ namespace YumeEngine
 		virtual void Clear(unsigned flags,const Vector4& color = Vector4(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) = 0;
 
 		virtual void ResetRenderTargets() = 0;
-		virtual void SetViewport(const Vector4&) = 0;
+		virtual void SetViewport(const IntRect&) = 0;
 
 		virtual Vector2 GetRenderTargetDimensions() const = 0;
 
@@ -95,6 +96,8 @@ namespace YumeEngine
 
 
 		virtual YumeConstantBuffer* GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size) = 0;
+
+		virtual void ResetCache() = 0;
 
 
 		//Getters

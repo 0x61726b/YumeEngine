@@ -32,6 +32,7 @@
 #include "Math/YumeMatrix3.h"
 #include "Math/YumeMatrix4.h"
 #include "Math/YumeMath.h"
+#include "Math/YumeRect.h"
 
 #include "YumeD3D11Shader.h"
 #include "YumeD3D11ShaderVariation.h"
@@ -52,13 +53,13 @@ namespace YumeEngine
 {
 	extern "C" void YumeD3DExport LoadModule(YumeEngine3D* engine) throw()
 	{
-		YumeRenderer* graphics_ = new YumeD3D11Renderer;
+		YumeRHI* graphics_ = new YumeD3D11Renderer;
 		engine->SetRenderer(graphics_);
 	}
 	//---------------------------------------------------------------------	
 	extern "C" void YumeD3DExport UnloadModule(YumeEngine3D* engine) throw()
 	{
-		YumeRenderer* graphics_ = engine->GetRenderer();
+		YumeRHI* graphics_ = engine->GetRenderer();
 		delete graphics_;
 	}
 	//---------------------------------------------------------------------
@@ -106,7 +107,7 @@ namespace YumeEngine
 		// ToDo(arkenthera) not sure about this..
 		int size = constantBuffers_.size();
 		for(int i=0; i < size; ++i)
-			 constantBuffers_[i].reset();
+			constantBuffers_[i].reset();
 		constantBuffers_.clear();
 
 		BlendStatesMap::iterator blendIt;
@@ -181,6 +182,83 @@ namespace YumeEngine
 		impl_->swapChain_->Present(vsync_ ? 1 : 0,0);
 	}
 
+	void YumeD3D11Renderer::ResetCache()
+	{
+		for(unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
+		{
+			vertexBuffers_[i] = 0;
+			elementMasks_[i] = 0;
+			impl_->vertexBuffers_[i] = 0;
+			impl_->vertexSizes_[i] = 0;
+			impl_->vertexOffsets_[i] = 0;
+		}
+
+		//
+		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
+		{
+			//textures_[i] = 0;
+			impl_->shaderResourceViews_[i] = 0;
+			impl_->samplers_[i] = 0;
+		}
+
+		for(unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
+		{
+			//renderTargets_[i] = 0;
+			impl_->renderTargetViews_[i] = 0;
+		}
+
+		for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
+		{
+			impl_->constantBuffers_[VS][i] = 0;
+			impl_->constantBuffers_[PS][i] = 0;
+		}
+
+		//depthStencil_ = 0;
+		impl_->depthStencilView_ = 0;
+		viewport_ = IntRect(0,0,windowWidth_,windowHeight_);
+		/*
+				indexBuffer_ = 0;
+				vertexDeclarationHash_ = 0;
+				primitiveType_ = 0;
+				vertexShader_ = 0;
+				pixelShader_ = 0;
+				shaderProgram_ = 0;
+				blendMode_ = BLEND_REPLACE;
+				textureAnisotropy_ = 1;
+				colorWrite_ = true;
+				cullMode_ = CULL_CCW;
+				constantDepthBias_ = 0.0f;
+				slopeScaledDepthBias_ = 0.0f;
+				depthTestMode_ = CMP_LESSEQUAL;
+				depthWrite_ = true;
+				fillMode_ = FILL_SOLID;
+				scissorTest_ = false;
+				scissorRect_ = IntRect::ZERO;
+				stencilTest_ = false;
+				stencilTestMode_ = CMP_ALWAYS;
+				stencilPass_ = OP_KEEP;
+				stencilFail_ = OP_KEEP;
+				stencilZFail_ = OP_KEEP;
+				stencilRef_ = 0;
+				stencilCompareMask_ = M_MAX_UNSIGNED;
+				stencilWriteMask_ = M_MAX_UNSIGNED;
+				useClipPlane_ = false;
+				renderTargetsDirty_ = true;
+				texturesDirty_ = true;
+				vertexDeclarationDirty_ = true;
+				blendStateDirty_ = true;
+				depthStateDirty_ = true;
+				rasterizerStateDirty_ = true;
+				scissorRectDirty_ = true;
+				stencilRefDirty_ = true;
+				blendStateHash_ = M_MAX_UNSIGNED;
+				depthStateHash_ = M_MAX_UNSIGNED;
+				rasterizerStateHash_ = M_MAX_UNSIGNED;
+				firstDirtyTexture_ = lastDirtyTexture_ = M_MAX_UNSIGNED;
+				firstDirtyVB_ = lastDirtyVB_ = M_MAX_UNSIGNED;
+				dirtyConstantBuffers_.Clear();*/
+	}
+
 	void YumeD3D11Renderer::Clear(unsigned flags,const Vector4& color,float depth,unsigned stencil)
 	{
 		//Dummy clear code
@@ -231,35 +309,38 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::ResetRenderTargets()
 	{
-		SetViewport(Vector4(0,0,windowWidth_,windowHeight_));
+		SetViewport(IntRect(0,0,windowWidth_,windowHeight_));
 	}
 
-	void YumeD3D11Renderer::SetViewport(const Vector4& rect)
+	void YumeD3D11Renderer::SetViewport(const IntRect& rect)
 	{
 		Vector2 size = GetRenderTargetDimensions();
 
+		IntRect rectCopy = rect;
 
+		if(rectCopy.right_ <= rectCopy.left_)
+			rectCopy.right_ = rectCopy.left_ + 1;
+		if(rectCopy.bottom_ <= rectCopy.top_)
+			rectCopy.bottom_ = rectCopy.top_ + 1;
+		rectCopy.left_ = Math::Clamp<int>(rectCopy.left_,0,size.x);
+		rectCopy.top_ = Math::Clamp<int>(rectCopy.top_,0,size.y);
+		rectCopy.right_ = Math::Clamp<int>(rectCopy.right_,0,size.x);
+		rectCopy.bottom_ = Math::Clamp<int>(rectCopy.bottom_,0,size.y);
 
 		static D3D11_VIEWPORT d3dViewport;
-		d3dViewport.TopLeftX = rect.x;
-		d3dViewport.TopLeftY = rect.y;
-		d3dViewport.Width = size.x;
-		d3dViewport.Height = size.y;
+		d3dViewport.TopLeftX = (float)rectCopy.left_;
+		d3dViewport.TopLeftY = (float)rectCopy.top_;
+		d3dViewport.Width = (float)(rectCopy.right_ - rectCopy.left_);
+		d3dViewport.Height = (float)(rectCopy.bottom_ - rectCopy.top_);
 		d3dViewport.MinDepth = 0.0f;
 		d3dViewport.MaxDepth = 1.0f;
 
 		impl_->deviceContext_->RSSetViewports(1,&d3dViewport);
 
-
-		viewport_.x = rect.x;
-		viewport_.y = rect.y;
-		viewport_.z = size.x;
-		viewport_.w = size.y;
-
-
+		viewport_ = rectCopy;
 
 		// Disable scissor test, needs to be re-enabled by the user
-		/*SetScissorTest(false);*/
+		//SetScissorTest(false);
 	}
 
 	Vector2 YumeD3D11Renderer::GetRenderTargetDimensions() const
@@ -457,7 +538,7 @@ namespace YumeEngine
 			}
 		}
 
-		YumeRenderer::SetGraphicsMode(width,height,fullscreen,borderless,resizable,vsync,tripleBuffer,multiSample);
+		YumeRHI::SetGraphicsMode(width,height,fullscreen,borderless,resizable,vsync,tripleBuffer,multiSample);
 
 		AdjustWindow(width,height,fullscreen,borderless);
 

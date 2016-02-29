@@ -30,12 +30,12 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeRenderer;
+	class YumeRHI;
 
 	class YumeD3DExport YumeD3D11ConstantBuffer : public YumeConstantBuffer,public YumeD3D11Resource
 	{
 	public:
-		YumeD3D11ConstantBuffer(YumeRenderer* renderer);
+		YumeD3D11ConstantBuffer(YumeRHI* renderer);
 
 		virtual ~YumeD3D11ConstantBuffer();
 

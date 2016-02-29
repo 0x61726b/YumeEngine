@@ -22,7 +22,7 @@
 #include "YumeHeaders.h"
 #include "Engine/YumeEngine.h"
 #include "Renderer/YumeGraphicsApi.h"
-#include "Renderer/YumeRenderer.h"
+#include "Renderer/YumeRHI.h"
 
 #include "YumeVariant.h"
 #include "Core/YumeDynamicLibrary.h"
@@ -353,12 +353,12 @@ namespace YumeEngine
 		return io_;
 	}
 
-	void YumeEngine3D::SetRenderer(YumeRenderer* renderer)
+	void YumeEngine3D::SetRenderer(YumeRHI* renderer)
 	{
 		graphics_ = renderer;
 	}
 
-	YumeRenderer* YumeEngine3D::GetRenderer()
+	YumeRHI* YumeEngine3D::GetRenderer()
 	{
 		return graphics_;
 	}

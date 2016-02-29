@@ -24,7 +24,7 @@
 //----------------------------------------------------------------------------
 #include "YumeD3D11Required.h"
 
-#include "Renderer/YumeRenderer.h"
+#include "Renderer/YumeRHI.h"
 #include "Renderer/YumeRendererDefs.h"
 #include "YumeD3D11ShaderVariation.h"
 //----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ namespace YumeEngine
 	{
 	public:
 		/// Construct.
-		YumeD3D11ShaderProgram(YumeRenderer* graphics,YumeShaderVariation* vertexShader,YumeShaderVariation* pixelShader)
+		YumeD3D11ShaderProgram(YumeRHI* graphics,YumeShaderVariation* vertexShader,YumeShaderVariation* pixelShader)
 		{
 			// Create needed constant buffers
 			const unsigned* vsBufferSizes = vertexShader->GetConstantBufferSizes();

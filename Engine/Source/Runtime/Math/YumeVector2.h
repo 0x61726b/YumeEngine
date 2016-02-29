@@ -589,5 +589,7 @@ namespace YumeEngine
 			return o;
 		}
 	};
+
+
 }
 #endif

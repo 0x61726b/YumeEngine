@@ -39,13 +39,13 @@ namespace YumeEngine
 {
 	extern "C" void YumeGLExport LoadModule(YumeEngine3D* engine) throw()
 	{
-		YumeRenderer* graphics_ = new YumeGLRenderer;
+		YumeRHI* graphics_ = new YumeGLRenderer;
 		engine->SetRenderer(graphics_);
 	}
 	//---------------------------------------------------------------------	
 	extern "C" void YumeGLExport UnloadModule(YumeEngine3D* engine) throw()
 	{
-		YumeRenderer* graphics_ = engine->GetRenderer();
+		YumeRHI* graphics_ = engine->GetRenderer();
 		delete graphics_;
 	}
 	//---------------------------------------------------------------------
@@ -212,10 +212,10 @@ namespace YumeEngine
 
 	void YumeGLRenderer::ResetRenderTargets()
 	{
-		SetViewport(Vector4(0,0,windowWidth_,windowHeight_));
+		SetViewport(IntRect(0,0,windowWidth_,windowHeight_));
 	}
 
-	void YumeGLRenderer::SetViewport(const Vector4& rect)
+	void YumeGLRenderer::SetViewport(const IntRect& rect)
 	{
 		Vector2 size = GetRenderTargetDimensions();
 
@@ -471,7 +471,7 @@ namespace YumeEngine
 				return false;
 		}
 
-		YumeRenderer::SetGraphicsMode(width,height,fullscreen,borderless,resizable,vsync,tripleBuffer,multiSample);
+		YumeRHI::SetGraphicsMode(width,height,fullscreen,borderless,resizable,vsync,tripleBuffer,multiSample);
 
 		SDL_GL_SetSwapInterval(vsync ? 1 : 0);
 

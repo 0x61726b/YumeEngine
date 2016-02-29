@@ -22,7 +22,7 @@
 #include "YumeHeaders.h"
 #include "YumeD3D11Shader.h"
 
-#include "Renderer/YumeRenderer.h"
+#include "Renderer/YumeRHI.h"
 #include "YumeD3D11Renderer.h"
 #include "YumeD3D11ShaderVariation.h"
 
@@ -67,7 +67,7 @@ namespace YumeEngine
 
 	bool YumeD3D11Shader::BeginLoad(YumeFile& source)
 	{
-		YumeRenderer* graphics_ = YumeEngine3D::Get()->GetRenderer();
+		YumeRHI* graphics_ = YumeEngine3D::Get()->GetRenderer();
 
 		if(!graphics_)
 			return false;

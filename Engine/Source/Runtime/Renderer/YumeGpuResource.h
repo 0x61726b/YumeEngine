@@ -27,14 +27,14 @@
 namespace YumeEngine
 {
 
-	class YumeRenderer;
+	class YumeRHI;
 	class YumeEngine3D;
 
 	/// Base class for GPU resources.
 	class YumeAPIExport YumeGpuResource
 	{
 	public:
-		YumeGpuResource(YumeRenderer*);
+		YumeGpuResource(YumeRHI*);
 		/// Destruct. Remove from the graphics subsystem.
 		virtual ~YumeGpuResource();
 
@@ -56,7 +56,7 @@ namespace YumeEngine
 		void* object_;
 
 	protected:
-		YumeRenderer* rhi_;
+		YumeRHI* rhi_;
 	};
 }
 

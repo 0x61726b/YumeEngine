@@ -47,7 +47,7 @@ void YumeEngine::Log::InitLogging(const char* loc)
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
 	log4cplus::SharedAppenderPtr debugAppender(new log4cplus::Win32ConsoleAppender());
 	debugAppender->setName(LOG4CPLUS_TEXT("First"));
-	debugAppender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::TTCCLayout()));
+	debugAppender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::SimpleLayout()));
 	log4cplus::Logger::getRoot().addAppender(log4cplus::SharedAppenderPtr(debugAppender.get()));
 #else
 	log4cplus::SharedAppenderPtr debugAppender(new log4cplus::ConsoleAppender());

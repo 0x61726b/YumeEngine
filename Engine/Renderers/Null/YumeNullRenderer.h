@@ -23,7 +23,7 @@
 #define __YumeNullRenderer_h__
 //----------------------------------------------------------------------------
 #include "Core/YumeRequired.h"
-#include "Renderer/YumeRenderer.h"
+#include "Renderer/YumeRHI.h"
 
 #	if YUME_PLATFORM == YUME_PLATFORM_WIN32
 #		if defined(BUILDING_YUME_NULL)
@@ -39,7 +39,7 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeNullExport YumeNullRenderer : public YumeRenderer
+	class YumeNullExport YumeNullRenderer : public YumeRHI
 	{
 	public:
 		YumeNullRenderer();
@@ -57,7 +57,7 @@ namespace YumeEngine
 		bool UpdateSwapchain(int width,int height);
 
 		void ResetRenderTargets();
-		void SetViewport(const Vector4&);
+		void SetViewport(const IntRect&);
 
 		Vector2 GetRenderTargetDimensions() const;
 
@@ -80,6 +80,7 @@ namespace YumeEngine
 
 		void AddGpuResource(YumeGpuResource* object);
 		void RemoveGpuResource(YumeGpuResource* object);
+		void ResetCache() { };
 
 		YumeVertexBuffer* GetVertexBuffer(unsigned index) const { return 0; }
 		YumeConstantBuffer* GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size) { return 0; }

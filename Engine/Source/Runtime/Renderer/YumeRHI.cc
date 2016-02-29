@@ -23,7 +23,7 @@
 #include "Math/YumeMath.h"
 #include "YumeImage.h"
 
-#include "YumeRenderer.h"
+#include "YumeRHI.h"
 #include "YumeGpuResource.h"
 
 #include "Renderer/YumeShaderVariation.h"
@@ -33,7 +33,7 @@
 
 namespace YumeEngine
 {
-	YumeRenderer::YumeRenderer():
+	YumeRHI::YumeRHI():
 		windowIcon_(0),
 		window_(0),
 		maxScratchBufferRequest_(0),
@@ -41,19 +41,19 @@ namespace YumeEngine
 	{
 		firstDirtyVB_ = lastDirtyVB_ = Math::M_MAX_UNSIGNED;
 	}
-	YumeRenderer::~YumeRenderer()
+	YumeRHI::~YumeRHI()
 	{
 
 	}
 
-	bool YumeRenderer::SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
+	bool YumeRHI::SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
 		int multiSample)
 	{
 		CreateWindowIcon();
 
 		return true;
 	}
-	void YumeRenderer::SetWindowIcon(YumeImage* image)
+	void YumeRHI::SetWindowIcon(YumeImage* image)
 	{
 		windowIcon_ = image;
 
@@ -61,7 +61,7 @@ namespace YumeEngine
 			CreateWindowIcon();
 	}
 
-	void YumeRenderer::CreateWindowIcon()
+	void YumeRHI::CreateWindowIcon()
 	{
 		if(windowIcon_)
 		{
@@ -75,7 +75,7 @@ namespace YumeEngine
 	}
 
 
-	void* YumeRenderer::ReserveScratchBuffer(unsigned size)
+	void* YumeRHI::ReserveScratchBuffer(unsigned size)
 	{
 		if(!size)
 			return 0;
@@ -120,7 +120,7 @@ namespace YumeEngine
 
 	}
 
-	void YumeRenderer::FreeScratchBuffer(void* buffer)
+	void YumeRHI::FreeScratchBuffer(void* buffer)
 	{
 		if(!buffer)
 			return;
@@ -139,7 +139,7 @@ namespace YumeEngine
 
 
 
-	void YumeRenderer::CleanupScratchBuffers()
+	void YumeRHI::CleanupScratchBuffers()
 	{
 		for(YumeVector<ScratchBuffer>::iterator i = scratchBuffers_.begin(); i != scratchBuffers_.end(); ++i)
 		{
@@ -155,13 +155,13 @@ namespace YumeEngine
 		maxScratchBufferRequest_ = 0;
 	}
 
-	bool YumeRenderer::HasTextureUnit(TextureUnit unit)
+	bool YumeRHI::HasTextureUnit(TextureUnit unit)
 	{
 		return (vertexShader_ && vertexShader_->HasTextureUnit(unit)) || (pixelShader_ && pixelShader_->HasTextureUnit(unit));
 	}
 
 
-	TextureUnit YumeRenderer::GetTextureUnit(const YumeString& name)
+	TextureUnit YumeRHI::GetTextureUnit(const YumeString& name)
 	{
 		YumeMap<YumeString,TextureUnit>::iterator i = textureUnits_.find(name);
 		if(i != textureUnits_.end())
@@ -171,7 +171,7 @@ namespace YumeEngine
 	}
 
 
-	const YumeString& YumeRenderer::GetTextureUnitName(TextureUnit unit)
+	const YumeString& YumeRHI::GetTextureUnitName(TextureUnit unit)
 	{
 		for(YumeMap<YumeString,TextureUnit>::iterator i = textureUnits_.begin(); i != textureUnits_.end(); ++i)
 		{
@@ -181,7 +181,7 @@ namespace YumeEngine
 		return YumeString();
 	}
 
-	YumeVertexBuffer* YumeRenderer::GetVertexBuffer(unsigned index) const
+	YumeVertexBuffer* YumeRHI::GetVertexBuffer(unsigned index) const
 	{
 		return index < MAX_VERTEX_STREAMS ? vertexBuffers_[index] : 0;
 	}

@@ -28,7 +28,7 @@
 #include "Math/YumeVector2.h"
 #include "Math/YumeVector4.h"
 
-#include "Renderer/YumeRenderer.h"
+#include "Renderer/YumeRHI.h"
 
 #include <boost/thread/mutex.hpp>
 //----------------------------------------------------------------------------
@@ -38,7 +38,7 @@ namespace YumeEngine
 	class YumeGLRendererImpl;
 
 	typedef std::vector<YumeGpuResource*> GpuResourceVector;
-	class YumeGLExport YumeGLRenderer : public YumeRenderer
+	class YumeGLExport YumeGLRenderer : public YumeRHI
 	{
 	public:
 		YumeGLRenderer();
@@ -59,7 +59,7 @@ namespace YumeEngine
 
 
 		void ResetRenderTargets();
-		void SetViewport(const Vector4&);
+		void SetViewport(const IntRect&);
 
 		Vector2 GetRenderTargetDimensions() const;
 
@@ -77,6 +77,8 @@ namespace YumeEngine
 		void AddGpuResource(YumeGpuResource* object);
 		void RemoveGpuResource(YumeGpuResource* object);
 		void Restore();
+
+		void ResetCache() { };
 
 
 		bool IsInitialized() const { return initialized_; }

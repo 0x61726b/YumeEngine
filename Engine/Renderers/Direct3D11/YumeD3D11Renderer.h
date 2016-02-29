@@ -25,12 +25,13 @@
 #include "YumeD3D11Required.h"
 #include "Renderer/YumeRendererDefs.h"
 
+#include "Math/YumeRect.h"
 #include "Math/YumeColor.h"
 #include "Math/YumeVector2.h"
 #include "Math/YumeVector3.h"
 #include "Math/YumeVector4.h"
 
-#include "Renderer/YumeRenderer.h"
+#include "Renderer/YumeRHI.h"
 
 #include "Renderer/YumeShader.h"
 
@@ -46,7 +47,7 @@ namespace YumeEngine
 	typedef std::vector<YumeGpuResource*> GpuResourceVector;
 	typedef YumeMap<std::pair<YumeShaderVariation*,YumeShaderVariation*>,SharedPtr<YumeD3D11ShaderProgram> >::type ShaderProgramMap;
 
-	class YumeD3DExport YumeD3D11Renderer : public YumeRenderer
+	class YumeD3DExport YumeD3D11Renderer : public YumeRHI
 	{
 	public:
 		YumeD3D11Renderer();
@@ -64,7 +65,7 @@ namespace YumeEngine
 		bool UpdateSwapchain(int width,int height);
 
 		void ResetRenderTargets();
-		void SetViewport(const Vector4&);
+		void SetViewport(const IntRect&);
 
 		Vector2 GetRenderTargetDimensions() const;
 
@@ -82,6 +83,8 @@ namespace YumeEngine
 
 		void AddGpuResource(YumeGpuResource* object);
 		void RemoveGpuResource(YumeGpuResource* object);
+
+		void ResetCache();
 
 		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const;
 
@@ -154,7 +157,7 @@ namespace YumeEngine
 		int										numPrimitives_;
 		int										numBatches_;
 
-		Vector4									viewport_;
+		IntRect									viewport_;
 
 		//Renderer features
 		bool sRGB_;

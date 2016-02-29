@@ -14,48 +14,30 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#include "Common.h"
-
-#include "Engine/YumeEngine.h"
-#include "Renderer/YumeRHI.h"
-#include "Core/YumeEnvironment.h"
-
+#ifndef __YumeD3D11InputLayout_h__
+#define __YumeD3D11InputLayout_h__
+//----------------------------------------------------------------------------
+#include "YumeD3D11Required.h"
+#include "Renderer/YumeInputLayout.h"
+//----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	BaseApplication::BaseApplication()
+	class YumeD3DExport YumeD3D11InputLayout : public YumeInputLayout
 	{
+	public:
+		YumeD3D11InputLayout(YumeRHI* graphics,YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks);
 
-	}
+		virtual ~YumeD3D11InputLayout();
 
-	BaseApplication::~BaseApplication()
-	{
-	}
 
-	void BaseApplication::SetupWindowProperties()
-	{
-		engine_->GetRenderer()->SetWindowTitle("Yume Engine Sample App");
-	}
-
-	void BaseApplication::Setup()
-	{
-		//Set engine parameters
-
-		engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
-	}
-
-	void BaseApplication::Start()
-	{
-		SetupWindowProperties();
-
-		
-	}
-
-	void BaseApplication::Exit()
-	{
-	}
+	};
 }
+
+
+//----------------------------------------------------------------------------
+#endif

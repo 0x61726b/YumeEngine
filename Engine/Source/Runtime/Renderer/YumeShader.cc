@@ -22,7 +22,7 @@
 #include "YumeHeaders.h"
 #include "YumeShader.h"
 
-#include "YumeRenderer.h"
+#include "YumeRHI.h"
 #include "YumeShaderVariation.h"
 #include "Core/YumeFile.h"
 #include "Core/YumeIO.h"

@@ -14,48 +14,20 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#include "Common.h"
+#include "YumeHeaders.h"
+#include "YumeInputLayout.h"
+#include "YumeRHI.h"
+#include "YumeShaderVariation.h"
+#include "YumeVertexBuffer.h"
 
-#include "Engine/YumeEngine.h"
-#include "Renderer/YumeRHI.h"
-#include "Core/YumeEnvironment.h"
+
 
 namespace YumeEngine
 {
-	BaseApplication::BaseApplication()
-	{
 
-	}
-
-	BaseApplication::~BaseApplication()
-	{
-	}
-
-	void BaseApplication::SetupWindowProperties()
-	{
-		engine_->GetRenderer()->SetWindowTitle("Yume Engine Sample App");
-	}
-
-	void BaseApplication::Setup()
-	{
-		//Set engine parameters
-
-		engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
-	}
-
-	void BaseApplication::Start()
-	{
-		SetupWindowProperties();
-
-		
-	}
-
-	void BaseApplication::Exit()
-	{
-	}
 }
