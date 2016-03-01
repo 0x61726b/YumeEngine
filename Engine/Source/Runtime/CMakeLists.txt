@@ -47,6 +47,8 @@ set(SRC_RENDERER
 	Renderer/YumeConstantBuffer.cc
 	Renderer/YumeInputLayout.h
 	Renderer/YumeInputLayout.cc
+	Renderer/YumeRenderer.h
+	Renderer/YumeRenderer.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

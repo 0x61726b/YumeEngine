@@ -37,6 +37,7 @@ namespace YumeEngine
 	class YumeIO;
 	class YumeResourceManager;
 	class YumeObjectFactory;
+	class YumeRenderer;
 
 	class YumeAPIExport YumeEngine3D
 	{
@@ -82,6 +83,7 @@ namespace YumeEngine
 		boost::shared_ptr<YumeTime> timer_;
 		boost::shared_ptr<YumeIO> io_;
 		boost::shared_ptr<YumeObjectFactory> factory_;
+		boost::shared_ptr<YumeRenderer> renderer_;
 
 
 		YumeResourceManager* resourceManager_;

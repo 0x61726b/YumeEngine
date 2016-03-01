@@ -42,6 +42,7 @@
 #include "Core/YumeDefaults.h"
 #include "Core/YumeBase.h"
 
+#include "Renderer/YumeRenderer.h"
 
 
 #include "Renderer/YumeShader.h"
@@ -137,6 +138,7 @@ namespace YumeEngine
 
 		//This is where renderer library is getting loaded!
 		initialized_ = LoadExternalLibrary(fullRendererLibName);
+		renderer_ = boost::shared_ptr<YumeRenderer>(YumeAPINew YumeRenderer(graphics_));
 
 		if(!initialized_)
 			return false;
@@ -200,9 +202,7 @@ namespace YumeEngine
 			return;
 
 		//Renderer
-		Vector4 clearColor(0,0,0,0);
-
-		graphics_->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL,clearColor);
+		renderer_->Render();
 
 		graphics_->EndFrame();
 	}
