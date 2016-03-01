@@ -150,7 +150,7 @@ macro( add_yume_sample sample_name)
     ${CMAKE_SOURCE_DIR}/Samples/Common/Common.cc)
 
   if(MSVC)
-    add_executable(${SAMPLE_TARGET} WIN32 ${HEADER_FILES} ${SOURCE_FILES} ${COMMON_SOURCES}) #This is to avoid linker error on MSVC so tell that this is a win32 app LOL
+    add_executable(${SAMPLE_TARGET} ${HEADER_FILES} ${SOURCE_FILES} ${COMMON_SOURCES}) #This is to avoid linker error on MSVC so tell that this is a win32 app LOL
   endif()
   if(NOT MSVC)
   	add_executable(${SAMPLE_TARGET} ${HEADER_FILES} ${SOURCE_FILES} ${COMMON_SOURCES})

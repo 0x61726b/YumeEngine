@@ -13,3 +13,5 @@ if(OS_LINUX OR OS_MACOSX)
 endif()
 
 add_yume_sample("TestSuite")
+
+target_link_libraries(TestSuite boost_test)

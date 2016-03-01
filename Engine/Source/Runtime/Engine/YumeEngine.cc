@@ -105,6 +105,7 @@ namespace YumeEngine
 			env_->AddParameter(It->first,It->second);
 		}
 
+
 		YumeEngine::Log::InitLogging(env_->GetLogFile().generic_string().c_str());
 
 		YUMELOG_INFO("Initialized environment...Current system time " << timer_->GetTimeStamp());
@@ -122,7 +123,6 @@ namespace YumeEngine
 		YUMELOG_INFO("Engine Config Path: " << env_->GetRoot().generic_string().c_str());
 		YUMELOG_INFO("Running on: " << currentOs.c_str());
 
-		std::string fullRendererLibName;
 		YumeString renderer = env_->GetVariant("Renderer").Get<YumeString>();
 
 		if(env_->GetVariant("testing").Get<bool>())
@@ -131,13 +131,13 @@ namespace YumeEngine
 		}
 
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
-		fullRendererLibName = "Yume" + renderer;
+		rendererName_ = "Yume" + renderer;
 #else
-		fullRendererLibName = "libYume" + renderer;
+		rendererName_ = "libYume" + renderer;
 #endif
 
 		//This is where renderer library is getting loaded!
-		initialized_ = LoadExternalLibrary(fullRendererLibName);
+		initialized_ = LoadExternalLibrary(rendererName_);
 		renderer_ = boost::shared_ptr<YumeRenderer>(YumeAPINew YumeRenderer(graphics_));
 
 		if(!initialized_)
@@ -169,14 +169,14 @@ namespace YumeEngine
 
 		/*SharedPtr<YumeShader> test_ = resourceManager_->PrepareResource<YumeShader>("Shaders/Basic.hlsl");*/
 
-		
+
 		YumeShaderVariation* vs = graphics_->GetShader(VS,"Basic","VERTEXCOLOR");
 		YumeShaderVariation* ps = graphics_->GetShader(PS,"Basic","VERTEXCOLOR");
-		
+
 		graphics_->SetShaders(vs,ps);
 
-		
-		
+
+
 		YUMELOG_INFO("Initialized Yume Engine...");
 
 
@@ -193,7 +193,7 @@ namespace YumeEngine
 		YumeObjectRegistrar<YumeBase> baseObj(GenerateHash("Base"));
 		YumeObjectRegistrar<YumeResource> resourceObj(GenerateHash("Resource"));
 		YumeObjectRegistrar<YumeImage> imageObj(GenerateHash("Image"));
-		
+
 
 	}
 	void YumeEngine3D::Render()
@@ -347,6 +347,13 @@ namespace YumeEngine
 		}
 		extLibs_.clear();
 	}
+
+
+	const YumeString& YumeEngine3D::GetRendererName() const
+	{
+		return rendererName_;
+	}
+
 
 	boost::shared_ptr<YumeIO> YumeEngine3D::GetIO() const
 	{

@@ -75,6 +75,8 @@ namespace YumeEngine
 		YumeResourceManager* GetResourceManager() const { return resourceManager_; }
 		SharedPtr<YumeObjectFactory> GetObjFactory() const { return factory_; }
 
+
+		const YumeString& GetRendererName() const;
 	private:
 		YumeRHI* graphics_;
 
@@ -102,6 +104,8 @@ namespace YumeEngine
 	private:
 		bool initialized_;
 		bool exiting_;
+
+		YumeString rendererName_;
 	};
 }
 

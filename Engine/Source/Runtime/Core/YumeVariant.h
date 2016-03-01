@@ -37,10 +37,11 @@ namespace YumeEngine
 
 	enum VariantType
 	{
-		VAR_BOOL,
-		VAR_INT,
-		VAR_DOUBLE,
-		VAR_FLOAT,
+		VAR_EMPTY = -1,
+		VAR_INT = 0,
+		VAR_DOUBLE = 1,
+		VAR_FLOAT = 2,
+		VAR_BOOL = 3,
 		VAR_STRING
 	};
 
@@ -49,8 +50,8 @@ namespace YumeEngine
 	public:
 		explicit YumeVariant()
 		{
-			inner_ = Variant(false);
-			type_ = VAR_BOOL;
+			inner_ = Variant();
+			type_ = VAR_EMPTY;
 		}
 		YumeVariant(int var)
 		{
@@ -76,14 +77,20 @@ namespace YumeEngine
 			type_ = VAR_BOOL;
 		};
 
+		YumeVariant(const char* var)
+		{
+			inner_ = Variant(YumeString(var));
+			type_ = VAR_STRING;
+		}
+
 		YumeVariant(YumeString var)
 		{
 			inner_ = Variant(var);
 			type_ = VAR_STRING;
 		};
-		
+
 		template< class T> T Get() const;
-		
+
 		VariantType GetType() const { return type_; }
 	protected:
 		Variant inner_;

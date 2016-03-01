@@ -13,15 +13,7 @@
 
 namespace YumeEngine
 {
-	class TestSuite : public BaseApplication
-	{
-	public:
-		TestSuite();
-		~TestSuite();
 
-		virtual void Start();
-		virtual void Stop();
-	};
 }
 
 //--------------------------------------------------------------------------------

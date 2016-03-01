@@ -29,26 +29,41 @@ namespace YumeEngine
 {
 	template <> int YumeVariant::Get<int>() const
 	{
-		return boost::get<int>(inner_);
+		if(inner_.which() == VAR_INT)
+			return boost::get<int>(inner_);
+		else
+			return 0;
 	}
 
 	template <> double YumeVariant::Get<double>() const
 	{
-		return boost::get<double>(inner_);
+		if(inner_.which() == VAR_DOUBLE)
+			return boost::get<double>(inner_);
+		else
+			return 0.0;
 	}
 
 	template <> float YumeVariant::Get<float>() const
 	{
-		return boost::get<float>(inner_);
+		if(inner_.which() == VAR_FLOAT)
+			return boost::get<float>(inner_);
+		else
+			return 0.0f;
 	}
 
 	template <> bool YumeVariant::Get<bool>() const
 	{
-		return boost::get<bool>(inner_);
+		if(inner_.which() == VAR_BOOL)
+			return boost::get<bool>(inner_);
+		else
+			return false;
 	}
 
 	template <> YumeString YumeVariant::Get<YumeString>() const
 	{
-		return boost::get<YumeString>(inner_);
+		if(inner_.which() == VAR_STRING)
+			return boost::get<YumeString>(inner_);
+		else
+			return YumeString();
 	}
 }
