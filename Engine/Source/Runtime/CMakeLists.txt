@@ -65,6 +65,8 @@ set( SRC_MATH
 	Math/YumeMatrix3.cc
 	Math/YumeMatrix4.h
 	Math/YumeMatrix4.cc
+	Math/YumeMatrix3x4.h
+	Math/YumeMatrix3x4.cc
 	Math/YumeQuaternion.h
 	Math/YumeQuaternion.cc
 	Math/YumePlane.h

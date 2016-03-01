@@ -977,6 +977,19 @@ namespace YumeEngine
 			dirtyConstantBuffers_.push_back(buffer);
 		buffer->SetParameter(i->second.offset_,sizeof(Matrix3),&matrix);
 	}
+
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Matrix3x4& matrix)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(Matrix3x4),&matrix);
+	}
+
 	/// Set shader 3D vector constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Vector3& vector)
 	{

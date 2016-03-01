@@ -31,6 +31,8 @@
 #include "Math/YumeVector3.h"
 #include "Math/YumeVector4.h"
 
+#include "Math/YumeMatrix3x4.h"
+
 #include "Renderer/YumeRHI.h"
 
 #include "Renderer/YumeShader.h"
@@ -118,6 +120,8 @@ namespace YumeEngine
 		void SetShaderParameter(YumeHash  param,const Vector2& vector);
 		/// Set shader 3x3 matrix constant.
 		void SetShaderParameter(YumeHash  param,const Matrix3& matrix);
+
+		void SetShaderParameter(YumeHash  param,const Matrix3x4& matrix);
 		/// Set shader 3D vector constant.
 		void SetShaderParameter(YumeHash  param,const Vector3& vector);
 		/// Set shader 4x4 matrix constant.
