@@ -37,6 +37,7 @@ namespace YumeEngine
 	public:
 		YumePerTestSuiteFixture()
 		{
+			std::cout << "Initializing test suite..." << std::endl;
 			boost::debug::detect_memory_leaks(false);
 		}
 

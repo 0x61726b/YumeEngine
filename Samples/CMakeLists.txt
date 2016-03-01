@@ -20,4 +20,7 @@
 
 #Minimal application with empty window
 add_subdirectory(HelloWorld)
-add_subdirectory(TestSuite)
+
+if(NOT OS_MACOSX)
+  add_subdirectory(TestSuite)
+endif()

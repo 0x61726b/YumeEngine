@@ -52,7 +52,7 @@ matrix:
           branch_pattern: master
       after_success:
         - cd Yume
-        - ./TestSuite --testing
+        - ./TestSuite --log_level=all
         - cd ${TRAVIS_BUILD_DIR}
         - gcov --version
         - gcc --version
