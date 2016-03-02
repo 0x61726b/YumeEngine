@@ -134,6 +134,17 @@ namespace YumeEngine
 
 		/// Check whether texture memory budget has been exceeded. Free unused materials in that case to release the texture references.
 		virtual void CheckTextureBudget(YumeHash type) = 0;
+
+		/// Check maximum allowed mip levels for a specific texture size.
+		static unsigned CheckMaxLevels(int width,int height,unsigned requestedLevels);
+		/// Check maximum allowed mip levels for a specific 3D texture size.
+		static unsigned CheckMaxLevels(int width,int height,int depth,unsigned requestedLevels);
+		/// Return the shader resource view format corresponding to a texture format. Handles conversion of typeless depth texture formats.
+		virtual unsigned GetSRVFormat(unsigned format) = 0;
+		/// Return the depth-stencil view format corresponding to a texture format. Handles conversion of typeless depth texture formats.
+		virtual unsigned GetDSVFormat(unsigned format) = 0;
+		/// Convert format to sRGB.
+		virtual unsigned GetSRGBFormat(unsigned format) = 0;
 	protected:
 		/// Shader resource view.
 		void* shaderResourceView_;
