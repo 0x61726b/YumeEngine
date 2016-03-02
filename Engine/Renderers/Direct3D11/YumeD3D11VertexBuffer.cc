@@ -427,7 +427,7 @@ namespace YumeEngine
 			HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)object_,0,discard ? D3D11_MAP_WRITE_DISCARD :
 				D3D11_MAP_WRITE,0,&mappedData);
 			if(FAILED(hr) || !mappedData.pData)
-				YUMELOG_ERROR("Failed to map vertex buffer",hr);
+				YUMELOG_ERROR("Failed to map vertex buffer" << hr);
 			else
 			{
 				hwData = mappedData.pData;

@@ -46,7 +46,6 @@ namespace YumeEngine
 	class YumeShaderVariation;
 	class YumeD3D11ShaderProgram;
 
-	typedef std::vector<YumeGpuResource*> GpuResourceVector;
 	typedef YumeMap<std::pair<YumeShaderVariation*,YumeShaderVariation*>,SharedPtr<YumeD3D11ShaderProgram> >::type ShaderProgramMap;
 
 	class YumeD3DExport YumeD3D11Renderer : public YumeRHI
@@ -183,10 +182,6 @@ namespace YumeEngine
 		bool rasterizerStateDirty_;
 		bool scissorRectDirty_;
 		bool stencilRefDirty_;
-
-
-		boost::mutex							gpuResourceMutex_;
-		GpuResourceVector						gpuResources_;
 
 		YumeD3D11RendererImpl*					impl_;
 		ShaderProgramMap						shaderPrograms_;

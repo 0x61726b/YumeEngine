@@ -28,6 +28,7 @@
 
 #include "Renderer/YumeShaderVariation.h"
 #include "Renderer/YumeConstantBuffer.h"
+#include "Renderer/YumeTexture.h"
 
 #include "Logging/logging.h"
 
@@ -37,7 +38,8 @@ namespace YumeEngine
 		windowIcon_(0),
 		window_(0),
 		maxScratchBufferRequest_(0),
-		useClipPlane_(false)
+		useClipPlane_(false),
+		defaultTextureFilterMode_(FILTER_TRILINEAR)
 	{
 		firstDirtyVB_ = lastDirtyVB_ = Math::M_MAX_UNSIGNED;
 	}
@@ -74,6 +76,26 @@ namespace YumeEngine
 		}
 	}
 
+	void YumeRHI::SetTextureAnisotropy(unsigned level)
+	{
+		if(level != textureAnisotropy_)
+		{
+			textureAnisotropy_ = level;
+			SetTextureParametersDirty();
+		}
+	}
+
+	void YumeRHI::SetTextureParametersDirty()
+	{
+		boost::mutex::scoped_lock lock(gpuResourceMutex_);
+
+		for(YumeVector<YumeGpuResource*>::iterator i = gpuResources_.begin(); i != gpuResources_.end(); ++i)
+		{
+			YumeTexture* texture = dynamic_cast<YumeTexture*>(*i);
+			if(texture)
+				texture->SetParametersDirty();
+		}
+	}
 
 	void* YumeRHI::ReserveScratchBuffer(unsigned size)
 	{

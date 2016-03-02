@@ -37,7 +37,6 @@ namespace YumeEngine
 	class YumeGpuResource;
 	class YumeGLRendererImpl;
 
-	typedef std::vector<YumeGpuResource*> GpuResourceVector;
 	class YumeGLExport YumeGLRenderer : public YumeRHI
 	{
 	public:
@@ -170,10 +169,6 @@ namespace YumeEngine
 		bool rasterizerStateDirty_;
 		bool scissorRectDirty_;
 		bool stencilRefDirty_;
-
-
-		boost::mutex							gpuResourceMutex_;
-		GpuResourceVector						gpuResources_;
 
 		YumeGLRendererImpl*						impl_;
 	};

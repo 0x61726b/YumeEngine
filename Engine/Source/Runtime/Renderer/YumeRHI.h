@@ -32,6 +32,7 @@
 
 #include <boost/shared_array.hpp>
 #include <boost/weak_ptr.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <SDL.h>
 //----------------------------------------------------------------------------
@@ -61,6 +62,7 @@ namespace YumeEngine
 		bool reserved_;
 	};
 
+	typedef std::vector<YumeGpuResource*> GpuResourceVector;
 
 	class YumeAPIExport YumeRHI : public RenderObjAlloc
 	{
@@ -108,6 +110,8 @@ namespace YumeEngine
 		virtual YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const = 0;
 		virtual YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const = 0;
 
+		TextureFilterMode GetDefaultTextureFilterMode() const { return defaultTextureFilterMode_; }
+		unsigned GetTextureAnisotropy() const { return textureAnisotropy_; }
 
 
 		//Setters
@@ -132,8 +136,8 @@ namespace YumeEngine
 		/// Set shader 4D vector constant.
 		virtual void SetShaderParameter(YumeHash param,const Vector4& vector) = 0;
 
-		virtual void SetShaderParameter(YumeHash param, const YumeVariant& value) = 0;
-	
+		virtual void SetShaderParameter(YumeHash param,const YumeVariant& value) = 0;
+
 		virtual void SetVertexBuffer(YumeVertexBuffer* buffer) = 0;
 		/// Set multiple vertex buffers.
 		virtual bool SetVertexBuffers
@@ -141,6 +145,10 @@ namespace YumeEngine
 		/// Set multiple vertex buffers.
 		virtual bool SetVertexBuffers
 			(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) = 0;
+
+
+		void SetTextureAnisotropy(unsigned level);
+		void SetTextureParametersDirty();
 
 		void* ReserveScratchBuffer(unsigned size);
 		void FreeScratchBuffer(void* buffer);
@@ -167,6 +175,15 @@ namespace YumeEngine
 
 		YumeVertexBuffer* vertexBuffers_[MAX_VERTEX_STREAMS];
 		unsigned elementMasks_[MAX_VERTEX_STREAMS];
+
+
+	protected:
+		TextureFilterMode defaultTextureFilterMode_;
+		unsigned textureAnisotropy_;
+
+	protected:
+		boost::mutex							gpuResourceMutex_;
+		GpuResourceVector						gpuResources_;
 
 	protected:
 		unsigned firstDirtyVB_;

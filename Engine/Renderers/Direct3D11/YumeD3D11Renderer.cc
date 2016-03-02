@@ -216,6 +216,7 @@ namespace YumeEngine
 		//depthStencil_ = 0;
 		impl_->depthStencilView_ = 0;
 		viewport_ = IntRect(0,0,windowWidth_,windowHeight_);
+		textureAnisotropy_ = 1;
 		/*
 				indexBuffer_ = 0;
 				vertexDeclarationHash_ = 0;
