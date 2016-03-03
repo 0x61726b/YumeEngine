@@ -19,8 +19,8 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeVertexBuffer_h__
-#define __YumeVertexBuffer_h__
+#ifndef __YumeIndexBuffer_h__
+#define __YumeIndexBuffer_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 
@@ -32,14 +32,14 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeAPIExport YumeVertexBuffer : public YumeBase
+	class YumeAPIExport YumeIndexBuffer : public YumeBase
 	{
+
 	public:
-		YumeVertexBuffer();
-
-		virtual ~YumeVertexBuffer();
-
+		YumeIndexBuffer();
+		virtual ~YumeIndexBuffer();
 		virtual void Release() = 0;
+
 
 		virtual void SetShadowed(bool enable) = 0;
 		virtual bool SetSize(unsigned vertexCount,unsigned elementMask,bool dynamic = false) = 0;
@@ -52,34 +52,25 @@ namespace YumeEngine
 		bool IsShadowed() const { return shadowed_; }
 		bool IsDynamic() const { return dynamic_; }
 		bool IsLocked() const { return lockState_ != LOCK_NONE; }
-		unsigned GetVertexCount() const { return vertexCount_; }
-		unsigned GetVertexSize() const { return vertexSize_; }
-		unsigned GetElementMask() const { return elementMask_; }
-		unsigned GetElementOffset(VertexElement element) const { return elementOffset_[element]; }
+		unsigned GetIndexCount() const { return indexCount_; }
+		unsigned GetIndexSize() const { return indexSize_; }
+
+		virtual bool GetUsedVertexRange(unsigned start,unsigned count,unsigned& minVertex,unsigned& vertexCount) = 0;
 		unsigned char* GetShadowData() const { return shadowData_.get(); }
+
 		boost::shared_array<unsigned char> GetShadowDataShared() const { return shadowData_; }
-		static unsigned GetVertexSize(unsigned elementMask);
-		static unsigned GetElementOffset(unsigned elementMask,VertexElement element);
 
-
-
-		virtual void UpdateOffsets() = 0;
 		virtual bool Create() = 0;
 		virtual bool UpdateToGPU() = 0;
-
-		/// Vertex element sizes in bytes.
-		static const unsigned elementSize[];
+		virtual void* MapBuffer(unsigned start,unsigned count,bool discard) = 0;
+		virtual void UnmapBuffer() = 0;
 	protected:
 		/// Shadow data.
 		boost::shared_array<unsigned char> shadowData_;
-		/// Number of vertices.
-		unsigned vertexCount_;
-		/// Vertex size.
-		unsigned vertexSize_;
-		/// Vertex element bitmask.
-		unsigned elementMask_;
-		/// Vertex element offsets.
-		unsigned elementOffset_[MAX_VERTEX_ELEMENTS];
+		/// Number of indices.
+		unsigned indexCount_;
+		/// Index size.
+		unsigned indexSize_;
 		/// Buffer locking state.
 		LockState lockState_;
 		/// Lock start vertex.
@@ -88,12 +79,13 @@ namespace YumeEngine
 		unsigned lockCount_;
 		/// Scratch buffer for fallback locking.
 		void* lockScratchData_;
-		/// Shadowed flag.
-		bool shadowed_;
 		/// Dynamic flag.
 		bool dynamic_;
+		/// Shadowed flag.
+		bool shadowed_;
 	};
 }
+
 
 
 //----------------------------------------------------------------------------

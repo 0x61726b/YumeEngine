@@ -89,7 +89,8 @@ namespace YumeEngine
 
 		unsigned GetFormat(CompressedFormat format) const { return 1; }
 
-		
+		YumeVertexBuffer* CreateVertexBuffer() { return 0; };
+		YumeIndexBuffer* CreateIndexBuffer() { return 0; };
 		
 		void SetShaderParameter(YumeHash  param,const float* data,unsigned count) { };
 		/// Set shader float constant.
@@ -124,6 +125,8 @@ namespace YumeEngine
 			(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) {
 			return false;
 		}
+
+		void SetIndexBuffer(YumeIndexBuffer*) { }
 	};
 }
 

@@ -43,6 +43,8 @@ set(SRC_RENDERER
 	Renderer/YumeShader.cc
 	Renderer/YumeVertexBuffer.h
 	Renderer/YumeVertexBuffer.cc
+	Renderer/YumeIndexBuffer.h
+	Renderer/YumeIndexBuffer.cc
 	Renderer/YumeConstantBuffer.h
 	Renderer/YumeConstantBuffer.cc
 	Renderer/YumeInputLayout.h

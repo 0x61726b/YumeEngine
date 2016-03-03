@@ -79,6 +79,8 @@ namespace YumeEngine
 
 		void ResetCache() { };
 
+		YumeVertexBuffer* CreateVertexBuffer() { return 0; };
+		YumeIndexBuffer* CreateIndexBuffer() { return 0; };
 
 		bool IsInitialized() const { return initialized_; }
 
@@ -123,6 +125,8 @@ namespace YumeEngine
 		void SetShaderParameter(YumeHash param,const Vector4& vector) { };
 
 		void SetShaderParameter(YumeHash param,const YumeVariant& value) { };
+
+		void SetIndexBuffer(YumeIndexBuffer*) { }
 
 	private:
 		YumeVector<Vector2>::type				GetScreenResolutions();

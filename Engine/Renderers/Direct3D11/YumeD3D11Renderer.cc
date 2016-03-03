@@ -40,6 +40,7 @@
 #include "YumeD3D11ConstantBuffer.h"
 #include "YumeD3D11ShaderProgram.h"
 #include "YumeD3D11Texture2D.h"
+#include "YumeD3D11IndexBuffer.h"
 
 #include "Renderer/YumeTexture2D.h"
 
@@ -77,8 +78,11 @@ namespace YumeEngine
 		impl_(YumeAPINew YumeD3D11RendererImpl),
 		shaderProgram_(0)
 	{
+		apiName_ = "D3D11";
 		shaderPath_ = "Shaders/HLSL/";
 		shaderExtension_ = ".hlsl";
+
+
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
 
 		RegisterFactories();
@@ -211,35 +215,35 @@ namespace YumeEngine
 			impl_->constantBuffers_[PS][i] = 0;
 		}
 
-		//depthStencil_ = 0;
+		depthStencil_ = 0;
 		impl_->depthStencilView_ = 0;
 		viewport_ = IntRect(0,0,windowWidth_,windowHeight_);
 		textureAnisotropy_ = 1;
 
-		/*indexBuffer_ = 0;
+		indexBuffer_ = 0;
 		vertexDeclarationHash_ = 0;
-		primitiveType_ = 0;*/
+		primitiveType_ = 0;
 		vertexShader_ = 0;
 		pixelShader_ = 0;
 		shaderProgram_ = 0;
-		/*blendMode_ = BLEND_REPLACE;*/
-		/*			colorWrite_ = true;
-					cullMode_ = CULL_CCW;
-					constantDepthBias_ = 0.0f;
-					slopeScaledDepthBias_ = 0.0f;
-					depthTestMode_ = CMP_LESSEQUAL;
-					depthWrite_ = true;
-					fillMode_ = FILL_SOLID;
-					scissorTest_ = false;
-					scissorRect_ = IntRect::ZERO;
-					stencilTest_ = false;
-					stencilTestMode_ = CMP_ALWAYS;
-					stencilPass_ = OP_KEEP;
-					stencilFail_ = OP_KEEP;
-					stencilZFail_ = OP_KEEP;
-					stencilRef_ = 0;
-					stencilCompareMask_ = M_MAX_UNSIGNED;
-					stencilWriteMask_ = M_MAX_UNSIGNED;*/
+		blendMode_ = BLEND_REPLACE;
+		colorWrite_ = true;
+		cullMode_ = CULL_CCW;
+		constantDepthBias_ = 0.0f;
+		slopeScaledDepthBias_ = 0.0f;
+		depthTestMode_ = CMP_LESSEQUAL;
+		depthWrite_ = true;
+		fillMode_ = FILL_SOLID;
+		scissorTest_ = false;
+		scissorRect_ = IntRect::ZERO;
+		stencilTest_ = false;
+		stencilTestMode_ = CMP_ALWAYS;
+		stencilPass_ = OP_KEEP;
+		stencilFail_ = OP_KEEP;
+		stencilZFail_ = OP_KEEP;
+		stencilRef_ = 0;
+		stencilCompareMask_ = Math::M_MAX_UNSIGNED;
+		stencilWriteMask_ = Math::M_MAX_UNSIGNED;
 		useClipPlane_ = false;
 		renderTargetsDirty_ = true;
 		texturesDirty_ = true;
@@ -249,12 +253,12 @@ namespace YumeEngine
 		rasterizerStateDirty_ = true;
 		scissorRectDirty_ = true;
 		stencilRefDirty_ = true;
-		/*blendStateHash_ = M_MAX_UNSIGNED;
-		depthStateHash_ = M_MAX_UNSIGNED;
-		rasterizerStateHash_ = M_MAX_UNSIGNED;*/
+		blendStateHash_ = Math::M_MAX_UNSIGNED;
+		depthStateHash_ = Math::M_MAX_UNSIGNED;
+		rasterizerStateHash_ = Math::M_MAX_UNSIGNED;
 		firstDirtyTexture_ = lastDirtyTexture_ = Math::M_MAX_UNSIGNED;
 		firstDirtyVB_ = lastDirtyVB_ = Math::M_MAX_UNSIGNED;
-		/*dirtyConstantBuffers_.Clear();*/
+		dirtyConstantBuffers_.clear();
 	}
 
 	void YumeD3D11Renderer::Clear(unsigned flags,const Vector4& color,float depth,unsigned stencil)
@@ -1073,6 +1077,16 @@ namespace YumeEngine
 		}
 	}
 
+	YumeVertexBuffer* YumeD3D11Renderer::CreateVertexBuffer()
+	{
+		return YumeAPINew YumeD3D11VertexBuffer(this);
+	}
+
+	YumeIndexBuffer* YumeD3D11Renderer::CreateIndexBuffer()
+	{
+		return YumeAPINew YumeD3D11IndexBuffer(this);
+	}
+
 	void YumeD3D11Renderer::CleanUpShaderPrograms(YumeShaderVariation* variation)
 	{
 		for(ShaderProgramMap::iterator i = shaderPrograms_.begin(); i != shaderPrograms_.end();)
@@ -1182,6 +1196,20 @@ namespace YumeEngine
 		return SetVertexBuffers(reinterpret_cast<const YumeVector<YumeVertexBuffer*>::type&>(buffers),elementMasks,instanceOffset);
 	}
 
+	void YumeD3D11Renderer::SetIndexBuffer(YumeIndexBuffer* buffer)
+	{
+		if(buffer != indexBuffer_)
+		{
+			if(buffer)
+				impl_->deviceContext_->IASetIndexBuffer((ID3D11Buffer*)static_cast<YumeD3D11IndexBuffer*>(buffer)->GetGPUObject(),
+				static_cast<YumeD3D11IndexBuffer*>(buffer)->GetIndexSize() == sizeof(unsigned short) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT,0);
+			else
+				impl_->deviceContext_->IASetIndexBuffer(0,DXGI_FORMAT_UNKNOWN,0);
+
+			indexBuffer_ = buffer;
+		}
+	}
+
 	void YumeD3D11Renderer::Maximize()
 	{
 		if(!window_)
@@ -1264,11 +1292,15 @@ namespace YumeEngine
 	{
 		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(GenerateHash("Shader"),[](void) -> YumeBase * { return new YumeD3D11Shader();});
 		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(GenerateHash("Texture2D"),[this](void) -> YumeBase * { return new YumeD3D11Texture2D(this);});
+		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(GenerateHash("IndexBuffer"),[this](void) -> YumeBase * { return new YumeD3D11IndexBuffer(this);});
+		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(GenerateHash("VertexBuffer"),[this](void) -> YumeBase * { return new YumeD3D11VertexBuffer(this);});
 	}
 	void YumeD3D11Renderer::UnregisterFactories()
 	{
 		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(GenerateHash("Shader"));
 		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(GenerateHash("Texture2D"));
+		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(GenerateHash("IndexBuffer"));
+		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(GenerateHash("VertexBuffer"));
 	}
 
 

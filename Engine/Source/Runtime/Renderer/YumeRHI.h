@@ -49,6 +49,8 @@ namespace YumeEngine
 	class YumeRenderable;
 	class YumeTexture2D;
 	class YumeTexture;
+	class YumeIndexBuffer;
+	class YumeInputLayout;
 
 	struct ScratchBuffer
 	{
@@ -103,11 +105,17 @@ namespace YumeEngine
 		virtual void ResetCache() = 0;
 
 
+		//Create
+		virtual YumeVertexBuffer* CreateVertexBuffer() = 0;
+		virtual YumeIndexBuffer* CreateIndexBuffer() = 0;
+
 		//Getters
 		YumeShaderVariation* GetVertexShader() const { return vertexShader_; }
 		YumeShaderVariation* GetPixelShader() const { return pixelShader_; }
 
 		YumeVertexBuffer* GetVertexBuffer(unsigned index) const;
+		YumeIndexBuffer* GetIndexBuffer() const { return indexBuffer_; }
+
 		virtual YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const = 0;
 		virtual YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const = 0;
 
@@ -120,26 +128,18 @@ namespace YumeEngine
 		virtual void SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps) = 0;
 
 		virtual void SetShaderParameter(YumeHash  param,const float* data,unsigned count) = 0;
-		/// Set shader float constant.
 		virtual void SetShaderParameter(YumeHash  param,float value) = 0;
-		/// Set shader boolean constant.
 		virtual void SetShaderParameter(YumeHash  param,bool value) = 0;
-		/// Set shader color constant.
 		virtual void SetShaderParameter(YumeHash  param,const YumeColor& color) = 0;
-		/// Set shader 2D vector constant.
 		virtual void SetShaderParameter(YumeHash  param,const Vector2& vector) = 0;
-		/// Set shader 3x3 matrix constant.
 		virtual void SetShaderParameter(YumeHash  param,const Matrix3& matrix) = 0;
-		/// Set shader 3D vector constant.
 		virtual void SetShaderParameter(YumeHash  param,const Vector3& vector) = 0;
-		/// Set shader 4x4 matrix constant.
 		virtual void SetShaderParameter(YumeHash  param,const Matrix4& matrix) = 0;
-		/// Set shader 4D vector constant.
 		virtual void SetShaderParameter(YumeHash param,const Vector4& vector) = 0;
-
 		virtual void SetShaderParameter(YumeHash param,const YumeVariant& value) = 0;
 
 		virtual void SetVertexBuffer(YumeVertexBuffer* buffer) = 0;
+		virtual void SetIndexBuffer(YumeIndexBuffer* buffer) = 0;
 		/// Set multiple vertex buffers.
 		virtual bool SetVertexBuffers
 			(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) = 0;
@@ -153,18 +153,13 @@ namespace YumeEngine
 		void SetTextureParametersDirty();
 
 		void ResetRenderTargets();
-		/// Reset specific rendertarget.
 		void ResetRenderTarget(unsigned index);
-		/// Reset depth-stencil surface.
 		void ResetDepthStencil();
-		/// Set rendertarget.
 		void SetRenderTarget(unsigned index,YumeRenderable* renderTarget);
-		/// Set rendertarget.
 		void SetRenderTarget(unsigned index,YumeTexture2D* texture);
-		/// Set depth-stencil surface.
 		void SetDepthStencil(YumeRenderable* depthStencil);
-		/// Set depth-stencil surface.
 		void SetDepthStencil(YumeTexture2D* texture);
+
 		virtual void SetViewport(const IntRect& rect) = 0;
 
 
@@ -187,21 +182,10 @@ namespace YumeEngine
 
 	protected:
 		void CreateWindowIcon();
-		bool useClipPlane_;
-		Vector4 clipPlane_;
 	protected:
 		SDL_Window* window_;
 
 		YumeImage*	windowIcon_;
-
-		mutable SharedPtr<YumeShader> lastShader_;
-		mutable YumeString lastShaderName_;
-
-		YumeString shaderPath_;
-		YumeString shaderExtension_;
-
-		YumeVertexBuffer* vertexBuffers_[MAX_VERTEX_STREAMS];
-		unsigned elementMasks_[MAX_VERTEX_STREAMS];
 
 	protected:
 		YumeString								windowTitle_;
@@ -219,17 +203,57 @@ namespace YumeEngine
 		int										numPrimitives_;
 		int										numBatches_;
 
-		IntRect									viewport_;
-
-	protected:
-		TextureFilterMode defaultTextureFilterMode_;
-		unsigned textureAnisotropy_;
-
 	protected:
 		boost::mutex							gpuResourceMutex_;
 		GpuResourceVector						gpuResources_;
 
-	protected:
+		
+		bool sRGB_;
+		bool lightPrepassSupport_;
+		bool deferredSupport_;
+		bool hardwareShadowSupport_;
+		bool instancingSupport_;
+		bool sRGBSupport_;
+		bool sRGBWriteSupport_;
+		unsigned maxScratchBufferRequest_;
+		GpuResourceVector gpuObjects_;
+		YumeVector<ScratchBuffer>::type scratchBuffers_;
+		unsigned dummyColorFormat_;
+		unsigned shadowMapFormat_;
+		unsigned hiresShadowMapFormat_;
+		YumeVertexBuffer* vertexBuffers_[MAX_VERTEX_STREAMS];
+		unsigned elementMasks_[MAX_VERTEX_STREAMS];
+		YumeIndexBuffer* indexBuffer_;
+		unsigned long long vertexDeclarationHash_;
+		unsigned primitiveType_;
+		YumeShaderVariation* vertexShader_;
+		YumeShaderVariation* pixelShader_;
+		YumeTexture* textures_[MAX_TEXTURE_UNITS];
+		YumeMap<YumeString,TextureUnit>::type textureUnits_;
+		YumeRenderable* renderTargets_[MAX_RENDERTARGETS];
+		YumeRenderable* depthStencil_;
+		IntRect viewport_;
+		unsigned textureAnisotropy_;
+		BlendMode blendMode_;
+		bool colorWrite_;
+		CullMode cullMode_;
+		float constantDepthBias_;
+		float slopeScaledDepthBias_;
+		CompareMode depthTestMode_;
+		bool depthWrite_;
+		FillMode fillMode_;
+		IntRect scissorRect_;
+		bool scissorTest_;
+		CompareMode stencilTestMode_;
+		StencilOp stencilPass_;
+		StencilOp stencilFail_;
+		StencilOp stencilZFail_;
+		unsigned stencilRef_;
+		unsigned stencilCompareMask_;
+		unsigned stencilWriteMask_;
+		Vector4 clipPlane_;
+		bool stencilTest_;
+		bool useClipPlane_;
 		bool renderTargetsDirty_;
 		bool texturesDirty_;
 		bool vertexDeclarationDirty_;
@@ -238,29 +262,27 @@ namespace YumeEngine
 		bool rasterizerStateDirty_;
 		bool scissorRectDirty_;
 		bool stencilRefDirty_;
-
-	protected:
-		unsigned firstDirtyVB_;
-		unsigned lastDirtyVB_;
+		unsigned blendStateHash_;
+		unsigned depthStateHash_;
+		unsigned rasterizerStateHash_;
 		unsigned firstDirtyTexture_;
 		unsigned lastDirtyTexture_;
-
-		/// Largest scratch buffer request this frame.
-		unsigned maxScratchBufferRequest_;
-		/// Scratch buffers.
-		YumeVector<ScratchBuffer>::type scratchBuffers_;
+		unsigned firstDirtyVB_;
+		unsigned lastDirtyVB_;
+		TextureFilterMode defaultTextureFilterMode_;
+		YumeMap<unsigned long long,SharedPtr<YumeInputLayout> >::type vertexDeclarations_;
 		YumeMap<unsigned,SharedPtr<YumeConstantBuffer> >::type constantBuffers_;
 		YumeVector<YumeConstantBuffer*>::type dirtyConstantBuffers_;
-		YumeMap<YumeString,TextureUnit>::type textureUnits_;
-
 		const void* shaderParameterSources_[MAX_SHADER_PARAMETER_GROUPS];
+		YumeString shaderPath_;
+		YumeString shaderExtension_;
+		mutable SharedPtr<YumeShader> lastShader_;
+		mutable YumeString lastShaderName_;
+		//SharedPtr<ShaderPrecache> shaderPrecache_;
+		YumeString orientations_;
+		YumeString apiName_;
 
-		YumeShaderVariation* vertexShader_;
-		YumeShaderVariation* pixelShader_;
-
-		YumeTexture* textures_[MAX_TEXTURE_UNITS];
-		YumeRenderable* renderTargets_[MAX_RENDERTARGETS];
-		YumeRenderable* depthStencil_;
+		static const Vector2 pixelUVOffset;
 	};
 }
 

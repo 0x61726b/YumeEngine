@@ -87,6 +87,10 @@ namespace YumeEngine
 
 		void ResetCache();
 
+		//Create
+		YumeVertexBuffer* CreateVertexBuffer();
+		YumeIndexBuffer* CreateIndexBuffer();
+
 		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const;
 
 		YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const;
@@ -130,6 +134,7 @@ namespace YumeEngine
 
 		void SetShaderParameter(YumeHash param,const YumeVariant& value);
 
+		void SetIndexBuffer(YumeIndexBuffer* buffer);
 		/// Set multiple vertex buffers.
 		bool SetVertexBuffers
 			(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0);
@@ -186,17 +191,6 @@ namespace YumeEngine
 	private:
 		bool									initialized_;
 
-		//Renderer features
-		bool sRGB_;
-		bool lightPrepassSupport_;
-		bool deferredSupport_;
-		bool hardwareShadowSupport_;
-		bool instancingSupport_;
-		bool sRGBSupport_;
-		bool sRGBWriteSupport_;
-		unsigned dummyColorFormat_;
-		unsigned shadowMapFormat_;
-		unsigned hiresShadowMapFormat_;
 
 		YumeD3D11RendererImpl*					impl_;
 		ShaderProgramMap						shaderPrograms_;

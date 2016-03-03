@@ -56,7 +56,14 @@ namespace YumeEngine
 		windowWidth_(0),
 		windowHeight_(0),
 		windowTitle_("Yume Engine"),
-		windowPos_(SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED)
+		windowPos_(SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED),
+		sRGB_(false),
+		lightPrepassSupport_(false),
+		deferredSupport_(false),
+		instancingSupport_(false),
+		sRGBSupport_(false),
+		sRGBWriteSupport_(false),
+		orientations_("LandscapeLeft")
 	{
 		firstDirtyVB_ = lastDirtyVB_ = Math::M_MAX_UNSIGNED;
 	}

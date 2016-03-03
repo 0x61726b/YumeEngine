@@ -14,50 +14,43 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : <Filename> YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeGpuResource_h__
-#define __YumeGpuResource_h__
+#ifndef __YumeD3D11IndexBuffer_h__
+#define __YumeD3D11IndexBuffer_h__
 //----------------------------------------------------------------------------
-#include "YumeRequired.h"
-#include "YumeBase.h"
+#include "YumeD3D11Required.h"
+#include "YumeD3D11GpuResource.h"
+#include "Renderer/YumeIndexBuffer.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-
 	class YumeRHI;
-	class YumeEngine3D;
 
-	/// Base class for GPU resources.
-	class YumeAPIExport YumeGpuResource
+	class YumeD3DExport YumeD3D11IndexBuffer : public YumeIndexBuffer,public YumeD3D11Resource
 	{
 	public:
-		YumeGpuResource(YumeRHI*);
-		/// Destruct. Remove from the graphics subsystem.
-		virtual ~YumeGpuResource();
+		YumeD3D11IndexBuffer(YumeRHI*);
+		virtual ~YumeD3D11IndexBuffer();
 
-		/// Unconditionally release the GPU resource.
-		virtual void Release() {};
+		void Release();
 
-		/// Clear the data lost flag. No-op on D3D11.
-		virtual void ClearDataLost() = 0;
+		void SetShadowed(bool enable);
+		bool SetSize(unsigned vertexCount,unsigned elementMask,bool dynamic = false);
+		bool SetData(const void* data);
+		bool SetDataRange(const void* data,unsigned start,unsigned count,bool discard = false);
+		void* Lock(unsigned start,unsigned count,bool discard = false);
+		void Unlock();
 
-		/// Return Direct3D object.
-		void* GetGPUObject() const { return object_; }
+		bool GetUsedVertexRange(unsigned start,unsigned count,unsigned& minVertex,unsigned& vertexCount);
 
-		/// Return whether data is lost due to device loss. Always false on D3D11.
-		virtual bool IsDataLost() const = 0;
-
-		/// Return whether has pending data assigned while device was lost. Always false on D3D11.
-		virtual bool HasPendingData() const = 0;
-
-		void* object_;
-
-	protected:
-		YumeRHI* rhi_;
+		bool Create();
+		bool UpdateToGPU();
+		void* MapBuffer(unsigned start,unsigned count,bool discard);
+		void UnmapBuffer();
 	};
 }
 

@@ -68,30 +68,7 @@ namespace YumeEngine
 	};
 	BOOST_FIXTURE_TEST_SUITE(YumeTestSuite,YumePerTestSuiteFixture);
 
-	BOOST_AUTO_TEST_CASE(ImageTests)
-	{
-		Initialize();
-		engine_->Initialize(engineVariants_);
 
-		YumeResourceManager* rm = engine_->GetResourceManager();
-
-		SharedPtr<YumeImage> appIcon = rm->PrepareResource<YumeImage>("Textures/appIcon.png");
-		assert(appIcon);
-
-		SharedPtr<YumeImage> dds = rm->PrepareResource<YumeImage>("Textures/Earth_Diffuse.dds");
-		assert(dds);
-
-		SharedPtr<YumeImage> dds2 = rm->PrepareResource<YumeImage>("Textures/WaterNoise.dds");
-		assert(dds2);
-
-		SharedPtr<YumeImage> dds3 = rm->PrepareResource<YumeImage>("Textures/Flare.dds");
-		assert(dds3);
-
-		//YumeTexture2D* earth = rm->PrepareResource<YumeTexture2D>("Textures/Earth_Diffuse.dds").get();
-		//assert(earth);
-		//
-		Destroy();
-	}
 
 	BOOST_AUTO_TEST_CASE(InitializeEngine)
 	{
@@ -110,6 +87,16 @@ namespace YumeEngine
 #else
 		BOOST_REQUIRE(engine_->GetRendererName() == "libYumeNull");
 #endif
+
+		YumeResourceManager* rm = engine_->GetResourceManager();
+
+		SharedPtr<YumeImage> appIcon = rm->PrepareResource<YumeImage>("Textures/appIcon.png");
+
+		SharedPtr<YumeImage> dds = rm->PrepareResource<YumeImage>("Textures/Earth_Diffuse.dds");
+
+		SharedPtr<YumeImage> dds2 = rm->PrepareResource<YumeImage>("Textures/WaterNoise.dds");
+
+		SharedPtr<YumeImage> dds3 = rm->PrepareResource<YumeImage>("Textures/Flare.dds");
 
 		Destroy();
 	}
