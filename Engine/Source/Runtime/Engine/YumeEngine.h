@@ -27,6 +27,7 @@
 #include "Core/YumeTimer.h"
 
 #include <boost/shared_ptr.hpp>
+#include <log4cplus/initializer.h>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -87,6 +88,7 @@ namespace YumeEngine
 		boost::shared_ptr<YumeObjectFactory> factory_;
 		boost::shared_ptr<YumeRenderer> renderer_;
 
+		log4cplus::Initializer* log4cplusinitializer_;
 
 		YumeResourceManager* resourceManager_;
 	private:

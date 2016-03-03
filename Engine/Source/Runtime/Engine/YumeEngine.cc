@@ -50,7 +50,6 @@
 
 #include "Renderer/YumeTexture2D.h"
 
-#include <log4cplus/initializer.h>
 #include <boost/filesystem.hpp>
 
 #include <SDL.h>
@@ -105,11 +104,11 @@ namespace YumeEngine
 			env_->AddParameter(It->first,It->second);
 		}
 
-		
+
 
 		if(!env_->GetVariant("turnOffLogging").Get<bool>())
 		{
-			log4cplus::initialize();
+			log4cplusinitializer_ = new log4cplus::Initializer;
 			YumeEngine::Log::InitLogging(env_->GetLogFile().generic_string().c_str());
 		}
 		else
@@ -193,7 +192,7 @@ namespace YumeEngine
 
 
 		return initialized_;
-		}
+	}
 	void YumeEngine3D::RegisterFactories()
 	{
 		/*cachedHashMap_["Base"] = GenerateHash("Base");
@@ -399,8 +398,9 @@ namespace YumeEngine
 		YUMELOG_INFO("Exited at time " << timer_->GetTimeStamp());
 
 		if(!env_->GetVariant("turnOffLogging").Get<bool>())
-			YumeEngine::Log::StopLogging();
-
+		{
+			delete log4cplusinitializer_;
+		}
 
 	}
-	}
+}

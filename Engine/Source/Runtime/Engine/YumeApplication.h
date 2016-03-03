@@ -28,7 +28,6 @@
 #include "YumeVariant.h"
 
 #include <boost/shared_ptr.hpp>
-#include <log4cplus/initializer.h>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {

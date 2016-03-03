@@ -25,7 +25,7 @@
 #include "YumeRequired.h"
 
 #include "Core/YumeDefaults.h"
-
+#include <log4cplus/initializer.h>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
