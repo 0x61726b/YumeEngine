@@ -38,32 +38,32 @@ namespace YumeEngine
 		virtual void Release();
 
 		/// Set size, format and usage. Zero size will follow application window size. Return true if successful.
-		bool SetSize(int width,int height,unsigned format,TextureUsage usage = TEXTURE_STATIC);
+		virtual bool SetSize(int width,int height,unsigned format,TextureUsage usage = TEXTURE_STATIC);
 		/// Set data either partially or fully on a mip level. Return true if successful.
-		bool SetData(unsigned level,int x,int y,int width,int height,const void* data);
+		virtual bool SetData(unsigned level,int x,int y,int width,int height,const void* data);
 		/// Set data from an image. Return true if successful. Optionally make a single channel image alpha-only.
-		bool SetData(SharedPtr<YumeImage> image,bool useAlpha = false);
+		virtual bool SetData(SharedPtr<YumeImage> image,bool useAlpha = false);
 
-		bool GetData(unsigned level,void* dest) const;
+		virtual bool GetData(unsigned level,void* dest) const;
 
 		/// Create texture.
-		bool Create();
+		virtual bool Create();
 		/// Handle render surface update event.
-		void HandleRenderSurfaceUpdate(YumeHash eventType,VariantMap& eventData);
+		virtual void HandleRenderSurfaceUpdate(YumeHash eventType,VariantMap& eventData);
 
-		unsigned GetRowDataSize(int width) const;
+		virtual unsigned GetRowDataSize(int width) const;
 
-		void UpdateParameters();
+		virtual void UpdateParameters();
 
-		void CheckTextureBudget(YumeHash type);
+		virtual void CheckTextureBudget(YumeHash type);
 
-		unsigned GetSRVFormat(unsigned format);
+		virtual unsigned GetSRVFormat(unsigned format);
 		/// Return the depth-stencil view format corresponding to a texture format. Handles conversion of typeless depth texture formats.
-		unsigned GetDSVFormat(unsigned format);
+		virtual unsigned GetDSVFormat(unsigned format);
 		/// Convert format to sRGB.
-		unsigned GetSRGBFormat(unsigned format);
+		virtual unsigned GetSRGBFormat(unsigned format);
 
-		bool IsCompressed() const;
+		virtual bool IsCompressed() const;
 	};
 }
 

@@ -39,6 +39,8 @@ set(SRC_RENDERER_D3D11
   YumeD3D11ShaderProgram.h
   YumeD3D11Texture.h
   YumeD3D11Texture.cc
+  YumeD3D11Texture2D.h
+  YumeD3D11Texture2D.cc
 )
 
 if(DirectX_FOUND)
