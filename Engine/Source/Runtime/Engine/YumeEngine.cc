@@ -72,8 +72,6 @@ namespace YumeEngine
 		timeStep_(0)
 	{
 		YumeEngineGlobal = this;
-
-		
 	}
 
 	YumeEngine3D::~YumeEngine3D()
@@ -87,7 +85,7 @@ namespace YumeEngine
 
 	bool YumeEngine3D::Initialize(const VariantMap& variants)
 	{
-		
+
 		if(initialized_)
 			return true;
 
@@ -107,6 +105,7 @@ namespace YumeEngine
 			env_->AddParameter(It->first,It->second);
 		}
 
+		
 
 		if(!env_->GetVariant("turnOffLogging").Get<bool>())
 		{
@@ -194,7 +193,7 @@ namespace YumeEngine
 
 
 		return initialized_;
-	}
+		}
 	void YumeEngine3D::RegisterFactories()
 	{
 		/*cachedHashMap_["Base"] = GenerateHash("Base");
@@ -398,8 +397,10 @@ namespace YumeEngine
 		YUMELOG_INFO("Time elapsed since start: " << timer_->GetElapsedTime());
 
 		YUMELOG_INFO("Exited at time " << timer_->GetTimeStamp());
-		//YumeEngine::Log::StopLogging();
-		
+
+		if(!env_->GetVariant("turnOffLogging").Get<bool>())
+			YumeEngine::Log::StopLogging();
+
 
 	}
-}
+	}

@@ -87,6 +87,10 @@ namespace YumeEngine
 		YumeVertexBuffer* GetVertexBuffer(unsigned index) const { return 0; }
 		YumeConstantBuffer* GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size) { return 0; }
 
+		unsigned GetFormat(CompressedFormat format) const { return 1; }
+
+		void SetTexture(unsigned int,YumeTexture *) { }
+
 		//Setters
 		void SetVertexBuffer(YumeVertexBuffer* buffer) { }
 		/// Set multiple vertex buffers.

@@ -23,8 +23,8 @@
 #include "Engine/YumeApplication.h"
 #include "Engine/YumeEngine.h"
 
-
 #include <boost/filesystem.hpp>
+#include <log4cplus/initializer.h>
 
 namespace YumeEngine
 {

@@ -76,9 +76,8 @@ void YumeEngine::Log::InitLogging(const char* loc)
 
 void YumeEngine::Log::StopLogging()
 {
-	log4cplus::Logger logger = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume"));
-	logger.shutdown();
-
+	log4cplus::Logger::shutdown();
+	
 	ToggleLogging(false);
 	
 
@@ -92,37 +91,37 @@ void YumeEngine::Log::ToggleLogging(bool b)
 void YumeEngine::Log::trace(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
 	if(loggingEnabled)
-		LOG4CPLUS_TRACE(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+		LOG4CPLUS_TRACE(log4cplus::Logger::getRoot(),
 			file << ":" << line << " - " << fn << " - " << msg.c_str());
 }
 void YumeEngine::Log::debug(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
 	if(loggingEnabled)
-		LOG4CPLUS_DEBUG(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+		LOG4CPLUS_DEBUG(log4cplus::Logger::getRoot(),
 			fn << " - " << msg.c_str());
 }
 void YumeEngine::Log::info(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
 	if(loggingEnabled)
-		LOG4CPLUS_INFO(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+		LOG4CPLUS_INFO(log4cplus::Logger::getRoot(),
 			fn << " - " << msg.c_str());
 }
 void YumeEngine::Log::warn(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
 	if(loggingEnabled)
-		LOG4CPLUS_WARN(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+		LOG4CPLUS_WARN(log4cplus::Logger::getRoot(),
 			fn << " - " << msg.c_str());
 }
 void YumeEngine::Log::error(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
 	if(loggingEnabled)
-		LOG4CPLUS_ERROR(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+		LOG4CPLUS_ERROR(log4cplus::Logger::getRoot(),
 			file << ":" << line << " - " << fn << " - " << msg.c_str());
 }
 void YumeEngine::Log::fatal(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
 	if(loggingEnabled)
-		LOG4CPLUS_ERROR(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+		LOG4CPLUS_ERROR(log4cplus::Logger::getRoot(),
 			file << ":" << line << " - " << fn << " - " << msg.c_str());
 }
 
