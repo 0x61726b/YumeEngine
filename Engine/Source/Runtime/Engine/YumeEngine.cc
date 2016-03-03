@@ -51,7 +51,7 @@
 #include "Renderer/YumeTexture2D.h"
 
 #include <boost/filesystem.hpp>
-
+#include <log4cplus/initializer.h>
 #include <SDL.h>
 
 YumeEngine::YumeEngine3D* YumeEngineGlobal = 0;

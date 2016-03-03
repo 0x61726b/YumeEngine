@@ -27,8 +27,11 @@
 #include "Core/YumeTimer.h"
 
 #include <boost/shared_ptr.hpp>
-#include <log4cplus/initializer.h>
 //----------------------------------------------------------------------------
+namespace log4cplus {
+	class Initializer;
+}
+
 namespace YumeEngine
 {
 	class YumeRHI;
