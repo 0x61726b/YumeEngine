@@ -87,9 +87,9 @@ namespace YumeEngine
 		SharedPtr<YumeImage> dds3 = rm->PrepareResource<YumeImage>("Textures/Flare.dds");
 		assert(dds3);
 
-		YumeTexture2D* earth = rm->PrepareResource<YumeTexture2D>("Textures/Earth_Diffuse.dds").get();
-		assert(earth);
-		
+		//YumeTexture2D* earth = rm->PrepareResource<YumeTexture2D>("Textures/Earth_Diffuse.dds").get();
+		//assert(earth);
+		//
 		Destroy();
 	}
 
