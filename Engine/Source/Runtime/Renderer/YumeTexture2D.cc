@@ -14,48 +14,66 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#include "Common.h"
+#include "YumeHeaders.h"
+#include "YumeTexture2D.h"
 
-#include "Engine/YumeEngine.h"
-#include "Renderer/YumeRHI.h"
-#include "Core/YumeEnvironment.h"
+#include "YumeRenderable.h"
+#include "YumeImage.h"
+
+#include "Core/YumeDefaults.h"
 
 namespace YumeEngine
 {
-	BaseApplication::BaseApplication()
-	{
+	YumeHash YumeTexture2D::texture2Dhash_ = GenerateHash("Texture2D");
 
-	}
-
-	BaseApplication::~BaseApplication()
+	YumeTexture2D::YumeTexture2D()
 	{
 	}
 
-	void BaseApplication::SetupWindowProperties()
+	YumeTexture2D::~YumeTexture2D()
 	{
-		//engine_->GetRenderer()->SetWindowTitle("Yume Engine Sample App");
-	}
-
-	void BaseApplication::Setup()
-	{
-		//Set engine parameters
-
-		engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
-	}
-
-	void BaseApplication::Start()
-	{
-		SetupWindowProperties();
-
 		
 	}
 
-	void BaseApplication::Exit()
+	bool YumeTexture2D::BeginLoad(YumeFile& source)
 	{
+
+		// Load the image data for EndLoad()
+		loadImage_ = boost::shared_ptr<YumeImage>(YumeAPINew YumeImage);
+		if(!loadImage_->Load(source))
+		{
+			loadImage_.reset();
+			return false;
+		}
+
+		// Precalculate mip levels if async loading
+		if(GetAsyncLoadState() == ASYNC_LOADING)
+			loadImage_->PrecalculateLevels();
+
+		// Load the optional parameters file
+
+		return true;
+	}
+
+	bool YumeTexture2D::EndLoad()
+	{
+		// If over the texture budget, see if materials can be freed to allow textures to be freed
+		CheckTextureBudget(GetType());
+
+		bool success = SetData(loadImage_);
+
+		loadImage_.reset();
+
+		return success;
+	}
+
+	YumeHash YumeTexture2D::GetType()
+	{
+		return texture2Dhash_;
 	}
 }

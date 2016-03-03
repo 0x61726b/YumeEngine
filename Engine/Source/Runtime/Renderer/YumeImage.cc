@@ -433,15 +433,15 @@ namespace YumeEngine
 
 #define ADJUSTSHIFT(mask, l, r) \
                 if (mask && mask >= 0x100) \
-				                { \
-								                    while ((mask >> r) >= 0x100) \
+								                { \
+																				                    while ((mask >> r) >= 0x100) \
                     ++r; \
-				                } \
-			                else if (mask && mask < 0x80) \
-					                { \
-									                    while ((mask << l) < 0x80) \
+								                } \
+						                else if (mask && mask < 0x80) \
+										                { \
+																							                    while ((mask << l) < 0x80) \
                     ++l; \
-					                }
+										                }
 
 					unsigned rShiftL = 0,gShiftL = 0,bShiftL = 0,aShiftL = 0;
 					unsigned rShiftR = 0,gShiftR = 0,bShiftR = 0,aShiftR = 0;
@@ -515,223 +515,9 @@ namespace YumeEngine
 				}
 			}
 		}
-		else if(fileExtension == "\253KTX")
-		{
-			// ToDo(arkenthera): implement KTX
-			//source.Seek(12);
-
-			//unsigned endianness = source.ReadUInt();
-			//unsigned type = source.ReadUInt();
-			///* unsigned typeSize = */ source.ReadUInt();
-			//unsigned format = source.ReadUInt();
-			//unsigned internalFormat = source.ReadUInt();
-			///* unsigned baseInternalFormat = */ source.ReadUInt();
-			//unsigned width = source.ReadUInt();
-			//unsigned height = source.ReadUInt();
-			//unsigned depth = source.ReadUInt();
-			///* unsigned arrayElements = */ source.ReadUInt();
-			//unsigned faces = source.ReadUInt();
-			//unsigned mipmaps = source.ReadUInt();
-			//unsigned keyValueBytes = source.ReadUInt();
-
-			//if(endianness != 0x04030201)
-			//{
-			//	URHO3D_LOGERROR("Big-endian KTX files not supported");
-			//	return false;
-			//}
-
-			//if(type != 0 || format != 0)
-			//{
-			//	URHO3D_LOGERROR("Uncompressed KTX files not supported");
-			//	return false;
-			//}
-
-			//if(faces > 1 || depth > 1)
-			//{
-			//	URHO3D_LOGERROR("3D or cube KTX files not supported");
-			//	return false;
-			//}
-
-			//if(mipmaps == 0)
-			//{
-			//	URHO3D_LOGERROR("KTX files without explicitly specified mipmap count not supported");
-			//	return false;
-			//}
-
-			//switch(internalFormat)
-			//{
-			//case 0x83f1:
-			//	compressedFormat_ = CF_DXT1;
-			//	components_ = 4;
-			//	break;
-
-			//case 0x83f2:
-			//	compressedFormat_ = CF_DXT3;
-			//	components_ = 4;
-			//	break;
-
-			//case 0x83f3:
-			//	compressedFormat_ = CF_DXT5;
-			//	components_ = 4;
-			//	break;
-
-			//case 0x8d64:
-			//	compressedFormat_ = CF_ETC1;
-			//	components_ = 3;
-			//	break;
-
-			//case 0x8c00:
-			//	compressedFormat_ = CF_PVRTC_RGB_4BPP;
-			//	components_ = 3;
-			//	break;
-
-			//case 0x8c01:
-			//	compressedFormat_ = CF_PVRTC_RGB_2BPP;
-			//	components_ = 3;
-			//	break;
-
-			//case 0x8c02:
-			//	compressedFormat_ = CF_PVRTC_RGBA_4BPP;
-			//	components_ = 4;
-			//	break;
-
-			//case 0x8c03:
-			//	compressedFormat_ = CF_PVRTC_RGBA_2BPP;
-			//	components_ = 4;
-			//	break;
-
-			//default:
-			//	compressedFormat_ = CF_NONE;
-			//	break;
-			//}
-
-			//if(compressedFormat_ == CF_NONE)
-			//{
-			//	YUMELOG_ERROR("Unsupported texture format in KTX file");
-			//	return false;
-			//}
-
-			//source.Seek(source.GetPosition() + keyValueBytes);
-			//unsigned dataSize = (unsigned)(source.GetSize() - source.GetPosition() - mipmaps * sizeof(unsigned));
-
-			//data_ = new unsigned char[dataSize];
-			//width_ = width;
-			//height_ = height;
-			//numCompressedLevels_ = mipmaps;
-
-			//unsigned dataOffset = 0;
-			//for(unsigned i = 0; i < mipmaps; ++i)
-			//{
-			//	unsigned levelSize = source.ReadUInt();
-			//	if(levelSize + dataOffset > dataSize)
-			//	{
-			//		URHO3D_LOGERROR("KTX mipmap level data size exceeds file size");
-			//		return false;
-			//	}
-
-			//	source.Read(&data_[dataOffset],levelSize);
-			//	dataOffset += levelSize;
-			//	if(source.GetPosition() & 3)
-			//		source.Seek((source.GetPosition() + 3) & 0xfffffffc);
-			//}
-
-			//SetMemoryUsage(dataSize);
-		}
-		else if(fileExtension == "PVR\3")
-		{
-			///* unsigned flags = */ source.ReadUInt();
-			//unsigned pixelFormatLo = source.ReadUInt();
-			///* unsigned pixelFormatHi = */ source.ReadUInt();
-			///* unsigned colourSpace = */ source.ReadUInt();
-			///* unsigned channelType = */ source.ReadUInt();
-			//unsigned height = source.ReadUInt();
-			//unsigned width = source.ReadUInt();
-			//unsigned depth = source.ReadUInt();
-			///* unsigned numSurfaces = */ source.ReadUInt();
-			//unsigned numFaces = source.ReadUInt();
-			//unsigned mipmapCount = source.ReadUInt();
-			//unsigned metaDataSize = source.ReadUInt();
-
-			//if(depth > 1 || numFaces > 1)
-			//{
-			//	YUMELOG_ERROR("3D or cube PVR files not supported");
-			//	return false;
-			//}
-
-			//if(mipmapCount == 0)
-			//{
-			//	YUMELOG_ERROR("PVR files without explicitly specified mipmap count not supported");
-			//	return false;
-			//}
-
-			//switch(pixelFormatLo)
-			//{
-			//case 0:
-			//	compressedFormat_ = CF_PVRTC_RGB_2BPP;
-			//	components_ = 3;
-			//	break;
-
-			//case 1:
-			//	compressedFormat_ = CF_PVRTC_RGBA_2BPP;
-			//	components_ = 4;
-			//	break;
-
-			//case 2:
-			//	compressedFormat_ = CF_PVRTC_RGB_4BPP;
-			//	components_ = 3;
-			//	break;
-
-			//case 3:
-			//	compressedFormat_ = CF_PVRTC_RGBA_4BPP;
-			//	components_ = 4;
-			//	break;
-
-			//case 6:
-			//	compressedFormat_ = CF_ETC1;
-			//	components_ = 3;
-			//	break;
-
-			//case 7:
-			//	compressedFormat_ = CF_DXT1;
-			//	components_ = 4;
-			//	break;
-
-			//case 9:
-			//	compressedFormat_ = CF_DXT3;
-			//	components_ = 4;
-			//	break;
-
-			//case 11:
-			//	compressedFormat_ = CF_DXT5;
-			//	components_ = 4;
-			//	break;
-
-			//default:
-			//	compressedFormat_ = CF_NONE;
-			//	break;
-			//}
-
-			//if(compressedFormat_ == CF_NONE)
-			//{
-			//	YUMELOG_ERROR("Unsupported texture format in PVR file");
-			//	return false;
-			//}
-
-			// ToDo(arkenthera): implement PVR
-			//source.Seek(source.GetPosition() + metaDataSize);
-			/*unsigned dataSize = source.GetSize() - source.GetPosition();
-
-			data_ = boost::shared_array<unsigned char>(new unsigned char[dataSize]);
-			width_ = width;
-			height_ = height;
-			numCompressedLevels_ = mipmapCount;
-
-			source.Read(data_.get(),dataSize);
-			SetMemoryUsage(dataSize);*/
-		}
 		else
 		{
-			// Not DDS, KTX or PVR, use STBImage to load other image formats as uncompressed
+			// Not DDS
 			source.Seek(0);
 			int width,height;
 			unsigned components;
@@ -745,6 +531,11 @@ namespace YumeEngine
 			SetData(pixelData);
 			FreeImageData(pixelData);
 		}
+		return true;
+	}
+
+	bool YumeImage::EndLoad()
+	{
 		return true;
 	}
 

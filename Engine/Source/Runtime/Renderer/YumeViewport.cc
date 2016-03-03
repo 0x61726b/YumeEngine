@@ -14,48 +14,46 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#include "Common.h"
+#include "YumeHeaders.h"
+#include "YumeViewport.h"
 
-#include "Engine/YumeEngine.h"
-#include "Renderer/YumeRHI.h"
-#include "Core/YumeEnvironment.h"
+
 
 namespace YumeEngine
 {
-	BaseApplication::BaseApplication()
-	{
 
+	YumeViewport::YumeViewport():
+		rect_(IntRect::ZERO),
+		drawDebug_(true)
+	{
+		SetRenderPath((YumeRenderPath*)0);
 	}
 
-	BaseApplication::~BaseApplication()
+	YumeViewport::YumeViewport(YumeCamera* camera,YumeRenderPath* renderPath):
+		camera_(camera),
+		rect_(IntRect::ZERO),
+		drawDebug_(true)
+	{
+		SetRenderPath(renderPath);
+	}
+
+	YumeViewport::YumeViewport(YumeCamera* camera,const IntRect& rect,YumeRenderPath* renderPath):
+		camera_(camera),
+		rect_(rect),
+		drawDebug_(true)
+	{
+		SetRenderPath(renderPath);
+	}
+	YumeViewport::~YumeViewport()
 	{
 	}
 
-	void BaseApplication::SetupWindowProperties()
-	{
-		//engine_->GetRenderer()->SetWindowTitle("Yume Engine Sample App");
-	}
-
-	void BaseApplication::Setup()
-	{
-		//Set engine parameters
-
-		engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
-	}
-
-	void BaseApplication::Start()
-	{
-		SetupWindowProperties();
-
-		
-	}
-
-	void BaseApplication::Exit()
+	void YumeViewport::SetRenderPath(YumeRenderPath*)
 	{
 	}
 }

@@ -39,6 +39,13 @@
 #include "YumeD3D11VertexBuffer.h"
 #include "YumeD3D11ConstantBuffer.h"
 #include "YumeD3D11ShaderProgram.h"
+#include "YumeD3D11Texture2D.h"
+
+#include "Renderer/YumeTexture2D.h"
+
+#include "Renderer/YumeRenderable.h"
+
+#include "Renderer/YumeImage.h"
 
 #include "Core/YumeBase.h"
 #include "Core/YumeDefaults.h"
@@ -48,6 +55,8 @@
 #include "Engine/YumeEngine.h"
 
 #include <SDL_syswm.h>
+
+#include <boost/algorithm/string.hpp>
 
 namespace YumeEngine
 {
@@ -65,20 +74,7 @@ namespace YumeEngine
 	//---------------------------------------------------------------------
 	YumeD3D11Renderer::YumeD3D11Renderer()
 		: initialized_(false),
-		numPrimitives_(0),
-		numBatches_(0),
-		windowWidth_(0),
-		windowHeight_(0),
-		windowTitle_("Yume Engine"),
-		windowPos_(SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED),
 		impl_(YumeAPINew YumeD3D11RendererImpl),
-		flushGpu_(false),
-		multiSample_(1),
-		fullscreen_(false),
-		borderless_(false),
-		resizeable_(false),
-		vsync_(false),
-		tripleBuffer_(false),
 		shaderProgram_(0)
 	{
 		shaderPath_ = "Shaders/HLSL/";
@@ -153,6 +149,8 @@ namespace YumeEngine
 		delete impl_;
 		impl_ = 0;
 
+		lastShader_.reset();
+
 		UnregisterFactories();
 
 		// Shut down SDL now. Graphics should be the last SDL-using subsystem to be destroyed
@@ -217,47 +215,46 @@ namespace YumeEngine
 		impl_->depthStencilView_ = 0;
 		viewport_ = IntRect(0,0,windowWidth_,windowHeight_);
 		textureAnisotropy_ = 1;
-		/*
-				indexBuffer_ = 0;
-				vertexDeclarationHash_ = 0;
-				primitiveType_ = 0;
-				vertexShader_ = 0;
-				pixelShader_ = 0;
-				shaderProgram_ = 0;
-				blendMode_ = BLEND_REPLACE;
-				textureAnisotropy_ = 1;
-				colorWrite_ = true;
-				cullMode_ = CULL_CCW;
-				constantDepthBias_ = 0.0f;
-				slopeScaledDepthBias_ = 0.0f;
-				depthTestMode_ = CMP_LESSEQUAL;
-				depthWrite_ = true;
-				fillMode_ = FILL_SOLID;
-				scissorTest_ = false;
-				scissorRect_ = IntRect::ZERO;
-				stencilTest_ = false;
-				stencilTestMode_ = CMP_ALWAYS;
-				stencilPass_ = OP_KEEP;
-				stencilFail_ = OP_KEEP;
-				stencilZFail_ = OP_KEEP;
-				stencilRef_ = 0;
-				stencilCompareMask_ = M_MAX_UNSIGNED;
-				stencilWriteMask_ = M_MAX_UNSIGNED;
-				useClipPlane_ = false;
-				renderTargetsDirty_ = true;
-				texturesDirty_ = true;
-				vertexDeclarationDirty_ = true;
-				blendStateDirty_ = true;
-				depthStateDirty_ = true;
-				rasterizerStateDirty_ = true;
-				scissorRectDirty_ = true;
-				stencilRefDirty_ = true;
-				blendStateHash_ = M_MAX_UNSIGNED;
-				depthStateHash_ = M_MAX_UNSIGNED;
-				rasterizerStateHash_ = M_MAX_UNSIGNED;
-				firstDirtyTexture_ = lastDirtyTexture_ = M_MAX_UNSIGNED;
-				firstDirtyVB_ = lastDirtyVB_ = M_MAX_UNSIGNED;
-				dirtyConstantBuffers_.Clear();*/
+
+		/*indexBuffer_ = 0;
+		vertexDeclarationHash_ = 0;
+		primitiveType_ = 0;*/
+		vertexShader_ = 0;
+		pixelShader_ = 0;
+		shaderProgram_ = 0;
+		/*blendMode_ = BLEND_REPLACE;*/
+		/*			colorWrite_ = true;
+					cullMode_ = CULL_CCW;
+					constantDepthBias_ = 0.0f;
+					slopeScaledDepthBias_ = 0.0f;
+					depthTestMode_ = CMP_LESSEQUAL;
+					depthWrite_ = true;
+					fillMode_ = FILL_SOLID;
+					scissorTest_ = false;
+					scissorRect_ = IntRect::ZERO;
+					stencilTest_ = false;
+					stencilTestMode_ = CMP_ALWAYS;
+					stencilPass_ = OP_KEEP;
+					stencilFail_ = OP_KEEP;
+					stencilZFail_ = OP_KEEP;
+					stencilRef_ = 0;
+					stencilCompareMask_ = M_MAX_UNSIGNED;
+					stencilWriteMask_ = M_MAX_UNSIGNED;*/
+		useClipPlane_ = false;
+		renderTargetsDirty_ = true;
+		texturesDirty_ = true;
+		vertexDeclarationDirty_ = true;
+		blendStateDirty_ = true;
+		depthStateDirty_ = true;
+		rasterizerStateDirty_ = true;
+		scissorRectDirty_ = true;
+		stencilRefDirty_ = true;
+		/*blendStateHash_ = M_MAX_UNSIGNED;
+		depthStateHash_ = M_MAX_UNSIGNED;
+		rasterizerStateHash_ = M_MAX_UNSIGNED;*/
+		firstDirtyTexture_ = lastDirtyTexture_ = Math::M_MAX_UNSIGNED;
+		firstDirtyVB_ = lastDirtyVB_ = Math::M_MAX_UNSIGNED;
+		/*dirtyConstantBuffers_.Clear();*/
 	}
 
 	void YumeD3D11Renderer::Clear(unsigned flags,const Vector4& color,float depth,unsigned stencil)
@@ -306,11 +303,6 @@ namespace YumeEngine
 		SDL_VERSION(&sysInfo.version);
 		SDL_GetWindowWMInfo(window,&sysInfo);
 		return sysInfo.info.win.window;
-	}
-
-	void YumeD3D11Renderer::ResetRenderTargets()
-	{
-		SetViewport(IntRect(0,0,windowWidth_,windowHeight_));
 	}
 
 	void YumeD3D11Renderer::SetViewport(const IntRect& rect)
@@ -1044,6 +1036,43 @@ namespace YumeEngine
 		}
 	}
 
+	void YumeD3D11Renderer::SetTexture(unsigned index,YumeTexture* texture)
+	{
+		if(index >= MAX_TEXTURE_UNITS)
+			return;
+
+		// Check if texture is currently bound as a rendertarget. In that case, use its backup texture, or blank if not defined
+		if(texture)
+		{
+			if(renderTargets_[0] && renderTargets_[0]->GetParentTexture() == texture)
+				texture = texture->GetBackupTexture();
+		}
+
+		if(texture && texture->GetParametersDirty())
+		{
+			texture->UpdateParameters();
+			textures_[index] = 0; // Force reassign
+		}
+
+		if(texture != textures_[index])
+		{
+			if(firstDirtyTexture_ == Math::M_MAX_UNSIGNED)
+				firstDirtyTexture_ = lastDirtyTexture_ = index;
+			else
+			{
+				if(index < firstDirtyTexture_)
+					firstDirtyTexture_ = index;
+				if(index > lastDirtyTexture_)
+					lastDirtyTexture_ = index;
+			}
+
+			textures_[index] = texture;
+			impl_->shaderResourceViews_[index] = texture ? (ID3D11ShaderResourceView*)texture->GetShaderResourceView() : 0;
+			impl_->samplers_[index] = texture ? (ID3D11SamplerState*)texture->GetSampler() : 0;
+			texturesDirty_ = true;
+		}
+	}
+
 	void YumeD3D11Renderer::CleanUpShaderPrograms(YumeShaderVariation* variation)
 	{
 		for(ShaderProgramMap::iterator i = shaderPrograms_.begin(); i != shaderPrograms_.end();)
@@ -1192,6 +1221,27 @@ namespace YumeEngine
 		return resolutions;
 	}
 
+	unsigned YumeD3D11Renderer::GetFormat(CompressedFormat format) const
+	{
+		switch(format)
+		{
+		case CF_RGBA:
+			return DXGI_FORMAT_R8G8B8A8_UNORM;
+
+		case CF_DXT1:
+			return DXGI_FORMAT_BC1_UNORM;
+
+		case CF_DXT3:
+			return DXGI_FORMAT_BC2_UNORM;
+
+		case CF_DXT5:
+			return DXGI_FORMAT_BC3_UNORM;
+
+		default:
+			return 0;
+		}
+	}
+
 	void YumeD3D11Renderer::AddGpuResource(YumeGpuResource* gpuRes)
 	{
 		boost::mutex::scoped_lock lock(gpuResourceMutex_);
@@ -1213,9 +1263,137 @@ namespace YumeEngine
 	void YumeD3D11Renderer::RegisterFactories()
 	{
 		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(GenerateHash("Shader"),[](void) -> YumeBase * { return new YumeD3D11Shader();});
+		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(GenerateHash("Texture2D"),[this](void) -> YumeBase * { return new YumeD3D11Texture2D(this);});
 	}
 	void YumeD3D11Renderer::UnregisterFactories()
 	{
 		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(GenerateHash("Shader"));
+		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(GenerateHash("Texture2D"));
+	}
+
+
+	unsigned YumeD3D11Renderer::GetAlphaFormat()
+	{
+		return DXGI_FORMAT_A8_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetLuminanceFormat()
+	{
+		// Note: not same sampling behavior as on D3D9; need to sample the R channel only
+		return DXGI_FORMAT_R8_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetLuminanceAlphaFormat()
+	{
+		// Note: not same sampling behavior as on D3D9; need to sample the RG channels
+		return DXGI_FORMAT_R8G8_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGBFormat()
+	{
+		return DXGI_FORMAT_R8G8B8A8_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGBAFormat()
+	{
+		return DXGI_FORMAT_R8G8B8A8_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGBA16Format()
+	{
+		return DXGI_FORMAT_R16G16B16A16_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGBAFloat16Format()
+	{
+		return DXGI_FORMAT_R16G16B16A16_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGBAFloat32Format()
+	{
+		return DXGI_FORMAT_R32G32B32A32_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetRG16Format()
+	{
+		return DXGI_FORMAT_R16G16_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGFloat16Format()
+	{
+		return DXGI_FORMAT_R16G16_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGFloat32Format()
+	{
+		return DXGI_FORMAT_R32G32_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetFloat16Format()
+	{
+		return DXGI_FORMAT_R16_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetFloat32Format()
+	{
+		return DXGI_FORMAT_R32_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetLinearDepthFormat()
+	{
+		return DXGI_FORMAT_R32_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetDepthStencilFormat()
+	{
+		return DXGI_FORMAT_R24G8_TYPELESS;
+	}
+
+	unsigned YumeD3D11Renderer::GetReadableDepthFormat()
+	{
+		return DXGI_FORMAT_R24G8_TYPELESS;
+	}
+
+	unsigned YumeD3D11Renderer::GetFormat(const YumeString& formatName)
+	{
+
+		YumeString nameLower = formatName;
+		boost::to_lower(nameLower);
+		boost::trim(nameLower);
+
+		if(nameLower == "a")
+			return GetAlphaFormat();
+		if(nameLower == "l")
+			return GetLuminanceFormat();
+		if(nameLower == "la")
+			return GetLuminanceAlphaFormat();
+		if(nameLower == "rgb")
+			return GetRGBFormat();
+		if(nameLower == "rgba")
+			return GetRGBAFormat();
+		if(nameLower == "rgba16")
+			return GetRGBA16Format();
+		if(nameLower == "rgba16f")
+			return GetRGBAFloat16Format();
+		if(nameLower == "rgba32f")
+			return GetRGBAFloat32Format();
+		if(nameLower == "rg16")
+			return GetRG16Format();
+		if(nameLower == "rg16f")
+			return GetRGFloat16Format();
+		if(nameLower == "rg32f")
+			return GetRGFloat32Format();
+		if(nameLower == "r16f")
+			return GetFloat16Format();
+		if(nameLower == "r32f" || nameLower == "float")
+			return GetFloat32Format();
+		if(nameLower == "lineardepth" || nameLower == "depth")
+			return GetLinearDepthFormat();
+		if(nameLower == "d24s8")
+			return GetDepthStencilFormat();
+		if(nameLower == "readabledepth" || nameLower == "hwdepth")
+			return GetReadableDepthFormat();
+
+		return GetRGBFormat();
 	}
 }

@@ -169,6 +169,8 @@ namespace YumeEngine
 
 	typedef YumeVector<YumeString>::type StringVector;
 	typedef size_t YumeHash;
+
+#define YUME_SAFE_RELEASE(p) if(p) { p->Release(); p = 0; }
 }
 
 namespace YumeEngine

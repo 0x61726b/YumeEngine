@@ -29,6 +29,7 @@
 #include "Math/YumeColor.h"
 #include "Math/YumeVector4.h"
 #include "Core/YumeVariant.h"
+#include "Renderer/YumeImage.h"
 
 #include <boost/shared_array.hpp>
 #include <boost/weak_ptr.hpp>
@@ -45,6 +46,9 @@ namespace YumeEngine
 	class YumeShader;
 	class YumeVertexBuffer;
 	class YumeConstantBuffer;
+	class YumeRenderable;
+	class YumeTexture2D;
+	class YumeTexture;
 
 	struct ScratchBuffer
 	{
@@ -64,7 +68,7 @@ namespace YumeEngine
 
 	typedef std::vector<YumeGpuResource*> GpuResourceVector;
 
-	class YumeAPIExport YumeRHI : public RenderObjAlloc
+	class YumeAPIExport YumeRHI
 	{
 	public:
 		YumeRHI();
@@ -77,9 +81,6 @@ namespace YumeEngine
 		virtual bool BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 		virtual void Clear(unsigned flags,const Vector4& color = Vector4(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) = 0;
-
-		virtual void ResetRenderTargets() = 0;
-		virtual void SetViewport(const IntRect&) = 0;
 
 		virtual Vector2 GetRenderTargetDimensions() const = 0;
 
@@ -112,7 +113,7 @@ namespace YumeEngine
 
 		TextureFilterMode GetDefaultTextureFilterMode() const { return defaultTextureFilterMode_; }
 		unsigned GetTextureAnisotropy() const { return textureAnisotropy_; }
-
+		virtual unsigned GetFormat(CompressedFormat format) const = 0;
 
 		//Setters
 		void SetWindowIcon(YumeImage* image);
@@ -147,8 +148,25 @@ namespace YumeEngine
 			(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) = 0;
 
 
+		virtual void SetTexture(unsigned index,YumeTexture* texture) = 0;
 		void SetTextureAnisotropy(unsigned level);
 		void SetTextureParametersDirty();
+
+		void ResetRenderTargets();
+		/// Reset specific rendertarget.
+		void ResetRenderTarget(unsigned index);
+		/// Reset depth-stencil surface.
+		void ResetDepthStencil();
+		/// Set rendertarget.
+		void SetRenderTarget(unsigned index,YumeRenderable* renderTarget);
+		/// Set rendertarget.
+		void SetRenderTarget(unsigned index,YumeTexture2D* texture);
+		/// Set depth-stencil surface.
+		void SetDepthStencil(YumeRenderable* depthStencil);
+		/// Set depth-stencil surface.
+		void SetDepthStencil(YumeTexture2D* texture);
+		virtual void SetViewport(const IntRect& rect) = 0;
+
 
 		void* ReserveScratchBuffer(unsigned size);
 		void FreeScratchBuffer(void* buffer);
@@ -157,6 +175,15 @@ namespace YumeEngine
 		bool HasTextureUnit(TextureUnit unit);
 		TextureUnit GetTextureUnit(const YumeString& name);
 		const YumeString& GetTextureUnitName(TextureUnit unit);
+		YumeTexture* GetTexture(unsigned index) const;
+
+		YumeRenderable* GetRenderTarget(unsigned index) const;
+
+		/// Return current depth-stencil surface.
+		YumeRenderable* GetDepthStencil() const { return depthStencil_; }
+
+		/// Return the viewport coordinates.
+		IntRect GetViewport() const { return viewport_; }
 
 	protected:
 		void CreateWindowIcon();
@@ -176,6 +203,23 @@ namespace YumeEngine
 		YumeVertexBuffer* vertexBuffers_[MAX_VERTEX_STREAMS];
 		unsigned elementMasks_[MAX_VERTEX_STREAMS];
 
+	protected:
+		YumeString								windowTitle_;
+		int										windowWidth_;
+		int										windowHeight_;
+		Vector2									windowPos_;
+		bool									fullscreen_;
+		bool									borderless_;
+		bool									resizeable_;
+		bool									tripleBuffer_;
+		int										multiSample_;
+		bool									vsync_;
+		bool									flushGpu_;
+
+		int										numPrimitives_;
+		int										numBatches_;
+
+		IntRect									viewport_;
 
 	protected:
 		TextureFilterMode defaultTextureFilterMode_;
@@ -186,8 +230,20 @@ namespace YumeEngine
 		GpuResourceVector						gpuResources_;
 
 	protected:
+		bool renderTargetsDirty_;
+		bool texturesDirty_;
+		bool vertexDeclarationDirty_;
+		bool blendStateDirty_;
+		bool depthStateDirty_;
+		bool rasterizerStateDirty_;
+		bool scissorRectDirty_;
+		bool stencilRefDirty_;
+
+	protected:
 		unsigned firstDirtyVB_;
 		unsigned lastDirtyVB_;
+		unsigned firstDirtyTexture_;
+		unsigned lastDirtyTexture_;
 
 		/// Largest scratch buffer request this frame.
 		unsigned maxScratchBufferRequest_;
@@ -201,6 +257,10 @@ namespace YumeEngine
 
 		YumeShaderVariation* vertexShader_;
 		YumeShaderVariation* pixelShader_;
+
+		YumeTexture* textures_[MAX_TEXTURE_UNITS];
+		YumeRenderable* renderTargets_[MAX_RENDERTARGETS];
+		YumeRenderable* depthStencil_;
 	};
 }
 

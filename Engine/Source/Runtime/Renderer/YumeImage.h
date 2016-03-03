@@ -54,7 +54,7 @@ namespace YumeEngine
 	};
 
 	/// Compressed image mip level.
-	struct CompressedLevel
+	struct YumeAPIExport CompressedLevel
 	{
 		/// Construct empty.
 		CompressedLevel():
@@ -103,6 +103,8 @@ namespace YumeEngine
 
 		/// Load resource from stream. May be called from a worker thread. Return true if successful.
 		virtual bool BeginLoad(YumeFile& source);
+
+		virtual bool EndLoad();
 		/// Save the image to a stream. Regardless of original format, the image is saved as png. Compressed image data is not supported. Return true if successful.
 		virtual bool Save(YumeFile& dest) const;
 

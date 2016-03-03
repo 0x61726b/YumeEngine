@@ -65,7 +65,7 @@ namespace YumeEngine
 		bool CreateD3D11Device(int width,int height,int multisample);
 		bool UpdateSwapchain(int width,int height);
 
-		void ResetRenderTargets();
+
 		void SetViewport(const IntRect&);
 
 		Vector2 GetRenderTargetDimensions() const;
@@ -102,8 +102,8 @@ namespace YumeEngine
 
 		//Getters
 		YumeVertexBuffer* GetVertexBuffer(unsigned index) const;
-
 		void CleanUpShaderPrograms(YumeShaderVariation* variation);
+		unsigned GetFormat(CompressedFormat format) const;
 
 		//Setters
 		void SetVertexBuffer(YumeVertexBuffer* buffer);
@@ -128,7 +128,7 @@ namespace YumeEngine
 		/// Set shader 4D vector constant.
 		void SetShaderParameter(YumeHash param,const Vector4& vector);
 
-		void SetShaderParameter(YumeHash param, const YumeVariant& value);
+		void SetShaderParameter(YumeHash param,const YumeVariant& value);
 
 		/// Set multiple vertex buffers.
 		bool SetVertexBuffers
@@ -137,6 +137,47 @@ namespace YumeEngine
 		bool SetVertexBuffers
 			(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0);
 
+		void SetTexture(unsigned index,YumeTexture* texture);
+
+
+
+
+
+		/// Return the API-specific alpha texture format.
+		static unsigned GetAlphaFormat();
+		/// Return the API-specific luminance texture format.
+		static unsigned GetLuminanceFormat();
+		/// Return the API-specific luminance alpha texture format.
+		static unsigned GetLuminanceAlphaFormat();
+		/// Return the API-specific RGB texture format.
+		static unsigned GetRGBFormat();
+		/// Return the API-specific RGBA texture format.
+		static unsigned GetRGBAFormat();
+		/// Return the API-specific RGBA 16-bit texture format.
+		static unsigned GetRGBA16Format();
+		/// Return the API-specific RGBA 16-bit float texture format.
+		static unsigned GetRGBAFloat16Format();
+		/// Return the API-specific RGBA 32-bit float texture format.
+		static unsigned GetRGBAFloat32Format();
+		/// Return the API-specific RG 16-bit texture format.
+		static unsigned GetRG16Format();
+		/// Return the API-specific RG 16-bit float texture format.
+		static unsigned GetRGFloat16Format();
+		/// Return the API-specific RG 32-bit float texture format.
+		static unsigned GetRGFloat32Format();
+		/// Return the API-specific single channel 16-bit float texture format.
+		static unsigned GetFloat16Format();
+		/// Return the API-specific single channel 32-bit float texture format.
+		static unsigned GetFloat32Format();
+		/// Return the API-specific linear depth texture format.
+		static unsigned GetLinearDepthFormat();
+		/// Return the API-specific hardware depth-stencil texture format.
+		static unsigned GetDepthStencilFormat();
+		/// Return the API-specific readable hardware depth format, or 0 if not supported.
+		static unsigned GetReadableDepthFormat();
+		/// Return the API-specific texture format from a textual description, for example "rgb".
+		static unsigned GetFormat(const YumeString& formatName);
+
 	private:
 		void RegisterFactories();
 		void UnregisterFactories();
@@ -144,23 +185,6 @@ namespace YumeEngine
 		YumeVector<Vector2>::type				GetScreenResolutions();
 	private:
 		bool									initialized_;
-
-		YumeString								windowTitle_;
-		int										windowWidth_;
-		int										windowHeight_;
-		Vector2									windowPos_;
-		bool									fullscreen_;
-		bool									borderless_;
-		bool									resizeable_;
-		bool									tripleBuffer_;
-		int										multiSample_;
-		bool									vsync_;
-		bool									flushGpu_;
-
-		int										numPrimitives_;
-		int										numBatches_;
-
-		IntRect									viewport_;
 
 		//Renderer features
 		bool sRGB_;
@@ -173,15 +197,6 @@ namespace YumeEngine
 		unsigned dummyColorFormat_;
 		unsigned shadowMapFormat_;
 		unsigned hiresShadowMapFormat_;
-
-		bool renderTargetsDirty_;
-		bool texturesDirty_;
-		bool vertexDeclarationDirty_;
-		bool blendStateDirty_;
-		bool depthStateDirty_;
-		bool rasterizerStateDirty_;
-		bool scissorRectDirty_;
-		bool stencilRefDirty_;
 
 		YumeD3D11RendererImpl*					impl_;
 		ShaderProgramMap						shaderPrograms_;

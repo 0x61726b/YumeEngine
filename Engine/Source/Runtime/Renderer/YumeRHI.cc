@@ -30,6 +30,10 @@
 #include "Renderer/YumeConstantBuffer.h"
 #include "Renderer/YumeTexture.h"
 
+#include "YumeRenderable.h"
+#include "YumeTexture.h"
+#include "YumeTexture2D.h"
+
 #include "Logging/logging.h"
 
 namespace YumeEngine
@@ -39,7 +43,20 @@ namespace YumeEngine
 		window_(0),
 		maxScratchBufferRequest_(0),
 		useClipPlane_(false),
-		defaultTextureFilterMode_(FILTER_TRILINEAR)
+		defaultTextureFilterMode_(FILTER_TRILINEAR),
+		flushGpu_(false),
+		multiSample_(1),
+		fullscreen_(false),
+		borderless_(false),
+		resizeable_(false),
+		vsync_(false),
+		tripleBuffer_(false),
+		numPrimitives_(0),
+		numBatches_(0),
+		windowWidth_(0),
+		windowHeight_(0),
+		windowTitle_("Yume Engine"),
+		windowPos_(SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED)
 	{
 		firstDirtyVB_ = lastDirtyVB_ = Math::M_MAX_UNSIGNED;
 	}
@@ -177,6 +194,78 @@ namespace YumeEngine
 		maxScratchBufferRequest_ = 0;
 	}
 
+
+	void YumeRHI::ResetRenderTargets()
+	{
+		for(unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
+			SetRenderTarget(i,(YumeRenderable*)0);
+		SetDepthStencil((YumeRenderable*)0);
+		SetViewport(IntRect(0,0,windowWidth_,windowHeight_));
+	}
+
+	void YumeRHI::ResetRenderTarget(unsigned index)
+	{
+		SetRenderTarget(index,(YumeRenderable*)0);
+	}
+
+	void YumeRHI::ResetDepthStencil()
+	{
+		SetDepthStencil((YumeRenderable*)0);
+	}
+
+	void YumeRHI::SetRenderTarget(unsigned index,YumeRenderable* renderTarget)
+	{
+		if(index >= MAX_RENDERTARGETS)
+			return;
+
+		if(renderTarget != renderTargets_[index])
+		{
+			renderTargets_[index] = renderTarget;
+			renderTargetsDirty_ = true;
+
+			// If the rendertarget is also bound as a texture, replace with backup texture or null
+			if(renderTarget)
+			{
+				YumeTexture* parentTexture = renderTarget->GetParentTexture();
+
+				for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
+				{
+					if(textures_[i] == parentTexture)
+						SetTexture(i,textures_[i]->GetBackupTexture());
+				}
+			}
+		}
+	}
+
+	void YumeRHI::SetRenderTarget(unsigned index,YumeTexture2D* texture)
+	{
+		YumeRenderable* renderTarget = 0;
+		if(texture)
+			renderTarget = texture->GetRenderSurface();
+
+		SetRenderTarget(index,renderTarget);
+	}
+
+	void YumeRHI::SetDepthStencil(YumeRenderable* depthStencil)
+	{
+		if(depthStencil != depthStencil_)
+		{
+			depthStencil_ = depthStencil;
+			renderTargetsDirty_ = true;
+		}
+	}
+
+	void YumeRHI::SetDepthStencil(YumeTexture2D* texture)
+	{
+		YumeRenderable* depthStencil = 0;
+		if(texture)
+			depthStencil = texture->GetRenderSurface();
+
+		SetDepthStencil(depthStencil);
+		// Constant depth bias depends on the bitdepth
+		rasterizerStateDirty_ = true;
+	}
+
 	bool YumeRHI::HasTextureUnit(TextureUnit unit)
 	{
 		return (vertexShader_ && vertexShader_->HasTextureUnit(unit)) || (pixelShader_ && pixelShader_->HasTextureUnit(unit));
@@ -202,6 +291,16 @@ namespace YumeEngine
 		}
 		return YumeString();
 	}
+	YumeTexture* YumeRHI::GetTexture(unsigned index) const
+	{
+		return index < MAX_TEXTURE_UNITS ? textures_[index] : 0;
+	}
+
+	YumeRenderable* YumeRHI::GetRenderTarget(unsigned index) const
+	{
+		return index < MAX_RENDERTARGETS ? renderTargets_[index] : 0;
+	}
+
 
 	YumeVertexBuffer* YumeRHI::GetVertexBuffer(unsigned index) const
 	{

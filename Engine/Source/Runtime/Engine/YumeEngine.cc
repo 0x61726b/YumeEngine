@@ -48,8 +48,9 @@
 #include "Renderer/YumeShader.h"
 #include "Renderer/YumeShaderVariation.h"
 
-#include <log4cplus/initializer.h>
+#include "Renderer/YumeTexture2D.h"
 
+#include <log4cplus/initializer.h>
 #include <boost/filesystem.hpp>
 
 #include <SDL.h>
@@ -72,7 +73,7 @@ namespace YumeEngine
 	{
 		YumeEngineGlobal = this;
 
-		log4cplus::Initializer initialize;
+		
 	}
 
 	YumeEngine3D::~YumeEngine3D()
@@ -86,6 +87,7 @@ namespace YumeEngine
 
 	bool YumeEngine3D::Initialize(const VariantMap& variants)
 	{
+		
 		if(initialized_)
 			return true;
 
@@ -106,7 +108,17 @@ namespace YumeEngine
 		}
 
 
-		YumeEngine::Log::InitLogging(env_->GetLogFile().generic_string().c_str());
+		if(!env_->GetVariant("turnOffLogging").Get<bool>())
+		{
+			log4cplus::initialize();
+			YumeEngine::Log::InitLogging(env_->GetLogFile().generic_string().c_str());
+		}
+		else
+		{
+			YumeEngine::Log::ToggleLogging(false);
+		}
+
+
 
 		YUMELOG_INFO("Initialized environment...Current system time " << timer_->GetTimeStamp());
 
@@ -167,7 +179,7 @@ namespace YumeEngine
 			return false;
 		frameTimer_.Reset();
 
-		/*SharedPtr<YumeShader> test_ = resourceManager_->PrepareResource<YumeShader>("Shaders/Basic.hlsl");*/
+		SharedPtr<YumeShader> test_ = resourceManager_->PrepareResource<YumeShader>("Shaders/Basic.hlsl");
 
 
 		YumeShaderVariation* vs = graphics_->GetShader(VS,"Basic","VERTEXCOLOR");
@@ -175,6 +187,7 @@ namespace YumeEngine
 
 		graphics_->SetShaders(vs,ps);
 
+		//SharedPtr<YumeTexture2D> earth = resourceManager_->PrepareResource<YumeTexture2D>("Textures/Earth_Diffuse.dds");
 
 
 		YUMELOG_INFO("Initialized Yume Engine...");
@@ -385,8 +398,8 @@ namespace YumeEngine
 		YUMELOG_INFO("Time elapsed since start: " << timer_->GetElapsedTime());
 
 		YUMELOG_INFO("Exited at time " << timer_->GetTimeStamp());
-		YumeEngine::Log::StopLogging();
-
+		//YumeEngine::Log::StopLogging();
+		
 
 	}
 }

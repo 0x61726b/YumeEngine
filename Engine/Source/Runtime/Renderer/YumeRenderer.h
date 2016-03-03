@@ -29,6 +29,7 @@
 namespace YumeEngine
 {
 	class YumeRHI;
+	class YumeRenderable;
 
 	class YumeAPIExport YumeRenderer
 	{
@@ -37,6 +38,14 @@ namespace YumeEngine
 		virtual ~YumeRenderer();
 
 		void Render();
+		void QueueRenderable(YumeRenderable* renderTarget);
+
+		//Getters
+		int GetTextureQuality() const { return textureQuality_; }
+
+
+	protected:
+		int textureQuality_;
 
 	private:
 		YumeRHI* rhi_;

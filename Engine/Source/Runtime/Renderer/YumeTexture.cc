@@ -170,4 +170,39 @@ namespace YumeEngine
 	{
 		parametersDirty_ = true;
 	}
+
+
+	unsigned YumeTexture::CheckMaxLevels(int width,int height,unsigned requestedLevels)
+	{
+		unsigned maxLevels = 1;
+		while(width > 1 && height > 1)
+		{
+			++maxLevels;
+			width >>= 1;
+			height >>= 1;
+		}
+
+		if(!requestedLevels || maxLevels < requestedLevels)
+			return maxLevels;
+		else
+			return requestedLevels;
+	}
+
+	unsigned YumeTexture::CheckMaxLevels(int width,int height,int depth,unsigned requestedLevels)
+	{
+		unsigned maxLevels = 1;
+		while(width > 1 && height > 1 && depth > 1)
+		{
+			++maxLevels;
+			width >>= 1;
+			height >>= 1;
+			depth >>= 1;
+		}
+
+		if(!requestedLevels || maxLevels < requestedLevels)
+			return maxLevels;
+		else
+			return requestedLevels;
+	}
+
 }

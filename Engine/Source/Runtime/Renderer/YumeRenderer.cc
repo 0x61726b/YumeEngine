@@ -28,6 +28,7 @@
 namespace YumeEngine
 {
 	YumeRenderer::YumeRenderer(YumeRHI* rhi)
+		:textureQuality_(QUALITY_HIGH)
 	{
 		rhi_ = rhi;
 	}
@@ -35,6 +36,13 @@ namespace YumeEngine
 	YumeRenderer::~YumeRenderer()
 	{
 	}
+
+
+	void YumeRenderer::QueueRenderable(YumeRenderable* renderTarget)
+	{
+
+	}
+
 
 	void YumeRenderer::Render()
 	{

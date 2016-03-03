@@ -59,8 +59,9 @@ namespace YumeEngine
 {
 	namespace Log
 	{
-		void InitLogging(const char* loc);
+		void YumeAPIExport InitLogging(const char* loc);
 		void StopLogging();
+		void ToggleLogging(bool b);
 
 		void YumeAPIExport trace(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);
 		void YumeAPIExport debug(const std::string& src, const std::string& msg, const char *file, int line, const char *fn);

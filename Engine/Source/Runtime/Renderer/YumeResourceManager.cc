@@ -38,7 +38,7 @@ namespace YumeEngine
 
 	YumeResourceManager::YumeResourceManager()
 	{
-		backgroundWorker_ = boost::shared_ptr<YumeBackgroundWorker>(YumeAPINew YumeBackgroundWorker(this));
+		//backgroundWorker_ = boost::shared_ptr<YumeBackgroundWorker>(YumeAPINew YumeBackgroundWorker(this));
 	}
 
 	YumeResourceManager::~YumeResourceManager()
@@ -63,7 +63,7 @@ namespace YumeEngine
 
 		resourcePaths_.push_back(path);
 
-		YUMELOG_ERROR("Added resource path " << path.generic_string());
+		YUMELOG_INFO("Added resource path " << path.generic_string());
 
 	}
 

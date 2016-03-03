@@ -10,17 +10,18 @@
 #include "Core/YumeHeaders.h"
 
 #include "TestSuite.h"
-#include "Core/YumeVariant.h"
+
+#include "Renderer/YumeImage.h"
 
 #include "Engine/YumeEngine.h"
 #include "Core/YumeEnvironment.h"
 
 #include "Logging/logging.h"
 
-#include "Core/YumeMain.h"
+#include "Renderer/YumeTexture2D.h"
 
-#include <boost/shared_ptr.hpp>
 
+#include "Renderer/YumeResourceManager.h"
 
 #define BOOST_TEST_MODULE YumeTest
 #include <boost/test/included/unit_test.hpp>
@@ -49,8 +50,16 @@ namespace YumeEngine
 		void Initialize()
 		{
 			engine_ = boost::shared_ptr<YumeEngine3D>(new YumeEngine3D);
-			engineVariants_["testing"] = true;
+			engineVariants_["turnOffLogging"] = true;
 			engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
+		}
+		void Destroy()
+		{
+			engine_->Run();
+
+			engine_->Exit();
+
+			engine_.reset();
 		}
 
 
@@ -59,10 +68,35 @@ namespace YumeEngine
 	};
 	BOOST_FIXTURE_TEST_SUITE(YumeTestSuite,YumePerTestSuiteFixture);
 
+	BOOST_AUTO_TEST_CASE(ImageTests)
+	{
+		Initialize();
+		engine_->Initialize(engineVariants_);
+
+		YumeResourceManager* rm = engine_->GetResourceManager();
+
+		SharedPtr<YumeImage> appIcon = rm->PrepareResource<YumeImage>("Textures/appIcon.png");
+		assert(appIcon);
+
+		SharedPtr<YumeImage> dds = rm->PrepareResource<YumeImage>("Textures/Earth_Diffuse.dds");
+		assert(dds);
+
+		SharedPtr<YumeImage> dds2 = rm->PrepareResource<YumeImage>("Textures/WaterNoise.dds");
+		assert(dds2);
+
+		SharedPtr<YumeImage> dds3 = rm->PrepareResource<YumeImage>("Textures/Flare.dds");
+		assert(dds3);
+
+		YumeTexture2D* earth = rm->PrepareResource<YumeTexture2D>("Textures/Earth_Diffuse.dds").get();
+		assert(earth);
+		
+		Destroy();
+	}
 
 	BOOST_AUTO_TEST_CASE(InitializeEngine)
 	{
 		Initialize();
+		engineVariants_["testing"] = true;
 		//Initialize engine in a software rendering mode
 		//Since we dont have software rendering , it should fail
 
@@ -77,11 +111,7 @@ namespace YumeEngine
 		BOOST_REQUIRE(engine_->GetRendererName() == "libYumeNull");
 #endif
 
-		engine_->Run();
-
-		engine_->Exit();
-
-		engine_.reset();
+		Destroy();
 	}
 
 	BOOST_AUTO_TEST_CASE(YumeVariantTest)

@@ -39,6 +39,8 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	class YumeTexture;
+
 	class YumeNullExport YumeNullRenderer : public YumeRHI
 	{
 	public:
@@ -84,6 +86,10 @@ namespace YumeEngine
 
 		YumeVertexBuffer* GetVertexBuffer(unsigned index) const { return 0; }
 		YumeConstantBuffer* GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size) { return 0; }
+
+		unsigned GetFormat(CompressedFormat format) const { return 1; }
+
+		
 		
 		void SetShaderParameter(YumeHash  param,const float* data,unsigned count) { };
 		/// Set shader float constant.
@@ -105,7 +111,7 @@ namespace YumeEngine
 
 		void SetShaderParameter(YumeHash param,const YumeVariant& value) { };
 
-
+		void SetTexture(unsigned int,YumeTexture *) { }
 		//Setters
 		void SetVertexBuffer(YumeVertexBuffer* buffer) { }
 		/// Set multiple vertex buffers.

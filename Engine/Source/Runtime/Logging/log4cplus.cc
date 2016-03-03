@@ -32,28 +32,27 @@
 #include "log4cplus/consoleappender.h"
 #include "log4cplus/nullappender.h"
 
-
-
+#include "Engine/YumeEngine.h"
+#include "Core/YumeEnvironment.h"
 
 static log4cplus::LogLevel translate_logLevel(YumeEngine::Log::LogLevel ll);
 
+static bool loggingEnabled = false;
+
 void YumeEngine::Log::InitLogging(const char* loc)
 {
-	log4cplus::Logger logger = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume"));
-	
-	
-	logger.setLogLevel(log4cplus::DEBUG_LOG_LEVEL);
+	loggingEnabled = true;
 
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
 	log4cplus::SharedAppenderPtr debugAppender(new log4cplus::Win32ConsoleAppender());
 	debugAppender->setName(LOG4CPLUS_TEXT("First"));
 	debugAppender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::SimpleLayout()));
-	log4cplus::Logger::getRoot().addAppender(log4cplus::SharedAppenderPtr(debugAppender.get()));
+	log4cplus::Logger::getRoot().addAppender(debugAppender);
 #else
 	log4cplus::SharedAppenderPtr debugAppender(new log4cplus::ConsoleAppender());
 	debugAppender->setName(LOG4CPLUS_TEXT("ConsoleAppender"));
 	debugAppender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::TTCCLayout()));
-	log4cplus::Logger::getRoot().addAppender(log4cplus::SharedAppenderPtr(debugAppender.get()));
+	log4cplus::Logger::getRoot().addAppender(debugAppender);
 #endif
 
 	std::string strModulePath = std::string(loc);
@@ -71,7 +70,7 @@ void YumeEngine::Log::InitLogging(const char* loc)
 	fileAppender->setLayout(
 		std::unique_ptr<log4cplus::Layout>(
 		new log4cplus::PatternLayout(LOG4CPLUS_TEXT("[%-5p][%D{%Y/%m/%d %H:%M:%S:%q}][%t] %m%n"))));
-	log4cplus::Logger::getRoot().addAppender(log4cplus::SharedAppenderPtr(fileAppender.get()));
+	log4cplus::Logger::getRoot().addAppender(fileAppender);
 
 }
 
@@ -79,38 +78,52 @@ void YumeEngine::Log::StopLogging()
 {
 	log4cplus::Logger logger = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume"));
 	logger.shutdown();
-}
 
+	ToggleLogging(false);
+	
+
+	
+}
+void YumeEngine::Log::ToggleLogging(bool b)
+{
+	loggingEnabled = b;
+}
 
 void YumeEngine::Log::trace(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
-	LOG4CPLUS_TRACE(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
-		file << ":" << line << " - " << fn << " - " << msg.c_str());
+	if(loggingEnabled)
+		LOG4CPLUS_TRACE(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+			file << ":" << line << " - " << fn << " - " << msg.c_str());
 }
 void YumeEngine::Log::debug(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
-	LOG4CPLUS_DEBUG(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
-		fn << " - " << msg.c_str());
+	if(loggingEnabled)
+		LOG4CPLUS_DEBUG(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+			fn << " - " << msg.c_str());
 }
 void YumeEngine::Log::info(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
-	LOG4CPLUS_INFO(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
-		fn << " - " << msg.c_str());
+	if(loggingEnabled)
+		LOG4CPLUS_INFO(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+			fn << " - " << msg.c_str());
 }
 void YumeEngine::Log::warn(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
-	LOG4CPLUS_WARN(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
-		fn << " - " << msg.c_str());
+	if(loggingEnabled)
+		LOG4CPLUS_WARN(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+			fn << " - " << msg.c_str());
 }
 void YumeEngine::Log::error(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
-	LOG4CPLUS_ERROR(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
-		file << ":" << line << " - " << fn << " - " << msg.c_str());
+	if(loggingEnabled)
+		LOG4CPLUS_ERROR(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+			file << ":" << line << " - " << fn << " - " << msg.c_str());
 }
 void YumeEngine::Log::fatal(const std::string& src, const std::string& msg, const char *file, int line, const char *fn)
 {
-	LOG4CPLUS_ERROR(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
-		file << ":" << line << " - " << fn << " - " << msg.c_str());
+	if(loggingEnabled)
+		LOG4CPLUS_ERROR(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Yume")),
+			file << ":" << line << " - " << fn << " - " << msg.c_str());
 }
 
 static log4cplus::LogLevel translate_logLevel(YumeEngine::Log::LogLevel ll){
