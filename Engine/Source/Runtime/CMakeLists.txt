@@ -59,6 +59,8 @@ set(SRC_RENDERER
 	Renderer/YumeRenderable.cc
 	Renderer/YumeViewport.h
 	Renderer/YumeViewport.cc
+	Renderer/YumeRenderPass.h
+	Renderer/YumeRenderPass.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

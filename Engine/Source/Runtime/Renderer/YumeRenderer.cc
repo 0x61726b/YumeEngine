@@ -23,10 +23,27 @@
 #include "Renderer/YumeRHI.h"
 #include "YumeRenderer.h"
 
-
+#include "YumeTexture2D.h"
+#include "YumeVertexBuffer.h"
+#include "YumeIndexBuffer.h"
+#include "YumeInputLayout.h"
 
 namespace YumeEngine
 {
+	static const float dummyVertices[] =
+	{
+		-1,1,0,
+		1,1,0,
+		1,-1,0,
+		-1,-1,0,
+	};
+
+	static const unsigned short dummyIndices[] =
+	{
+		0,1,2,
+		2,3,0,
+	};
+
 	YumeRenderer::YumeRenderer(YumeRHI* rhi)
 		:textureQuality_(QUALITY_HIGH)
 	{
@@ -37,6 +54,10 @@ namespace YumeEngine
 	{
 	}
 
+	void YumeRenderer::Initialize()
+	{
+		
+	}
 
 	void YumeRenderer::QueueRenderable(YumeRenderable* renderTarget)
 	{

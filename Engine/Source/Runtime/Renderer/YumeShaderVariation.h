@@ -53,6 +53,8 @@ namespace YumeEngine
 		/// Return the owner resource.
 		YumeShader* GetOwner() const;
 
+		unsigned GetElementMask() const { return elementMask_; }
+
 		/// Return shader type.
 		ShaderType GetShaderType() const { return type_; }
 
@@ -87,6 +89,8 @@ namespace YumeEngine
 		YumeString defines_;
 		/// Shader compile error string.
 		YumeString compilerOutput_;
+
+		unsigned elementMask_;
 
 		bool useTextureUnit_[MAX_TEXTURE_UNITS];
 

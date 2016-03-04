@@ -91,7 +91,8 @@ namespace YumeEngine
 
 		YumeVertexBuffer* CreateVertexBuffer() { return 0; };
 		YumeIndexBuffer* CreateIndexBuffer() { return 0; };
-		
+		YumeInputLayout* CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks) { return 0; }
+
 		void SetShaderParameter(YumeHash  param,const float* data,unsigned count) { };
 		/// Set shader float constant.
 		void SetShaderParameter(YumeHash  param,float value) { };
@@ -127,6 +128,13 @@ namespace YumeEngine
 		}
 
 		void SetIndexBuffer(YumeIndexBuffer*) { }
+
+		void Draw(PrimitiveType type,unsigned vertexStart,unsigned vertexCount) { }
+		/// Draw indexed geometry.
+		void Draw(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount) { }
+		/// Draw indexed, instanced geometry. An instancing vertex buffer must be set.
+		void DrawInstanced(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount,
+			unsigned instanceCount) { };
 	};
 }
 

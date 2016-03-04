@@ -76,8 +76,8 @@ namespace YumeEngine
 		if(FAILED(hr))
 		{
 			D3D_SAFE_RELEASE(inputLayout_);
-			YUMELOG_ERROR("Failed to create input layout for shader %s, missing element mask %d (HRESULT %x)",
-				vertexShader->GetFullName().c_str(),vertexShader->GetElementMask() & ~vbElementMask,(unsigned)hr);
+			YUMELOG_ERROR("Failed to create input layout for shader" <<
+				vertexShader->GetFullName().c_str() << vbElementMask << (unsigned)hr);
 		}
 	}
 

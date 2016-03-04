@@ -41,6 +41,7 @@
 #include "YumeD3D11ShaderProgram.h"
 #include "YumeD3D11Texture2D.h"
 #include "YumeD3D11IndexBuffer.h"
+#include "YumeD3D11InputLayout.h"
 
 #include "Renderer/YumeTexture2D.h"
 
@@ -61,6 +62,101 @@
 
 namespace YumeEngine
 {
+
+	static const D3D11_COMPARISON_FUNC d3dCmpFunc[] =
+	{
+		D3D11_COMPARISON_ALWAYS,
+		D3D11_COMPARISON_EQUAL,
+		D3D11_COMPARISON_NOT_EQUAL,
+		D3D11_COMPARISON_LESS,
+		D3D11_COMPARISON_LESS_EQUAL,
+		D3D11_COMPARISON_GREATER,
+		D3D11_COMPARISON_GREATER_EQUAL
+	};
+
+	static const DWORD d3dBlendEnable[] =
+	{
+		FALSE,
+		TRUE,
+		TRUE,
+		TRUE,
+		TRUE,
+		TRUE,
+		TRUE,
+		TRUE
+	};
+
+	static const D3D11_BLEND d3dSrcBlend[] =
+	{
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_DEST_COLOR,
+		D3D11_BLEND_SRC_ALPHA,
+		D3D11_BLEND_SRC_ALPHA,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_INV_DEST_ALPHA,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_SRC_ALPHA,
+	};
+
+	static const D3D11_BLEND d3dDestBlend[] =
+	{
+		D3D11_BLEND_ZERO,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_ZERO,
+		D3D11_BLEND_INV_SRC_ALPHA,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_INV_SRC_ALPHA,
+		D3D11_BLEND_DEST_ALPHA,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_ONE
+	};
+
+	static const D3D11_BLEND_OP d3dBlendOp[] =
+	{
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_REV_SUBTRACT,
+		D3D11_BLEND_OP_REV_SUBTRACT
+	};
+
+	static const D3D11_STENCIL_OP d3dStencilOp[] =
+	{
+		D3D11_STENCIL_OP_KEEP,
+		D3D11_STENCIL_OP_ZERO,
+		D3D11_STENCIL_OP_REPLACE,
+		D3D11_STENCIL_OP_INCR,
+		D3D11_STENCIL_OP_DECR
+	};
+
+	static const D3D11_CULL_MODE d3dCullMode[] =
+	{
+		D3D11_CULL_NONE,
+		D3D11_CULL_BACK,
+		D3D11_CULL_FRONT
+	};
+
+	static const D3D11_FILL_MODE d3dFillMode[] =
+	{
+		D3D11_FILL_SOLID,
+		D3D11_FILL_WIREFRAME,
+		D3D11_FILL_WIREFRAME // Point fill mode not supported
+	};
+
+	static unsigned GetD3DColor(const YumeColor& color)
+	{
+		unsigned r = (unsigned)(Math::Clamp(color.r_ * 255.0f,0.0f,255.0f));
+		unsigned g = (unsigned)(Math::Clamp(color.g_ * 255.0f,0.0f,255.0f));
+		unsigned b = (unsigned)(Math::Clamp(color.b_ * 255.0f,0.0f,255.0f));
+		unsigned a = (unsigned)(Math::Clamp(color.a_ * 255.0f,0.0f,255.0f));
+		return (((a)& 0xff) << 24) | (((r)& 0xff) << 16) | (((g)& 0xff) << 8) | ((b)& 0xff);
+	}
+
 	extern "C" void YumeD3DExport LoadModule(YumeEngine3D* engine) throw()
 	{
 		YumeRHI* graphics_ = new YumeD3D11Renderer;
@@ -82,6 +178,7 @@ namespace YumeEngine
 		shaderPath_ = "Shaders/HLSL/";
 		shaderExtension_ = ".hlsl";
 
+		ResetCache();
 
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
 
@@ -246,7 +343,7 @@ namespace YumeEngine
 		stencilWriteMask_ = Math::M_MAX_UNSIGNED;
 		useClipPlane_ = false;
 		renderTargetsDirty_ = true;
-		texturesDirty_ = true;
+		texturesDirty_ = false;
 		vertexDeclarationDirty_ = true;
 		blendStateDirty_ = true;
 		depthStateDirty_ = true;
@@ -298,6 +395,45 @@ namespace YumeEngine
 		dummyColorFormat_ = DXGI_FORMAT_UNKNOWN;
 		sRGBSupport_ = true;
 		sRGBWriteSupport_ = true;
+	}
+
+
+	static void GetD3DPrimitiveType(unsigned elementCount,PrimitiveType type,unsigned& primitiveCount,
+		D3D_PRIMITIVE_TOPOLOGY& d3dPrimitiveType)
+	{
+		switch(type)
+		{
+		case TRIANGLE_LIST:
+			primitiveCount = elementCount / 3;
+			d3dPrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			break;
+
+		case LINE_LIST:
+			primitiveCount = elementCount / 2;
+			d3dPrimitiveType = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+			break;
+
+		case POINT_LIST:
+			primitiveCount = elementCount;
+			d3dPrimitiveType = D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+			break;
+
+		case TRIANGLE_STRIP:
+			primitiveCount = elementCount - 2;
+			d3dPrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+			break;
+
+		case LINE_STRIP:
+			primitiveCount = elementCount - 1;
+			d3dPrimitiveType = D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
+			break;
+
+		case TRIANGLE_FAN:
+			// Triangle fan is not supported on D3D11
+			primitiveCount = 0;
+			d3dPrimitiveType = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+			break;
+		}
 	}
 
 	static HWND GetWindowHandle(SDL_Window* window)
@@ -1087,6 +1223,11 @@ namespace YumeEngine
 		return YumeAPINew YumeD3D11IndexBuffer(this);
 	}
 
+	YumeInputLayout* YumeD3D11Renderer::CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks)
+	{
+		return YumeAPINew YumeD3D11InputLayout(this,vertexShader,buffers,elementMasks);
+	}
+
 	void YumeD3D11Renderer::CleanUpShaderPrograms(YumeShaderVariation* variation)
 	{
 		for(ShaderProgramMap::iterator i = shaderPrograms_.begin(); i != shaderPrograms_.end();)
@@ -1209,6 +1350,316 @@ namespace YumeEngine
 			indexBuffer_ = buffer;
 		}
 	}
+
+	void YumeD3D11Renderer::PreDraw()
+	{
+		if(renderTargetsDirty_)
+		{
+			impl_->depthStencilView_ =
+				depthStencil_ ? (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView() : impl_->defaultDepthStencilView_;
+
+			// If possible, bind a read-only depth stencil view to allow reading depth in shader
+			if(!depthWrite_ && depthStencil_ && depthStencil_->GetReadOnlyView())
+				impl_->depthStencilView_ = (ID3D11DepthStencilView*)depthStencil_->GetReadOnlyView();
+
+			for(unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
+				impl_->renderTargetViews_[i] =
+				renderTargets_[i] ? (ID3D11RenderTargetView*)renderTargets_[i]->GetRenderTargetView() : 0;
+			// If rendertarget 0 is null and not doing depth-only rendering, render to the backbuffer
+			// Special case: if rendertarget 0 is null and depth stencil has same size as backbuffer, assume the intention is to do
+			// backbuffer rendering with a custom depth stencil
+			if(!renderTargets_[0] &&
+				(!depthStencil_ || (depthStencil_ && depthStencil_->GetWidth() == windowWidth_ && depthStencil_->GetHeight() == windowHeight_)))
+				impl_->renderTargetViews_[0] = impl_->defaultRenderTargetView_;
+
+			impl_->deviceContext_->OMSetRenderTargets(MAX_RENDERTARGETS,&impl_->renderTargetViews_[0],impl_->depthStencilView_);
+			renderTargetsDirty_ = false;
+		}
+
+		if(texturesDirty_ && firstDirtyTexture_ < Math::M_MAX_UNSIGNED)
+		{
+			// Set also VS textures to enable vertex texture fetch to work the same way as on OpenGL
+			impl_->deviceContext_->VSSetShaderResources(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
+				&impl_->shaderResourceViews_[firstDirtyTexture_]);
+			impl_->deviceContext_->VSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
+				&impl_->samplers_[firstDirtyTexture_]);
+			impl_->deviceContext_->PSSetShaderResources(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
+				&impl_->shaderResourceViews_[firstDirtyTexture_]);
+			impl_->deviceContext_->PSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
+				&impl_->samplers_[firstDirtyTexture_]);
+
+			firstDirtyTexture_ = lastDirtyTexture_ = Math::M_MAX_UNSIGNED;
+			texturesDirty_ = false;
+		}
+
+		if(vertexDeclarationDirty_ && vertexShader_ && vertexShader_->GetByteCode().size())
+		{
+			if(firstDirtyVB_ < Math::M_MAX_UNSIGNED)
+			{
+				impl_->deviceContext_->IASetVertexBuffers(firstDirtyVB_,lastDirtyVB_ - firstDirtyVB_ + 1,
+					&impl_->vertexBuffers_[firstDirtyVB_],&impl_->vertexSizes_[firstDirtyVB_],&impl_->vertexOffsets_[firstDirtyVB_]);
+
+				firstDirtyVB_ = lastDirtyVB_ = Math::M_MAX_UNSIGNED;
+			}
+
+			unsigned long long newVertexDeclarationHash = 0;
+			for(unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
+				newVertexDeclarationHash |= (unsigned long long)elementMasks_[i] << (i * 13);
+
+			// Do not create input layout if no vertex buffers / elements
+			if(newVertexDeclarationHash)
+			{
+				newVertexDeclarationHash |= (unsigned long long)vertexShader_->GetElementMask() << 51;
+				if(newVertexDeclarationHash != vertexDeclarationHash_)
+				{
+					YumeMap<unsigned long long,SharedPtr<YumeInputLayout>>::iterator
+						i = vertexDeclarations_.find(newVertexDeclarationHash);
+					std::pair<YumeMap<unsigned long long,SharedPtr<YumeInputLayout>>::iterator,bool> ret;
+					if(i == vertexDeclarations_.end())
+					{
+						SharedPtr<YumeInputLayout> newVertexDeclaration(new YumeD3D11InputLayout(this,vertexShader_,vertexBuffers_,
+							elementMasks_));
+						ret = vertexDeclarations_.insert(std::make_pair(newVertexDeclarationHash,newVertexDeclaration));
+
+					}
+
+					impl_->deviceContext_->IASetInputLayout((ID3D11InputLayout*)ret.first->second->GetInputLayout());
+					vertexDeclarationHash_ = newVertexDeclarationHash;
+				}
+			}
+
+			vertexDeclarationDirty_ = false;
+		}
+
+		if(blendStateDirty_)
+		{
+			unsigned newBlendStateHash = (unsigned)((colorWrite_ ? 1 : 0) | (blendMode_ << 1));
+			if(newBlendStateHash != blendStateHash_)
+			{
+				YumeMap<unsigned,ID3D11BlendState*>::iterator i = impl_->blendStates_.find(newBlendStateHash);
+				std::pair<YumeMap<unsigned,ID3D11BlendState*>::iterator,bool> ret;
+				if(i == impl_->blendStates_.end())
+				{
+					D3D11_BLEND_DESC stateDesc;
+					memset(&stateDesc,0,sizeof stateDesc);
+					stateDesc.AlphaToCoverageEnable = false;
+					stateDesc.IndependentBlendEnable = false;
+					stateDesc.RenderTarget[0].BlendEnable = d3dBlendEnable[blendMode_];
+					stateDesc.RenderTarget[0].SrcBlend = d3dSrcBlend[blendMode_];
+					stateDesc.RenderTarget[0].DestBlend = d3dDestBlend[blendMode_];
+					stateDesc.RenderTarget[0].BlendOp = d3dBlendOp[blendMode_];
+					stateDesc.RenderTarget[0].SrcBlendAlpha = d3dSrcBlend[blendMode_];
+					stateDesc.RenderTarget[0].DestBlendAlpha = d3dDestBlend[blendMode_];
+					stateDesc.RenderTarget[0].BlendOpAlpha = d3dBlendOp[blendMode_];
+					stateDesc.RenderTarget[0].RenderTargetWriteMask = colorWrite_ ? D3D11_COLOR_WRITE_ENABLE_ALL : 0x0;
+
+					ID3D11BlendState* newBlendState = 0;
+					HRESULT hr = impl_->device_->CreateBlendState(&stateDesc,&newBlendState);
+					if(FAILED(hr))
+					{
+						D3D_SAFE_RELEASE(newBlendState);
+						YUMELOG_ERROR("Failed to create blend state",hr);
+					}
+
+
+					ret = impl_->blendStates_.insert(std::make_pair(newBlendStateHash,newBlendState));
+				}
+
+				impl_->deviceContext_->OMSetBlendState(ret.first->second,0,Math::M_MAX_UNSIGNED);
+				blendStateHash_ = newBlendStateHash;
+			}
+
+			blendStateDirty_ = false;
+		}
+
+		if(depthStateDirty_)
+		{
+			unsigned newDepthStateHash =
+				(depthWrite_ ? 1 : 0) | (stencilTest_ ? 2 : 0) | (depthTestMode_ << 2) | ((stencilCompareMask_ & 0xff) << 5) |
+				((stencilWriteMask_ & 0xff) << 13) | (stencilTestMode_ << 21) |
+				((stencilFail_ + stencilZFail_ * 5 + stencilPass_ * 25) << 24);
+			if(newDepthStateHash != depthStateHash_ || stencilRefDirty_)
+			{
+				YumeMap<unsigned,ID3D11DepthStencilState*>::iterator i = impl_->depthStates_.find(newDepthStateHash);
+				std::pair<YumeMap<unsigned,ID3D11DepthStencilState*>::iterator,bool> ret;
+				if(i == impl_->depthStates_.end())
+				{
+					D3D11_DEPTH_STENCIL_DESC stateDesc;
+					memset(&stateDesc,0,sizeof stateDesc);
+					stateDesc.DepthEnable = TRUE;
+					stateDesc.DepthWriteMask = depthWrite_ ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
+					stateDesc.DepthFunc = d3dCmpFunc[depthTestMode_];
+					stateDesc.StencilEnable = stencilTest_ ? TRUE : FALSE;
+					stateDesc.StencilReadMask = (unsigned char)stencilCompareMask_;
+					stateDesc.StencilWriteMask = (unsigned char)stencilWriteMask_;
+					stateDesc.FrontFace.StencilFailOp = d3dStencilOp[stencilFail_];
+					stateDesc.FrontFace.StencilDepthFailOp = d3dStencilOp[stencilZFail_];
+					stateDesc.FrontFace.StencilPassOp = d3dStencilOp[stencilPass_];
+					stateDesc.FrontFace.StencilFunc = d3dCmpFunc[stencilTestMode_];
+					stateDesc.BackFace.StencilFailOp = d3dStencilOp[stencilFail_];
+					stateDesc.BackFace.StencilDepthFailOp = d3dStencilOp[stencilZFail_];
+					stateDesc.BackFace.StencilPassOp = d3dStencilOp[stencilPass_];
+					stateDesc.BackFace.StencilFunc = d3dCmpFunc[stencilTestMode_];
+
+					ID3D11DepthStencilState* newDepthState = 0;
+					HRESULT hr = impl_->device_->CreateDepthStencilState(&stateDesc,&newDepthState);
+					if(FAILED(hr))
+					{
+						D3D_SAFE_RELEASE(newDepthState);
+						YUMELOG_ERROR("Failed to create depth state",hr);
+					}
+
+					ret = impl_->depthStates_.insert(std::make_pair(newDepthStateHash,newDepthState));
+
+				}
+
+				impl_->deviceContext_->OMSetDepthStencilState(ret.first->second,stencilRef_);
+				depthStateHash_ = newDepthStateHash;
+			}
+
+			depthStateDirty_ = false;
+			stencilRefDirty_ = false;
+		}
+
+		if(rasterizerStateDirty_)
+		{
+			unsigned depthBits = 24;
+			if(depthStencil_ && depthStencil_->GetParentTexture()->GetFormat() == DXGI_FORMAT_R16_TYPELESS)
+				depthBits = 16;
+			int scaledDepthBias = (int)(constantDepthBias_ * (1 << depthBits));
+
+			unsigned newRasterizerStateHash =
+				(scissorTest_ ? 1 : 0) | (fillMode_ << 1) | (cullMode_ << 3) | ((scaledDepthBias & 0x1fff) << 5) |
+				((*((unsigned*)&slopeScaledDepthBias_) & 0x1fff) << 18);
+			if(newRasterizerStateHash != rasterizerStateHash_)
+			{
+				YumeMap<unsigned,ID3D11RasterizerState*>::iterator i = impl_->rasterizerStates_.find(newRasterizerStateHash);
+				std::pair<YumeMap<unsigned,ID3D11RasterizerState*>::iterator,bool> ret;
+				if(i == impl_->rasterizerStates_.end())
+				{
+					D3D11_RASTERIZER_DESC stateDesc;
+					memset(&stateDesc,0,sizeof stateDesc);
+					stateDesc.FillMode = d3dFillMode[fillMode_];
+					stateDesc.CullMode = d3dCullMode[cullMode_];
+					stateDesc.FrontCounterClockwise = FALSE;
+					stateDesc.DepthBias = scaledDepthBias;
+					stateDesc.DepthBiasClamp = Math::POS_INFINITY;
+					stateDesc.SlopeScaledDepthBias = slopeScaledDepthBias_;
+					stateDesc.DepthClipEnable = TRUE;
+					stateDesc.ScissorEnable = scissorTest_ ? TRUE : FALSE;
+					stateDesc.MultisampleEnable = TRUE;
+					stateDesc.AntialiasedLineEnable = FALSE;
+
+					ID3D11RasterizerState* newRasterizerState = 0;
+					HRESULT hr = impl_->device_->CreateRasterizerState(&stateDesc,&newRasterizerState);
+					if(FAILED(hr))
+					{
+						D3D_SAFE_RELEASE(newRasterizerState);
+						YUMELOG_ERROR("Failed to create rasterizer state" << hr);
+					}
+
+					ret = impl_->rasterizerStates_.insert(std::make_pair(newRasterizerStateHash,newRasterizerState));
+				}
+
+				impl_->deviceContext_->RSSetState(ret.first->second);
+				rasterizerStateHash_ = newRasterizerStateHash;
+			}
+
+			rasterizerStateDirty_ = false;
+		}
+
+		if(scissorRectDirty_)
+		{
+			D3D11_RECT d3dRect;
+			d3dRect.left = scissorRect_.left_;
+			d3dRect.top = scissorRect_.top_;
+			d3dRect.right = scissorRect_.right_;
+			d3dRect.bottom = scissorRect_.bottom_;
+			impl_->deviceContext_->RSSetScissorRects(1,&d3dRect);
+			scissorRectDirty_ = false;
+		}
+
+		for(unsigned i = 0; i < dirtyConstantBuffers_.size(); ++i)
+			dirtyConstantBuffers_[i]->Apply();
+		dirtyConstantBuffers_.clear();
+	}
+
+	void YumeD3D11Renderer::Draw(PrimitiveType type,unsigned vertexStart,unsigned vertexCount)
+	{
+		if(!vertexCount || !shaderProgram_)
+			return;
+
+		PreDraw();
+
+		unsigned primitiveCount;
+		D3D_PRIMITIVE_TOPOLOGY d3dPrimitiveType;
+
+		if(fillMode_ == FILL_POINT)
+			type = POINT_LIST;
+
+		GetD3DPrimitiveType(vertexCount,type,primitiveCount,d3dPrimitiveType);
+		if(d3dPrimitiveType != primitiveType_)
+		{
+			impl_->deviceContext_->IASetPrimitiveTopology(d3dPrimitiveType);
+			primitiveType_ = d3dPrimitiveType;
+		}
+		impl_->deviceContext_->Draw(vertexCount,vertexStart);
+
+		numPrimitives_ += primitiveCount;
+		++numBatches_;
+	}
+
+	void YumeD3D11Renderer::Draw(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount)
+	{
+		if(!vertexCount || !shaderProgram_)
+			return;
+
+		PreDraw();
+
+		unsigned primitiveCount;
+		D3D_PRIMITIVE_TOPOLOGY d3dPrimitiveType;
+
+		if(fillMode_ == FILL_POINT)
+			type = POINT_LIST;
+
+		GetD3DPrimitiveType(indexCount,type,primitiveCount,d3dPrimitiveType);
+		if(d3dPrimitiveType != primitiveType_)
+		{
+			impl_->deviceContext_->IASetPrimitiveTopology(d3dPrimitiveType);
+			primitiveType_ = d3dPrimitiveType;
+		}
+		impl_->deviceContext_->DrawIndexed(indexCount,indexStart,0);
+
+		numPrimitives_ += primitiveCount;
+		++numBatches_;
+	}
+
+	void YumeD3D11Renderer::DrawInstanced(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount,
+		unsigned instanceCount)
+	{
+		if(!indexCount || !instanceCount || !shaderProgram_)
+			return;
+
+		PreDraw();
+
+		unsigned primitiveCount;
+		D3D_PRIMITIVE_TOPOLOGY d3dPrimitiveType;
+
+		if(fillMode_ == FILL_POINT)
+			type = POINT_LIST;
+
+		GetD3DPrimitiveType(indexCount,type,primitiveCount,d3dPrimitiveType);
+		if(d3dPrimitiveType != primitiveType_)
+		{
+			impl_->deviceContext_->IASetPrimitiveTopology(d3dPrimitiveType);
+			primitiveType_ = d3dPrimitiveType;
+		}
+		impl_->deviceContext_->DrawIndexedInstanced(indexCount,instanceCount,indexStart,0,0);
+
+		numPrimitives_ += instanceCount * primitiveCount;
+		++numBatches_;
+	}
+
 
 	void YumeD3D11Renderer::Maximize()
 	{

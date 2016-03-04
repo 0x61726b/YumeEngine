@@ -105,15 +105,6 @@ namespace YumeEngine
 		/// Return all parameter definitions.
 		const YumeMap<YumeHash,ShaderParameter>::type& GetParameters() const { return parameters_; }
 
-		/// Return vertex element mask.
-		unsigned GetElementMask() const { return elementMask_; }
-
-		/// Return defines.
-		const YumeString& GetDefines() const { return defines_; }
-
-		/// Return compile error/warning string.
-		const YumeString& GetCompilerOutput() const { return compilerOutput_; }
-
 		/// Return constant buffer data sizes.
 		const unsigned* GetConstantBufferSizes() const { return &constantBufferSizes_[0]; }
 
@@ -128,9 +119,7 @@ namespace YumeEngine
 		void SaveByteCode(const YumeString& binaryShaderName);
 		/// Calculate constant buffer sizes from parameters.
 		void CalculateConstantBufferSizes();
-		/// Vertex element mask for vertex shaders. Zero for pixel shaders.
-		unsigned elementMask_;
-		/// Shader parameters.
+
 		YumeMap<YumeHash,ShaderParameter>::type parameters_;
 		/// Constant buffer sizes. 0 if a constant buffer slot is not in use.
 		unsigned constantBufferSizes_[MAX_SHADER_PARAMETER_GROUPS];

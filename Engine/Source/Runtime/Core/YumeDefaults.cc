@@ -25,6 +25,7 @@
 
 #include "YumeXmlParser.h"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/format.hpp>
 #include <boost/functional/hash.hpp>
@@ -146,6 +147,41 @@ namespace YumeEngine
 		boost::hash<YumeString> hasher;
 		return hasher(key);
 	}
+
+
+	unsigned GetStringListIndex(const YumeString& value,const YumeString* strings,unsigned defaultIndex,bool caseSensitive)
+	{
+		return GetStringListIndex(value.c_str(),strings,defaultIndex,caseSensitive);
+	}
+
+	unsigned GetStringListIndex(const char* value,const YumeString* strings,unsigned defaultIndex,bool caseSensitive)
+	{
+		unsigned i = 0;
+
+		while(!strings[i].empty())
+		{
+			if(boost::iequals(strings[i],value))
+				return i;
+			++i;
+		}
+
+		return defaultIndex;
+	}
+
+	unsigned GetStringListIndex(const char* value, const char** strings, unsigned defaultIndex, bool caseSensitive)
+	{
+		unsigned i = 0;
+
+		while(strings[i])
+		{
+			if(!boost::iequals(value,strings[i]))
+				return i;
+			++i;
+		}
+
+		return defaultIndex;
+}
+
 
 	void ErrorDialog(const YumeString& title,const YumeString& message)
 	{

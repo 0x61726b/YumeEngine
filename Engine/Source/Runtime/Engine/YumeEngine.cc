@@ -177,16 +177,9 @@ namespace YumeEngine
 			return false;
 		frameTimer_.Reset();
 
-		SharedPtr<YumeShader> test_ = resourceManager_->PrepareResource<YumeShader>("Shaders/Basic.hlsl");
-
-
-		YumeShaderVariation* vs = graphics_->GetShader(VS,"Basic","VERTEXCOLOR");
-		YumeShaderVariation* ps = graphics_->GetShader(PS,"Basic","VERTEXCOLOR");
-
-		graphics_->SetShaders(vs,ps);
-
 		//SharedPtr<YumeTexture2D> earth = resourceManager_->PrepareResource<YumeTexture2D>("Textures/Earth_Diffuse.dds");
 
+		renderer_->Initialize();
 
 		YUMELOG_INFO("Initialized Yume Engine...");
 

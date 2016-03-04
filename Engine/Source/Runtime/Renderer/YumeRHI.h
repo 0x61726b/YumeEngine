@@ -108,6 +108,7 @@ namespace YumeEngine
 		//Create
 		virtual YumeVertexBuffer* CreateVertexBuffer() = 0;
 		virtual YumeIndexBuffer* CreateIndexBuffer() = 0;
+		virtual YumeInputLayout* CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks) = 0;
 
 		//Getters
 		YumeShaderVariation* GetVertexShader() const { return vertexShader_; }
@@ -162,6 +163,13 @@ namespace YumeEngine
 
 		virtual void SetViewport(const IntRect& rect) = 0;
 
+		virtual void Draw(PrimitiveType type,unsigned vertexStart,unsigned vertexCount) = 0;
+		/// Draw indexed geometry.
+		virtual void Draw(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount) = 0;
+		/// Draw indexed, instanced geometry. An instancing vertex buffer must be set.
+		virtual void DrawInstanced(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount,
+			unsigned instanceCount) = 0;
+
 
 		void* ReserveScratchBuffer(unsigned size);
 		void FreeScratchBuffer(void* buffer);
@@ -207,7 +215,7 @@ namespace YumeEngine
 		boost::mutex							gpuResourceMutex_;
 		GpuResourceVector						gpuResources_;
 
-		
+
 		bool sRGB_;
 		bool lightPrepassSupport_;
 		bool deferredSupport_;

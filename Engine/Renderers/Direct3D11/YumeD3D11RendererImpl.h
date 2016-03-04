@@ -32,9 +32,9 @@ namespace YumeEngine
 {
 	class YumeD3D11Renderer;
 
-	typedef boost::unordered_map<unsigned,ID3D11BlendState*> BlendStatesMap;
-	typedef boost::unordered_map<unsigned,ID3D11DepthStencilState*> DepthStatesMap;
-	typedef boost::unordered_map<unsigned,ID3D11RasterizerState*> RasterizerStatesMap;
+	typedef YumeMap<unsigned,ID3D11BlendState*>::type BlendStatesMap;
+	typedef YumeMap<unsigned,ID3D11DepthStencilState*>::type DepthStatesMap;
+	typedef YumeMap<unsigned,ID3D11RasterizerState*>::type RasterizerStatesMap;
 
 	class YumeD3DExport YumeD3D11RendererImpl
 	{

@@ -49,8 +49,7 @@
 namespace YumeEngine
 {
 	YumeD3D11ShaderVariation::YumeD3D11ShaderVariation(YumeShader* owner,ShaderType type):
-		YumeD3D11Resource(static_cast<YumeD3D11Renderer*>(YumeEngine3D::Get()->GetRenderer())),
-		elementMask_(0)
+		YumeD3D11Resource(static_cast<YumeD3D11Renderer*>(YumeEngine3D::Get()->GetRenderer()))
 	{
 		owner_ = owner;
 		type_ = type;

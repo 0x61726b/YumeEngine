@@ -28,6 +28,7 @@
 namespace YumeEngine
 {
 	YumeShaderVariation::YumeShaderVariation()
+		: elementMask_(0)
 	{
 		
 	}

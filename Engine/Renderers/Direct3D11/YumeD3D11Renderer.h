@@ -90,6 +90,7 @@ namespace YumeEngine
 		//Create
 		YumeVertexBuffer* CreateVertexBuffer();
 		YumeIndexBuffer* CreateIndexBuffer();
+		YumeInputLayout* CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks);
 
 		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const;
 
@@ -145,7 +146,12 @@ namespace YumeEngine
 		void SetTexture(unsigned index,YumeTexture* texture);
 
 
+		void PreDraw();
 
+		void Draw(PrimitiveType type,unsigned vertexStart,unsigned vertexCount);
+		void Draw(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount);
+		void DrawInstanced(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount,
+			unsigned instanceCount);
 
 
 		/// Return the API-specific alpha texture format.

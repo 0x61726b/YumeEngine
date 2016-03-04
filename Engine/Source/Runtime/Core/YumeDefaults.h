@@ -35,6 +35,10 @@ namespace YumeEngine
 	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(const std::wstring& cmdLine);
 	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(int argc,char** argv);
 
+	YumeAPIExport unsigned GetStringListIndex(const YumeString& value,const YumeString* strings,unsigned defaultIndex,bool caseSensitive = false);
+	YumeAPIExport unsigned GetStringListIndex(const char* value,const YumeString* strings,unsigned defaultIndex,bool caseSensitive = false);
+	YumeAPIExport unsigned GetStringListIndex(const char* value,const char** strings,unsigned defaultIndex,bool caseSensitive = false);
+
 	YumeAPIExport const YumeString& WCharToUtf8(const std::wstring&);
 
 	YumeAPIExport YumeHash GenerateHash(const YumeString& key);

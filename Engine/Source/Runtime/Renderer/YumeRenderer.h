@@ -40,6 +40,8 @@ namespace YumeEngine
 		void Render();
 		void QueueRenderable(YumeRenderable* renderTarget);
 
+		void Initialize();
+
 		//Getters
 		int GetTextureQuality() const { return textureQuality_; }
 
