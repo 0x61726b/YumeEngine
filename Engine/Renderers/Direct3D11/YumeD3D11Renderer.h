@@ -145,6 +145,18 @@ namespace YumeEngine
 
 		void SetTexture(unsigned index,YumeTexture* texture);
 
+		void SetBlendMode(BlendMode mode);
+		void SetColorWrite(bool enable);
+		void SetCullMode(CullMode mode);
+		void SetDepthBias(float constantBias,float slopeScaledBias);
+		void SetDepthTest(CompareMode mode);
+		void SetDepthWrite(bool enable);
+		void SetFillMode(FillMode mode);
+		void SetScissorTest(bool enable,const Rect& rect = Rect::FULL,bool borderInclusive = true);
+		void SetScissorTest(bool enable,const IntRect& rect);
+		void SetStencilTest
+			(bool enable,CompareMode mode = CMP_ALWAYS,StencilOp pass = OP_KEEP,StencilOp fail = OP_KEEP,StencilOp zFail = OP_KEEP,
+			unsigned stencilRef = 0,unsigned compareMask = Math::M_MAX_UNSIGNED,unsigned writeMask = Math::M_MAX_UNSIGNED);
 
 		void PreDraw();
 

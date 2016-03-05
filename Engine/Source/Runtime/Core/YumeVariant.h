@@ -92,6 +92,8 @@ namespace YumeEngine
 		template< class T> T Get() const;
 
 		VariantType GetType() const { return type_; }
+
+		void ConvertFromString(VariantType type,const char* value);
 	protected:
 		Variant inner_;
 		VariantType type_;

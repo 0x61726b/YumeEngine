@@ -169,6 +169,7 @@ namespace YumeEngine
 	unsigned YumeRenderTechnique::litBasePassIndex = 0;
 	unsigned YumeRenderTechnique::litAlphaPassIndex = 0;
 	unsigned YumeRenderTechnique::shadowPassIndex = 0;
+	YumeHash YumeRenderTechnique::techHash_ = GenerateHash("RenderTechnique");
 	YumeMap<YumeString,unsigned>::type YumeRenderTechnique::passIndices;
 
 	YumeRenderTechnique::YumeRenderTechnique():
@@ -181,6 +182,10 @@ namespace YumeEngine
 	{
 	}
 
+	YumeHash YumeRenderTechnique::GetType()
+	{
+		return techHash_;
+	}
 
 	bool YumeRenderTechnique::BeginLoad(YumeFile& source)
 	{
@@ -197,17 +202,17 @@ namespace YumeEngine
 		XmlNode root = doc.child("Yume");
 		XmlNode technique = root.child("Technique");
 
-		YumeString globalVS = root.attribute("vs").as_string();
-		YumeString globalPS = root.attribute("ps").as_string();
-		YumeString globalVSDefines = root.attribute("vsdefines").as_string();
-		YumeString globalPSDefines = root.attribute("psdefines").as_string();
+		YumeString globalVS = technique.attribute("vs").as_string();
+		YumeString globalPS = technique.attribute("ps").as_string();
+		YumeString globalVSDefines = technique.attribute("vsdefines").as_string();
+		YumeString globalPSDefines = technique.attribute("psdefines").as_string();
 
 		if(!globalVSDefines.empty())
 			globalVSDefines += ' ';
 		if(!globalPSDefines.empty())
 			globalPSDefines += ' ';
 
-		bool globalAlphaMask = root.attribute("alphamask").as_bool();
+		bool globalAlphaMask = technique.attribute("alphamask").as_bool();
 
 		for(XmlNode pass = technique.first_child(); pass; pass = pass.next_sibling())
 		{

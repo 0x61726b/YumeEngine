@@ -28,6 +28,8 @@
 #include "YumeIndexBuffer.h"
 #include "YumeInputLayout.h"
 
+#include "Math/YumeMatrix3x4.h"
+
 namespace YumeEngine
 {
 	static const float dummyVertices[] =
@@ -56,7 +58,54 @@ namespace YumeEngine
 
 	void YumeRenderer::Initialize()
 	{
-		
+
+		YumeShaderVariation* vs = rhi_->GetShader(VS,"Basic","VERTEXCOLOR");
+		YumeShaderVariation* ps = rhi_->GetShader(PS,"Basic","VERTEXCOLOR");
+
+
+		YumeVertexBuffer* vb = rhi_->CreateVertexBuffer();
+		vb->SetSize(4,MASK_POSITION | MASK_COLOR);
+		vb->SetData(dummyVertices);
+		vb->SetShadowed(true);
+
+		YumeIndexBuffer* dlib = rhi_->CreateIndexBuffer();
+		dlib->SetShadowed(true);
+		dlib->SetSize(6,false);
+		dlib->SetData(dummyIndices);
+
+		Matrix3x4 view_ = Matrix3x4(Vector3(1,1,1),Quaternion(0,0,0,1),1.0f).Inverse();
+		Matrix3x4 projection_ = Matrix3x4::IDENTITY;
+
+
+
+		rhi_->SetBlendMode(BLEND_REPLACE);
+		rhi_->SetColorWrite(true);
+		rhi_->SetCullMode(CULL_NONE);
+		rhi_->SetDepthWrite(true);
+		rhi_->SetScissorTest(false);
+		rhi_->SetStencilTest(false);
+		rhi_->SetShaders(vs,ps);
+		rhi_->SetShaderParameter(VSP_MODEL,Matrix3x4::IDENTITY);
+		rhi_->SetShaderParameter(VSP_VIEW,view_);
+		rhi_->SetShaderParameter(VSP_VIEWINV,view_.Inverse());
+		rhi_->SetShaderParameter(VSP_VIEWPROJ,projection_ * view_);
+		rhi_->SetShaderParameter(PSP_MATDIFFCOLOR,YumeColor(1.0f,1.0f,1.0f,1.0f));
+
+		rhi_->SetShaderParameter(VSP_CAMERAPOS,Vector3(0,0,10));
+		rhi_->SetShaderParameter(VSP_CAMERAROT,Matrix3::IDENTITY);
+		rhi_->SetShaderParameter(PSP_CAMERAPOS,Vector3(0,0,-10));
+		rhi_->SetShaderParameter(VSP_NEARCLIP,0.0f);
+		rhi_->SetShaderParameter(VSP_FARCLIP,1000.0f);
+		rhi_->SetShaderParameter(PSP_NEARCLIP,0.0f);
+		rhi_->SetShaderParameter(PSP_FARCLIP,1000.0f);
+
+		rhi_->SetVertexBuffer(vb);
+		rhi_->SetIndexBuffer(dlib);
+
+		Vector4 depth = Vector4::ZERO;
+		depth.w = 1 / 1000.0f;
+		rhi_->SetShaderParameter(VSP_DEPTHMODE,depth);
+
 	}
 
 	void YumeRenderer::QueueRenderable(YumeRenderable* renderTarget)
@@ -68,5 +117,7 @@ namespace YumeEngine
 	void YumeRenderer::Render()
 	{
 		rhi_->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL);
+
+		rhi_->Draw(TRIANGLE_LIST,0,6,0,4);
 	}
 }

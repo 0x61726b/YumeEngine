@@ -238,7 +238,7 @@ namespace YumeEngine
 
 		const char* entryPoint = 0;
 		const char* profile = 0;
-		unsigned flags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
+		unsigned flags = 0;
 
 		defines.push_back("D3D11");
 
@@ -253,8 +253,10 @@ namespace YumeEngine
 			entryPoint = "PS";
 			defines.push_back("COMPILEPS");
 			profile = "ps_4_0";
-			flags |= D3DCOMPILE_PREFER_FLOW_CONTROL;
+			flags |= 0;
 		}
+
+		flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 
 		YUMELOG_INFO("Compiling shader " << GetFullName());
 

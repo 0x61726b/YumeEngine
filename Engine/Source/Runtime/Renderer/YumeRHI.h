@@ -28,6 +28,7 @@
 #include "Math/YumeRect.h"
 #include "Math/YumeColor.h"
 #include "Math/YumeVector4.h"
+#include "Math/YumeMatrix3x4.h"
 #include "Core/YumeVariant.h"
 #include "Renderer/YumeImage.h"
 
@@ -134,6 +135,7 @@ namespace YumeEngine
 		virtual void SetShaderParameter(YumeHash  param,const YumeColor& color) = 0;
 		virtual void SetShaderParameter(YumeHash  param,const Vector2& vector) = 0;
 		virtual void SetShaderParameter(YumeHash  param,const Matrix3& matrix) = 0;
+		virtual void SetShaderParameter(YumeHash  param,const Matrix3x4& matrix) = 0;
 		virtual void SetShaderParameter(YumeHash  param,const Vector3& vector) = 0;
 		virtual void SetShaderParameter(YumeHash  param,const Matrix4& matrix) = 0;
 		virtual void SetShaderParameter(YumeHash param,const Vector4& vector) = 0;
@@ -148,6 +150,27 @@ namespace YumeEngine
 		virtual bool SetVertexBuffers
 			(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) = 0;
 
+		virtual void SetBlendMode(BlendMode mode) = 0;
+		/// Set color write on/off.
+		virtual void SetColorWrite(bool enable) = 0;
+		/// Set hardware culling mode.
+		virtual void SetCullMode(CullMode mode) = 0;
+		/// Set depth bias.
+		virtual void SetDepthBias(float constantBias,float slopeScaledBias) = 0;
+		/// Set depth compare.
+		virtual void SetDepthTest(CompareMode mode) = 0;
+		/// Set depth write on/off.
+		virtual void SetDepthWrite(bool enable) = 0;
+		/// Set polygon fill mode.
+		virtual void SetFillMode(FillMode mode) = 0;
+		/// Set scissor test.
+		virtual void SetScissorTest(bool enable,const Rect& rect = Rect::FULL,bool borderInclusive = true) = 0;
+		/// Set scissor test.
+		virtual void SetScissorTest(bool enable,const IntRect& rect) = 0;
+		/// Set stencil test.
+		virtual void SetStencilTest
+			(bool enable,CompareMode mode = CMP_ALWAYS,StencilOp pass = OP_KEEP,StencilOp fail = OP_KEEP,StencilOp zFail = OP_KEEP,
+			unsigned stencilRef = 0,unsigned compareMask = Math::M_MAX_UNSIGNED,unsigned writeMask = Math::M_MAX_UNSIGNED) = 0;
 
 		virtual void SetTexture(unsigned index,YumeTexture* texture) = 0;
 		void SetTextureAnisotropy(unsigned level);

@@ -23,6 +23,7 @@
 #define __YumeFile_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+#include "YumeVariant.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -57,14 +58,25 @@ namespace YumeEngine
 		bool WriteUByte(unsigned char value);
 		bool WriteShort(short value);
 		bool WriteUShort(unsigned short value);
+		bool WriteInt(int);
+		bool WriteBool(bool);
+		bool WriteFloat(float);
+		bool WriteDouble(double);
+		bool WriteVariantData(const YumeVariant& v);
 
 		YumeString ReadString();
 		YumeString ReadFileID();
 		signed char ReadByte();
 		unsigned ReadUInt();
+		int ReadInt();
+		bool ReadBool();
+		float ReadFloat();
+		double ReadDouble();
 		unsigned char ReadUByte();
 		short ReadShort();
 		unsigned short ReadUShort();
+		YumeVariant ReadVariant();
+		YumeVariant ReadVariant(VariantType type);
 
 		unsigned GetSize();
 

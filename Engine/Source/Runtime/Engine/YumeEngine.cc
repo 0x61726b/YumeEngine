@@ -47,8 +47,8 @@
 
 #include "Renderer/YumeShader.h"
 #include "Renderer/YumeShaderVariation.h"
-
 #include "Renderer/YumeTexture2D.h"
+#include "Renderer/YumeRenderPass.h"
 
 #include <boost/filesystem.hpp>
 #include <log4cplus/initializer.h>
@@ -197,7 +197,7 @@ namespace YumeEngine
 		YumeObjectRegistrar<YumeBase> baseObj(GenerateHash("Base"));
 		YumeObjectRegistrar<YumeResource> resourceObj(GenerateHash("Resource"));
 		YumeObjectRegistrar<YumeImage> imageObj(GenerateHash("Image"));
-
+		YumeObjectRegistrar<YumeRenderTechnique> techObj(GenerateHash("RenderTechnique"));
 
 	}
 	void YumeEngine3D::Render()

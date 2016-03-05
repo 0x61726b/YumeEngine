@@ -20,6 +20,7 @@
 
 #include "Renderer/YumeTexture2D.h"
 
+#include "Renderer/YumeRenderPass.h"
 
 #include "Renderer/YumeResourceManager.h"
 
@@ -68,7 +69,31 @@ namespace YumeEngine
 	};
 	BOOST_FIXTURE_TEST_SUITE(YumeTestSuite,YumePerTestSuiteFixture);
 
+	BOOST_AUTO_TEST_CASE(RenderingTechniques)
+	{
+		Initialize();
+		engineVariants_["testing"] = true;
+		BOOST_REQUIRE(engine_->Initialize(engineVariants_) == true);
 
+		YumeResourceManager* rm = engine_->GetResourceManager();
+
+		assert(rm);
+
+		SharedPtr<YumeRenderTechnique> tech1 = rm->PrepareResource<YumeRenderTechnique>("Shaders/Techniques/Default.xml");
+
+		BOOST_REQUIRE(tech1->GetPass("base"));
+		BOOST_REQUIRE(tech1->GetPass("litbase"));
+		BOOST_REQUIRE(tech1->GetPass("light"));
+		BOOST_REQUIRE(tech1->GetPass("prepass"));
+		BOOST_REQUIRE(tech1->GetPass("material"));
+		BOOST_REQUIRE(tech1->GetPass("deferred"));
+		BOOST_REQUIRE(tech1->GetPass("depth"));
+		BOOST_REQUIRE(tech1->GetPass("shadow"));
+
+		BOOST_REQUIRE(tech1->GetNumPasses() == 8);
+
+		assert(tech1);
+	}
 
 	BOOST_AUTO_TEST_CASE(InitializeEngine)
 	{

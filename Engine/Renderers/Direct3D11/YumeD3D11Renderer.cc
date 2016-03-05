@@ -360,28 +360,28 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::Clear(unsigned flags,const Vector4& color,float depth,unsigned stencil)
 	{
-		//Dummy clear code
-		/*if((flags & CLEAR_COLOR) && impl_->renderTargetViews_[0])
-			impl_->deviceContext_->ClearRenderTargetView(impl_->renderTargetViews_[0],color.ptr());
+		bool oldColorWrite = colorWrite_;
+		bool oldDepthWrite = depthWrite_;
+		// Make sure we use the read-write version of the depth stencil
+		SetDepthWrite(true);
+		PreDraw();
 
-			if((flags & (CLEAR_DEPTH | CLEAR_STENCIL)) && impl_->depthStencilView_)
-			{
+		Vector4 c(0,1,0,0);
+		if((flags & CLEAR_COLOR) && impl_->renderTargetViews_[0])
+			impl_->deviceContext_->ClearRenderTargetView(impl_->renderTargetViews_[0],c.ptr());
+
+		if((flags & (CLEAR_DEPTH | CLEAR_STENCIL)) && impl_->depthStencilView_)
+		{
 			unsigned depthClearFlags = 0;
 			if(flags & CLEAR_DEPTH)
-			depthClearFlags |= D3D11_CLEAR_DEPTH;
+				depthClearFlags |= D3D11_CLEAR_DEPTH;
 			if(flags & CLEAR_STENCIL)
-			depthClearFlags |= D3D11_CLEAR_STENCIL;
+				depthClearFlags |= D3D11_CLEAR_STENCIL;
 			impl_->deviceContext_->ClearDepthStencilView(impl_->depthStencilView_,depthClearFlags,depth,(UINT8)stencil);
-			}*/
+		}
 
-		impl_->deviceContext_->ClearRenderTargetView(impl_->defaultRenderTargetView_,color.ptr());
-
-		unsigned depthClearFlags = 0;
-		if(flags & CLEAR_DEPTH)
-			depthClearFlags |= D3D11_CLEAR_DEPTH;
-		if(flags & CLEAR_STENCIL)
-			depthClearFlags |= D3D11_CLEAR_STENCIL;
-		impl_->deviceContext_->ClearDepthStencilView(impl_->defaultDepthStencilView_,depthClearFlags,depth,(UINT8)stencil);
+		SetColorWrite(oldColorWrite);
+		SetDepthWrite(oldDepthWrite);
 	}
 
 	void YumeD3D11Renderer::CreateRendererCapabilities()
@@ -1111,7 +1111,7 @@ namespace YumeEngine
 		buffer->SetParameter(i->second.offset_,sizeof(Matrix3),&matrix);
 	}
 
-	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Matrix3x4& matrix)
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const Matrix3x4& matrix)
 	{
 		YumeMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
@@ -1210,6 +1210,201 @@ namespace YumeEngine
 			impl_->shaderResourceViews_[index] = texture ? (ID3D11ShaderResourceView*)texture->GetShaderResourceView() : 0;
 			impl_->samplers_[index] = texture ? (ID3D11SamplerState*)texture->GetSampler() : 0;
 			texturesDirty_ = true;
+		}
+	}
+
+
+	void YumeD3D11Renderer::SetBlendMode(BlendMode mode)
+	{
+		if(mode != blendMode_)
+		{
+			blendMode_ = mode;
+			blendStateDirty_ = true;
+		}
+	}
+
+	void YumeD3D11Renderer::SetColorWrite(bool enable)
+	{
+		if(enable != colorWrite_)
+		{
+			colorWrite_ = enable;
+			blendStateDirty_ = true;
+		}
+	}
+
+	void YumeD3D11Renderer::SetCullMode(CullMode mode)
+	{
+		if(mode != cullMode_)
+		{
+			cullMode_ = mode;
+			rasterizerStateDirty_ = true;
+		}
+	}
+
+	void YumeD3D11Renderer::SetDepthBias(float constantBias,float slopeScaledBias)
+	{
+		if(constantBias != constantDepthBias_ || slopeScaledBias != slopeScaledDepthBias_)
+		{
+			constantDepthBias_ = constantBias;
+			slopeScaledDepthBias_ = slopeScaledBias;
+			rasterizerStateDirty_ = true;
+		}
+	}
+
+	void YumeD3D11Renderer::SetDepthTest(CompareMode mode)
+	{
+		if(mode != depthTestMode_)
+		{
+			depthTestMode_ = mode;
+			depthStateDirty_ = true;
+		}
+	}
+
+	void YumeD3D11Renderer::SetDepthWrite(bool enable)
+	{
+		if(enable != depthWrite_)
+		{
+			depthWrite_ = enable;
+			depthStateDirty_ = true;
+			// Also affects whether a read-only version of depth-stencil should be bound, to allow sampling
+			renderTargetsDirty_ = true;
+		}
+	}
+
+	void YumeD3D11Renderer::SetFillMode(FillMode mode)
+	{
+		if(mode != fillMode_)
+		{
+			fillMode_ = mode;
+			rasterizerStateDirty_ = true;
+		}
+	}
+
+
+	void YumeD3D11Renderer::SetScissorTest(bool enable,const Rect& rect,bool borderInclusive)
+	{
+		// During some light rendering loops, a full rect is toggled on/off repeatedly.
+		// Disable scissor in that case to reduce state changes
+		if(rect.min_.x <= 0.0f && rect.min_.y <= 0.0f && rect.max_.x >= 1.0f && rect.max_.y >= 1.0f)
+			enable = false;
+
+		if(enable)
+		{
+			Vector2 rtSize(GetRenderTargetDimensions());
+			Vector2 viewSize(viewport_.Size());
+			Vector2 viewPos(viewport_.left_,viewport_.top_);
+			IntRect intRect;
+			int expand = borderInclusive ? 1 : 0;
+
+			intRect.left_ = Math::Clamp<int>((int)((rect.min_.x + 1.0f) * 0.5f * viewSize.x) + viewPos.x,0,rtSize.x - 1);
+			intRect.top_ = Math::Clamp<int>((int)((-rect.max_.y + 1.0f) * 0.5f * viewSize.y) + viewPos.y,0,rtSize.y - 1);
+			intRect.right_ = Math::Clamp<int>((int)((rect.max_.x + 1.0f) * 0.5f * viewSize.x) + viewPos.x + expand,0,rtSize.x);
+			intRect.bottom_ = Math::Clamp<int>((int)((-rect.min_.y + 1.0f) * 0.5f * viewSize.y) + viewPos.y + expand,0,rtSize.y);
+
+			if(intRect.right_ == intRect.left_)
+				intRect.right_++;
+			if(intRect.bottom_ == intRect.top_)
+				intRect.bottom_++;
+
+			if(intRect.right_ < intRect.left_ || intRect.bottom_ < intRect.top_)
+				enable = false;
+
+			if(enable && intRect != scissorRect_)
+			{
+				scissorRect_ = intRect;
+				scissorRectDirty_ = true;
+			}
+		}
+
+		if(enable != scissorTest_)
+		{
+			scissorTest_ = enable;
+			rasterizerStateDirty_ = true;
+		}
+	}
+
+	void YumeD3D11Renderer::SetScissorTest(bool enable,const IntRect& rect)
+	{
+		Vector2 rtSize(GetRenderTargetDimensions());
+		Vector2 viewPos(viewport_.left_,viewport_.top_);
+
+		if(enable)
+		{
+			IntRect intRect;
+			intRect.left_ = Math::Clamp<int>(rect.left_ + viewPos.x,0,rtSize.x - 1);
+			intRect.top_ = Math::Clamp<int>(rect.top_ + viewPos.y,0,rtSize.y - 1);
+			intRect.right_ = Math::Clamp<int>(rect.right_ + viewPos.x,0,rtSize.x);
+			intRect.bottom_ = Math::Clamp<int>(rect.bottom_ + viewPos.y,0,rtSize.y);
+
+			if(intRect.right_ == intRect.left_)
+				intRect.right_++;
+			if(intRect.bottom_ == intRect.top_)
+				intRect.bottom_++;
+
+			if(intRect.right_ < intRect.left_ || intRect.bottom_ < intRect.top_)
+				enable = false;
+
+			if(enable && intRect != scissorRect_)
+			{
+				scissorRect_ = intRect;
+				scissorRectDirty_ = true;
+			}
+		}
+
+		if(enable != scissorTest_)
+		{
+			scissorTest_ = enable;
+			rasterizerStateDirty_ = true;
+		}
+	}
+
+	void YumeD3D11Renderer::SetStencilTest(bool enable,CompareMode mode,StencilOp pass,StencilOp fail,StencilOp zFail,unsigned stencilRef,
+		unsigned compareMask,unsigned writeMask)
+	{
+		if(enable != stencilTest_)
+		{
+			stencilTest_ = enable;
+			depthStateDirty_ = true;
+		}
+
+		if(enable)
+		{
+			if(mode != stencilTestMode_)
+			{
+				stencilTestMode_ = mode;
+				depthStateDirty_ = true;
+			}
+			if(pass != stencilPass_)
+			{
+				stencilPass_ = pass;
+				depthStateDirty_ = true;
+			}
+			if(fail != stencilFail_)
+			{
+				stencilFail_ = fail;
+				depthStateDirty_ = true;
+			}
+			if(zFail != stencilZFail_)
+			{
+				stencilZFail_ = zFail;
+				depthStateDirty_ = true;
+			}
+			if(compareMask != stencilCompareMask_)
+			{
+				stencilCompareMask_ = compareMask;
+				depthStateDirty_ = true;
+			}
+			if(writeMask != stencilWriteMask_)
+			{
+				stencilWriteMask_ = writeMask;
+				depthStateDirty_ = true;
+			}
+			if(stencilRef != stencilRef_)
+			{
+				stencilRef_ = stencilRef;
+				stencilRefDirty_ = true;
+				depthStateDirty_ = true;
+			}
 		}
 	}
 

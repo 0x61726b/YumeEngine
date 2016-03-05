@@ -336,6 +336,221 @@ namespace YumeEngine
 		Read(&ret,sizeof ret);
 		return ret;
 	}
+
+	int YumeFile::ReadInt()
+	{
+		int ret;
+		Read(&ret,sizeof ret);
+		return ret;
+	}
+
+	bool YumeFile::ReadBool()
+	{
+		return ReadUByte() != 0;
+	}
+
+	YumeVariant YumeFile::ReadVariant()
+	{
+		VariantType type = (VariantType)ReadUByte();
+		return ReadVariant(type);
+	}
+
+	float YumeFile::ReadFloat()
+	{
+		float ret;
+		Read(&ret,sizeof ret);
+		return ret;
+	}
+
+
+	double YumeFile::ReadDouble()
+	{
+		double ret;
+		Read(&ret,sizeof ret);
+		return ret;
+	}
+
+
+	YumeVariant YumeFile::ReadVariant(VariantType type)
+	{
+		switch(type)
+		{
+		case VAR_INT:
+			return YumeVariant(ReadInt());
+
+		case VAR_BOOL:
+			return YumeVariant(ReadBool());
+
+		case VAR_FLOAT:
+			return YumeVariant(ReadFloat());
+
+			//case VAR_VECTOR2:
+			//	return YumeVariant(ReadVector2());
+
+			//case VAR_VECTOR3:
+			//	return YumeVariant(ReadVector3());
+
+			//case VAR_VECTOR4:
+			//	return YumeVariant(ReadVector4());
+
+			//case VAR_QUATERNION:
+			//	return YumeVariant(ReadQuaternion());
+
+			//case VAR_COLOR:
+			//	return YumeVariant(ReadColor());
+
+		case VAR_STRING:
+			return YumeVariant(ReadString());
+
+			/*case VAR_BUFFER:
+				return YumeVariant(ReadBuffer());*/
+
+			//	// Deserializing pointers is not supported. Return null
+			//case VAR_VOIDPTR:
+			//case VAR_PTR:
+			//	ReadUInt();
+			//	return YumeVariant((void*)0);
+
+			//case VAR_RESOURCEREF:
+			//	return YumeVariant(ReadResourceRef());
+
+			//case VAR_RESOURCEREFLIST:
+			//	return YumeVariant(ReadResourceRefList());
+
+			//case VAR_VARIANTVECTOR:
+			//	return YumeVariant(ReadVariantVector());
+
+			//case VAR_STRINGVECTOR:
+			//	return YumeVariant(ReadStringVector());
+
+			//case VAR_VARIANTMAP:
+			//	return YumeVariant(ReadVariantMap());
+
+			//case VAR_INTRECT:
+			//	return YumeVariant(ReadIntRect());
+
+			//case VAR_INTVECTOR2:
+			//	return YumeVariant(ReadIntVector2());
+
+			//case VAR_MATRIX3:
+			//	return YumeVariant(ReadMatrix3());
+
+			//case VAR_MATRIX3X4:
+			//	return YumeVariant(ReadMatrix3x4());
+
+			//case VAR_MATRIX4:
+			//	return YumeVariant(ReadMatrix4());
+
+		case VAR_DOUBLE:
+			return YumeVariant(ReadDouble());
+
+		default:
+			return YumeVariant();
+		}
+	}
+
+	bool YumeFile::WriteInt(int value)
+	{
+		return Write(&value,sizeof value) == sizeof value;
+	}
+
+
+	bool YumeFile::WriteBool(bool value)
+	{
+		return WriteUByte((unsigned char)(value ? 1 : 0)) == 1;
+	}
+
+	bool YumeFile::WriteFloat(float value)
+	{
+		return Write(&value,sizeof value) == sizeof value;
+	}
+
+	bool YumeFile::WriteDouble(double value)
+	{
+		return Write(&value,sizeof value) == sizeof value;
+	}
+
+
+	bool YumeFile::WriteVariantData(const YumeVariant& value)
+	{
+		switch(value.GetType())
+		{
+		case VAR_EMPTY:
+			return true;
+
+		case VAR_INT:
+			return WriteInt(value.Get<int>());
+
+		case VAR_BOOL:
+			return WriteBool(value.Get<bool>());
+
+		case VAR_FLOAT:
+			return WriteFloat(value.Get<float>());
+
+			/*	case VAR_VECTOR2:
+					return WriteVector2(value.GetVector2());
+
+					case VAR_VECTOR3:
+					return WriteVector3(value.GetVector3());
+
+					case VAR_VECTOR4:
+					return WriteVector4(value.GetVector4());
+
+					case VAR_QUATERNION:
+					return WriteQuaternion(value.GetQuaternion());
+
+					case VAR_COLOR:
+					return WriteColor(value.GetColor());*/
+
+		case VAR_STRING:
+			return WriteString(value.Get<YumeString>());
+
+			//case VAR_BUFFER:
+			//	return WriteBuffer(value.GetBuffer());
+
+			//	// Serializing pointers is not supported. Write null
+			//case VAR_VOIDPTR:
+			//case VAR_PTR:
+			//	return WriteUInt(0);
+
+			//case VAR_RESOURCEREF:
+			//	return WriteResourceRef(value.GetResourceRef());
+
+			//case VAR_RESOURCEREFLIST:
+			//	return WriteResourceRefList(value.GetResourceRefList());
+
+			//case VAR_VARIANTVECTOR:
+			//	return WriteVariantVector(value.GetVariantVector());
+
+			//case VAR_STRINGVECTOR:
+			//	return WriteStringVector(value.GetStringVector());
+
+			//case VAR_VARIANTMAP:
+			//	return WriteVariantMap(value.GetVariantMap());
+
+			//case VAR_INTRECT:
+			//	return WriteIntRect(value.GetIntRect());
+
+			//case VAR_INTVECTOR2:
+			//	return WriteIntVector2(value.GetIntVector2());
+
+			//case VAR_MATRIX3:
+			//	return WriteMatrix3(value.GetMatrix3());
+
+			//case VAR_MATRIX3X4:
+			//	return WriteMatrix3x4(value.GetMatrix3x4());
+
+			//case VAR_MATRIX4:
+			//	return WriteMatrix4(value.GetMatrix4());
+
+		case VAR_DOUBLE:
+			return WriteDouble(value.Get<double>());
+
+		default:
+			return false;
+		}
+	}
+
 	unsigned YumeFile::Seek(unsigned position)
 	{
 		if(!handle_)

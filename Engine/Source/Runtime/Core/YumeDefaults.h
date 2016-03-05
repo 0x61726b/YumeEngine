@@ -39,6 +39,16 @@ namespace YumeEngine
 	YumeAPIExport unsigned GetStringListIndex(const char* value,const YumeString* strings,unsigned defaultIndex,bool caseSensitive = false);
 	YumeAPIExport unsigned GetStringListIndex(const char* value,const char** strings,unsigned defaultIndex,bool caseSensitive = false);
 
+
+	YumeAPIExport bool ToBool(const YumeString& source);
+	YumeAPIExport bool ToBool(const char* source);
+	YumeAPIExport float ToFloat(const YumeString& source);
+	YumeAPIExport float ToFloat(const char* source);
+	YumeAPIExport double ToDouble(const YumeString& source);
+	YumeAPIExport double ToDouble(const char* source);
+	YumeAPIExport int ToInt(const YumeString& source);
+	YumeAPIExport int ToInt(const char* source);
+
 	YumeAPIExport const YumeString& WCharToUtf8(const std::wstring&);
 
 	YumeAPIExport YumeHash GenerateHash(const YumeString& key);

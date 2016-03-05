@@ -19,53 +19,16 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeBase_h__
-#define __YumeBase_h__
+#ifndef __YumeScene_h__
+#define __YumeScene_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 
-#include <boost/shared_ptr.hpp>
+#include "YumeXmlParser.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeShader;
-
-	class YumeAPIExport YumeBase
-	{
-	public:
-		YumeBase(){};
-		virtual ~YumeBase() {};
-	};
-	class YumeAPIExport YumeObjectFactory
-	{
-	public:
-		YumeObjectFactory();
-		virtual ~YumeObjectFactory();
-
-		SharedPtr<YumeBase> Create(YumeHash type);
-		void RegisterFactoryFunction(YumeHash type,std::function<YumeBase*(void)> classFactoryFunction);
-		void UnRegisterFactoryFunction(YumeHash type);
-
-		typedef YumeMap<YumeHash,std::function<YumeBase*(void)> >::type ObjRegistry;
-
-		ObjRegistry functionRegistry;
-
-		static YumeObjectFactory* Get();
-	};
-
-
-	template<class T>
-	class YumeAPIExport YumeObjectRegistrar
-	{
-	public:
-		YumeObjectRegistrar(YumeHash type)
-		{
-			YumeObjectFactory::Get()->RegisterFactoryFunction(type,[](void) -> YumeBase * { return new T();});
-		}
-	};
-
-
-#define REGISTER_CLASS(c,t) static YumeObjectRegistrar<c> registrar(t)
+	
 }
 
 

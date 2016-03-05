@@ -168,7 +168,7 @@ namespace YumeEngine
 		return defaultIndex;
 	}
 
-	unsigned GetStringListIndex(const char* value, const char** strings, unsigned defaultIndex, bool caseSensitive)
+	unsigned GetStringListIndex(const char* value,const char** strings,unsigned defaultIndex,bool caseSensitive)
 	{
 		unsigned i = 0;
 
@@ -180,7 +180,7 @@ namespace YumeEngine
 		}
 
 		return defaultIndex;
-}
+	}
 
 
 	void ErrorDialog(const YumeString& title,const YumeString& message)
@@ -208,6 +208,81 @@ namespace YumeEngine
 			++ptr;
 		return (unsigned)(ptr - str);
 #endif
+	}
+
+	bool ToBool(const YumeString& source)
+	{
+		return ToBool(source.c_str());
+	}
+
+	bool ToBool(const char* source)
+	{
+		unsigned length = CStringLength(source);
+
+		for(unsigned i = 0; i < length; ++i)
+		{
+			char c = (char)tolower(source[i]);
+			if(c == 't' || c == 'y' || c == '1')
+				return true;
+			else if(c != ' ' && c != '\t')
+				break;
+		}
+
+		return false;
+	}
+
+
+	int ToInt(const YumeString& source)
+	{
+		return ToInt(source.c_str());
+	}
+
+	int ToInt(const char* source)
+	{
+		if(!source)
+			return 0;
+
+		// Explicitly ask for base 10 to prevent source starts with '0' or '0x' from being converted to base 8 or base 16, respectively
+		return (int)strtol(source,0,10);
+	}
+
+	unsigned ToUInt(const YumeString& source)
+	{
+		return ToUInt(source.c_str());
+	}
+
+	unsigned ToUInt(const char* source)
+	{
+		if(!source)
+			return 0;
+
+		return (unsigned)strtoul(source,0,10);
+	}
+
+	float ToFloat(const YumeString& source)
+	{
+		return ToFloat(source.c_str());
+	}
+
+	float ToFloat(const char* source)
+	{
+		if(!source)
+			return 0;
+
+		return (float)strtod(source,0);
+	}
+
+	double ToDouble(const YumeString& source)
+	{
+		return ToDouble(source.c_str());
+	}
+
+	double ToDouble(const char* source)
+	{
+		if(!source)
+			return 0;
+
+		return strtod(source,0);
 	}
 
 

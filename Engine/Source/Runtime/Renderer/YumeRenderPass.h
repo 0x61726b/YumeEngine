@@ -229,6 +229,11 @@ namespace YumeEngine
 		/// Index for shadow pass. Initialized once GetPassIndex() has been called for the first time.
 		static unsigned shadowPassIndex;
 
+
+	public:
+		static YumeHash GetType();
+		static YumeHash techHash_;
+
 	private:
 		/// Require desktop GPU flag.
 		bool isDesktop_;

@@ -21,6 +21,7 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 #include "YumeVariant.h"
+#include "YumeDefaults.h"
 
 #include <boost/mpl/contains.hpp>
 
@@ -65,5 +66,126 @@ namespace YumeEngine
 			return boost::get<YumeString>(inner_);
 		else
 			return YumeString();
+	}
+
+
+	void YumeVariant::ConvertFromString(VariantType type,const char* value)
+	{
+		switch(type)
+		{
+		case VAR_INT:
+			inner_= ToInt(value);
+			type_ = VAR_INT;
+			break;
+
+		case VAR_BOOL:
+			inner_= ToBool(value);
+			type_ = VAR_BOOL;
+			break;
+
+		case VAR_FLOAT:
+			inner_= ToFloat(value);
+			type_ = VAR_FLOAT;
+			break;
+
+			/*case VAR_VECTOR2:
+				*this = ToVector2(value);
+				break;
+
+				case VAR_VECTOR3:
+				*this = ToVector3(value);
+				break;
+
+				case VAR_VECTOR4:
+				*this = ToVector4(value);
+				break;
+
+				case VAR_QUATERNION:
+				*this = ToQuaternion(value);
+				break;
+
+				case VAR_COLOR:
+				*this = ToColor(value);
+				break;
+				*/
+		case VAR_STRING:
+			inner_ = value;
+			type_ = VAR_STRING;
+			break;
+
+			//case VAR_BUFFER:
+			//{
+			//	SetType(VAR_BUFFER);
+			//	PODVector<unsigned char>& buffer = *(reinterpret_cast<PODVector<unsigned char>*>(&value_));
+			//	StringToBuffer(buffer,value);
+			//}
+			//break;
+
+			//case VAR_VOIDPTR:
+			//	// From string to void pointer not supported, set to null
+			//	*this = (void*)0;
+			//	break;
+
+			//case VAR_RESOURCEREF:
+			//{
+			//	StringVector values = String::Split(value,';');
+			//	if(values.Size() == 2)
+			//	{
+			//		SetType(VAR_RESOURCEREF);
+			//		ResourceRef& ref = *(reinterpret_cast<ResourceRef*>(&value_));
+			//		ref.type_ = values[0];
+			//		ref.name_ = values[1];
+			//	}
+			//}
+			//break;
+
+			//case VAR_RESOURCEREFLIST:
+			//{
+			//	StringVector values = String::Split(value,';',true);
+			//	if(values.Size() >= 1)
+			//	{
+			//		SetType(VAR_RESOURCEREFLIST);
+			//		ResourceRefList& refList = *(reinterpret_cast<ResourceRefList*>(&value_));
+			//		refList.type_ = values[0];
+			//		refList.names_.Resize(values.Size() - 1);
+			//		for(unsigned i = 1; i < values.Size(); ++i)
+			//			refList.names_[i - 1] = values[i];
+			//	}
+			//}
+			//break;
+
+			//case VAR_INTRECT:
+			//	*this = ToIntRect(value);
+			//	break;
+
+			//case VAR_INTVECTOR2:
+			//	*this = ToIntVector2(value);
+			//	break;
+
+			//case VAR_PTR:
+			//	// From string to RefCounted pointer not supported, set to null
+			//	*this = (RefCounted*)0;
+			//	break;
+
+			//case VAR_MATRIX3:
+			//	*this = ToMatrix3(value);
+			//	break;
+
+			//case VAR_MATRIX3X4:
+			//	*this = ToMatrix3x4(value);
+			//	break;
+
+			//case VAR_MATRIX4:
+			//	*this = ToMatrix4(value);
+			//	break;
+
+		case VAR_DOUBLE:
+			inner_ = ToDouble(value);
+			type_ = VAR_DOUBLE;
+			break;
+
+		default:
+			type_ = (VAR_EMPTY);
+		}
 	}
 }
