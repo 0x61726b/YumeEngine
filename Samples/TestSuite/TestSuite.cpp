@@ -79,7 +79,7 @@ namespace YumeEngine
 
 		assert(rm);
 
-		SharedPtr<YumeRenderTechnique> tech1 = rm->PrepareResource<YumeRenderTechnique>("Shaders/Techniques/Default.xml");
+		SharedPtr<YumeRenderTechnique> tech1 = rm->PrepareResource<YumeRenderTechnique>("Shaders/Techniques/Default.x_ml");
 
 		BOOST_REQUIRE(tech1->GetPass("base"));
 		BOOST_REQUIRE(tech1->GetPass("litbase"));
