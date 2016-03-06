@@ -30,591 +30,678 @@
 #define __YumeMatrix4_h__
 //--------------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeVector3.h"
-#include "YumeMatrix3.h"
+#include "YumeQuaternion.h"
 #include "YumeVector4.h"
-#include "YumePlane.h"
+
+
+#ifdef YUME_SSE
+#include <emmintrin.h>
+#endif
 //--------------------------------------------------------------------------------
 namespace YumeEngine
 {
+	class Matrix3x4;
+
+	/// 4x4 matrix for arbitrary linear transforms including projection.
 	class YumeAPIExport Matrix4
 	{
-	protected:
-		/// The matrix entries, indexed by [row][col].
-		union {
-			Real m[4][4];
-			Real _m[16];
-		};
 	public:
-		/** Default constructor.
-		@note
-		It does <b>NOT</b> initialize the matrix for efficiency.
-		*/
-		inline Matrix4()
+		/// Construct an identity matrix.
+		Matrix4()
+#ifndef YUME_SSE
+			:m00_(1.0f),
+			m01_(0.0f),
+			m02_(0.0f),
+			m03_(0.0f),
+			m10_(0.0f),
+			m11_(1.0f),
+			m12_(0.0f),
+			m13_(0.0f),
+			m20_(0.0f),
+			m21_(0.0f),
+			m22_(1.0f),
+			m23_(0.0f),
+			m30_(0.0f),
+			m31_(0.0f),
+			m32_(0.0f),
+			m33_(1.0f)
+#endif
+		{
+#ifdef YUME_SSE
+			_mm_storeu_ps(&m00_,_mm_set_ps(0.f,0.f,0.f,1.f));
+			_mm_storeu_ps(&m10_,_mm_set_ps(0.f,0.f,1.f,0.f));
+			_mm_storeu_ps(&m20_,_mm_set_ps(0.f,1.f,0.f,0.f));
+			_mm_storeu_ps(&m30_,_mm_set_ps(1.f,0.f,0.f,0.f));
+#endif
+		}
+
+		/// Copy-construct from another matrix.
+		Matrix4(const Matrix4& matrix)
+#ifndef YUME_SSE
+			:m00_(matrix.m00_),
+			m01_(matrix.m01_),
+			m02_(matrix.m02_),
+			m03_(matrix.m03_),
+			m10_(matrix.m10_),
+			m11_(matrix.m11_),
+			m12_(matrix.m12_),
+			m13_(matrix.m13_),
+			m20_(matrix.m20_),
+			m21_(matrix.m21_),
+			m22_(matrix.m22_),
+			m23_(matrix.m23_),
+			m30_(matrix.m30_),
+			m31_(matrix.m31_),
+			m32_(matrix.m32_),
+			m33_(matrix.m33_)
+#endif
+		{
+#ifdef YUME_SSE
+			_mm_storeu_ps(&m00_,_mm_loadu_ps(&matrix.m00_));
+			_mm_storeu_ps(&m10_,_mm_loadu_ps(&matrix.m10_));
+			_mm_storeu_ps(&m20_,_mm_loadu_ps(&matrix.m20_));
+			_mm_storeu_ps(&m30_,_mm_loadu_ps(&matrix.m30_));
+#endif
+		}
+
+		/// Copy-cnstruct from a 3x3 matrix and set the extra elements to identity.
+		Matrix4(const Matrix3& matrix):
+			m00_(matrix.m00_),
+			m01_(matrix.m01_),
+			m02_(matrix.m02_),
+			m03_(0.0f),
+			m10_(matrix.m10_),
+			m11_(matrix.m11_),
+			m12_(matrix.m12_),
+			m13_(0.0f),
+			m20_(matrix.m20_),
+			m21_(matrix.m21_),
+			m22_(matrix.m22_),
+			m23_(0.0f),
+			m30_(0.0f),
+			m31_(0.0f),
+			m32_(0.0f),
+			m33_(1.0f)
 		{
 		}
 
-		inline Matrix4(
-			Real m00, Real m01, Real m02, Real m03,
-			Real m10, Real m11, Real m12, Real m13,
-			Real m20, Real m21, Real m22, Real m23,
-			Real m30, Real m31, Real m32, Real m33)
+		// Construct from values.
+		Matrix4(float v00,float v01,float v02,float v03,
+			float v10,float v11,float v12,float v13,
+			float v20,float v21,float v22,float v23,
+			float v30,float v31,float v32,float v33):
+			m00_(v00),
+			m01_(v01),
+			m02_(v02),
+			m03_(v03),
+			m10_(v10),
+			m11_(v11),
+			m12_(v12),
+			m13_(v13),
+			m20_(v20),
+			m21_(v21),
+			m22_(v22),
+			m23_(v23),
+			m30_(v30),
+			m31_(v31),
+			m32_(v32),
+			m33_(v33)
 		{
-			m[0][0] = m00;
-			m[0][1] = m01;
-			m[0][2] = m02;
-			m[0][3] = m03;
-			m[1][0] = m10;
-			m[1][1] = m11;
-			m[1][2] = m12;
-			m[1][3] = m13;
-			m[2][0] = m20;
-			m[2][1] = m21;
-			m[2][2] = m22;
-			m[2][3] = m23;
-			m[3][0] = m30;
-			m[3][1] = m31;
-			m[3][2] = m32;
-			m[3][3] = m33;
 		}
 
-		/** Creates a standard 4x4 transformation matrix with a zero translation part from a rotation/scaling 3x3 matrix.
-		*/
-
-		inline Matrix4(const Matrix3& m3x3)
+		/// Construct from a float array.
+		explicit Matrix4(const float* data)
+#ifndef YUME_SSE
+			:m00_(data[0]),
+			m01_(data[1]),
+			m02_(data[2]),
+			m03_(data[3]),
+			m10_(data[4]),
+			m11_(data[5]),
+			m12_(data[6]),
+			m13_(data[7]),
+			m20_(data[8]),
+			m21_(data[9]),
+			m22_(data[10]),
+			m23_(data[11]),
+			m30_(data[12]),
+			m31_(data[13]),
+			m32_(data[14]),
+			m33_(data[15])
+#endif
 		{
-			operator=(IDENTITY);
-			operator=(m3x3);
+#ifdef YUME_SSE
+			_mm_storeu_ps(&m00_,_mm_loadu_ps(data));
+			_mm_storeu_ps(&m10_,_mm_loadu_ps(data + 4));
+			_mm_storeu_ps(&m20_,_mm_loadu_ps(data + 8));
+			_mm_storeu_ps(&m30_,_mm_loadu_ps(data + 12));
+#endif
 		}
 
-		/** Creates a standard 4x4 transformation matrix with a zero translation part from a rotation/scaling Quaternion.
-		*/
-
-		inline Matrix4(const Quaternion& rot)
+		/// Assign from another matrix.
+		Matrix4& operator =(const Matrix4& rhs)
 		{
-			Matrix3 m3x3;
-			rot.ToRotationMatrix(m3x3);
-			operator=(IDENTITY);
-			operator=(m3x3);
+#ifdef YUME_SSE
+			_mm_storeu_ps(&m00_, _mm_loadu_ps(&rhs.m00_));
+			_mm_storeu_ps(&m10_, _mm_loadu_ps(&rhs.m10_));
+			_mm_storeu_ps(&m20_, _mm_loadu_ps(&rhs.m20_));
+			_mm_storeu_ps(&m30_, _mm_loadu_ps(&rhs.m30_));
+#else
+			m00_ = rhs.m00_;
+			m01_ = rhs.m01_;
+			m02_ = rhs.m02_;
+			m03_ = rhs.m03_;
+			m10_ = rhs.m10_;
+			m11_ = rhs.m11_;
+			m12_ = rhs.m12_;
+			m13_ = rhs.m13_;
+			m20_ = rhs.m20_;
+			m21_ = rhs.m21_;
+			m22_ = rhs.m22_;
+			m23_ = rhs.m23_;
+			m30_ = rhs.m30_;
+			m31_ = rhs.m31_;
+			m32_ = rhs.m32_;
+			m33_ = rhs.m33_;
+#endif
+			return *this;
 		}
 
-
-		/** Exchange the contents of this matrix with another.
-		*/
-		inline void swap(Matrix4& other)
+		/// Assign from a 3x3 matrix. Set the extra elements to identity.
+		Matrix4& operator =(const Matrix3& rhs)
 		{
-			std::swap(m[0][0], other.m[0][0]);
-			std::swap(m[0][1], other.m[0][1]);
-			std::swap(m[0][2], other.m[0][2]);
-			std::swap(m[0][3], other.m[0][3]);
-			std::swap(m[1][0], other.m[1][0]);
-			std::swap(m[1][1], other.m[1][1]);
-			std::swap(m[1][2], other.m[1][2]);
-			std::swap(m[1][3], other.m[1][3]);
-			std::swap(m[2][0], other.m[2][0]);
-			std::swap(m[2][1], other.m[2][1]);
-			std::swap(m[2][2], other.m[2][2]);
-			std::swap(m[2][3], other.m[2][3]);
-			std::swap(m[3][0], other.m[3][0]);
-			std::swap(m[3][1], other.m[3][1]);
-			std::swap(m[3][2], other.m[3][2]);
-			std::swap(m[3][3], other.m[3][3]);
+			m00_ = rhs.m00_;
+			m01_ = rhs.m01_;
+			m02_ = rhs.m02_;
+			m03_ = 0.0f;
+			m10_ = rhs.m10_;
+			m11_ = rhs.m11_;
+			m12_ = rhs.m12_;
+			m13_ = 0.0f;
+			m20_ = rhs.m20_;
+			m21_ = rhs.m21_;
+			m22_ = rhs.m22_;
+			m23_ = 0.0f;
+			m30_ = 0.0f;
+			m31_ = 0.0f;
+			m32_ = 0.0f;
+			m33_ = 1.0f;
+			return *this;
 		}
 
-		inline Real* operator [] (size_t iRow)
+		/// Test for equality with another matrix without epsilon.
+		bool operator ==(const Matrix4& rhs) const
 		{
-			assert(iRow < 4);
-			return m[iRow];
+#ifdef YUME_SSE
+			__m128 c0 = _mm_cmpeq_ps(_mm_loadu_ps(&m00_),_mm_loadu_ps(&rhs.m00_));
+			__m128 c1 = _mm_cmpeq_ps(_mm_loadu_ps(&m10_),_mm_loadu_ps(&rhs.m10_));
+			c0 = _mm_and_ps(c0,c1);
+			__m128 c2 = _mm_cmpeq_ps(_mm_loadu_ps(&m20_),_mm_loadu_ps(&rhs.m20_));
+			__m128 c3 = _mm_cmpeq_ps(_mm_loadu_ps(&m30_),_mm_loadu_ps(&rhs.m30_));
+			c2 = _mm_and_ps(c2,c3);
+			c0 = _mm_and_ps(c0,c2);
+			__m128 hi = _mm_movehl_ps(c0,c0);
+			c0 = _mm_and_ps(c0, hi);
+			hi = _mm_shuffle_ps(c0, c0, _MM_SHUFFLE(1, 1, 1, 1));
+			c0 = _mm_and_ps(c0, hi);
+			return _mm_cvtsi128_si32(_mm_castps_si128(c0)) == -1;
+#else
+			const float* leftData = Data();
+			const float* rightData = rhs.Data();
+
+			for(unsigned i = 0; i < 16; ++i)
+			{
+				if(leftData[i] != rightData[i])
+					return false;
 		}
 
-		inline const Real *operator [] (size_t iRow) const
-		{
-			assert(iRow < 4);
-			return m[iRow];
+			return true;
+#endif
 		}
 
-		inline Matrix4 concatenate(const Matrix4 &m2) const
+		/// Test for inequality with another matrix without epsilon.
+		bool operator !=(const Matrix4& rhs) const { return !(*this == rhs); }
+
+		/// Multiply a Vector3 which is assumed to represent position.
+		Vector3 operator *(const Vector3& rhs) const
 		{
-			Matrix4 r;
-			r.m[0][0] = m[0][0] * m2.m[0][0] + m[0][1] * m2.m[1][0] + m[0][2] * m2.m[2][0] + m[0][3] * m2.m[3][0];
-			r.m[0][1] = m[0][0] * m2.m[0][1] + m[0][1] * m2.m[1][1] + m[0][2] * m2.m[2][1] + m[0][3] * m2.m[3][1];
-			r.m[0][2] = m[0][0] * m2.m[0][2] + m[0][1] * m2.m[1][2] + m[0][2] * m2.m[2][2] + m[0][3] * m2.m[3][2];
-			r.m[0][3] = m[0][0] * m2.m[0][3] + m[0][1] * m2.m[1][3] + m[0][2] * m2.m[2][3] + m[0][3] * m2.m[3][3];
+#ifdef YUME_SSE
+			__m128 vec = _mm_set_ps(1.f,rhs.z_,rhs.y_,rhs.x_);
+			__m128 r0 = _mm_mul_ps(_mm_loadu_ps(&m00_),vec);
+			__m128 r1 = _mm_mul_ps(_mm_loadu_ps(&m10_),vec);
+			__m128 t0 = _mm_unpacklo_ps(r0,r1);
+			__m128 t1 = _mm_unpackhi_ps(r0,r1);
+			t0 = _mm_add_ps(t0,t1);
+			__m128 r2 = _mm_mul_ps(_mm_loadu_ps(&m20_),vec);
+			__m128 r3 = _mm_mul_ps(_mm_loadu_ps(&m30_),vec);
+			__m128 t2 = _mm_unpacklo_ps(r2,r3);
+			__m128 t3 = _mm_unpackhi_ps(r2,r3);
+			t2 = _mm_add_ps(t2,t3);
+			vec = _mm_add_ps(_mm_movelh_ps(t0,t2),_mm_movehl_ps(t2,t0));
+			vec = _mm_div_ps(vec,_mm_shuffle_ps(vec,vec,_MM_SHUFFLE(3,3,3,3)));
+			return Vector3(
+				_mm_cvtss_f32(vec),
+				_mm_cvtss_f32(_mm_shuffle_ps(vec, vec, _MM_SHUFFLE(1, 1, 1, 1))),
+				_mm_cvtss_f32(_mm_movehl_ps(vec, vec)));
+#else
+			float invW = 1.0f / (m30_ * rhs.x_ + m31_ * rhs.y_ + m32_ * rhs.z_ + m33_);
 
-			r.m[1][0] = m[1][0] * m2.m[0][0] + m[1][1] * m2.m[1][0] + m[1][2] * m2.m[2][0] + m[1][3] * m2.m[3][0];
-			r.m[1][1] = m[1][0] * m2.m[0][1] + m[1][1] * m2.m[1][1] + m[1][2] * m2.m[2][1] + m[1][3] * m2.m[3][1];
-			r.m[1][2] = m[1][0] * m2.m[0][2] + m[1][1] * m2.m[1][2] + m[1][2] * m2.m[2][2] + m[1][3] * m2.m[3][2];
-			r.m[1][3] = m[1][0] * m2.m[0][3] + m[1][1] * m2.m[1][3] + m[1][2] * m2.m[2][3] + m[1][3] * m2.m[3][3];
-
-			r.m[2][0] = m[2][0] * m2.m[0][0] + m[2][1] * m2.m[1][0] + m[2][2] * m2.m[2][0] + m[2][3] * m2.m[3][0];
-			r.m[2][1] = m[2][0] * m2.m[0][1] + m[2][1] * m2.m[1][1] + m[2][2] * m2.m[2][1] + m[2][3] * m2.m[3][1];
-			r.m[2][2] = m[2][0] * m2.m[0][2] + m[2][1] * m2.m[1][2] + m[2][2] * m2.m[2][2] + m[2][3] * m2.m[3][2];
-			r.m[2][3] = m[2][0] * m2.m[0][3] + m[2][1] * m2.m[1][3] + m[2][2] * m2.m[2][3] + m[2][3] * m2.m[3][3];
-
-			r.m[3][0] = m[3][0] * m2.m[0][0] + m[3][1] * m2.m[1][0] + m[3][2] * m2.m[2][0] + m[3][3] * m2.m[3][0];
-			r.m[3][1] = m[3][0] * m2.m[0][1] + m[3][1] * m2.m[1][1] + m[3][2] * m2.m[2][1] + m[3][3] * m2.m[3][1];
-			r.m[3][2] = m[3][0] * m2.m[0][2] + m[3][1] * m2.m[1][2] + m[3][2] * m2.m[2][2] + m[3][3] * m2.m[3][2];
-			r.m[3][3] = m[3][0] * m2.m[0][3] + m[3][1] * m2.m[1][3] + m[3][2] * m2.m[2][3] + m[3][3] * m2.m[3][3];
-
-			return r;
+			return Vector3(
+				(m00_ * rhs.x_ + m01_ * rhs.y_ + m02_ * rhs.z_ + m03_) * invW,
+				(m10_ * rhs.x_ + m11_ * rhs.y_ + m12_ * rhs.z_ + m13_) * invW,
+				(m20_ * rhs.x_ + m21_ * rhs.y_ + m22_ * rhs.z_ + m23_) * invW
+				);
+#endif
 		}
 
-		/** Matrix concatenation using '*'.
-		*/
-		inline Matrix4 operator * (const Matrix4 &m2) const
+		/// Multiply a Vector4.
+		Vector4 operator *(const Vector4& rhs) const
 		{
-			return concatenate(m2);
-		}
+#ifdef YUME_SSE
+			__m128 vec = _mm_loadu_ps(&rhs.x_);
+			__m128 r0 = _mm_mul_ps(_mm_loadu_ps(&m00_),vec);
+			__m128 r1 = _mm_mul_ps(_mm_loadu_ps(&m10_),vec);
+			__m128 t0 = _mm_unpacklo_ps(r0,r1);
+			__m128 t1 = _mm_unpackhi_ps(r0,r1);
+			t0 = _mm_add_ps(t0,t1);
+			__m128 r2 = _mm_mul_ps(_mm_loadu_ps(&m20_),vec);
+			__m128 r3 = _mm_mul_ps(_mm_loadu_ps(&m30_),vec);
+			__m128 t2 = _mm_unpacklo_ps(r2,r3);
+			__m128 t3 = _mm_unpackhi_ps(r2,r3);
+			t2 = _mm_add_ps(t2,t3);
+			vec = _mm_add_ps(_mm_movelh_ps(t0,t2),_mm_movehl_ps(t2,t0));
 
-		/** Vector transformation using '*'.
-		@remarks
-		Transforms the given 3-D vector by the matrix, projecting the
-		result back into <i>w</i> = 1.
-		@note
-		This means that the initial <i>w</i> is considered to be 1.0,
-		and then all the tree elements of the resulting 3-D vector are
-		divided by the resulting <i>w</i>.
-		*/
-		inline Vector3 operator * (const Vector3 &v) const
-		{
-			Vector3 r;
-
-			Real fInvW = 1.0f / (m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3]);
-
-			r.x = (m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3]) * fInvW;
-			r.y = (m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3]) * fInvW;
-			r.z = (m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3]) * fInvW;
-
-			return r;
-		}
-		inline Vector4 operator * (const Vector4& v) const
-		{
+			Vector4 ret;
+			_mm_storeu_ps(&ret.x_, vec);
+			return ret;
+#else
 			return Vector4(
-				m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3] * v.w,
-				m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3] * v.w,
-				m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3] * v.w,
-				m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3] * v.w
+				m00_ * rhs.x_ + m01_ * rhs.y_ + m02_ * rhs.z_ + m03_ * rhs.w__,
+				m10_ * rhs.x_ + m11_ * rhs.y_ + m12_ * rhs.z_ + m13_ * rhs.w__,
+				m20_ * rhs.x_ + m21_ * rhs.y_ + m22_ * rhs.z_ + m23_ * rhs.w__,
+				m30_ * rhs.x_ + m31_ * rhs.y_ + m32_ * rhs.z_ + m33_ * rhs.w__
+				);
+#endif
+		}
+
+		/// Add a matrix.
+		Matrix4 operator +(const Matrix4& rhs) const
+		{
+#ifdef YUME_SSE
+			Matrix4 ret;
+			_mm_storeu_ps(&ret.m00_,_mm_add_ps(_mm_loadu_ps(&m00_),_mm_loadu_ps(&rhs.m00_)));
+			_mm_storeu_ps(&ret.m10_, _mm_add_ps(_mm_loadu_ps(&m10_), _mm_loadu_ps(&rhs.m10_)));
+			_mm_storeu_ps(&ret.m20_, _mm_add_ps(_mm_loadu_ps(&m20_), _mm_loadu_ps(&rhs.m20_)));
+			_mm_storeu_ps(&ret.m30_, _mm_add_ps(_mm_loadu_ps(&m30_), _mm_loadu_ps(&rhs.m30_)));
+			return ret;
+#else
+			return Matrix4(
+				m00_ + rhs.m00_,
+				m01_ + rhs.m01_,
+				m02_ + rhs.m02_,
+				m03_ + rhs.m03_,
+				m10_ + rhs.m10_,
+				m11_ + rhs.m11_,
+				m12_ + rhs.m12_,
+				m13_ + rhs.m13_,
+				m20_ + rhs.m20_,
+				m21_ + rhs.m21_,
+				m22_ + rhs.m22_,
+				m23_ + rhs.m23_,
+				m30_ + rhs.m30_,
+				m31_ + rhs.m31_,
+				m32_ + rhs.m32_,
+				m33_ + rhs.m33_
+				);
+#endif
+		}
+
+		/// Subtract a matrix.
+		Matrix4 operator -(const Matrix4& rhs) const
+		{
+#ifdef YUME_SSE
+			Matrix4 ret;
+			_mm_storeu_ps(&ret.m00_,_mm_sub_ps(_mm_loadu_ps(&m00_),_mm_loadu_ps(&rhs.m00_)));
+			_mm_storeu_ps(&ret.m10_, _mm_sub_ps(_mm_loadu_ps(&m10_), _mm_loadu_ps(&rhs.m10_)));
+			_mm_storeu_ps(&ret.m20_, _mm_sub_ps(_mm_loadu_ps(&m20_), _mm_loadu_ps(&rhs.m20_)));
+			_mm_storeu_ps(&ret.m30_, _mm_sub_ps(_mm_loadu_ps(&m30_), _mm_loadu_ps(&rhs.m30_)));
+			return ret;
+#else
+			return Matrix4(
+				m00_ - rhs.m00_,
+				m01_ - rhs.m01_,
+				m02_ - rhs.m02_,
+				m03_ - rhs.m03_,
+				m10_ - rhs.m10_,
+				m11_ - rhs.m11_,
+				m12_ - rhs.m12_,
+				m13_ - rhs.m13_,
+				m20_ - rhs.m20_,
+				m21_ - rhs.m21_,
+				m22_ - rhs.m22_,
+				m23_ - rhs.m23_,
+				m30_ - rhs.m30_,
+				m31_ - rhs.m31_,
+				m32_ - rhs.m32_,
+				m33_ - rhs.m33_
+				);
+#endif
+		}
+
+		/// Multiply with a scalar.
+		Matrix4 operator *(float rhs) const
+		{
+#ifdef YUME_SSE
+			Matrix4 ret;
+			const __m128 mul = _mm_set1_ps(rhs);
+			_mm_storeu_ps(&ret.m00_,_mm_mul_ps(_mm_loadu_ps(&m00_),mul));
+			_mm_storeu_ps(&ret.m10_, _mm_mul_ps(_mm_loadu_ps(&m10_), mul));
+			_mm_storeu_ps(&ret.m20_, _mm_mul_ps(_mm_loadu_ps(&m20_), mul));
+			_mm_storeu_ps(&ret.m30_, _mm_mul_ps(_mm_loadu_ps(&m30_), mul));
+			return ret;
+#else
+			return Matrix4(
+				m00_ * rhs,
+				m01_ * rhs,
+				m02_ * rhs,
+				m03_ * rhs,
+				m10_ * rhs,
+				m11_ * rhs,
+				m12_ * rhs,
+				m13_ * rhs,
+				m20_ * rhs,
+				m21_ * rhs,
+				m22_ * rhs,
+				m23_ * rhs,
+				m30_ * rhs,
+				m31_ * rhs,
+				m32_ * rhs,
+				m33_ * rhs
+				);
+#endif
+		}
+
+		/// Multiply a matrix.
+		Matrix4 operator *(const Matrix4& rhs) const
+		{
+#ifdef YUME_SSE
+			Matrix4 out;
+
+			__m128 r0 = _mm_loadu_ps(&rhs.m00_);
+			__m128 r1 = _mm_loadu_ps(&rhs.m10_);
+			__m128 r2 = _mm_loadu_ps(&rhs.m20_);
+			__m128 r3 = _mm_loadu_ps(&rhs.m30_);
+
+			__m128 l = _mm_loadu_ps(&m00_);
+			__m128 t0 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(0,0,0,0)),r0);
+			__m128 t1 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(1,1,1,1)),r1);
+			__m128 t2 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(2,2,2,2)),r2);
+			__m128 t3 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(3,3,3,3)),r3);
+			_mm_storeu_ps(&out.m00_,_mm_add_ps(_mm_add_ps(t0,t1),_mm_add_ps(t2,t3)));
+
+			l = _mm_loadu_ps(&m10_);
+			t0 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(0,0,0,0)),r0);
+			t1 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(1,1,1,1)),r1);
+			t2 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(2,2,2,2)),r2);
+			t3 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(3,3,3,3)),r3);
+			_mm_storeu_ps(&out.m10_,_mm_add_ps(_mm_add_ps(t0,t1),_mm_add_ps(t2,t3)));
+
+			l = _mm_loadu_ps(&m20_);
+			t0 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(0,0,0,0)),r0);
+			t1 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(1,1,1,1)),r1);
+			t2 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(2,2,2,2)),r2);
+			t3 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(3,3,3,3)),r3);
+			_mm_storeu_ps(&out.m20_,_mm_add_ps(_mm_add_ps(t0,t1),_mm_add_ps(t2,t3)));
+
+			l = _mm_loadu_ps(&m30_);
+			t0 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(0,0,0,0)),r0);
+			t1 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(1,1,1,1)),r1);
+			t2 = _mm_mul_ps(_mm_shuffle_ps(l,l,_MM_SHUFFLE(2,2,2,2)),r2);
+			t3 = _mm_mul_ps(_mm_shuffle_ps(l, l, _MM_SHUFFLE(3, 3, 3, 3)), r3);
+			_mm_storeu_ps(&out.m30_, _mm_add_ps(_mm_add_ps(t0, t1), _mm_add_ps(t2, t3)));
+
+			return out;
+#else
+			return Matrix4(
+				m00_ * rhs.m00_ + m01_ * rhs.m10_ + m02_ * rhs.m20_ + m03_ * rhs.m30_,
+				m00_ * rhs.m01_ + m01_ * rhs.m11_ + m02_ * rhs.m21_ + m03_ * rhs.m31_,
+				m00_ * rhs.m02_ + m01_ * rhs.m12_ + m02_ * rhs.m22_ + m03_ * rhs.m32_,
+				m00_ * rhs.m03_ + m01_ * rhs.m13_ + m02_ * rhs.m23_ + m03_ * rhs.m33_,
+				m10_ * rhs.m00_ + m11_ * rhs.m10_ + m12_ * rhs.m20_ + m13_ * rhs.m30_,
+				m10_ * rhs.m01_ + m11_ * rhs.m11_ + m12_ * rhs.m21_ + m13_ * rhs.m31_,
+				m10_ * rhs.m02_ + m11_ * rhs.m12_ + m12_ * rhs.m22_ + m13_ * rhs.m32_,
+				m10_ * rhs.m03_ + m11_ * rhs.m13_ + m12_ * rhs.m23_ + m13_ * rhs.m33_,
+				m20_ * rhs.m00_ + m21_ * rhs.m10_ + m22_ * rhs.m20_ + m23_ * rhs.m30_,
+				m20_ * rhs.m01_ + m21_ * rhs.m11_ + m22_ * rhs.m21_ + m23_ * rhs.m31_,
+				m20_ * rhs.m02_ + m21_ * rhs.m12_ + m22_ * rhs.m22_ + m23_ * rhs.m32_,
+				m20_ * rhs.m03_ + m21_ * rhs.m13_ + m22_ * rhs.m23_ + m23_ * rhs.m33_,
+				m30_ * rhs.m00_ + m31_ * rhs.m10_ + m32_ * rhs.m20_ + m33_ * rhs.m30_,
+				m30_ * rhs.m01_ + m31_ * rhs.m11_ + m32_ * rhs.m21_ + m33_ * rhs.m31_,
+				m30_ * rhs.m02_ + m31_ * rhs.m12_ + m32_ * rhs.m22_ + m33_ * rhs.m32_,
+				m30_ * rhs.m03_ + m31_ * rhs.m13_ + m32_ * rhs.m23_ + m33_ * rhs.m33_
+				);
+#endif
+		}
+
+		/// Multiply with a 3x4 matrix.
+		Matrix4 operator *(const Matrix3x4& rhs) const;
+
+		/// Set translation elements.
+		void SetTranslation(const Vector3& translation)
+		{
+			m03_ = translation.x_;
+			m13_ = translation.y_;
+			m23_ = translation.z_;
+		}
+
+		/// Set rotation elements from a 3x3 matrix.
+		void SetRotation(const Matrix3& rotation)
+		{
+			m00_ = rotation.m00_;
+			m01_ = rotation.m01_;
+			m02_ = rotation.m02_;
+			m10_ = rotation.m10_;
+			m11_ = rotation.m11_;
+			m12_ = rotation.m12_;
+			m20_ = rotation.m20_;
+			m21_ = rotation.m21_;
+			m22_ = rotation.m22_;
+		}
+
+		// Set scaling elements.
+		void SetScale(const Vector3& scale)
+		{
+			m00_ = scale.x_;
+			m11_ = scale.y_;
+			m22_ = scale.z_;
+		}
+
+		// Set uniform scaling elements.
+		void SetScale(float scale)
+		{
+			m00_ = scale;
+			m11_ = scale;
+			m22_ = scale;
+		}
+
+		/// Return the combined rotation and scaling matrix.
+		Matrix3 ToMatrix3() const
+		{
+			return Matrix3(
+				m00_,
+				m01_,
+				m02_,
+				m10_,
+				m11_,
+				m12_,
+				m20_,
+				m21_,
+				m22_
 				);
 		}
-		inline Plane operator * (const Plane& p) const
-		{
-			Plane ret;
-			Matrix4 invTrans = inverse().transpose();
-			Vector4 v4(p.normal.x, p.normal.y, p.normal.z, p.d);
-			v4 = invTrans * v4;
-			ret.normal.x = v4.x;
-			ret.normal.y = v4.y;
-			ret.normal.z = v4.z;
-			ret.d = v4.w / ret.normal.normalise();
 
-			return ret;
+		/// Return the rotation matrix with scaling removed.
+		Matrix3 RotationMatrix() const
+		{
+			Vector3 invScale(
+				1.0f / sqrtf(m00_ * m00_ + m10_ * m10_ + m20_ * m20_),
+				1.0f / sqrtf(m01_ * m01_ + m11_ * m11_ + m21_ * m21_),
+				1.0f / sqrtf(m02_ * m02_ + m12_ * m12_ + m22_ * m22_)
+				);
+
+			return ToMatrix3().Scaled(invScale);
 		}
 
-
-		/** Matrix addition.
-		*/
-		inline Matrix4 operator + (const Matrix4 &m2) const
+		/// Return the translation part.
+		Vector3 Translation() const
 		{
-			Matrix4 r;
-
-			r.m[0][0] = m[0][0] + m2.m[0][0];
-			r.m[0][1] = m[0][1] + m2.m[0][1];
-			r.m[0][2] = m[0][2] + m2.m[0][2];
-			r.m[0][3] = m[0][3] + m2.m[0][3];
-
-			r.m[1][0] = m[1][0] + m2.m[1][0];
-			r.m[1][1] = m[1][1] + m2.m[1][1];
-			r.m[1][2] = m[1][2] + m2.m[1][2];
-			r.m[1][3] = m[1][3] + m2.m[1][3];
-
-			r.m[2][0] = m[2][0] + m2.m[2][0];
-			r.m[2][1] = m[2][1] + m2.m[2][1];
-			r.m[2][2] = m[2][2] + m2.m[2][2];
-			r.m[2][3] = m[2][3] + m2.m[2][3];
-
-			r.m[3][0] = m[3][0] + m2.m[3][0];
-			r.m[3][1] = m[3][1] + m2.m[3][1];
-			r.m[3][2] = m[3][2] + m2.m[3][2];
-			r.m[3][3] = m[3][3] + m2.m[3][3];
-
-			return r;
+			return Vector3(
+				m03_,
+				m13_,
+				m23_
+				);
 		}
 
-		/** Matrix subtraction.
-		*/
-		inline Matrix4 operator - (const Matrix4 &m2) const
+		/// Return the rotation part.
+		Quaternion Rotation() const { return Quaternion(RotationMatrix()); }
+
+		/// Return the scaling part
+		Vector3 Scale() const
 		{
-			Matrix4 r;
-			r.m[0][0] = m[0][0] - m2.m[0][0];
-			r.m[0][1] = m[0][1] - m2.m[0][1];
-			r.m[0][2] = m[0][2] - m2.m[0][2];
-			r.m[0][3] = m[0][3] - m2.m[0][3];
-
-			r.m[1][0] = m[1][0] - m2.m[1][0];
-			r.m[1][1] = m[1][1] - m2.m[1][1];
-			r.m[1][2] = m[1][2] - m2.m[1][2];
-			r.m[1][3] = m[1][3] - m2.m[1][3];
-
-			r.m[2][0] = m[2][0] - m2.m[2][0];
-			r.m[2][1] = m[2][1] - m2.m[2][1];
-			r.m[2][2] = m[2][2] - m2.m[2][2];
-			r.m[2][3] = m[2][3] - m2.m[2][3];
-
-			r.m[3][0] = m[3][0] - m2.m[3][0];
-			r.m[3][1] = m[3][1] - m2.m[3][1];
-			r.m[3][2] = m[3][2] - m2.m[3][2];
-			r.m[3][3] = m[3][3] - m2.m[3][3];
-
-			return r;
+			return Vector3(
+				sqrtf(m00_ * m00_ + m10_ * m10_ + m20_ * m20_),
+				sqrtf(m01_ * m01_ + m11_ * m11_ + m21_ * m21_),
+				sqrtf(m02_ * m02_ + m12_ * m12_ + m22_ * m22_)
+				);
 		}
 
-		/** Tests 2 matrices for equality.
-		*/
-		inline bool operator == (const Matrix4& m2) const
+		/// Return transpose
+		Matrix4 Transpose() const
 		{
-			if (
-				m[0][0] != m2.m[0][0] || m[0][1] != m2.m[0][1] || m[0][2] != m2.m[0][2] || m[0][3] != m2.m[0][3] ||
-				m[1][0] != m2.m[1][0] || m[1][1] != m2.m[1][1] || m[1][2] != m2.m[1][2] || m[1][3] != m2.m[1][3] ||
-				m[2][0] != m2.m[2][0] || m[2][1] != m2.m[2][1] || m[2][2] != m2.m[2][2] || m[2][3] != m2.m[2][3] ||
-				m[3][0] != m2.m[3][0] || m[3][1] != m2.m[3][1] || m[3][2] != m2.m[3][2] || m[3][3] != m2.m[3][3])
-				return false;
+#ifdef YUME_SSE
+			__m128 m0 = _mm_loadu_ps(&m00_);
+			__m128 m1 = _mm_loadu_ps(&m10_);
+			__m128 m2 = _mm_loadu_ps(&m20_);
+			__m128 m3 = _mm_loadu_ps(&m30_);
+			_MM_TRANSPOSE4_PS(m0,m1,m2,m3);
+			Matrix4 out;
+			_mm_storeu_ps(&out.m00_,m0);
+			_mm_storeu_ps(&out.m10_, m1);
+			_mm_storeu_ps(&out.m20_, m2);
+			_mm_storeu_ps(&out.m30_, m3);
+			return out;
+#else
+			return Matrix4(
+				m00_,
+				m10_,
+				m20_,
+				m30_,
+				m01_,
+				m11_,
+				m21_,
+				m31_,
+				m02_,
+				m12_,
+				m22_,
+				m32_,
+				m03_,
+				m13_,
+				m23_,
+				m33_
+				);
+#endif
+		}
+
+		/// Test for equality with another matrix with epsilon.
+		bool Equals(const Matrix4& rhs) const
+		{
+			const float* leftData = Data();
+			const float* rightData = rhs.Data();
+
+			for(unsigned i = 0; i < 16; ++i)
+			{
+				if(!YumeEngine::Equals(leftData[i],rightData[i]))
+					return false;
+			}
+
 			return true;
 		}
 
-		/** Tests 2 matrices for inequality.
-		*/
-		inline bool operator != (const Matrix4& m2) const
+		/// Return decomposition to translation, rotation and scale.
+		void Decompose(Vector3& translation,Quaternion& rotation,Vector3& scale) const;
+		/// Return inverse.
+		Matrix4 Inverse() const;
+
+		/// Return float data
+		const float* Data() const { return &m00_; }
+
+		/// Return as string.
+		YumeString ToString() const;
+
+		float m00_;
+		float m01_;
+		float m02_;
+		float m03_;
+		float m10_;
+		float m11_;
+		float m12_;
+		float m13_;
+		float m20_;
+		float m21_;
+		float m22_;
+		float m23_;
+		float m30_;
+		float m31_;
+		float m32_;
+		float m33_;
+
+		/// Bulk transpose matrices.
+		static void BulkTranspose(float* dest,const float* src,unsigned count)
 		{
-			if (
-				m[0][0] != m2.m[0][0] || m[0][1] != m2.m[0][1] || m[0][2] != m2.m[0][2] || m[0][3] != m2.m[0][3] ||
-				m[1][0] != m2.m[1][0] || m[1][1] != m2.m[1][1] || m[1][2] != m2.m[1][2] || m[1][3] != m2.m[1][3] ||
-				m[2][0] != m2.m[2][0] || m[2][1] != m2.m[2][1] || m[2][2] != m2.m[2][2] || m[2][3] != m2.m[2][3] ||
-				m[3][0] != m2.m[3][0] || m[3][1] != m2.m[3][1] || m[3][2] != m2.m[3][2] || m[3][3] != m2.m[3][3])
-				return true;
-			return false;
-		}
-
-		/** Assignment from 3x3 matrix.
-		*/
-		inline void operator = (const Matrix3& mat3)
-		{
-			m[0][0] = mat3.m[0][0]; m[0][1] = mat3.m[0][1]; m[0][2] = mat3.m[0][2];
-			m[1][0] = mat3.m[1][0]; m[1][1] = mat3.m[1][1]; m[1][2] = mat3.m[1][2];
-			m[2][0] = mat3.m[2][0]; m[2][1] = mat3.m[2][1]; m[2][2] = mat3.m[2][2];
-		}
-
-		inline Matrix4 transpose(void) const
-		{
-			return Matrix4(m[0][0], m[1][0], m[2][0], m[3][0],
-				m[0][1], m[1][1], m[2][1], m[3][1],
-				m[0][2], m[1][2], m[2][2], m[3][2],
-				m[0][3], m[1][3], m[2][3], m[3][3]);
-		}
-
-		/*
-		-----------------------------------------------------------------------
-		Translation Transformation
-		-----------------------------------------------------------------------
-		*/
-		/** Sets the translation transformation part of the matrix.
-		*/
-		inline void setTrans(const Vector3& v)
-		{
-			m[0][3] = v.x;
-			m[1][3] = v.y;
-			m[2][3] = v.z;
-		}
-
-		/** Extracts the translation transformation part of the matrix.
-		*/
-		inline Vector3 getTrans() const
-		{
-			return Vector3(m[0][3], m[1][3], m[2][3]);
-		}
-
-
-		/** Builds a translation matrix
-		*/
-		inline void makeTrans(const Vector3& v)
-		{
-			m[0][0] = 1.0; m[0][1] = 0.0; m[0][2] = 0.0; m[0][3] = v.x;
-			m[1][0] = 0.0; m[1][1] = 1.0; m[1][2] = 0.0; m[1][3] = v.y;
-			m[2][0] = 0.0; m[2][1] = 0.0; m[2][2] = 1.0; m[2][3] = v.z;
-			m[3][0] = 0.0; m[3][1] = 0.0; m[3][2] = 0.0; m[3][3] = 1.0;
-		}
-
-		inline void makeTrans(Real tx, Real ty, Real tz)
-		{
-			m[0][0] = 1.0; m[0][1] = 0.0; m[0][2] = 0.0; m[0][3] = tx;
-			m[1][0] = 0.0; m[1][1] = 1.0; m[1][2] = 0.0; m[1][3] = ty;
-			m[2][0] = 0.0; m[2][1] = 0.0; m[2][2] = 1.0; m[2][3] = tz;
-			m[3][0] = 0.0; m[3][1] = 0.0; m[3][2] = 0.0; m[3][3] = 1.0;
-		}
-
-		/** Gets a translation matrix.
-		*/
-		inline static Matrix4 getTrans(const Vector3& v)
-		{
-			Matrix4 r;
-
-			r.m[0][0] = 1.0; r.m[0][1] = 0.0; r.m[0][2] = 0.0; r.m[0][3] = v.x;
-			r.m[1][0] = 0.0; r.m[1][1] = 1.0; r.m[1][2] = 0.0; r.m[1][3] = v.y;
-			r.m[2][0] = 0.0; r.m[2][1] = 0.0; r.m[2][2] = 1.0; r.m[2][3] = v.z;
-			r.m[3][0] = 0.0; r.m[3][1] = 0.0; r.m[3][2] = 0.0; r.m[3][3] = 1.0;
-
-			return r;
-		}
-
-		/** Gets a translation matrix - variation for not using a vector.
-		*/
-		inline static Matrix4 getTrans(Real t_x, Real t_y, Real t_z)
-		{
-			Matrix4 r;
-
-			r.m[0][0] = 1.0; r.m[0][1] = 0.0; r.m[0][2] = 0.0; r.m[0][3] = t_x;
-			r.m[1][0] = 0.0; r.m[1][1] = 1.0; r.m[1][2] = 0.0; r.m[1][3] = t_y;
-			r.m[2][0] = 0.0; r.m[2][1] = 0.0; r.m[2][2] = 1.0; r.m[2][3] = t_z;
-			r.m[3][0] = 0.0; r.m[3][1] = 0.0; r.m[3][2] = 0.0; r.m[3][3] = 1.0;
-
-			return r;
-		}
-
-		/*
-		-----------------------------------------------------------------------
-		Scale Transformation
-		-----------------------------------------------------------------------
-		*/
-		/** Sets the scale part of the matrix.
-		*/
-		inline void setScale(const Vector3& v)
-		{
-			m[0][0] = v.x;
-			m[1][1] = v.y;
-			m[2][2] = v.z;
-		}
-
-		/** Gets a scale matrix.
-		*/
-		inline static Matrix4 getScale(const Vector3& v)
-		{
-			Matrix4 r;
-			r.m[0][0] = v.x; r.m[0][1] = 0.0; r.m[0][2] = 0.0; r.m[0][3] = 0.0;
-			r.m[1][0] = 0.0; r.m[1][1] = v.y; r.m[1][2] = 0.0; r.m[1][3] = 0.0;
-			r.m[2][0] = 0.0; r.m[2][1] = 0.0; r.m[2][2] = v.z; r.m[2][3] = 0.0;
-			r.m[3][0] = 0.0; r.m[3][1] = 0.0; r.m[3][2] = 0.0; r.m[3][3] = 1.0;
-
-			return r;
-		}
-
-		/** Gets a scale matrix - variation for not using a vector.
-		*/
-		inline static Matrix4 getScale(Real s_x, Real s_y, Real s_z)
-		{
-			Matrix4 r;
-			r.m[0][0] = s_x; r.m[0][1] = 0.0; r.m[0][2] = 0.0; r.m[0][3] = 0.0;
-			r.m[1][0] = 0.0; r.m[1][1] = s_y; r.m[1][2] = 0.0; r.m[1][3] = 0.0;
-			r.m[2][0] = 0.0; r.m[2][1] = 0.0; r.m[2][2] = s_z; r.m[2][3] = 0.0;
-			r.m[3][0] = 0.0; r.m[3][1] = 0.0; r.m[3][2] = 0.0; r.m[3][3] = 1.0;
-
-			return r;
-		}
-
-		/** Extracts the rotation / scaling part of the Matrix as a 3x3 matrix.
-		@param m3x3 Destination Matrix3
-		*/
-		inline void extract3x3Matrix(Matrix3& m3x3) const
-		{
-			m3x3.m[0][0] = m[0][0];
-			m3x3.m[0][1] = m[0][1];
-			m3x3.m[0][2] = m[0][2];
-			m3x3.m[1][0] = m[1][0];
-			m3x3.m[1][1] = m[1][1];
-			m3x3.m[1][2] = m[1][2];
-			m3x3.m[2][0] = m[2][0];
-			m3x3.m[2][1] = m[2][1];
-			m3x3.m[2][2] = m[2][2];
-
-		}
-
-		/** Determines if this matrix involves a scaling. */
-		inline bool hasScale() const
-		{
-			// check magnitude of column vectors (==local axes)
-			Real t = m[0][0] * m[0][0] + m[1][0] * m[1][0] + m[2][0] * m[2][0];
-			if (!Math::RealEqual(t, 1.0, (Real)1e-04))
-				return true;
-			t = m[0][1] * m[0][1] + m[1][1] * m[1][1] + m[2][1] * m[2][1];
-			if (!Math::RealEqual(t, 1.0, (Real)1e-04))
-				return true;
-			t = m[0][2] * m[0][2] + m[1][2] * m[1][2] + m[2][2] * m[2][2];
-			if (!Math::RealEqual(t, 1.0, (Real)1e-04))
-				return true;
-
-			return false;
-		}
-
-		/** Determines if this matrix involves a negative scaling. */
-		inline bool hasNegativeScale() const
-		{
-			return determinant() < 0;
-		}
-
-		/** Extracts the rotation / scaling part as a quaternion from the Matrix.
-		*/
-		inline Quaternion extractQuaternion() const
-		{
-			Matrix3 m3x3;
-			extract3x3Matrix(m3x3);
-			return Quaternion(m3x3);
-		}
-
-		static const Matrix4 ZERO;
-		static const Matrix4 ZEROAFFINE;
-		static const Matrix4 IDENTITY;
-		/** Useful little matrix which takes 2D clipspace {-1, 1} to {0,1}
-		and inverts the Y. */
-		static const Matrix4 CLIPSPACE2DTOIMAGESPACE;
-
-		inline Matrix4 operator*(Real scalar) const
-		{
-			return Matrix4(
-				scalar*m[0][0], scalar*m[0][1], scalar*m[0][2], scalar*m[0][3],
-				scalar*m[1][0], scalar*m[1][1], scalar*m[1][2], scalar*m[1][3],
-				scalar*m[2][0], scalar*m[2][1], scalar*m[2][2], scalar*m[2][3],
-				scalar*m[3][0], scalar*m[3][1], scalar*m[3][2], scalar*m[3][3]);
-		}
-
-		/** Function for writing to a stream.
-		*/
-		inline YumeAPIExport friend std::ostream& operator <<
-			(std::ostream& o, const Matrix4& mat)
-		{
-			o << "Matrix4(";
-			for (size_t i = 0; i < 4; ++i)
+			for(unsigned i = 0; i < count; ++i)
 			{
-				o << " row" << (unsigned)i << "{";
-				for (size_t j = 0; j < 4; ++j)
-				{
-					o << mat[i][j] << " ";
-				}
-				o << "}";
+#ifdef YUME_SSE
+				__m128 m0 = _mm_loadu_ps(src);
+				__m128 m1 = _mm_loadu_ps(src + 4);
+				__m128 m2 = _mm_loadu_ps(src + 8);
+				__m128 m3 = _mm_loadu_ps(src + 12);
+				_MM_TRANSPOSE4_PS(m0,m1,m2,m3);
+				_mm_storeu_ps(dest, m0);
+				_mm_storeu_ps(dest + 4, m1);
+				_mm_storeu_ps(dest + 8, m2);
+				_mm_storeu_ps(dest + 12, m3);
+#else
+				dest[0] = src[0];
+				dest[1] = src[4];
+				dest[2] = src[8];
+				dest[3] = src[12];
+				dest[4] = src[1];
+				dest[5] = src[5];
+				dest[6] = src[9];
+				dest[7] = src[13];
+				dest[8] = src[2];
+				dest[9] = src[6];
+				dest[10] = src[10];
+				dest[11] = src[14];
+				dest[12] = src[3];
+				dest[13] = src[7];
+				dest[14] = src[11];
+				dest[15] = src[15];
+#endif
+				dest += 16;
+				src += 16;
 			}
-			o << ")";
-			return o;
 		}
 
-		Matrix4 adjoint() const;
-		Real determinant() const;
-		Matrix4 inverse() const;
+		/// Zero matrix.
+		static const Matrix4 ZERO;
+		/// Identity matrix.
+		static const Matrix4 IDENTITY;
+		};
 
-		/** Building a Matrix4 from orientation / scale / position.
-		@remarks
-		Transform is performed in the order scale, rotate, translation, i.e. translation is independent
-		of orientation axes, scale does not affect size of translation, rotation and scaling are always
-		centered on the origin.
-		*/
-		void makeTransform(const Vector3& position, const Vector3& scale, const Quaternion& orientation);
+	/// Multiply a 4x4 matrix with a scalar
+	inline Matrix4 operator *(float lhs,const Matrix4& rhs) { return rhs * lhs; }
 
-		/** Building an inverse Matrix4 from orientation / scale / position.
-		@remarks
-		As makeTransform except it build the inverse given the same data as makeTransform, so
-		performing -translation, -rotate, 1/scale in that order.
-		*/
-		void makeInverseTransform(const Vector3& position, const Vector3& scale, const Quaternion& orientation);
-
-		/** Decompose a Matrix4 to orientation / scale / position.
-		*/
-		void decomposition(Vector3& position, Vector3& scale, Quaternion& orientation) const;
-
-		/** Check whether or not the matrix is affine matrix.
-		@remarks
-		An affine matrix is a 4x4 matrix with row 3 equal to (0, 0, 0, 1),
-		e.g. no projective coefficients.
-		*/
-		inline bool isAffine(void) const
-		{
-			return m[3][0] == 0 && m[3][1] == 0 && m[3][2] == 0 && m[3][3] == 1;
-		}
-
-		/** Returns the inverse of the affine matrix.
-		@note
-		The matrix must be an affine matrix. @see Matrix4::isAffine.
-		*/
-		Matrix4 inverseAffine(void) const;
-
-		/** Concatenate two affine matrices.
-		@note
-		The matrices must be affine matrix. @see Matrix4::isAffine.
-		*/
-		inline Matrix4 concatenateAffine(const Matrix4 &m2) const
-		{
-			assert(isAffine() && m2.isAffine());
-
-			return Matrix4(
-				m[0][0] * m2.m[0][0] + m[0][1] * m2.m[1][0] + m[0][2] * m2.m[2][0],
-				m[0][0] * m2.m[0][1] + m[0][1] * m2.m[1][1] + m[0][2] * m2.m[2][1],
-				m[0][0] * m2.m[0][2] + m[0][1] * m2.m[1][2] + m[0][2] * m2.m[2][2],
-				m[0][0] * m2.m[0][3] + m[0][1] * m2.m[1][3] + m[0][2] * m2.m[2][3] + m[0][3],
-
-				m[1][0] * m2.m[0][0] + m[1][1] * m2.m[1][0] + m[1][2] * m2.m[2][0],
-				m[1][0] * m2.m[0][1] + m[1][1] * m2.m[1][1] + m[1][2] * m2.m[2][1],
-				m[1][0] * m2.m[0][2] + m[1][1] * m2.m[1][2] + m[1][2] * m2.m[2][2],
-				m[1][0] * m2.m[0][3] + m[1][1] * m2.m[1][3] + m[1][2] * m2.m[2][3] + m[1][3],
-
-				m[2][0] * m2.m[0][0] + m[2][1] * m2.m[1][0] + m[2][2] * m2.m[2][0],
-				m[2][0] * m2.m[0][1] + m[2][1] * m2.m[1][1] + m[2][2] * m2.m[2][1],
-				m[2][0] * m2.m[0][2] + m[2][1] * m2.m[1][2] + m[2][2] * m2.m[2][2],
-				m[2][0] * m2.m[0][3] + m[2][1] * m2.m[1][3] + m[2][2] * m2.m[2][3] + m[2][3],
-
-				0, 0, 0, 1);
-		}
-
-		/** 3-D Vector transformation specially for an affine matrix.
-		@remarks
-		Transforms the given 3-D vector by the matrix, projecting the
-		result back into <i>w</i> = 1.
-		@note
-		The matrix must be an affine matrix. @see Matrix4::isAffine.
-		*/
-		inline Vector3 transformAffine(const Vector3& v) const
-		{
-			assert(isAffine());
-
-			return Vector3(
-				m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3],
-				m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3],
-				m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3]);
-		}
-
-		/** 4-D Vector transformation specially for an affine matrix.
-		@note
-		The matrix must be an affine matrix. @see Matrix4::isAffine.
-		*/
-		inline Vector4 transformAffine(const Vector4& v) const
-		{
-			assert(isAffine());
-
-			return Vector4(
-				m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3] * v.w,
-				m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3] * v.w,
-				m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3] * v.w,
-				v.w);
-		}
-	};
-
-	/* Removed from Vector4 and made a non-member here because otherwise
-	OgreMatrix4.h and OgreVector4.h have to try to include and inline each
-	other, which frankly doesn't work ;)
-	*/
-	inline Vector4 operator * (const Vector4& v, const Matrix4& mat)
-	{
-		return Vector4(
-			v.x*mat[0][0] + v.y*mat[1][0] + v.z*mat[2][0] + v.w*mat[3][0],
-			v.x*mat[0][1] + v.y*mat[1][1] + v.z*mat[2][1] + v.w*mat[3][1],
-			v.x*mat[0][2] + v.y*mat[1][2] + v.z*mat[2][2] + v.w*mat[3][2],
-			v.x*mat[0][3] + v.y*mat[1][3] + v.z*mat[2][3] + v.w*mat[3][3]
-			);
-	}
 }
 
 

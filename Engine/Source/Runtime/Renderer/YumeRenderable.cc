@@ -40,7 +40,7 @@ namespace YumeEngine
 
 	YumeRenderable::~YumeRenderable()
 	{
-		Release();
+		
 	}
 
 	void YumeRenderable::SetNumViewports(unsigned num)
@@ -81,25 +81,6 @@ namespace YumeEngine
 	void YumeRenderable::ResetUpdateQueued()
 	{
 		updateQueued_ = false;
-	}
-
-	void YumeRenderable::Release()
-	{
-		YumeRHI* graphics = YumeEngine3D::Get()->GetRenderer();
-		if(graphics && renderTargetView_)
-		{
-			for(unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
-			{
-				if(graphics->GetRenderTarget(i) == this)
-					graphics->ResetRenderTarget(i);
-			}
-
-			if(graphics->GetDepthStencil() == this)
-				graphics->ResetDepthStencil();
-		}
-
-		/*YUME_SAFE_RELEASE(renderTargetView_);
-		YUME_SAFE_RELEASE(readOnlyView_);*/
 	}
 
 	int YumeRenderable::GetWidth() const

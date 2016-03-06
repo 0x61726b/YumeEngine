@@ -188,12 +188,12 @@ namespace YumeEngine
 		YumeColor Lerp(const YumeColor& rhs,float t) const;
 
 		/// Return color with absolute components.
-		YumeColor Abs() const { return YumeColor(YumeEngine::Math::Abs(r_),YumeEngine::Math::Abs(g_),YumeEngine::Math::Abs(b_),YumeEngine::Math::Abs(a_)); }
+		YumeColor Abs() const { return YumeColor(YumeEngine::Abs(r_),YumeEngine::Abs(g_),YumeEngine::Abs(b_),YumeEngine::Abs(a_)); }
 
 		/// Test for equality with another color with epsilon.
 		bool Equals(const YumeColor& rhs) const
 		{
-			return YumeEngine::Math::RealEqual(r_,rhs.r_) && YumeEngine::Math::RealEqual(g_,rhs.g_) && YumeEngine::Math::RealEqual(b_,rhs.b_) && YumeEngine::Math::RealEqual(a_,rhs.a_);
+			return YumeEngine::Equals(r_,rhs.r_) && YumeEngine::Equals(g_,rhs.g_) && YumeEngine::Equals(b_,rhs.b_) && YumeEngine::Equals(a_,rhs.a_);
 		}
 
 		/// Return as string.

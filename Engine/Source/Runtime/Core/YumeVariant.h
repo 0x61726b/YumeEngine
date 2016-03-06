@@ -26,7 +26,6 @@
 
 #include <boost/variant.hpp>
 #include <boost/mpl/vector.hpp>
-#include <boost/mpl/contains.hpp>
 #include <boost/utility/enable_if.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine

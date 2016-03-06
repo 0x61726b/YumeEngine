@@ -23,11 +23,6 @@
 #define __YumeRect_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-
-#include "Math/YumeMath.h"
-
-#include "Math/YumeVector2.h"
-#include "Math/YumeVector3.h"
 #include "Math/YumeVector4.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
@@ -39,8 +34,8 @@ namespace YumeEngine
 	public:
 		/// Construct an undefined rect.
 		Rect():
-			min_(Math::POS_INFINITY,Math::POS_INFINITY),
-			max_(Math::NEG_INFINITY,Math::NEG_INFINITY)
+			min_(M_INFINITY,M_INFINITY),
+			max_(-M_INFINITY,-M_INFINITY)
 		{
 		}
 
@@ -60,8 +55,8 @@ namespace YumeEngine
 
 		/// Construct from a Vector4.
 		Rect(const Vector4& vector):
-			min_(vector.x,vector.y),
-			max_(vector.z,vector.w)
+			min_(vector.x_,vector.y_),
+			max_(vector.z_,vector.w_)
 		{
 		}
 
@@ -116,34 +111,34 @@ namespace YumeEngine
 		/// Merge a point.
 		void Merge(const Vector2& point)
 		{
-			if(point.x < min_.x)
-				min_.x = point.x;
-			if(point.x > max_.x)
-				max_.x = point.x;
-			if(point.y < min_.y)
-				min_.y = point.y;
-			if(point.y > max_.y)
-				max_.y = point.y;
+			if(point.x_ < min_.x_)
+				min_.x_ = point.x_;
+			if(point.x_ > max_.x_)
+				max_.x_ = point.x_;
+			if(point.y_ < min_.y_)
+				min_.y_ = point.y_;
+			if(point.y_ > max_.y_)
+				max_.y_ = point.y_;
 		}
 
 		/// Merge a rect.
 		void Merge(const Rect& rect)
 		{
-			if(rect.min_.x < min_.x)
-				min_.x = rect.min_.x;
-			if(rect.min_.y < min_.y)
-				min_.y = rect.min_.y;
-			if(rect.max_.x > max_.x)
-				max_.x = rect.max_.x;
-			if(rect.max_.y > max_.y)
-				max_.y = rect.max_.y;
+			if(rect.min_.x_ < min_.x_)
+				min_.x_ = rect.min_.x_;
+			if(rect.min_.y_ < min_.y_)
+				min_.y_ = rect.min_.y_;
+			if(rect.max_.x_ > max_.x_)
+				max_.x_ = rect.max_.x_;
+			if(rect.max_.y_ > max_.y_)
+				max_.y_ = rect.max_.y_;
 		}
 
 		/// Clear to undefined state.
 		void Clear()
 		{
-			min_ = Vector2(Math::POS_INFINITY,Math::POS_INFINITY);
-			max_ = Vector2(Math::NEG_INFINITY,Math::NEG_INFINITY);
+			min_ = Vector2(M_INFINITY,M_INFINITY);
+			max_ = Vector2(-M_INFINITY,-M_INFINITY);
 		}
 
 		/// Clip with another rect.
@@ -152,7 +147,7 @@ namespace YumeEngine
 		/// Return true if this rect is defined via a previous call to Define() or Merge().
 		bool Defined() const
 		{
-			return min_.x != Math::POS_INFINITY;
+			return min_.x_ != M_INFINITY;
 		}
 
 		/// Return center.
@@ -165,22 +160,22 @@ namespace YumeEngine
 		Vector2 HalfSize() const { return (max_ - min_) * 0.5f; }
 
 		/// Test for equality with another rect with epsilon.
-		bool Equals(const Rect& rhs) const { return min_ == (rhs.min_) && max_ == (rhs.max_); }
+		bool Equals(const Rect& rhs) const { return min_.Equals(rhs.min_) && max_.Equals(rhs.max_); }
 
 		/// Test whether a point is inside.
 		Intersection IsInside(const Vector2& point) const
 		{
-			if(point.x < min_.x || point.y < min_.y || point.x > max_.x || point.y > max_.y)
+			if(point.x_ < min_.x_ || point.y_ < min_.y_ || point.x_ > max_.x_ || point.y_ > max_.y_)
 				return OUTSIDE;
 			else
 				return INSIDE;
 		}
 
 		/// Return float data.
-		const void* Data() const { return &min_.x; }
+		const void* Data() const { return &min_.x_; }
 
 		/// Return as a vector.
-		Vector4 ToVector4() const { return Vector4(min_.x,min_.y,max_.x,max_.y); }
+		Vector4 ToVector4() const { return Vector4(min_.x_,min_.y_,max_.x_,max_.y_); }
 
 		/// Return as string.
 		YumeString ToString() const;
@@ -242,7 +237,7 @@ namespace YumeEngine
 		}
 
 		/// Return size.
-		Vector2 Size() const { return Vector2(Width(),Height()); }
+		IntVector2 Size() const { return IntVector2(Width(),Height()); }
 
 		/// Return width.
 		int Width() const { return right_ - left_; }
@@ -251,9 +246,9 @@ namespace YumeEngine
 		int Height() const { return bottom_ - top_; }
 
 		/// Test whether a point is inside.
-		Intersection IsInside(const Vector2& point) const
+		Intersection IsInside(const IntVector2& point) const
 		{
-			if(point.x < left_ || point.y < top_ || point.x >= right_ || point.y >= bottom_)
+			if(point.x_ < left_ || point.y_ < top_ || point.x_ >= right_ || point.y_ >= bottom_)
 				return OUTSIDE;
 			else
 				return INSIDE;
@@ -277,6 +272,7 @@ namespace YumeEngine
 		/// Zero-sized rect.
 		static const IntRect ZERO;
 	};
+
 }
 
 

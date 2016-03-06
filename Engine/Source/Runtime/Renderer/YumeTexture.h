@@ -107,7 +107,7 @@ namespace YumeEngine
 		TextureUsage GetUsage() const { return usage_; }
 
 		/// Return data size in bytes for a rectangular region.
-		unsigned GetDataSize(int width,int height) const;
+		virtual unsigned GetDataSize(int width,int height) const = 0;
 		/// Return data size in bytes for a volume region.
 		unsigned GetDataSize(int width,int height,int depth) const;
 		/// Return data size in bytes for a pixel or block row.
@@ -148,6 +148,8 @@ namespace YumeEngine
 	protected:
 		/// Shader resource view.
 		void* shaderResourceView_;
+		//OpenGL target
+		unsigned target_;
 		/// Sampler state object.
 		void* sampler_;
 		/// Texture format.

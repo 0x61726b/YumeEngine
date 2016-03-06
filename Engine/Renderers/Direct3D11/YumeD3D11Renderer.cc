@@ -51,6 +51,7 @@
 
 #include "Core/YumeBase.h"
 #include "Core/YumeDefaults.h"
+#include "Math/YumeMath.h"
 
 #include "Logging/logging.h"
 
@@ -150,10 +151,10 @@ namespace YumeEngine
 
 	static unsigned GetD3DColor(const YumeColor& color)
 	{
-		unsigned r = (unsigned)(Math::Clamp(color.r_ * 255.0f,0.0f,255.0f));
-		unsigned g = (unsigned)(Math::Clamp(color.g_ * 255.0f,0.0f,255.0f));
-		unsigned b = (unsigned)(Math::Clamp(color.b_ * 255.0f,0.0f,255.0f));
-		unsigned a = (unsigned)(Math::Clamp(color.a_ * 255.0f,0.0f,255.0f));
+		unsigned r = (unsigned)(YumeEngine::Clamp(color.r_ * 255.0f,0.0f,255.0f));
+		unsigned g = (unsigned)(YumeEngine::Clamp(color.g_ * 255.0f,0.0f,255.0f));
+		unsigned b = (unsigned)(YumeEngine::Clamp(color.b_ * 255.0f,0.0f,255.0f));
+		unsigned a = (unsigned)(YumeEngine::Clamp(color.a_ * 255.0f,0.0f,255.0f));
 		return (((a)& 0xff) << 24) | (((r)& 0xff) << 16) | (((g)& 0xff) << 8) | ((b)& 0xff);
 	}
 
@@ -206,6 +207,7 @@ namespace YumeEngine
 		for(int i=0; i < size; ++i)
 			constantBuffers_[i].reset();
 		constantBuffers_.clear();
+		vertexDeclarations_.clear();
 
 		BlendStatesMap::iterator blendIt;
 
@@ -339,8 +341,8 @@ namespace YumeEngine
 		stencilFail_ = OP_KEEP;
 		stencilZFail_ = OP_KEEP;
 		stencilRef_ = 0;
-		stencilCompareMask_ = Math::M_MAX_UNSIGNED;
-		stencilWriteMask_ = Math::M_MAX_UNSIGNED;
+		stencilCompareMask_ = M_MAX_UNSIGNED;
+		stencilWriteMask_ = M_MAX_UNSIGNED;
 		useClipPlane_ = false;
 		renderTargetsDirty_ = true;
 		texturesDirty_ = false;
@@ -350,11 +352,11 @@ namespace YumeEngine
 		rasterizerStateDirty_ = true;
 		scissorRectDirty_ = true;
 		stencilRefDirty_ = true;
-		blendStateHash_ = Math::M_MAX_UNSIGNED;
-		depthStateHash_ = Math::M_MAX_UNSIGNED;
-		rasterizerStateHash_ = Math::M_MAX_UNSIGNED;
-		firstDirtyTexture_ = lastDirtyTexture_ = Math::M_MAX_UNSIGNED;
-		firstDirtyVB_ = lastDirtyVB_ = Math::M_MAX_UNSIGNED;
+		blendStateHash_ = M_MAX_UNSIGNED;
+		depthStateHash_ = M_MAX_UNSIGNED;
+		rasterizerStateHash_ = M_MAX_UNSIGNED;
+		firstDirtyTexture_ = lastDirtyTexture_ = M_MAX_UNSIGNED;
+		firstDirtyVB_ = lastDirtyVB_ = M_MAX_UNSIGNED;
 		dirtyConstantBuffers_.clear();
 	}
 
@@ -368,7 +370,7 @@ namespace YumeEngine
 
 		Vector4 c(0,1,0,0);
 		if((flags & CLEAR_COLOR) && impl_->renderTargetViews_[0])
-			impl_->deviceContext_->ClearRenderTargetView(impl_->renderTargetViews_[0],c.ptr());
+			impl_->deviceContext_->ClearRenderTargetView(impl_->renderTargetViews_[0],c.Data());
 
 		if((flags & (CLEAR_DEPTH | CLEAR_STENCIL)) && impl_->depthStencilView_)
 		{
@@ -447,7 +449,7 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::SetViewport(const IntRect& rect)
 	{
-		Vector2 size = GetRenderTargetDimensions();
+		IntVector2 size = GetRenderTargetDimensions();
 
 		IntRect rectCopy = rect;
 
@@ -455,10 +457,10 @@ namespace YumeEngine
 			rectCopy.right_ = rectCopy.left_ + 1;
 		if(rectCopy.bottom_ <= rectCopy.top_)
 			rectCopy.bottom_ = rectCopy.top_ + 1;
-		rectCopy.left_ = Math::Clamp<int>(rectCopy.left_,0,size.x);
-		rectCopy.top_ = Math::Clamp<int>(rectCopy.top_,0,size.y);
-		rectCopy.right_ = Math::Clamp<int>(rectCopy.right_,0,size.x);
-		rectCopy.bottom_ = Math::Clamp<int>(rectCopy.bottom_,0,size.y);
+		rectCopy.left_ = Clamp(rectCopy.left_,0,size.x_);
+		rectCopy.top_ = Clamp(rectCopy.top_,0,size.y_);
+		rectCopy.right_ = Clamp(rectCopy.right_,0,size.x_);
+		rectCopy.bottom_ = Clamp(rectCopy.bottom_,0,size.y_);
 
 		static D3D11_VIEWPORT d3dViewport;
 		d3dViewport.TopLeftX = (float)rectCopy.left_;
@@ -476,7 +478,7 @@ namespace YumeEngine
 		//SetScissorTest(false);
 	}
 
-	Vector2 YumeD3D11Renderer::GetRenderTargetDimensions() const
+	IntVector2 YumeD3D11Renderer::GetRenderTargetDimensions() const
 	{
 		int width,height;
 
@@ -498,7 +500,7 @@ namespace YumeEngine
 
 		width = windowWidth_;
 		height = windowHeight_;
-		return Vector2(width,height);
+		return IntVector2(width,height);
 	}
 
 
@@ -541,7 +543,7 @@ namespace YumeEngine
 	void YumeD3D11Renderer::SetWindowPos(const Vector2& pos)
 	{
 		if(window_)
-			SDL_SetWindowPosition(window_,pos.x,pos.y);
+			SDL_SetWindowPosition(window_,pos.x_,pos.y_);
 		else
 			windowPos_ = pos; // Sets as initial position for OpenWindow()
 	}
@@ -559,7 +561,7 @@ namespace YumeEngine
 		if(borderless)
 			flags |= SDL_WINDOW_BORDERLESS;
 
-		window_ = SDL_CreateWindow(windowTitle_.c_str(),windowPos_.x,windowPos_.y,width,height,flags);
+		window_ = SDL_CreateWindow(windowTitle_.c_str(),windowPos_.x_,windowPos_.y_,width,height,flags);
 
 		if(!window_)
 		{
@@ -570,8 +572,8 @@ namespace YumeEngine
 		int *y = new int;
 		SDL_GetWindowPosition(window_,x,y);
 
-		windowPos_.x = (float)*x;
-		windowPos_.y = (float)*y;
+		windowPos_.x_ = (float)*x;
+		windowPos_.y_ = (float)*y;
 
 		return true;
 	}
@@ -658,7 +660,7 @@ namespace YumeEngine
 
 				for(unsigned i = 0; i < resolutions.size(); ++i)
 				{
-					unsigned error = (unsigned)(Math::Abs(resolutions[i].x - width) + Math::Abs(resolutions[i].y - height));
+					unsigned error = (unsigned)(Abs(resolutions[i].x_ - width) + Abs(resolutions[i].y_ - height));
 					if(error < bestError)
 					{
 						best = i;
@@ -666,8 +668,8 @@ namespace YumeEngine
 					}
 				}
 
-				width = resolutions[best].x;
-				height = resolutions[best].y;
+				width = resolutions[best].x_;
+				height = resolutions[best].y_;
 			}
 		}
 
@@ -1108,7 +1110,7 @@ namespace YumeEngine
 		YumeConstantBuffer* buffer = i->second.bufferPtr_;
 		if(!buffer->IsDirty())
 			dirtyConstantBuffers_.push_back(buffer);
-		buffer->SetParameter(i->second.offset_,sizeof(Matrix3),&matrix);
+		buffer->SetVector3ArrayParameter(i->second.offset_,3,&matrix);
 	}
 
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const Matrix3x4& matrix)
@@ -1196,7 +1198,7 @@ namespace YumeEngine
 
 		if(texture != textures_[index])
 		{
-			if(firstDirtyTexture_ == Math::M_MAX_UNSIGNED)
+			if(firstDirtyTexture_ == M_MAX_UNSIGNED)
 				firstDirtyTexture_ = lastDirtyTexture_ = index;
 			else
 			{
@@ -1213,6 +1215,47 @@ namespace YumeEngine
 		}
 	}
 
+	void YumeD3D11Renderer::SetRenderTarget(unsigned index,YumeRenderable* renderTarget)
+	{
+		if(index >= MAX_RENDERTARGETS)
+			return;
+
+		if(renderTarget != renderTargets_[index])
+		{
+			renderTargets_[index] = renderTarget;
+			renderTargetsDirty_ = true;
+
+			// If the rendertarget is also bound as a texture, replace with backup texture or null
+			if(renderTarget)
+			{
+				YumeTexture* parentTexture = renderTarget->GetParentTexture();
+
+				for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
+				{
+					if(textures_[i] == parentTexture)
+						SetTexture(i,textures_[i]->GetBackupTexture());
+				}
+			}
+		}
+	}
+	void YumeD3D11Renderer::SetDepthStencil(YumeRenderable* depthStencil)
+	{
+		if(depthStencil != depthStencil_)
+		{
+			depthStencil_ = depthStencil;
+			renderTargetsDirty_ = true;
+		}
+	}
+	void YumeD3D11Renderer::SetDepthStencil(YumeTexture2D* texture)
+	{
+		YumeRenderable* depthStencil = 0;
+		if(texture)
+			depthStencil = texture->GetRenderSurface();
+
+		SetDepthStencil(depthStencil);
+		// Constant depth bias depends on the bitdepth
+		rasterizerStateDirty_ = true;
+	}
 
 	void YumeD3D11Renderer::SetBlendMode(BlendMode mode)
 	{
@@ -1285,21 +1328,21 @@ namespace YumeEngine
 	{
 		// During some light rendering loops, a full rect is toggled on/off repeatedly.
 		// Disable scissor in that case to reduce state changes
-		if(rect.min_.x <= 0.0f && rect.min_.y <= 0.0f && rect.max_.x >= 1.0f && rect.max_.y >= 1.0f)
+		if(rect.min_.x_ <= 0.0f && rect.min_.y_ <= 0.0f && rect.max_.x_ >= 1.0f && rect.max_.y_ >= 1.0f)
 			enable = false;
 
 		if(enable)
 		{
-			Vector2 rtSize(GetRenderTargetDimensions());
-			Vector2 viewSize(viewport_.Size());
-			Vector2 viewPos(viewport_.left_,viewport_.top_);
+			IntVector2 rtSize(GetRenderTargetDimensions());
+			IntVector2 viewSize(viewport_.Size());
+			IntVector2 viewPos(viewport_.left_,viewport_.top_);
 			IntRect intRect;
 			int expand = borderInclusive ? 1 : 0;
 
-			intRect.left_ = Math::Clamp<int>((int)((rect.min_.x + 1.0f) * 0.5f * viewSize.x) + viewPos.x,0,rtSize.x - 1);
-			intRect.top_ = Math::Clamp<int>((int)((-rect.max_.y + 1.0f) * 0.5f * viewSize.y) + viewPos.y,0,rtSize.y - 1);
-			intRect.right_ = Math::Clamp<int>((int)((rect.max_.x + 1.0f) * 0.5f * viewSize.x) + viewPos.x + expand,0,rtSize.x);
-			intRect.bottom_ = Math::Clamp<int>((int)((-rect.min_.y + 1.0f) * 0.5f * viewSize.y) + viewPos.y + expand,0,rtSize.y);
+			intRect.left_ = Clamp((int)((rect.min_.x_ + 1.0f) * 0.5f * viewSize.x_) + viewPos.x_,0,rtSize.x_ - 1);
+			intRect.top_ = Clamp((int)((-rect.max_.y_ + 1.0f) * 0.5f * viewSize.y_) + viewPos.y_,0,rtSize.y_ - 1);
+			intRect.right_ = Clamp((int)((rect.max_.x_ + 1.0f) * 0.5f * viewSize.x_) + viewPos.x_ + expand,0,rtSize.x_);
+			intRect.bottom_ = Clamp((int)((-rect.min_.y_ + 1.0f) * 0.5f * viewSize.y_) + viewPos.y_ + expand,0,rtSize.y_);
 
 			if(intRect.right_ == intRect.left_)
 				intRect.right_++;
@@ -1325,16 +1368,16 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::SetScissorTest(bool enable,const IntRect& rect)
 	{
-		Vector2 rtSize(GetRenderTargetDimensions());
-		Vector2 viewPos(viewport_.left_,viewport_.top_);
+		IntVector2 rtSize(GetRenderTargetDimensions());
+		IntVector2 viewPos(viewport_.left_,viewport_.top_);
 
 		if(enable)
 		{
 			IntRect intRect;
-			intRect.left_ = Math::Clamp<int>(rect.left_ + viewPos.x,0,rtSize.x - 1);
-			intRect.top_ = Math::Clamp<int>(rect.top_ + viewPos.y,0,rtSize.y - 1);
-			intRect.right_ = Math::Clamp<int>(rect.right_ + viewPos.x,0,rtSize.x);
-			intRect.bottom_ = Math::Clamp<int>(rect.bottom_ + viewPos.y,0,rtSize.y);
+			intRect.left_ = Clamp(rect.left_ + viewPos.x_,0,rtSize.x_ - 1);
+			intRect.top_ = Clamp(rect.top_ + viewPos.y_,0,rtSize.y_ - 1);
+			intRect.right_ = Clamp(rect.right_ + viewPos.x_,0,rtSize.x_);
+			intRect.bottom_ = Clamp(rect.bottom_ + viewPos.y_,0,rtSize.y_);
 
 			if(intRect.right_ == intRect.left_)
 				intRect.right_++;
@@ -1512,7 +1555,7 @@ namespace YumeEngine
 			{
 				vertexDeclarationDirty_ = true;
 
-				if(firstDirtyVB_ == Math::M_MAX_UNSIGNED)
+				if(firstDirtyVB_ == M_MAX_UNSIGNED)
 					firstDirtyVB_ = lastDirtyVB_ = i;
 				else
 				{
@@ -1571,7 +1614,7 @@ namespace YumeEngine
 			renderTargetsDirty_ = false;
 		}
 
-		if(texturesDirty_ && firstDirtyTexture_ < Math::M_MAX_UNSIGNED)
+		if(texturesDirty_ && firstDirtyTexture_ < M_MAX_UNSIGNED)
 		{
 			// Set also VS textures to enable vertex texture fetch to work the same way as on OpenGL
 			impl_->deviceContext_->VSSetShaderResources(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
@@ -1583,18 +1626,18 @@ namespace YumeEngine
 			impl_->deviceContext_->PSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
 				&impl_->samplers_[firstDirtyTexture_]);
 
-			firstDirtyTexture_ = lastDirtyTexture_ = Math::M_MAX_UNSIGNED;
+			firstDirtyTexture_ = lastDirtyTexture_ = M_MAX_UNSIGNED;
 			texturesDirty_ = false;
 		}
 
 		if(vertexDeclarationDirty_ && vertexShader_ && vertexShader_->GetByteCode().size())
 		{
-			if(firstDirtyVB_ < Math::M_MAX_UNSIGNED)
+			if(firstDirtyVB_ < M_MAX_UNSIGNED)
 			{
 				impl_->deviceContext_->IASetVertexBuffers(firstDirtyVB_,lastDirtyVB_ - firstDirtyVB_ + 1,
 					&impl_->vertexBuffers_[firstDirtyVB_],&impl_->vertexSizes_[firstDirtyVB_],&impl_->vertexOffsets_[firstDirtyVB_]);
 
-				firstDirtyVB_ = lastDirtyVB_ = Math::M_MAX_UNSIGNED;
+				firstDirtyVB_ = lastDirtyVB_ = M_MAX_UNSIGNED;
 			}
 
 			unsigned long long newVertexDeclarationHash = 0;
@@ -1660,7 +1703,7 @@ namespace YumeEngine
 					ret = impl_->blendStates_.insert(std::make_pair(newBlendStateHash,newBlendState));
 				}
 
-				impl_->deviceContext_->OMSetBlendState(ret.first->second,0,Math::M_MAX_UNSIGNED);
+				impl_->deviceContext_->OMSetBlendState(ret.first->second,0,M_MAX_UNSIGNED);
 				blendStateHash_ = newBlendStateHash;
 			}
 
@@ -1738,7 +1781,7 @@ namespace YumeEngine
 					stateDesc.CullMode = d3dCullMode[cullMode_];
 					stateDesc.FrontCounterClockwise = FALSE;
 					stateDesc.DepthBias = scaledDepthBias;
-					stateDesc.DepthBiasClamp = Math::POS_INFINITY;
+					stateDesc.DepthBiasClamp = M_INFINITY;
 					stateDesc.SlopeScaledDepthBias = slopeScaledDepthBias_;
 					stateDesc.DepthClipEnable = TRUE;
 					stateDesc.ScissorEnable = scissorTest_ ? TRUE : FALSE;
@@ -1882,7 +1925,7 @@ namespace YumeEngine
 			bool unique = true;
 			for(unsigned j = 0; j < resolutions.size(); ++j)
 			{
-				if(resolutions[j].x == width && resolutions[j].y == height)
+				if(resolutions[j].x_ == width && resolutions[j].y_ == height)
 				{
 					unique = false;
 					break;

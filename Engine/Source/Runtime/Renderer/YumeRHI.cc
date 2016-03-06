@@ -65,7 +65,7 @@ namespace YumeEngine
 		sRGBWriteSupport_(false),
 		orientations_("LandscapeLeft")
 	{
-		firstDirtyVB_ = lastDirtyVB_ = Math::M_MAX_UNSIGNED;
+		firstDirtyVB_ = lastDirtyVB_ = M_MAX_UNSIGNED;
 	}
 	YumeRHI::~YumeRHI()
 	{
@@ -220,30 +220,6 @@ namespace YumeEngine
 		SetDepthStencil((YumeRenderable*)0);
 	}
 
-	void YumeRHI::SetRenderTarget(unsigned index,YumeRenderable* renderTarget)
-	{
-		if(index >= MAX_RENDERTARGETS)
-			return;
-
-		if(renderTarget != renderTargets_[index])
-		{
-			renderTargets_[index] = renderTarget;
-			renderTargetsDirty_ = true;
-
-			// If the rendertarget is also bound as a texture, replace with backup texture or null
-			if(renderTarget)
-			{
-				YumeTexture* parentTexture = renderTarget->GetParentTexture();
-
-				for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
-				{
-					if(textures_[i] == parentTexture)
-						SetTexture(i,textures_[i]->GetBackupTexture());
-				}
-			}
-		}
-	}
-
 	void YumeRHI::SetRenderTarget(unsigned index,YumeTexture2D* texture)
 	{
 		YumeRenderable* renderTarget = 0;
@@ -251,26 +227,6 @@ namespace YumeEngine
 			renderTarget = texture->GetRenderSurface();
 
 		SetRenderTarget(index,renderTarget);
-	}
-
-	void YumeRHI::SetDepthStencil(YumeRenderable* depthStencil)
-	{
-		if(depthStencil != depthStencil_)
-		{
-			depthStencil_ = depthStencil;
-			renderTargetsDirty_ = true;
-		}
-	}
-
-	void YumeRHI::SetDepthStencil(YumeTexture2D* texture)
-	{
-		YumeRenderable* depthStencil = 0;
-		if(texture)
-			depthStencil = texture->GetRenderSurface();
-
-		SetDepthStencil(depthStencil);
-		// Constant depth bias depends on the bitdepth
-		rasterizerStateDirty_ = true;
 	}
 
 	bool YumeRHI::HasTextureUnit(TextureUnit unit)

@@ -23,9 +23,6 @@
 #include "YumeVariant.h"
 #include "YumeDefaults.h"
 
-#include <boost/mpl/contains.hpp>
-
-
 namespace YumeEngine
 {
 	template <> int YumeVariant::Get<int>() const

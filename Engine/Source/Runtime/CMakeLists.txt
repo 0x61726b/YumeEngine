@@ -88,11 +88,9 @@ set( SRC_MATH
 	Math/YumeQuaternion.h
 	Math/YumeQuaternion.cc
 	Math/YumePlane.h
-	Math/YumePlaneBoundedVolume.h
 	Math/YumePlane.cc
 	Math/YumeSphere.h
 	Math/YumeRay.h
-	Math/YumeAxisAlignedBox.h
 	Math/YumeMath.h
 	Math/YumeMath.cc
 	Math/YumeRect.h

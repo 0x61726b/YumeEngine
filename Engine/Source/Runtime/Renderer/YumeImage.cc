@@ -987,8 +987,8 @@ namespace YumeEngine
 	{
 		if(!data_ || z < 0 || z >= depth_ || IsCompressed())
 			return YumeColor::BLACK;
-		x = Math::Clamp(x,0,width_ - 1);
-		y = Math::Clamp(y,0,height_ - 1);
+		x = YumeEngine::Clamp(x,0,width_ - 1);
+		y = YumeEngine::Clamp(y,0,height_ - 1);
 
 		unsigned char* src = data_.get() + (z * width_ * height_ + y * width_ + x) * components_;
 		YumeColor ret;
@@ -1022,8 +1022,8 @@ namespace YumeEngine
 	{
 		if(!data_ || z < 0 || z >= depth_ || IsCompressed())
 			return 0xff000000;
-		x = Math::Clamp(x,0,width_ - 1);
-		y = Math::Clamp(y,0,height_ - 1);
+		x = YumeEngine::Clamp(x,0,width_ - 1);
+		y = YumeEngine::Clamp(y,0,height_ - 1);
 
 		unsigned char* src = data_.get() + (z * width_ * height_ + y * width_ + x) * components_;
 		unsigned ret = 0;
@@ -1054,8 +1054,8 @@ namespace YumeEngine
 
 	YumeColor YumeImage::GetPixelBilinear(float x,float y) const
 	{
-		x = Math::Clamp(x * width_ - 0.5f,0.0f,(float)(width_ - 1));
-		y = Math::Clamp(y * height_ - 0.5f,0.0f,(float)(height_ - 1));
+		x = YumeEngine::Clamp(x * width_ - 0.5f,0.0f,(float)(width_ - 1));
+		y = YumeEngine::Clamp(y * height_ - 0.5f,0.0f,(float)(height_ - 1));
 
 		int xI = (int)x;
 		int yI = (int)y;
@@ -1072,9 +1072,9 @@ namespace YumeEngine
 		if(depth_ < 2)
 			return GetPixelBilinear(x,y);
 
-		x = Math::Clamp(x * width_ - 0.5f,0.0f,(float)(width_ - 1));
-		y = Math::Clamp(y * height_ - 0.5f,0.0f,(float)(height_ - 1));
-		z = Math::Clamp(z * depth_ - 0.5f,0.0f,(float)(depth_ - 1));
+		x = YumeEngine::Clamp(x * width_ - 0.5f,0.0f,(float)(width_ - 1));
+		y = YumeEngine::Clamp(y * height_ - 0.5f,0.0f,(float)(height_ - 1));
+		z = YumeEngine::Clamp(z * depth_ - 0.5f,0.0f,(float)(depth_ - 1));
 
 		int xI = (int)x;
 		int yI = (int)y;

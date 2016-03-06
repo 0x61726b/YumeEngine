@@ -140,13 +140,6 @@ namespace YumeEngine
 		return std::max(depth_ >> level,1);
 	}
 
-	unsigned YumeTexture::GetDataSize(int width,int height) const
-	{
-		if(IsCompressed())
-			return GetRowDataSize(width) * ((height + 3) >> 2);
-		else
-			return GetRowDataSize(width) * height;
-	}
 
 	unsigned YumeTexture::GetDataSize(int width,int height,int depth) const
 	{

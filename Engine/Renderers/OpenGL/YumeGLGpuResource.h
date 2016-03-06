@@ -29,18 +29,23 @@
 namespace YumeEngine
 {
 	class YumeRHI;
-	class YumeGLExport YumeGLGpuResource : public YumeGpuResource
+	class YumeGLExport YumeGLResource : public YumeGpuResource
 	{
 	public:
-		YumeGLGpuResource(YumeRHI* renderer);
+		YumeGLResource(YumeRHI* renderer);
 		/// Destruct. Remove from the graphics subsystem.
-		virtual ~YumeGLGpuResource();
+		virtual ~YumeGLResource();
 
+		/// Mark the GPU resource destroyed on context destruction.
+		virtual void OnDeviceLost();
+
+		/// Recreate the GPU resource and restore data if applicable.
+		virtual void OnDeviceReset() { }
 		/// Unconditionally release the GPU resource.
 		virtual void Release() { }
 
 		/// Clear the data lost flag. No-op on D3D11.
-		void ClearDataLost() { }
+		void ClearDataLost();
 
 		/// Return Direct3D object.
 		void* GetGPUObject() const { return object_; }
@@ -52,11 +57,9 @@ namespace YumeEngine
 		bool HasPendingData() const { return dataPending_; }
 
 
-  protected:
-    bool dataLost_;
-    bool dataPending_;
-
-    void* object_;
+	protected:
+		bool dataLost_;
+		bool dataPending_;
 
 	};
 }

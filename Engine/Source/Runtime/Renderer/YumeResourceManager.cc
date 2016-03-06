@@ -164,8 +164,6 @@ namespace YumeEngine
 			return resourceBase_;
 		}
 
-		//Resource doesnt exist yet
-
 		YumeHash nameHash = GenerateHash(resource);
 
 		resource_ = boost::static_pointer_cast<YumeResource>(YumeObjectFactory::Get()->Create(type));

@@ -596,8 +596,8 @@ namespace YumeEngine
 		samplerDesc.AddressW = d3dAddressMode[addressMode_[2]];
 		samplerDesc.MaxAnisotropy = rhi_->GetTextureAnisotropy();
 		samplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
-		samplerDesc.MinLOD = Math::NEG_INFINITY;
-		samplerDesc.MaxLOD = Math::POS_INFINITY;
+		samplerDesc.MinLOD = -M_INFINITY;
+		samplerDesc.MaxLOD = M_INFINITY;
 		memcpy(&samplerDesc.BorderColor,borderColor_.Data(),4 * sizeof(float));
 
 		HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateSamplerState(&samplerDesc,(ID3D11SamplerState**)&sampler_);

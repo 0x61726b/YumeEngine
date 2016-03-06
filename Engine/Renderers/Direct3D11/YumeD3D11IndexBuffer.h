@@ -39,7 +39,7 @@ namespace YumeEngine
 		void Release();
 
 		void SetShadowed(bool enable);
-		bool SetSize(unsigned vertexCount,unsigned elementMask,bool dynamic = false);
+		bool SetSize(unsigned vertexCount,bool largeIndices,bool dynamic = false);
 		bool SetData(const void* data);
 		bool SetDataRange(const void* data,unsigned start,unsigned count,bool discard = false);
 		void* Lock(unsigned start,unsigned count,bool discard = false);

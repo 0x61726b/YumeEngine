@@ -62,7 +62,7 @@ namespace YumeEngine
 		}
 	}
 
-	bool YumeD3D11IndexBuffer::SetSize(unsigned indexCount,unsigned largeIndices,bool dynamic)
+	bool YumeD3D11IndexBuffer::SetSize(unsigned indexCount,bool largeIndices,bool dynamic)
 	{
 		Unlock();
 
@@ -267,7 +267,7 @@ namespace YumeEngine
 			return false;
 		}
 
-		minVertex = Math::M_MAX_UNSIGNED;
+		minVertex = M_MAX_UNSIGNED;
 		unsigned maxVertex = 0;
 
 		if(indexSize_ == sizeof(unsigned))

@@ -27,17 +27,26 @@
 namespace YumeEngine
 {
 
-	YumeGLGpuResource::YumeGLGpuResource(YumeRHI* renderer):
+	YumeGLResource::YumeGLResource(YumeRHI* renderer):
 		YumeGpuResource(renderer),
-		object_(0),
 		dataPending_(false),
 		dataLost_(false)
 	{
 
 	}
 
-	YumeGLGpuResource::~YumeGLGpuResource()
+	YumeGLResource::~YumeGLResource()
 	{
 
+	}
+
+	void YumeGLResource::OnDeviceLost()
+	{
+		object_ = 0;
+	}
+
+	void YumeGLResource::ClearDataLost()
+	{
+		dataLost_ = false;
 	}
 }

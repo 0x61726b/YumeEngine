@@ -54,23 +54,26 @@ namespace YumeEngine
 		YumeD3D11Renderer();
 		~YumeD3D11Renderer();
 
+		bool IsInitialized() const { return initialized_; }
 
-		bool SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
-			int multiSample);
+		YumeD3D11RendererImpl* GetImpl() const { return impl_; }
+
+		bool SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,int multiSample);
+
 
 		bool BeginFrame();
 		void EndFrame();
 		void Clear(unsigned flags,const Vector4& color = Vector4(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0);
 
+		/* Direct3D Only */
 		bool CreateD3D11Device(int width,int height,int multisample);
 		bool UpdateSwapchain(int width,int height);
+		/* */
 
 
+		void SetViewport(const IntRect& rect);
 		void SetViewport(const IntRect&);
-
-		Vector2 GetRenderTargetDimensions() const;
-
-		void SetFlushGPU(bool flushGpu);
+		IntVector2 GetRenderTargetDimensions() const;
 		void CreateRendererCapabilities();
 		YumeVector<int>::type GetMultiSampleLevels() const;
 
@@ -82,67 +85,48 @@ namespace YumeEngine
 		void SetWindowPos(const Vector2& pos);
 		void SetWindowTitle(const YumeString& string);
 
+
+		/* */
 		void AddGpuResource(YumeGpuResource* object);
 		void RemoveGpuResource(YumeGpuResource* object);
-
+		/* */
 		void ResetCache();
 
-		//Create
+
 		YumeVertexBuffer* CreateVertexBuffer();
 		YumeIndexBuffer* CreateIndexBuffer();
 		YumeInputLayout* CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks);
-
-		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const;
-
-		YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const;
-
-		void SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps);
-
-
-		bool IsInitialized() const { return initialized_; }
-
-		YumeD3D11RendererImpl* GetImpl() const { return impl_; }
-
 		YumeConstantBuffer* GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size);
 
-		//Getters
+
+		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const;
+		YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const;
+		void SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps);
+
 		YumeVertexBuffer* GetVertexBuffer(unsigned index) const;
 		void CleanUpShaderPrograms(YumeShaderVariation* variation);
 		unsigned GetFormat(CompressedFormat format) const;
 
-		//Setters
-		void SetVertexBuffer(YumeVertexBuffer* buffer);
+
+
 
 		void SetShaderParameter(YumeHash  param,const float* data,unsigned count);
-		/// Set shader float constant.
 		void SetShaderParameter(YumeHash  param,float value);
-		/// Set shader boolean constant.
 		void SetShaderParameter(YumeHash  param,bool value);
-		/// Set shader color constant.
 		void SetShaderParameter(YumeHash  param,const YumeColor& color);
-		/// Set shader 2D vector constant.
 		void SetShaderParameter(YumeHash  param,const Vector2& vector);
-		/// Set shader 3x3 matrix constant.
 		void SetShaderParameter(YumeHash  param,const Matrix3& matrix);
-
 		void SetShaderParameter(YumeHash  param,const Matrix3x4& matrix);
-		/// Set shader 3D vector constant.
 		void SetShaderParameter(YumeHash  param,const Vector3& vector);
-		/// Set shader 4x4 matrix constant.
 		void SetShaderParameter(YumeHash  param,const Matrix4& matrix);
-		/// Set shader 4D vector constant.
 		void SetShaderParameter(YumeHash param,const Vector4& vector);
-
 		void SetShaderParameter(YumeHash param,const YumeVariant& value);
 
-		void SetIndexBuffer(YumeIndexBuffer* buffer);
-		/// Set multiple vertex buffers.
-		bool SetVertexBuffers
-			(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0);
-		/// Set multiple vertex buffers.
-		bool SetVertexBuffers
-			(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0);
 
+		void SetVertexBuffer(YumeVertexBuffer* buffer);
+		void SetIndexBuffer(YumeIndexBuffer* buffer);
+		bool SetVertexBuffers(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0);
+		bool SetVertexBuffers(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0);
 		void SetTexture(unsigned index,YumeTexture* texture);
 
 		void SetBlendMode(BlendMode mode);
@@ -156,7 +140,12 @@ namespace YumeEngine
 		void SetScissorTest(bool enable,const IntRect& rect);
 		void SetStencilTest
 			(bool enable,CompareMode mode = CMP_ALWAYS,StencilOp pass = OP_KEEP,StencilOp fail = OP_KEEP,StencilOp zFail = OP_KEEP,
-			unsigned stencilRef = 0,unsigned compareMask = Math::M_MAX_UNSIGNED,unsigned writeMask = Math::M_MAX_UNSIGNED);
+			unsigned stencilRef = 0,unsigned compareMask = M_MAX_UNSIGNED,unsigned writeMask = M_MAX_UNSIGNED);
+		void SetFlushGPU(bool flushGpu);
+
+		void SetRenderTarget(unsigned index,YumeRenderable* renderTarget);
+		void SetDepthStencil(YumeTexture2D* texture);
+		void SetDepthStencil(YumeRenderable* depthStencil);
 
 		void PreDraw();
 
@@ -165,42 +154,23 @@ namespace YumeEngine
 		void DrawInstanced(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount,
 			unsigned instanceCount);
 
-
-		/// Return the API-specific alpha texture format.
 		static unsigned GetAlphaFormat();
-		/// Return the API-specific luminance texture format.
 		static unsigned GetLuminanceFormat();
-		/// Return the API-specific luminance alpha texture format.
 		static unsigned GetLuminanceAlphaFormat();
-		/// Return the API-specific RGB texture format.
 		static unsigned GetRGBFormat();
-		/// Return the API-specific RGBA texture format.
 		static unsigned GetRGBAFormat();
-		/// Return the API-specific RGBA 16-bit texture format.
 		static unsigned GetRGBA16Format();
-		/// Return the API-specific RGBA 16-bit float texture format.
 		static unsigned GetRGBAFloat16Format();
-		/// Return the API-specific RGBA 32-bit float texture format.
 		static unsigned GetRGBAFloat32Format();
-		/// Return the API-specific RG 16-bit texture format.
 		static unsigned GetRG16Format();
-		/// Return the API-specific RG 16-bit float texture format.
 		static unsigned GetRGFloat16Format();
-		/// Return the API-specific RG 32-bit float texture format.
 		static unsigned GetRGFloat32Format();
-		/// Return the API-specific single channel 16-bit float texture format.
 		static unsigned GetFloat16Format();
-		/// Return the API-specific single channel 32-bit float texture format.
 		static unsigned GetFloat32Format();
-		/// Return the API-specific linear depth texture format.
 		static unsigned GetLinearDepthFormat();
-		/// Return the API-specific hardware depth-stencil texture format.
 		static unsigned GetDepthStencilFormat();
-		/// Return the API-specific readable hardware depth format, or 0 if not supported.
 		static unsigned GetReadableDepthFormat();
-		/// Return the API-specific texture format from a textual description, for example "rgb".
 		static unsigned GetFormat(const YumeString& formatName);
-
 	private:
 		void RegisterFactories();
 		void UnregisterFactories();

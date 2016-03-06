@@ -103,7 +103,7 @@ namespace YumeEngine
 		fseek((FILE*)handle_,0,SEEK_END);
 		long size = ftell((FILE*)handle_);
 		fseek((FILE*)handle_,0,SEEK_SET);
-		if(size > Math::M_MAX_UNSIGNED)
+		if(size > M_MAX_UNSIGNED)
 		{
 			YUMELOG_ERROR("Could not open file which is larger than 4GB" << file_.c_str());
 			Close();

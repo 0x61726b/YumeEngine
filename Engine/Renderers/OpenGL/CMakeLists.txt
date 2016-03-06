@@ -27,12 +27,28 @@ set(SRC_RENDERER_GL
 	YumeGLRenderer.h
 	YumeGLRenderer.cc
   YumeGLRequired.h
+	YumeGLConstantBuffer.h
+	YumeGLConstantBuffer.cc
+	YumeGLIndexBuffer.h
+	YumeGLIndexBuffer.cc
+	YumeGLVertexBuffer.h
+	YumeGLVertexBuffer.cc
+	YumeGLShader.h
+	YumeGLShader.cc
+	YumeGLShaderProgram.h
+	YumeGLShaderProgram.cc
+	YumeGLShaderVariation.h
+	YumeGLShaderVariation.cc
+	YumeGLRenderable.h
+	YumeGLRenderable.cc
+	YumeGLTexture2D.h
+	YumeGLTexture2D.cc
 )
 
 if(OPENGL_FOUND)
   include_directories(${OPENGL_INCLUDE_DIR})
 else()
-  message( FATAL_ERROR "Direct3D 11 not found on Windows.We can't continue." )
+  message( FATAL_ERROR "OpenGL not found on Windows.We can't continue." )
 endif()
 
 add_definitions(-DBUILDING_YUME_OPENGL)

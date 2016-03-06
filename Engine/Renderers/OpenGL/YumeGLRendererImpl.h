@@ -23,46 +23,73 @@
 #define __YumeGLRendererImpl_h__
 //----------------------------------------------------------------------------
 #include "YumeGLRequired.h"
-
+#include "Math/YumeMath.h"
+#include "Renderer/YumeRendererDefs.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-    class YumeGLRenderer;
+	class YumeGLRenderer;
+	class YumeRenderable;
 
-    class YumeGLExport YumeGLRendererImpl
-    {
-        friend class YumeGLRenderer;
-      public:
-        YumeGLRendererImpl();
+	/// Cached state of a frame buffer object
+	struct FrameBufferObject
+	{
+		FrameBufferObject():
+			fbo_(0),
+			depthAttachment_(0),
+			readBuffers_(M_MAX_UNSIGNED),
+			drawBuffers_(M_MAX_UNSIGNED)
+		{
+			for(unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
+				colorAttachments_[i] = 0;
+		}
 
-        /// Return the GL Context.
-        const SDL_GLContext& GetGLContext() { return context_; }
+		/// Frame buffer handle.
+		unsigned fbo_;
+		/// Bound color attachment textures.
+		YumeRenderable* colorAttachments_[MAX_RENDERTARGETS];
+		/// Bound depth/stencil attachment.
+		YumeRenderable* depthAttachment_;
+		/// Read buffer bits.
+		unsigned readBuffers_;
+		/// Draw buffer bits.
+		unsigned drawBuffers_;
+	};
 
-      private:
-         /// SDL OpenGL context.
-         SDL_GLContext context_;
-         /// IOS system framebuffer handle.
-         unsigned systemFBO_;
-         /// Active texture unit.
-         unsigned activeTexture_;
-         /// Vertex attributes in use.
-         unsigned enabledAttributes_;
-         /// Currently bound frame buffer object.
-         unsigned boundFBO_;
-         /// Currently bound vertex buffer object.
-         unsigned boundVBO_;
-         /// Currently bound uniform buffer object.
-         unsigned boundUBO_;
-         /// Current pixel format.
-         int pixelFormat_;
-         /// Map for FBO's per resolution and format.
-         
-         /// Need FBO commit flag.
-         bool fboDirty_;
-         /// sRGB write mode flag.
-         bool sRGBWrite_;
+	class YumeGLExport YumeGLRendererImpl
+	{
+		friend class YumeGLRenderer;
+	public:
+		YumeGLRendererImpl();
 
-    };
+		/// Return the GL Context.
+		const SDL_GLContext& GetGLContext() { return context_; }
+
+	private:
+		/// SDL OpenGL context.
+		SDL_GLContext context_;
+		/// IOS system framebuffer handle.
+		unsigned systemFBO_;
+		/// Active texture unit.
+		unsigned activeTexture_;
+		/// Vertex attributes in use.
+		unsigned enabledAttributes_;
+		/// Currently bound frame buffer object.
+		unsigned boundFBO_;
+		/// Currently bound vertex buffer object.
+		unsigned boundVBO_;
+		/// Currently bound uniform buffer object.
+		unsigned boundUBO_;
+		/// Current pixel format.
+		int pixelFormat_;
+		/// Map for FBO's per resolution and format.
+		YumeMap<unsigned long long, FrameBufferObject>::type frameBuffers_;
+		/// Need FBO commit flag.
+		bool fboDirty_;
+		/// sRGB write mode flag.
+		bool sRGBWrite_;
+
+	};
 }
 
 

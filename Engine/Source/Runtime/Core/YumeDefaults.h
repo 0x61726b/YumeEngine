@@ -49,6 +49,8 @@ namespace YumeEngine
 	YumeAPIExport int ToInt(const YumeString& source);
 	YumeAPIExport int ToInt(const char* source);
 
+	YumeAPIExport bool IsDigit(unsigned ch);
+
 	YumeAPIExport const YumeString& WCharToUtf8(const std::wstring&);
 
 	YumeAPIExport YumeHash GenerateHash(const YumeString& key);

@@ -30,6 +30,7 @@
 namespace YumeEngine
 {
 	class YumeImage;
+	class YumeGLRenderable;
 
 	class YumeAPIExport YumeTexture2D : public YumeTexture
 	{

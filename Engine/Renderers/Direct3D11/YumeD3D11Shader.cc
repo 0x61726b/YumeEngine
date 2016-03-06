@@ -139,7 +139,7 @@ namespace YumeEngine
 				return boost::static_pointer_cast<YumeShaderVariation>(ret.first->second).get();
 			}
 		}
-		return 0;
+		return (YumeShaderVariation*)i->second.get();
 	}
 
 	void YumeD3D11Shader::RefreshMemoryUse()

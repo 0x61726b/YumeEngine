@@ -42,7 +42,7 @@ namespace YumeEngine
 
 
 		virtual void SetShadowed(bool enable) = 0;
-		virtual bool SetSize(unsigned vertexCount,unsigned elementMask,bool dynamic = false) = 0;
+		virtual bool SetSize(unsigned vertexCount,bool largeIndices,bool dynamic = false) = 0;
 		virtual bool SetData(const void* data) = 0;
 		virtual bool SetDataRange(const void* data,unsigned start,unsigned count,bool discard = false) = 0;
 		virtual void* Lock(unsigned start,unsigned count,bool discard = false) = 0;

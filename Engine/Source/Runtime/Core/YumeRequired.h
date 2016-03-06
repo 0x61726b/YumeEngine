@@ -173,6 +173,8 @@ namespace YumeEngine
 #define YUME_SAFE_RELEASE(p) if(p) { p->Release(); p = 0; }
 }
 
+#define YUME_SSE
+
 namespace YumeEngine
 {
 

@@ -45,7 +45,7 @@ namespace YumeEngine
 
 		//ToDo(arkenthera) fix this by working around Debug/Release that vs uses
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
-		FsPath root = current / ".." / "..";
+		FsPath root = current / "..";
 #else
 		FsPath root = current / "..";
 #endif

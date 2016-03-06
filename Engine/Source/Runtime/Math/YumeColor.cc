@@ -30,10 +30,10 @@ namespace YumeEngine
 
 	unsigned YumeColor::ToUInt() const
 	{
-		unsigned r = (unsigned)Math::Clamp(((int)(r_ * 255.0f)),0,255);
-		unsigned g = (unsigned)Math::Clamp(((int)(g_ * 255.0f)),0,255);
-		unsigned b = (unsigned)Math::Clamp(((int)(b_ * 255.0f)),0,255);
-		unsigned a = (unsigned)Math::Clamp(((int)(a_ * 255.0f)),0,255);
+		unsigned r = (unsigned)YumeEngine::Clamp(((int)(r_ * 255.0f)),0,255);
+		unsigned g = (unsigned)YumeEngine::Clamp(((int)(g_ * 255.0f)),0,255);
+		unsigned b = (unsigned)YumeEngine::Clamp(((int)(b_ * 255.0f)),0,255);
+		unsigned a = (unsigned)YumeEngine::Clamp(((int)(a_ * 255.0f)),0,255);
 		return (a << 24) | (b << 16) | (g << 8) | r;
 	}
 
@@ -230,13 +230,13 @@ namespace YumeEngine
 		float chroma = max - min;
 
 		// If chroma equals zero, hue is undefined
-		if(chroma <= Math::Epsilon)
+		if(chroma <= M_EPSILON)
 			return 0.0f;
 
 		// Calculate and return hue
-		if(Math::RealEqual(g_,max))
+		if(YumeEngine::Equals(g_,max))
 			return (b_ + 2.0f * chroma - r_) / (6.0f * chroma);
-		else if(Math::RealEqual(b_,max))
+		else if(YumeEngine::Equals(b_,max))
 			return (4.0f * chroma - g_ + r_) / (6.0f * chroma);
 		else
 		{
@@ -249,7 +249,7 @@ namespace YumeEngine
 	float YumeColor::SaturationHSV(float min,float max) const
 	{
 		// Avoid div-by-zero: result undefined
-		if(max <= Math::Epsilon)
+		if(max <= M_EPSILON)
 			return 0.0f;
 
 		// Saturation equals chroma:value ratio
@@ -259,7 +259,7 @@ namespace YumeEngine
 	float YumeColor::SaturationHSL(float min,float max) const
 	{
 		// Avoid div-by-zero: result undefined
-		if(max <= Math::Epsilon || min >= 1.0f - Math::Epsilon)
+		if(max <= M_EPSILON || min >= 1.0f - M_EPSILON)
 			return 0.0f;
 
 		// Chroma = max - min, lightness = (max + min) * 0.5
@@ -277,7 +277,7 @@ namespace YumeEngine
 			h -= floorf(h);
 
 		float hs = h * 6.0f;
-		float x = c * (1.0f - Math::Abs(fmodf(hs,2.0f) - 1.0f));
+		float x = c * (1.0f - YumeEngine::Abs(fmodf(hs,2.0f) - 1.0f));
 
 		// Reconstruct r', g', b' from hue
 		if(hs < 2.0f)

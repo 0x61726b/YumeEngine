@@ -285,6 +285,10 @@ namespace YumeEngine
 		return strtod(source,0);
 	}
 
+	bool IsDigit(unsigned ch)
+	{
+		return ch < 256 ? isdigit(ch) != 0 : false;
+	}
 
 	const YumeVector<YumeString>::type& GetArguments()
 	{

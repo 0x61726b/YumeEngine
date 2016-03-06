@@ -118,14 +118,16 @@ namespace YumeEngine
 
 		YumeString binaryShaderName = path + "Cache/" + name + "_" + std::to_string(GenerateHash(defines_)) + extension;
 
-		if(!LoadByteCode(binaryShaderName))
+		if(!Compile())
+			return false;
+		/*if(!LoadByteCode(binaryShaderName))
 		{
 			if(!Compile())
 				return false;
 
 			if(owner_->GetTimeStamp())
 				SaveByteCode(binaryShaderName);
-		}
+		}*/
 
 		// Then create shader from the bytecode
 		ID3D11Device* device = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice();
@@ -319,12 +321,12 @@ namespace YumeEngine
 			CalculateConstantBufferSizes();
 
 			// Then strip everything not necessary to use the shader
-			ID3DBlob* strippedCode = 0;
-			D3DStripShader(bufData,bufSize,
-				D3DCOMPILER_STRIP_REFLECTION_DATA | D3DCOMPILER_STRIP_DEBUG_INFO | D3DCOMPILER_STRIP_TEST_BLOBS,&strippedCode);
-			byteCode_.resize((unsigned)strippedCode->GetBufferSize());
-			memcpy(&byteCode_[0],strippedCode->GetBufferPointer(),byteCode_.size());
-			strippedCode->Release();
+			//ID3DBlob* strippedCode = 0;
+			//D3DStripShader(bufData,bufSize,
+			//	0,&strippedCode);
+			byteCode_.resize(bufSize);
+			memcpy(&byteCode_[0],bufData,byteCode_.size());
+			/*strippedCode->Release();*/
 		}
 
 		D3D_SAFE_RELEASE(shaderCode);

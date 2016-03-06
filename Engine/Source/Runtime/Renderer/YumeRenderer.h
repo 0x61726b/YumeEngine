@@ -30,6 +30,8 @@ namespace YumeEngine
 {
 	class YumeRHI;
 	class YumeRenderable;
+	class YumeVertexBuffer;
+	class YumeIndexBuffer;
 
 	class YumeAPIExport YumeRenderer
 	{
@@ -51,6 +53,10 @@ namespace YumeEngine
 
 	private:
 		YumeRHI* rhi_;
+
+		YumeIndexBuffer* ib_;
+		std::vector<unsigned> elementMasks_;
+		std::vector<YumeVertexBuffer*> vbs_;
 	};
 }
 
