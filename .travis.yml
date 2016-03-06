@@ -50,15 +50,6 @@ matrix:
             - cd build
             - make
           branch_pattern: master
-      after_success:
-        - cd Yume
-        - ./TestSuite --log_level=all
-        - cd ${TRAVIS_BUILD_DIR}
-        - gcov --version
-        - gcc --version
-        - find . -type f -name "*.gcno"
-        - find . -type f -name "*.gcda"
-        - sudo codecov --token=9a11d4e0-571e-4df4-bfa6-7295aee52df2
       before_install:
         - sudo pip install codecov
         - set -e
