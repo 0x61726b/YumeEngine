@@ -30,7 +30,8 @@ namespace YumeEngine
 	YumeGLResource::YumeGLResource(YumeRHI* renderer):
 		YumeGpuResource(renderer),
 		dataPending_(false),
-		dataLost_(false)
+		dataLost_(false),
+		object_(0)
 	{
 
 	}

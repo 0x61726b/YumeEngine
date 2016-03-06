@@ -209,7 +209,7 @@ namespace YumeEngine
 		{
 			if(!rhi_->IsDeviceLost())
 			{
-				static_cast<YumeGLRenderer*>(rhi_)->SetVBO((unsigned)object_);
+				static_cast<YumeGLRenderer*>(rhi_)->SetVBO(object_);
 				glBufferData(GL_ARRAY_BUFFER,vertexCount_ * vertexSize_,data,dynamic_ ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 			}
 			else
@@ -256,7 +256,7 @@ namespace YumeEngine
 		{
 			if(!rhi_->IsDeviceLost())
 			{
-				static_cast<YumeGLRenderer*>(rhi_)->SetVBO((unsigned)object_);
+				static_cast<YumeGLRenderer*>(rhi_)->SetVBO(object_);
 				if(!discard || start != 0)
 					glBufferSubData(GL_ARRAY_BUFFER,start * vertexSize_,count * vertexSize_,data);
 				else
@@ -403,7 +403,7 @@ namespace YumeEngine
 				return false;
 			}
 
-			static_cast<YumeGLRenderer*>(rhi_)->SetVBO((unsigned)object_);
+			static_cast<YumeGLRenderer*>(rhi_)->SetVBO(object_);
 			glBufferData(GL_ARRAY_BUFFER,vertexCount_ * vertexSize_,0,dynamic_ ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 		}
 

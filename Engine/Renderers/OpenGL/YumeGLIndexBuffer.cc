@@ -66,10 +66,8 @@ namespace YumeEngine
 				if(rhi_->GetIndexBuffer() == this)
 					rhi_->SetIndexBuffer(0);
 
-				unsigned obj = (unsigned)object_;
-				glDeleteBuffers(1,&obj);
+				glDeleteBuffers(1,&object_);
 			}
-
 			object_ = 0;
 		}
 	}

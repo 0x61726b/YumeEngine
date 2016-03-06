@@ -84,7 +84,7 @@ namespace YumeEngine
 				if(static_cast<YumeGLRenderer*>(rhi_)->GetShaderProgram() == this)
 					rhi_->SetShaders(0,0);
 
-				glDeleteProgram((unsigned)object_);
+				glDeleteProgram(object_);
 			}
 
 			object_ = 0;
@@ -105,7 +105,7 @@ namespace YumeEngine
 		if(!vertexShader_ || !pixelShader_ || !static_cast<YumeGLShaderVariation*>(vertexShader_)->GetGPUObject() || !static_cast<YumeGLShaderVariation*>(pixelShader_)->GetGPUObject())
 			return false;
 
-		object_ = (void*)glCreateProgram();
+		object_ = glCreateProgram();
 		if(!object_)
 		{
 			linkerOutput_ = "Could not create shader program";
@@ -115,36 +115,36 @@ namespace YumeEngine
 		// Bind vertex attribute locations to ensure they are the same in all shaders
 		// Note: this is not the same order as in VertexBuffer, instead a remapping is used to ensure everything except cube texture
 		// coordinates fit to the first 8 for better GLES2 device compatibility
-		glBindAttribLocation((unsigned)object_,0,"iPos");
-		glBindAttribLocation((unsigned)object_,1,"iNormal");
-		glBindAttribLocation((unsigned)object_,2,"iColor");
-		glBindAttribLocation((unsigned)object_,3,"iTexCoord");
-		glBindAttribLocation((unsigned)object_,4,"iTexCoord2");
-		glBindAttribLocation((unsigned)object_,5,"iTangent");
-		glBindAttribLocation((unsigned)object_,6,"iBlendWeights");
-		glBindAttribLocation((unsigned)object_,7,"iBlendIndices");
-		glBindAttribLocation((unsigned)object_,8,"iCubeTexCoord");
-		glBindAttribLocation((unsigned)object_,9,"iCubeTexCoord2");
+		glBindAttribLocation(object_,0,"iPos");
+		glBindAttribLocation(object_,1,"iNormal");
+		glBindAttribLocation(object_,2,"iColor");
+		glBindAttribLocation(object_,3,"iTexCoord");
+		glBindAttribLocation(object_,4,"iTexCoord2");
+		glBindAttribLocation(object_,5,"iTangent");
+		glBindAttribLocation(object_,6,"iBlendWeights");
+		glBindAttribLocation(object_,7,"iBlendIndices");
+		glBindAttribLocation(object_,8,"iCubeTexCoord");
+		glBindAttribLocation(object_,9,"iCubeTexCoord2");
 #if !defined(GL_ES_VERSION_2_0) || defined(__EMSCRIPTEN__)
-		glBindAttribLocation((unsigned)object_,10,"iInstanceMatrix1");
-		glBindAttribLocation((unsigned)object_,11,"iInstanceMatrix2");
-		glBindAttribLocation((unsigned)object_,12,"iInstanceMatrix3");
+		glBindAttribLocation(object_,10,"iInstanceMatrix1");
+		glBindAttribLocation(object_,11,"iInstanceMatrix2");
+		glBindAttribLocation(object_,12,"iInstanceMatrix3");
 #endif
-		glBindAttribLocation((unsigned)object_,13,"iObjectIndex");
+		glBindAttribLocation(object_,13,"iObjectIndex");
 
-		glAttachShader((unsigned)object_,(unsigned)static_cast<YumeGLShaderVariation*>(vertexShader_)->GetGPUObject());
-		glAttachShader((unsigned)object_,(unsigned)static_cast<YumeGLShaderVariation*>(pixelShader_)->GetGPUObject());
-		glLinkProgram((unsigned)object_);
+		glAttachShader(object_,static_cast<YumeGLShaderVariation*>(vertexShader_)->GetGPUObject());
+		glAttachShader(object_,static_cast<YumeGLShaderVariation*>(pixelShader_)->GetGPUObject());
+		glLinkProgram(object_);
 
 		int linked,length;
-		glGetProgramiv((unsigned)object_,GL_LINK_STATUS,&linked);
+		glGetProgramiv(object_,GL_LINK_STATUS,&linked);
 		if(!linked)
 		{
-			glGetProgramiv((unsigned)object_,GL_INFO_LOG_LENGTH,&length);
-			linkerOutput_.resize((unsigned)length);
+			glGetProgramiv(object_,GL_INFO_LOG_LENGTH,&length);
+			linkerOutput_.resize(length);
 			int outLength;
-			glGetProgramInfoLog((unsigned)object_,length,&outLength,&linkerOutput_[0]);
-			glDeleteProgram((unsigned)object_);
+			glGetProgramInfoLog(object_,length,&outLength,&linkerOutput_[0]);
+			glDeleteProgram(object_);
 			object_ = 0;
 		}
 		else
@@ -157,8 +157,8 @@ namespace YumeEngine
 		char uniformName[MAX_PARAMETER_NAME_LENGTH];
 		int uniformCount;
 
-		glUseProgram((unsigned)object_);
-		glGetProgramiv((unsigned)object_,GL_ACTIVE_UNIFORMS,&uniformCount);
+		glUseProgram(object_);
+		glGetProgramiv(object_,GL_ACTIVE_UNIFORMS,&uniformCount);
 
 		// Check for constant buffers
 #ifndef GL_ES_VERSION_2_0
@@ -168,15 +168,15 @@ namespace YumeEngine
 		{
 			int numUniformBlocks = 0;
 
-			glGetProgramiv((unsigned)object_,GL_ACTIVE_UNIFORM_BLOCKS,&numUniformBlocks);
+			glGetProgramiv(object_,GL_ACTIVE_UNIFORM_BLOCKS,&numUniformBlocks);
 			for(int i = 0; i < numUniformBlocks; ++i)
 			{
 				int nameLength;
-				glGetActiveUniformBlockName((unsigned)object_,(GLuint)i,MAX_PARAMETER_NAME_LENGTH,&nameLength,uniformName);
+				glGetActiveUniformBlockName(object_,(GLuint)i,MAX_PARAMETER_NAME_LENGTH,&nameLength,uniformName);
 
-				YumeString name(uniformName,(unsigned)nameLength);
+				YumeString name(uniformName,nameLength);
 
-				unsigned blockIndex = glGetUniformBlockIndex((unsigned)object_,name.c_str());
+				unsigned blockIndex = glGetUniformBlockIndex(object_,name.c_str());
 				unsigned group = M_MAX_UNSIGNED;
 
 				// Try to recognize the use of the buffer from its name
@@ -211,7 +211,7 @@ namespace YumeEngine
 
 				// Find total constant buffer data size
 				int dataSize;
-				glGetActiveUniformBlockiv((unsigned)object_,blockIndex,GL_UNIFORM_BLOCK_DATA_SIZE,&dataSize);
+				glGetActiveUniformBlockiv(object_,blockIndex,GL_UNIFORM_BLOCK_DATA_SIZE,&dataSize);
 				if(!dataSize)
 					continue;
 
@@ -221,7 +221,7 @@ namespace YumeEngine
 				if(name.find("PS") != std::string::npos)
 					bindingIndex += MAX_SHADER_PARAMETER_GROUPS;
 
-				glUniformBlockBinding((unsigned)object_,blockIndex,bindingIndex);
+				glUniformBlockBinding(object_,blockIndex,bindingIndex);
 				blockToBinding[blockIndex] = bindingIndex;
 
 				constantBuffers_[bindingIndex] = SharedPtr<YumeConstantBuffer>(rhi_->GetOrCreateConstantBuffer(bindingIndex,(unsigned)dataSize));
@@ -235,8 +235,8 @@ namespace YumeEngine
 			unsigned type;
 			int count;
 
-			glGetActiveUniform((unsigned)object_,(GLuint)i,MAX_PARAMETER_NAME_LENGTH,0,&count,&type,uniformName);
-			int location = glGetUniformLocation((unsigned)object_,uniformName);
+			glGetActiveUniform(object_,(GLuint)i,MAX_PARAMETER_NAME_LENGTH,0,&count,&type,uniformName);
+			int location = glGetUniformLocation(object_,uniformName);
 
 			// Check for array index included in the name and strip it
 			YumeString name(uniformName);
@@ -263,8 +263,8 @@ namespace YumeEngine
 				if(newParam.location_ < 0 && YumeGLRenderer::GetGL3Support())
 				{
 					int blockIndex,blockOffset;
-					glGetActiveUniformsiv((unsigned)object_,1,(const GLuint*)&i,GL_UNIFORM_BLOCK_INDEX,&blockIndex);
-					glGetActiveUniformsiv((unsigned)object_,1,(const GLuint*)&i,GL_UNIFORM_OFFSET,&blockOffset);
+					glGetActiveUniformsiv(object_,1,(const GLuint*)&i,GL_UNIFORM_BLOCK_INDEX,&blockIndex);
+					glGetActiveUniformsiv(object_,1,(const GLuint*)&i,GL_UNIFORM_OFFSET,&blockOffset);
 					if(blockIndex >= 0)
 					{
 						newParam.location_ = blockOffset;

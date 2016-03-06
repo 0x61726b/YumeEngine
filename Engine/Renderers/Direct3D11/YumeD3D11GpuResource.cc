@@ -27,7 +27,7 @@
 namespace YumeEngine
 {
 
-	YumeD3D11Resource::YumeD3D11Resource(YumeD3D11Renderer* rhi) : YumeGpuResource(rhi)
+	YumeD3D11Resource::YumeD3D11Resource(YumeD3D11Renderer* rhi) : YumeGpuResource(rhi),object_(0)
 	{
 
 	}

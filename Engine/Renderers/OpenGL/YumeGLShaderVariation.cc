@@ -87,7 +87,7 @@ namespace YumeEngine
 						rhi_->SetShaders(0,0);
 				}
 
-				glDeleteShader((unsigned)object_);
+				glDeleteShader(object_);
 			}
 
 			object_ = 0;
@@ -107,7 +107,7 @@ namespace YumeEngine
 			return false;
 		}
 
-		object_ = (void*)glCreateShader(type_ == VS ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
+		object_ = glCreateShader(type_ == VS ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
 		if(!object_)
 		{
 			compilerOutput_ = "Could not create shader object";
@@ -180,18 +180,18 @@ namespace YumeEngine
 			shaderCode += originalShaderCode;
 
 		const char* shaderCStr = shaderCode.c_str();
-		glShaderSource((unsigned)object_,1,&shaderCStr,0);
-		glCompileShader((unsigned)object_);
+		glShaderSource(object_,1,&shaderCStr,0);
+		glCompileShader(object_);
 
 		int compiled,length;
-		glGetShaderiv((unsigned)object_,GL_COMPILE_STATUS,&compiled);
+		glGetShaderiv(object_,GL_COMPILE_STATUS,&compiled);
 		if(!compiled)
 		{
-			glGetShaderiv((unsigned)object_,GL_INFO_LOG_LENGTH,&length);
-			compilerOutput_.resize((unsigned)length);
+			glGetShaderiv(object_,GL_INFO_LOG_LENGTH,&length);
+			compilerOutput_.resize(length);
 			int outLength;
-			glGetShaderInfoLog((unsigned)object_,length,&outLength,&compilerOutput_[0]);
-			glDeleteShader((unsigned)object_);
+			glGetShaderInfoLog(object_,length,&outLength,&compilerOutput_[0]);
+			glDeleteShader(object_);
 			object_ = 0;
 		}
 		else

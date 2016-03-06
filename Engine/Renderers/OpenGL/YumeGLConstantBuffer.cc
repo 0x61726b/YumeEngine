@@ -88,10 +88,9 @@ namespace YumeEngine
 #ifndef GL_ES_VERSION_2_0
 			if(!object_)
 			{
-				unsigned obj = (unsigned)object_;
-				glGenBuffers(1,&obj);
+				glGenBuffers(1,(GLuint*)object_);
 			}
-			static_cast<YumeGLRenderer*>(rhi_)->SetUBO((unsigned)object_);
+			static_cast<YumeGLRenderer*>(rhi_)->SetUBO(object_);
 			glBufferData(GL_UNIFORM_BUFFER,size_,shadowData_.get(),GL_DYNAMIC_DRAW);
 #endif
 		}
@@ -104,7 +103,7 @@ namespace YumeEngine
 		if(dirty_ && object_)
 		{
 #ifndef GL_ES_VERSION_2_0
-			static_cast<YumeGLRenderer*>(rhi_)->SetUBO((unsigned)object_);
+			static_cast<YumeGLRenderer*>(rhi_)->SetUBO(object_);
 			glBufferData(GL_UNIFORM_BUFFER,size_,shadowData_.get(),GL_DYNAMIC_DRAW);
 #endif
 			dirty_ = false;

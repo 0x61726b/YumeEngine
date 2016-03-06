@@ -45,17 +45,11 @@ namespace YumeEngine
 		/// Clear the data lost flag. No-op on D3D11.
 		virtual void ClearDataLost() = 0;
 
-		/// Return Direct3D object.
-		void* GetGPUObject() const { return object_; }
-
 		/// Return whether data is lost due to device loss. Always false on D3D11.
 		virtual bool IsDataLost() const = 0;
 
 		/// Return whether has pending data assigned while device was lost. Always false on D3D11.
 		virtual bool HasPendingData() const = 0;
-
-		void* object_;
-
 	protected:
 		YumeRHI* rhi_;
 	};

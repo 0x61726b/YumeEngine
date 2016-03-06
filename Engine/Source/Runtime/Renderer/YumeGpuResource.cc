@@ -29,7 +29,6 @@ namespace YumeEngine
 {
 
 	YumeGpuResource::YumeGpuResource(YumeRHI* rhi):
-		object_(0),
 		rhi_(rhi)
 	{
 		if(rhi_)

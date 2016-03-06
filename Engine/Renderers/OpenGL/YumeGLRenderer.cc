@@ -1438,7 +1438,7 @@ namespace YumeEngine
 			if(!buffer || !buffer->GetGPUObject())
 				continue;
 
-			SetVBO((unsigned)buffer->GetGPUObject());
+			SetVBO(buffer->GetGPUObject());
 			unsigned vertexSize = buffer->GetVertexSize();
 
 			for(unsigned j = 0; j < MAX_VERTEX_ELEMENTS; ++j)
@@ -1500,7 +1500,7 @@ namespace YumeEngine
 		if(indexBuffer_ == buffer)
 			return;
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffer ? (unsigned)static_cast<YumeGLIndexBuffer*>(buffer)->GetGPUObject() : 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffer ? static_cast<YumeGLIndexBuffer*>(buffer)->GetGPUObject() : 0);
 		indexBuffer_ = buffer;
 	}
 
@@ -1571,7 +1571,7 @@ namespace YumeEngine
 				// Use the existing linked program
 				if(glShader->GetGPUObject())
 				{
-					glUseProgram((unsigned)glShader->GetGPUObject());
+					glUseProgram(glShader->GetGPUObject());
 					shaderProgram_ = glShader.get();
 				}
 				else
@@ -1612,7 +1612,7 @@ namespace YumeEngine
 				YumeConstantBuffer* buffer = constantBuffers[i].get();
 				if(buffer != currentConstantBuffers_[i])
 				{
-					unsigned object = buffer ? (unsigned)static_cast<YumeGLConstantBuffer*>(buffer)->GetGPUObject() : 0;
+					unsigned object = buffer ? static_cast<YumeGLConstantBuffer*>(buffer)->GetGPUObject() : 0;
 					glBindBufferBase(GL_UNIFORM_BUFFER,i,object);
 					// Calling glBindBufferBase also affects the generic buffer binding point
 					impl_->boundUBO_ = object;
@@ -1642,7 +1642,7 @@ namespace YumeEngine
 					YumeConstantBuffer* buffer = info->bufferPtr_;
 					if(!buffer->IsDirty())
 						dirtyConstantBuffers_.push_back(buffer);
-					buffer->SetParameter((unsigned)info->location_,(unsigned)(count * sizeof(float)),data);
+					buffer->SetParameter(info->location_,(unsigned)(count * sizeof(float)),data);
 					return;
 				}
 
@@ -1690,7 +1690,7 @@ namespace YumeEngine
 					YumeConstantBuffer* buffer = info->bufferPtr_;
 					if(!buffer->IsDirty())
 						dirtyConstantBuffers_.push_back(buffer);
-					buffer->SetParameter((unsigned)info->location_,sizeof(float),&value);
+					buffer->SetParameter(info->location_,sizeof(float),&value);
 					return;
 				}
 
@@ -1716,7 +1716,7 @@ namespace YumeEngine
 					YumeConstantBuffer* buffer = info->bufferPtr_;
 					if(!buffer->IsDirty())
 						dirtyConstantBuffers_.push_back(buffer);
-					buffer->SetParameter((unsigned)info->location_,sizeof(Vector2),&vector);
+					buffer->SetParameter(info->location_,sizeof(Vector2),&vector);
 					return;
 				}
 
@@ -1749,7 +1749,7 @@ namespace YumeEngine
 					YumeConstantBuffer* buffer = info->bufferPtr_;
 					if(!buffer->IsDirty())
 						dirtyConstantBuffers_.push_back(buffer);
-					buffer->SetVector3ArrayParameter((unsigned)info->location_,3,&matrix);
+					buffer->SetVector3ArrayParameter(info->location_,3,&matrix);
 					return;
 				}
 
@@ -1770,7 +1770,7 @@ namespace YumeEngine
 					YumeConstantBuffer* buffer = info->bufferPtr_;
 					if(!buffer->IsDirty())
 						dirtyConstantBuffers_.push_back(buffer);
-					buffer->SetParameter((unsigned)info->location_,sizeof(Vector3),&vector);
+					buffer->SetParameter(info->location_,sizeof(Vector3),&vector);
 					return;
 				}
 
@@ -1807,7 +1807,7 @@ namespace YumeEngine
 					YumeConstantBuffer* buffer = info->bufferPtr_;
 					if(!buffer->IsDirty())
 						dirtyConstantBuffers_.push_back(buffer);
-					buffer->SetParameter((unsigned)info->location_,sizeof(Matrix4),&matrix);
+					buffer->SetParameter(info->location_,sizeof(Matrix4),&matrix);
 					return;
 				}
 
@@ -1828,7 +1828,7 @@ namespace YumeEngine
 					YumeConstantBuffer* buffer = info->bufferPtr_;
 					if(!buffer->IsDirty())
 						dirtyConstantBuffers_.push_back(buffer);
-					buffer->SetParameter((unsigned)info->location_,sizeof(Vector4),&vector);
+					buffer->SetParameter(info->location_,sizeof(Vector4),&vector);
 					return;
 				}
 
@@ -1884,7 +1884,7 @@ namespace YumeEngine
 					YumeConstantBuffer* buffer = info->bufferPtr_;
 					if(!buffer->IsDirty())
 						dirtyConstantBuffers_.push_back(buffer);
-					buffer->SetParameter((unsigned)info->location_,sizeof(Matrix4),&fullMatrix);
+					buffer->SetParameter(info->location_,sizeof(Matrix4),&fullMatrix);
 					return;
 				}
 
@@ -2131,7 +2131,7 @@ namespace YumeEngine
 
 					if(i->second.colorAttachments_[j] != renderTargets_[j])
 					{
-						BindColorAttachment(j,static_cast<YumeGLRenderable*>(renderTargets_[j])->GetTarget(),(unsigned)static_cast<YumeGLTexture2D*>(texture)->GetGPUObject());
+						BindColorAttachment(j,static_cast<YumeGLRenderable*>(renderTargets_[j])->GetTarget(),static_cast<YumeGLTexture2D*>(texture)->GetGPUObject());
 						i->second.colorAttachments_[j] = renderTargets_[j];
 					}
 				}
@@ -2167,8 +2167,8 @@ namespace YumeEngine
 
 					if(i->second.depthAttachment_ != depthStencil_)
 					{
-						BindDepthAttachment((unsigned)static_cast<YumeGLTexture2D*>(texture)->GetGPUObject(),false);
-						BindStencilAttachment(hasStencil ? (unsigned)static_cast<YumeGLTexture2D*>(texture)->GetGPUObject() : 0,false);
+						BindDepthAttachment(static_cast<YumeGLTexture2D*>(texture)->GetGPUObject(),false);
+						BindStencilAttachment(hasStencil ? static_cast<YumeGLTexture2D*>(texture)->GetGPUObject() : 0,false);
 						i->second.depthAttachment_ = depthStencil_;
 					}
 				}

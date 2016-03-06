@@ -48,6 +48,12 @@ namespace YumeEngine
 
 		/// Return whether has pending data assigned while device was lost. Always false on D3D11.
 		bool HasPendingData() const { return false; }
+
+		void* GetGPUObject() const { return object_; }
+
+	protected:
+		void* object_;
+
 	};
 }
 

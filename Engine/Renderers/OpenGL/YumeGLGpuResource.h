@@ -48,7 +48,7 @@ namespace YumeEngine
 		void ClearDataLost();
 
 		/// Return Direct3D object.
-		void* GetGPUObject() const { return object_; }
+		unsigned int GetGPUObject() const { return object_; }
 
 		/// Return whether data is lost due to device loss. Always false on D3D11.
 		bool IsDataLost() const { return dataLost_; }
@@ -60,6 +60,8 @@ namespace YumeEngine
 	protected:
 		bool dataLost_;
 		bool dataPending_;
+
+		unsigned object_;
 
 	};
 }
