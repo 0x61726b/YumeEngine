@@ -92,6 +92,7 @@ namespace YumeEngine
 		virtual void							CreateRendererCapabilities() = 0;
 		virtual YumeVector<int>::type			GetMultiSampleLevels() const = 0;
 
+		
 		virtual void							Close() = 0;
 		virtual void							AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless) = 0;
 		virtual void							Maximize() = 0;
@@ -110,12 +111,12 @@ namespace YumeEngine
 		virtual bool							IsDeviceLost() const = 0;
 
 
-		//Create
+		
 		virtual YumeVertexBuffer*				CreateVertexBuffer() = 0;
 		virtual YumeIndexBuffer* 				CreateIndexBuffer() = 0;
 		virtual YumeInputLayout* 				CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks) = 0;
 
-		//Getters
+		
 		YumeShaderVariation* 				    GetVertexShader() const { return vertexShader_; }
 		YumeShaderVariation* 				    GetPixelShader() const { return pixelShader_; }
 
@@ -211,7 +212,7 @@ namespace YumeEngine
 		YumeString								windowTitle_;
 		int										windowWidth_;
 		int										windowHeight_;
-		Vector2									windowPos_;
+		IntVector2								windowPos_;
 		bool									fullscreen_;
 		bool									borderless_;
 		bool									resizeable_;

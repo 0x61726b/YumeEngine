@@ -118,38 +118,26 @@ namespace YumeEngine
 
 
 
-		//Matrix4 projection_ = Matrix4::ZERO;
+		Matrix4 projection_ = Matrix4::ZERO;
 
-		//float h = (1.0f / tanf(60.0f * M_PI / 180.0f * 0.5f)) * 1;
-		//float w = h / aspectRatio_;
-		//float q,r;
+		float h = (1.0f / tanf(60.0f * M_PI / 180.0f * 0.5f)) * 1;
+		float w = h / aspectRatio_;
+		float q,r;
 
 
-		//q = farClip_ / (farClip_ - nearClip);
-		//r = -q * nearClip;
+		q = farClip_ / (farClip_ - nearClip);
+		r = -q * nearClip;
 
-		//Vector2 projectionOffset_ = Vector2::ZERO;
+		Vector2 projectionOffset_ = Vector2::ZERO;
 
-		//projection_.m00_ = w;
-		//projection_.m02_ = projectionOffset_.x_ * 2.0f;
-		//projection_.m11_ = h;
-		//projection_.m12_ = projectionOffset_.y_ * 2.0f;
-		//projection_.m22_ = q;
-		//projection_.m23_ = r;
-		//projection_.m32_ = 1.0f;
+		projection_.m00_ = w;
+		projection_.m02_ = projectionOffset_.x_ * 2.0f;
+		projection_.m11_ = h;
+		projection_.m12_ = projectionOffset_.y_ * 2.0f;
+		projection_.m22_ = q;
+		projection_.m23_ = r;
+		projection_.m32_ = 1.0f;
 
-		Vector2 invScreenSize(1.0f / (float)1600,1.0f / (float)720);
-		Vector2 scale(2.0f * invScreenSize.x_,-2.0f * invScreenSize.y_);
-		Vector2 offset(-1.0f,1.0f);
-
-		Matrix4 projection(Matrix4::IDENTITY);
-		projection.m00_ = scale.x_;
-		projection.m03_ = offset.x_;
-		projection.m11_ = scale.y_;
-		projection.m13_ = offset.y_;
-		projection.m22_ = 1.0f;
-		projection.m23_ = 0.0f;
-		projection.m33_ = 1.0f;
 
 		Matrix3x4 world = Matrix3x4::IDENTITY;
 		world.SetTranslation(Vector3(0,0,0));
@@ -161,7 +149,7 @@ namespace YumeEngine
 
 
 		Matrix3x4 view_ = Matrix3x4(cameraPos,lookAtRot,1);
-		Matrix4 viewProj = projection * view_;
+		Matrix4 viewProj = projection_* view_;
 		rhi_->SetShaders(vs,ps);
 
 		rhi_->ClearParameterSources();
@@ -175,7 +163,7 @@ namespace YumeEngine
 		rhi_->SetShaderParameter(VSP_MODEL,world);
 		rhi_->SetShaderParameter(VSP_VIEW,view_);
 		rhi_->SetShaderParameter(VSP_VIEWINV,view_.Inverse());
-		rhi_->SetShaderParameter(VSP_VIEWPROJ,projection * view_);
+		rhi_->SetShaderParameter(VSP_VIEWPROJ,projection_ * view_);
 		rhi_->SetShaderParameter(PSP_MATDIFFCOLOR,YumeColor(1.0f,1.0f,1.0f,1.0f));
 		rhi_->SetShaderParameter(VSP_CAMERAPOS,Vector3(0,0,-10));
 		rhi_->SetShaderParameter(VSP_CAMERAROT,Matrix3::IDENTITY);

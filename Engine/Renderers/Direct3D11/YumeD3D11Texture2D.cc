@@ -27,6 +27,7 @@
 
 #include "YumeD3D11Renderer.h"
 #include "YumeD3D11RendererImpl.h"
+#include "YumeD3D11Renderable.h"
 
 #include "Renderer/YumeImage.h"
 
@@ -124,7 +125,7 @@ namespace YumeEngine
 
 		if(usage_ == TEXTURE_RENDERTARGET || usage_ == TEXTURE_DEPTHSTENCIL)
 		{
-			renderSurface_ = SharedPtr<YumeRenderable>(new YumeRenderable(this));
+			renderSurface_ = SharedPtr<YumeRenderable>(new YumeD3D11Renderable(this));
 
 			// Clamp mode addressing by default, nearest filtering, and mipmaps disabled
 			addressMode_[COORD_U] = ADDRESS_CLAMP;

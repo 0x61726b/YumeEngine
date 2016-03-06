@@ -568,7 +568,7 @@ namespace YumeEngine
 		if(window_)
 			SDL_SetWindowPosition(window_,pos.x_,pos.y_);
 		else
-			windowPos_ = pos; // Sets as initial position for OpenWindow()
+			windowPos_ = IntVector2(pos.x_,pos.y_); // Sets as initial position for OpenWindow()
 	}
 	void YumeGLRenderer::SetWindowTitle(const YumeString& title)
 	{
@@ -816,7 +816,7 @@ namespace YumeEngine
 
 			if(!impl_->context_)
 				return false;
-		}
+			}
 
 		YumeRHI::SetGraphicsMode(width,height,fullscreen,borderless,resizable,vsync,tripleBuffer,multiSample);
 
@@ -834,6 +834,10 @@ namespace YumeEngine
 
 		if(!fullscreen)
 			SDL_GetWindowPosition(window_,x,y);
+
+		SDL_GetWindowSize(window_,&windowWidth_,&windowHeight_);
+		if(!fullscreen)
+			SDL_GetWindowPosition(window_,&windowPos_.x_,&windowPos_.y_);
 
 		// Reset rendertargets and viewport for the new screen mode
 		ResetRenderTargets();
@@ -856,7 +860,7 @@ namespace YumeEngine
 
 		initialized_ = true;
 		return true;
-	}
+		}
 
 	void YumeGLRenderer::Restore()
 	{
@@ -1500,9 +1504,9 @@ namespace YumeEngine
 		indexBuffer_ = buffer;
 	}
 
-	bool YumeGLRenderer::NeedParameterUpdate(ShaderParameterGroup group, const void* source)
+	bool YumeGLRenderer::NeedParameterUpdate(ShaderParameterGroup group,const void* source)
 	{
-		return shaderProgram_ ? shaderProgram_->NeedParameterUpdate(group, source) : false;
+		return shaderProgram_ ? shaderProgram_->NeedParameterUpdate(group,source) : false;
 	}
 
 	void YumeGLRenderer::SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps)
@@ -2177,7 +2181,7 @@ namespace YumeEngine
 						i->second.depthAttachment_ = depthStencil_;
 					}
 				}
-			}
+		}
 			else
 			{
 				if(i->second.depthAttachment_)
@@ -2203,7 +2207,7 @@ namespace YumeEngine
 				}
 			}
 #endif
-		}
+	}
 	}
 
 

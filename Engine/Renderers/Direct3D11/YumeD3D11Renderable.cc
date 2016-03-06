@@ -14,44 +14,51 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
-#include "YumeRequired.h"
-#include "YumeNullRenderer.h"
-
-#include "Math/YumeVector2.h"
-
-#include "Math/YumeMath.h"
-
-#include "Logging/logging.h"
+#include "YumeD3D11Renderable.h"
+#include "YumeD3D11Renderer.h"
+#include "Renderer/YumeTexture.h"
 
 #include "Engine/YumeEngine.h"
 
 
 namespace YumeEngine
 {
-	extern "C" void YumeNullExport LoadModule(YumeEngine3D* engine) throw()
-	{
-		YumeRHI* graphics_ = new YumeNullRenderer;
-		engine->SetRenderer(graphics_);
-	}
-	//---------------------------------------------------------------------	
-	extern "C" void YumeNullExport UnloadModule(YumeEngine3D* engine) throw()
-	{
-		YumeRHI* graphics_ = engine->GetRenderer();
-		delete graphics_;
-	}
-	//---------------------------------------------------------------------
-	YumeNullRenderer::YumeNullRenderer()
+
+	YumeD3D11Renderable::YumeD3D11Renderable(YumeTexture* parentTexture):
+		YumeRenderable(parentTexture)
 	{
 	}
 
-	YumeNullRenderer::~YumeNullRenderer()
+	YumeD3D11Renderable::~YumeD3D11Renderable()
 	{
-		
+		Release();
+	}
+
+
+	void YumeD3D11Renderable::Release()
+	{
+		YumeRHI* graphics = YumeEngine3D::Get()->GetRenderer();
+		if(!graphics)
+			return;
+		if(graphics && renderTargetView_)
+		{
+			for(unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
+			{
+				if(graphics->GetRenderTarget(i) == this)
+					graphics->ResetRenderTarget(i);
+			}
+
+			if(graphics->GetDepthStencil() == this)
+				graphics->ResetDepthStencil();
+		}
+
+		D3D_SAFE_RELEASE(renderTargetView_);
+		D3D_SAFE_RELEASE(readOnlyView_);
 	}
 }

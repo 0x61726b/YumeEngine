@@ -57,6 +57,8 @@ namespace YumeEngine
 
 		virtual void CheckTextureBudget(YumeHash type);
 
+		virtual unsigned GetDataSize(int width,int height) const { return 0; }
+
 		virtual unsigned GetSRVFormat(unsigned format);
 		/// Return the depth-stencil view format corresponding to a texture format. Handles conversion of typeless depth texture formats.
 		virtual unsigned GetDSVFormat(unsigned format);

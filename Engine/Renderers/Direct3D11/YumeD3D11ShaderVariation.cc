@@ -72,7 +72,7 @@ namespace YumeEngine
 			if(!rhi_)
 				return;
 
-			static_cast<YumeD3D11Renderer*>(rhi_)->CleanUpShaderPrograms(this);
+			static_cast<YumeD3D11Renderer*>(rhi_)->CleanupShaderPrograms(this);
 
 			if(type_ == VS)
 			{

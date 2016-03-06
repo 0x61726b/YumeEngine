@@ -48,93 +48,102 @@ namespace YumeEngine
 		~YumeNullRenderer();
 
 
-		bool SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
-			int multiSample);
+		virtual bool							SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,int multiSample) { return true; };
 
-		bool BeginFrame();
-		void EndFrame();
-		void Clear(unsigned flags,const Vector4& color = Vector4(0.0f,1.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0);
+		virtual bool							BeginFrame() { return true; };
+		virtual void							EndFrame() { };
+		virtual void							Clear(unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) { };
 
-		bool CreateD3D11Device(int width,int height,int multisample);
-		bool UpdateSwapchain(int width,int height);
+		virtual bool							IsInitialized() { return true; }
 
-		void ResetRenderTargets();
-		void SetViewport(const IntRect&);
 
-		Vector2 GetRenderTargetDimensions() const;
+		virtual IntVector2						GetRenderTargetDimensions() const { return IntVector2(0,0); }
+		virtual void							CreateRendererCapabilities()  { };
+		virtual YumeVector<int>::type			GetMultiSampleLevels() const { YumeVector<int>::type a; return a; };
 
-		void SetFlushGPU(bool flushGpu);
-		void CreateRendererCapabilities();
-		YumeVector<int>::type GetMultiSampleLevels() const;
 
-		YumeShaderVariation* GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const { return 0; }
+		virtual void							Close() { };
+		virtual void							AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless) { };
+		bool									OpenWindow(int width,int height,bool resizable,bool borderless){ return true; };
+		virtual void							Maximize() { };
+		virtual void 							SetWindowPos(const Vector2& pos) { };
+		virtual void							SetWindowTitle(const YumeString& string) { };
 
-		YumeShaderVariation* GetShader(ShaderType type,const char* name,const char* defines) const { return 0; }
+		virtual void							AddGpuResource(YumeGpuResource* object) { };
+		virtual void							RemoveGpuResource(YumeGpuResource* object) { };
 
-		void SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps) {}
 
-		//Window ops
-		void Close();
-		void AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless);
-		void Maximize();
-		void SetWindowPos(const Vector2& pos);
-		void SetWindowTitle(const YumeString& string);
+		virtual YumeConstantBuffer*				GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size) { return 0; };
+		virtual YumeConstantBuffer*				GetOrCreateConstantBuffer(unsigned bindingIndex,unsigned size) { return 0; }
 
-		void AddGpuResource(YumeGpuResource* object);
-		void RemoveGpuResource(YumeGpuResource* object);
-		void ResetCache() { };
+		virtual void							ResetCache() { };
 
-		YumeVertexBuffer* GetVertexBuffer(unsigned index) const { return 0; }
-		YumeConstantBuffer* GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size) { return 0; }
+		virtual bool							IsDeviceLost() const { return false; } //Always false on Direct3D
 
-		unsigned GetFormat(CompressedFormat format) const { return 1; }
 
-		YumeVertexBuffer* CreateVertexBuffer() { return 0; };
-		YumeIndexBuffer* CreateIndexBuffer() { return 0; };
-		YumeInputLayout* CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks) { return 0; }
+		virtual YumeVertexBuffer*				CreateVertexBuffer() { return 0; };;
+		virtual YumeIndexBuffer* 				CreateIndexBuffer() { return 0; };;
+		virtual YumeInputLayout* 				CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks) { return 0; };;
 
-		void SetShaderParameter(YumeHash  param,const float* data,unsigned count) { };
-		/// Set shader float constant.
-		void SetShaderParameter(YumeHash  param,float value) { };
-		/// Set shader boolean constant.
-		void SetShaderParameter(YumeHash  param,bool value) { };
-		/// Set shader color constant.
-		void SetShaderParameter(YumeHash  param,const YumeColor& color) { };
-		/// Set shader 2D vector constant.
-		void SetShaderParameter(YumeHash  param,const Vector2& vector) { };
-		/// Set shader 3x3 matrix constant.
-		void SetShaderParameter(YumeHash  param,const Matrix3& matrix) { };
-		/// Set shader 3D vector constant.
-		void SetShaderParameter(YumeHash  param,const Vector3& vector) { };
-		/// Set shader 4x4 matrix constant.
-		void SetShaderParameter(YumeHash  param,const Matrix4& matrix) { };
-		/// Set shader 4D vector constant.
-		void SetShaderParameter(YumeHash param,const Vector4& vector) { };
 
-		void SetShaderParameter(YumeHash param,const YumeVariant& value) { };
+		virtual YumeShaderVariation* 			GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const { return 0; };;
+		virtual YumeShaderVariation* 			GetShader(ShaderType type,const char* name,const char* defines) const { return 0; };;
 
-		void SetTexture(unsigned int,YumeTexture *) { }
-		//Setters
-		void SetVertexBuffer(YumeVertexBuffer* buffer) { }
-		/// Set multiple vertex buffers.
-		bool SetVertexBuffers
-			(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) {
-			return false;
-		}
-		/// Set multiple vertex buffers.
-		bool SetVertexBuffers
-			(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) {
-			return false;
-		}
+		virtual unsigned						GetFormat(CompressedFormat format) const  { return 0; };
 
-		void SetIndexBuffer(YumeIndexBuffer*) { }
+		virtual void						    SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps) { };
 
-		void Draw(PrimitiveType type,unsigned vertexStart,unsigned vertexCount) { }
-		/// Draw indexed geometry.
-		void Draw(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount) { }
-		/// Draw indexed, instanced geometry. An instancing vertex buffer must be set.
-		void DrawInstanced(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount,
-			unsigned instanceCount) { };
+
+
+		virtual void  							SetShaderParameter(YumeHash param,const float* data,unsigned count) { }
+		virtual void  							SetShaderParameter(YumeHash param,float value) { };
+		virtual void  							SetShaderParameter(YumeHash param,bool value) { };
+		virtual void  							SetShaderParameter(YumeHash param,const YumeColor& color) { };
+		virtual void  							SetShaderParameter(YumeHash param,const Vector2& vector) { };
+		virtual void  							SetShaderParameter(YumeHash param,const Matrix3& matrix) { };
+		virtual void  							SetShaderParameter(YumeHash param,const Matrix3x4& matrix) { };
+		virtual void  							SetShaderParameter(YumeHash param,const Vector3& vector) { };
+		virtual void  							SetShaderParameter(YumeHash param,const Matrix4& matrix) { };
+		virtual void  							SetShaderParameter(YumeHash param,const Vector4& vector) { };
+		virtual void  							SetShaderParameter(YumeHash param,const YumeVariant& value) { };
+
+		virtual void  							SetVertexBuffer(YumeVertexBuffer* buffer) { };
+		virtual void  							SetIndexBuffer(YumeIndexBuffer* buffer) { };
+		virtual bool  							SetVertexBuffers(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0){ return true; };
+		virtual bool  							SetVertexBuffers(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0){ return true; };
+
+		virtual bool							NeedParameterUpdate(ShaderParameterGroup group,const void* source){ return true; };
+		virtual void							SetFlushGPU(bool flushGpu) { };
+		virtual void  							SetBlendMode(BlendMode mode) { };
+		virtual void  							SetColorWrite(bool enable) { };
+		virtual void  							SetCullMode(CullMode mode) { };
+		virtual void  							SetDepthBias(float constantBias,float slopeScaledBias) { };
+		virtual void  							SetDepthTest(CompareMode mode) { };
+		virtual void  							SetDepthWrite(bool enable) { };
+		virtual void  							SetFillMode(FillMode mode) { };
+		virtual void  							SetScissorTest(bool enable,const Rect& rect = Rect::FULL,bool borderInclusive = true) { };
+		virtual void  							SetScissorTest(bool enable,const IntRect& rect) { };
+		virtual void  							SetStencilTest(bool enable,CompareMode mode = CMP_ALWAYS,StencilOp pass = OP_KEEP,StencilOp fail = OP_KEEP,StencilOp zFail = OP_KEEP,unsigned stencilRef = 0,unsigned compareMask = M_MAX_UNSIGNED,unsigned writeMask = M_MAX_UNSIGNED) { };
+
+
+		virtual void  							SetClipPlane(bool enable,const Plane& clipPlane,const Matrix3x4& view,const Matrix4& projection) { };
+		virtual void  							SetTexture(unsigned index,YumeTexture* texture) { };
+
+		virtual void 							SetRenderTarget(unsigned index,YumeRenderable* renderTarget) { };
+		virtual void 							SetDepthStencil(YumeRenderable* depthStencil) { };
+		virtual void 							SetDepthStencil(YumeTexture2D* texture) { };
+
+		virtual void 							SetViewport(const IntRect& rect) { };
+
+		virtual void 							Draw(PrimitiveType type,unsigned vertexStart,unsigned vertexCount) { };
+		virtual void 							Draw(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount) { };
+		virtual void 							DrawInstanced(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount,unsigned instanceCount) { };
+
+		virtual void							ClearParameterSource(ShaderParameterGroup group) { };
+		virtual void							ClearParameterSources() { };
+		virtual void							ClearTransformSources() { };
+		virtual void 							CleanupShaderPrograms(YumeShaderVariation* variation) { };
+
 	};
 }
 

@@ -33,6 +33,7 @@
 #include "Math/YumeMatrix4.h"
 #include "Math/YumeMath.h"
 #include "Math/YumeRect.h"
+#include "Math/YumePlane.h"
 
 #include "YumeD3D11Shader.h"
 #include "YumeD3D11ShaderVariation.h"
@@ -200,7 +201,7 @@ namespace YumeEngine
 
 			gpuResources_.clear();
 		}
-		impl_->blendStates_.clear();
+		
 
 		// ToDo(arkenthera) not sure about this..
 		int size = constantBuffers_.size();
@@ -214,19 +215,24 @@ namespace YumeEngine
 		for(blendIt = impl_->blendStates_.begin();blendIt != impl_->blendStates_.end(); ++blendIt)
 			D3D_SAFE_RELEASE(blendIt->second);
 
-		impl_->depthStates_.clear();
+		impl_->blendStates_.clear();
+
+		
 
 		DepthStatesMap::iterator depthIt;
 
 		for(depthIt = impl_->depthStates_.begin();depthIt != impl_->depthStates_.end(); ++depthIt)
 			D3D_SAFE_RELEASE(depthIt->second);
 
+		impl_->depthStates_.clear();
 
-		impl_->rasterizerStates_.clear();
+
+		
 		RasterizerStatesMap::iterator rasterizerIt;
 
 		for(rasterizerIt = impl_->rasterizerStates_.begin();rasterizerIt != impl_->rasterizerStates_.end(); ++rasterizerIt)
 			D3D_SAFE_RELEASE(rasterizerIt->second);
+		impl_->rasterizerStates_.clear();
 
 		D3D_SAFE_RELEASE(impl_->defaultRenderTargetView_);
 		D3D_SAFE_RELEASE(impl_->defaultDepthStencilView_);
@@ -235,6 +241,8 @@ namespace YumeEngine
 		D3D_SAFE_RELEASE(impl_->swapChain_);
 		D3D_SAFE_RELEASE(impl_->deviceContext_);
 		D3D_SAFE_RELEASE(impl_->device_);
+
+		lastShader_.reset();
 
 		if(impl_->debug_)
 		{
@@ -252,7 +260,7 @@ namespace YumeEngine
 		delete impl_;
 		impl_ = 0;
 
-		lastShader_.reset();
+		
 
 		UnregisterFactories();
 
@@ -360,7 +368,7 @@ namespace YumeEngine
 		dirtyConstantBuffers_.clear();
 	}
 
-	void YumeD3D11Renderer::Clear(unsigned flags,const Vector4& color,float depth,unsigned stencil)
+	void YumeD3D11Renderer::Clear(unsigned flags,const YumeColor& color,float depth,unsigned stencil)
 	{
 		bool oldColorWrite = colorWrite_;
 		bool oldDepthWrite = depthWrite_;
@@ -545,7 +553,7 @@ namespace YumeEngine
 		if(window_)
 			SDL_SetWindowPosition(window_,pos.x_,pos.y_);
 		else
-			windowPos_ = pos; // Sets as initial position for OpenWindow()
+			windowPos_ = IntVector2(pos.x_,pos.y_); // Sets as initial position for OpenWindow()
 	}
 	void YumeD3D11Renderer::SetWindowTitle(const YumeString& title)
 	{
@@ -1451,6 +1459,35 @@ namespace YumeEngine
 		}
 	}
 
+	void YumeD3D11Renderer::SetClipPlane(bool enable,const Plane& clipPlane,const Matrix3x4& view,const Matrix4& projection)
+	{
+		useClipPlane_ = enable;
+
+		if(enable)
+		{
+			Matrix4 viewProj = projection * view;
+			clipPlane_ = clipPlane.Transformed(viewProj).ToVector4();
+			SetShaderParameter(VSP_CLIPPLANE,clipPlane_);
+		}
+	}
+
+	void YumeD3D11Renderer::ClearParameterSource(ShaderParameterGroup group)
+	{
+		shaderParameterSources_[group] = (const void*)M_MAX_UNSIGNED;
+	}
+
+	void YumeD3D11Renderer::ClearParameterSources()
+	{
+		for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
+			shaderParameterSources_[i] = (const void*)M_MAX_UNSIGNED;
+	}
+
+	void YumeD3D11Renderer::ClearTransformSources()
+	{
+		shaderParameterSources_[SP_CAMERA] = (const void*)M_MAX_UNSIGNED;
+		shaderParameterSources_[SP_OBJECT] = (const void*)M_MAX_UNSIGNED;
+	}
+
 	YumeVertexBuffer* YumeD3D11Renderer::CreateVertexBuffer()
 	{
 		return YumeAPINew YumeD3D11VertexBuffer(this);
@@ -1466,7 +1503,7 @@ namespace YumeEngine
 		return YumeAPINew YumeD3D11InputLayout(this,vertexShader,buffers,elementMasks);
 	}
 
-	void YumeD3D11Renderer::CleanUpShaderPrograms(YumeShaderVariation* variation)
+	void YumeD3D11Renderer::CleanupShaderPrograms(YumeShaderVariation* variation)
 	{
 		for(ShaderProgramMap::iterator i = shaderPrograms_.begin(); i != shaderPrograms_.end();)
 		{
@@ -1587,6 +1624,17 @@ namespace YumeEngine
 
 			indexBuffer_ = buffer;
 		}
+	}
+
+	bool YumeD3D11Renderer::NeedParameterUpdate(ShaderParameterGroup group,const void* source)
+	{
+		if((unsigned)(size_t)shaderParameterSources_[group] == M_MAX_UNSIGNED || shaderParameterSources_[group] != source)
+		{
+			shaderParameterSources_[group] = source;
+			return true;
+		}
+		else
+			return false;
 	}
 
 	void YumeD3D11Renderer::PreDraw()
