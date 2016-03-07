@@ -73,8 +73,6 @@ set( SRC_SCENE
 		Scene/YumeSceneComponent.cc
 		Scene/YumeSceneNode.h
 		Scene/YumeSceneNode.cc
-		Scene/YumeSceneResolver.h
-		Scene/YumeSceneResolver.cc
 )
 
 set( SRC_MATH
