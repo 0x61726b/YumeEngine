@@ -409,45 +409,17 @@ namespace YumeEngine
 		if(numSupportedRTs >= 4)
 			deferredSupport_ = true;
 
-#if defined(__APPLE__) && !defined(IOS)
-		// On OS X check for an Intel driver and use shadow map RGBA dummy color textures, because mixing
-		// depth-only FBO rendering and backbuffer rendering will bug, resulting in a black screen in full
-		// screen mode, and incomplete shadow maps in windowed mode
-		String renderer((const char*)glGetString(GL_RENDERER));
-		if(renderer.Contains("Intel",false))
-			dummyColorFormat_ = GetRGBAFormat();
-#endif
-#else
-		// Check for supported compressed texture formats
-#ifdef __EMSCRIPTEN__
-		dxtTextureSupport_ = CheckExtension("WEBGL_compressed_texture_s3tc"); // https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_s3tc/
-		etcTextureSupport_ = CheckExtension("WEBGL_compressed_texture_etc1"); // https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_etc1/
-		pvrtcTextureSupport_ = CheckExtension("WEBGL_compressed_texture_pvrtc"); // https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_pvrtc/
-		// Instancing is in core in WebGL 2, so the extension may not be present anymore. In WebGL 1, find https://www.khronos.org/registry/webgl/extensions/ANGLE_instanced_arrays/
-		// TODO: In the distant future, this may break if WebGL 3 is introduced, so either improve the GL_VERSION parsing here, or keep track of which WebGL version we attempted to initialize.
-		instancingSupport_ = (strstr((const char *)glGetString(GL_VERSION),"WebGL 2.") != 0) || CheckExtension("ANGLE_instanced_arrays");
-		if(instancingSupport_)
-		{
-			glVertexAttribDivisorANGLE(ELEMENT_INSTANCEMATRIX1,1);
-			glVertexAttribDivisorANGLE(ELEMENT_INSTANCEMATRIX2,1);
-			glVertexAttribDivisorANGLE(ELEMENT_INSTANCEMATRIX3,1);
-		}
 #else
 		dxtTextureSupport_ = CheckExtension("EXT_texture_compression_dxt1");
 		etcTextureSupport_ = CheckExtension("OES_compressed_ETC1_RGB8_texture");
 		pvrtcTextureSupport_ = CheckExtension("IMG_texture_compression_pvrtc");
-#endif
 
 		// Check for best supported depth renderbuffer format for GLES2
 		if(CheckExtension("GL_OES_depth24"))
 			glesDepthStencilFormat = GL_DEPTH_COMPONENT24_OES;
 		if(CheckExtension("GL_OES_packed_depth_stencil"))
 			glesDepthStencilFormat = GL_DEPTH24_STENCIL8_OES;
-#ifdef __EMSCRIPTEN__
-		if(!CheckExtension("WEBGL_depth_texture"))
-#else
 		if(!CheckExtension("GL_OES_depth_texture"))
-#endif
 		{
 			shadowMapFormat_ = 0;
 			hiresShadowMapFormat_ = 0;
@@ -455,17 +427,8 @@ namespace YumeEngine
 		}
 		else
 		{
-#ifdef IOS
-			// iOS hack: depth renderbuffer seems to fail, so use depth textures for everything
-			// if supported
-			glesDepthStencilFormat = GL_DEPTH_COMPONENT;
-#endif
 			shadowMapFormat_ = GL_DEPTH_COMPONENT;
 			hiresShadowMapFormat_ = 0;
-			// WebGL shadow map rendering seems to be extremely slow without an attached dummy color texture
-#ifdef __EMSCRIPTEN__
-			dummyColorFormat_ = GetRGBAFormat();
-#endif
 		}
 #endif
 	}
