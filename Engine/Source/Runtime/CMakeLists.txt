@@ -69,6 +69,12 @@ set( SRC_LOGGING
 set( SRC_SCENE
 		Scene/YumeScene.h
 		Scene/YumeScene.cc
+		Scene/YumeSceneComponent.h
+		Scene/YumeSceneComponent.cc
+		Scene/YumeSceneNode.h
+		Scene/YumeSceneNode.cc
+		Scene/YumeSceneResolver.h
+		Scene/YumeSceneResolver.cc
 )
 
 set( SRC_MATH
@@ -177,7 +183,7 @@ source_group(Yume\\\\Core\\\\Memory FILES ${SRC_CORE_MEMORY})
 source_group(Yume\\\\Core\\\\IO FILES ${SRC_CORE_IO})
 source_group(Yume\\\\Core\\\\Utils FILES ${SRC_CORE_UTILS})
 source_group(Yume\\\\Engine FILES ${SRC_ENGINE})
-source_group(Yume\\\\Renderer\\\\Scene FILES ${SRC_SCENE})
+source_group(Yume\\\\Scene FILES ${SRC_SCENE})
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Core)
