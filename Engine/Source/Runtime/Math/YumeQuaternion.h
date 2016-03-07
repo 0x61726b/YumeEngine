@@ -31,6 +31,10 @@
 //--------------------------------------------------------------------------------
 #include "YumeRequired.h"
 #include "YumeMatrix3.h"
+
+#ifdef YUME_SSE
+#include <emmintrin.h>
+#endif
 //--------------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -165,7 +169,7 @@ namespace YumeEngine
 			z_ += rhs.z_;
 #endif
 			return *this;
-		}
+}
 
 		/// Multiply-assign a scalar.
 		Quaternion& operator *=(float rhs)
@@ -329,7 +333,7 @@ namespace YumeEngine
 				x_ *= invLen;
 				y_ *= invLen;
 				z_ *= invLen;
-			}
+		}
 #endif
 		}
 
@@ -352,7 +356,7 @@ namespace YumeEngine
 			{
 				float invLen = 1.0f / sqrtf(lenSquared);
 				return *this * invLen;
-			}
+		}
 			else
 				return *this;
 #endif
