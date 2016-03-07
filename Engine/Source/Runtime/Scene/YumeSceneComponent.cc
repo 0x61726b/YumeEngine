@@ -71,6 +71,10 @@ namespace YumeEngine
 		}
 	}
 
+	void YumeSceneComponent::DrawDebugGeometry(YumeDebugRenderer* debug, bool depthTest)
+	{
+	}
+
 	void YumeSceneComponent::Remove()
 	{
 		if(node_)

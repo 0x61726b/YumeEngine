@@ -29,7 +29,7 @@ namespace YumeEngine
 {
 	class YumeSceneNode;
 	class YumeScene;
-	class DebugRenderer;
+	class YumeDebugRenderer;
 
 	class YumeAPIExport YumeSceneComponent : public YumeBase
 	{
@@ -45,7 +45,7 @@ namespace YumeEngine
 		void SetEnabled(bool enabled);
 		void Remove();
 
-		//virtual void DrawDebugGeometry(DebugRenderer* debug, bool depthTest);
+		virtual void DrawDebugGeometry(YumeDebugRenderer* debug, bool depthTest);
 
 		bool IsEnabledEffective() const;
 		YumeSceneComponent* GetComponent(YumeHash type) const;

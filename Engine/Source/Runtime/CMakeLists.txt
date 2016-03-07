@@ -61,6 +61,10 @@ set(SRC_RENDERER
 	Renderer/YumeViewport.cc
 	Renderer/YumeRenderPass.h
 	Renderer/YumeRenderPass.cc
+	Renderer/YumeAuxRenderer.h
+	Renderer/YumeAuxRenderer.cc
+	Renderer/YumeCamera.h
+	Renderer/YumeCamera.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h
@@ -94,6 +98,13 @@ set( SRC_MATH
 	Math/YumePlane.h
 	Math/YumePlane.cc
 	Math/YumeSphere.h
+	Math/YumeSphere.cc
+	Math/YumePolyhedron.h
+	Math/YumePolyhedron.cc
+	Math/YumeBoundingBox.h
+	Math/YumeBoundingBox.cc
+	Math/YumeFrustum.h
+	Math/YumeFrustum.cc
 	Math/YumeRay.h
 	Math/YumeMath.h
 	Math/YumeMath.cc
