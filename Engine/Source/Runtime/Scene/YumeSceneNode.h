@@ -396,7 +396,7 @@ namespace YumeEngine
 
 		if(recursive)
 		{
-			for(YumeVector<SharedPtr<YumeSceneNode> >::const_iterator i = children_.Begin(); i != children_.end(); ++i)
+			for(YumeVector<SharedPtr<YumeSceneNode> >::const_iterator i = children_.begin(); i != children_.end(); ++i)
 			{
 				T* component = (*i)->GetDerivedComponent<T>(true);
 				if(component)
