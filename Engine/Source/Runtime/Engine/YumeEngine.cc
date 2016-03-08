@@ -188,16 +188,16 @@ namespace YumeEngine
 	}
 	void YumeEngine3D::RegisterFactories()
 	{
-		/*cachedHashMap_["Base"] = GenerateHash("Base");
-		cachedHashMap_["Image"] = GenerateHash("Image");*/
+		/*cachedHashMap_["Base"] = ("Base");
+		cachedHashMap_["Image"] = ("Image");*/
 
 		factory_ = SharedPtr<YumeObjectFactory>(new YumeObjectFactory);
 
 
-		YumeObjectRegistrar<YumeBase> baseObj(GenerateHash("Base"));
-		YumeObjectRegistrar<YumeResource> resourceObj(GenerateHash("Resource"));
-		YumeObjectRegistrar<YumeImage> imageObj(GenerateHash("Image"));
-		YumeObjectRegistrar<YumeRenderTechnique> techObj(GenerateHash("RenderTechnique"));
+		YumeObjectRegistrar<YumeBase> baseObj(("Base"));
+		YumeObjectRegistrar<YumeResource> resourceObj(("Resource"));
+		YumeObjectRegistrar<YumeImage> imageObj(("Image"));
+		YumeObjectRegistrar<YumeRenderTechnique> techObj(("RenderTechnique"));
 
 	}
 	void YumeEngine3D::Render()

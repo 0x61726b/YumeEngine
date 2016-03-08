@@ -26,9 +26,6 @@
 /// Comments : 
 ///
 ///////////////////////////////////////////////////////////////////////////////////
-
-#pragma once
-//---------------------------------------------------------------------------------
 #ifndef __YumeRequired_h__
 #define __YumeRequired_h__
 //---------------------------------------------------------------------------------
@@ -54,8 +51,10 @@ namespace YumeEngine
 	typedef std::string _YumeStringBase;
 	typedef std::basic_stringstream<char,std::char_traits<char>,std::allocator<char> > _YumeStreamBase;
 
-	typedef _YumeStringBase YumeString;
+	typedef std::string YumeString;
 	typedef _YumeStreamBase YumeStringStream;
+
+	static YumeString EmptyString = "";
 
 	typedef unsigned char yuchar;
 	typedef unsigned short yushort;
@@ -81,6 +80,8 @@ namespace YumeEngine
 	class Plane;
 	class PlaneBoundedVolume;
 }
+//---------------------------------------------------------------------------------
+#include "Math/YumeHash.h"
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -168,7 +169,6 @@ namespace YumeEngine
 	};
 
 	typedef YumeVector<YumeString>::type StringVector;
-	typedef size_t YumeHash;
 
 #define YUME_SAFE_RELEASE(p) if(p) { p->Release(); p = 0; }
 }
@@ -177,10 +177,8 @@ namespace YumeEngine
 #define YUME_SSE
 #endif
 
-namespace YumeEngine
-{
+#include <boost/shared_array.hpp>
 
-}
 //---------------------------------------------------------------------------------
 #endif
 //~End of YumeRequired.h

@@ -236,7 +236,7 @@ namespace YumeEngine
 		}
 	}
 
-	YumeHash YumeImage::imageHash_ = GenerateHash("Image");
+	YumeHash YumeImage::imageHash_ = ("Image");
 
 	YumeImage::YumeImage():
 		width_(0),

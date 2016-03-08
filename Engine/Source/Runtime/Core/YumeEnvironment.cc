@@ -72,7 +72,7 @@ namespace YumeEngine
 
 		for(int i=0; i < commandLine.size(); ++i)
 		{
-			engineVariants_.insert(VariantMap::value_type(commandLine[i].c_str(),YumeVariant("1")));
+			engineVariants_.insert(VariantMap::value_type(commandLine[i].c_str(),Variant("1")));
 		}
 	}
 
@@ -89,7 +89,7 @@ namespace YumeEngine
 		dynLibMap_.clear();
 	}
 
-	void YumeEnvironment::AddParameter(const YumeString& var,const YumeVariant& value)
+	void YumeEnvironment::AddParameter(const YumeHash& var,const Variant& value)
 	{
 		VariantMap::iterator It = engineVariants_.find(var);
 
@@ -132,13 +132,13 @@ namespace YumeEngine
 		YumeAPIDelete lib;
 	}
 
-	YumeVariant YumeEnvironment::GetVariant(const YumeString& key)
+	Variant YumeEnvironment::GetVariant(const YumeHash& key)
 	{
 		VariantMap::iterator It = engineVariants_.find(key);
 
 		if(It != engineVariants_.end())
 			return It->second;
-		return YumeVariant(false);
+		return Variant(false);
 	}
 
 	void YumeEnvironment::ReadAndParseConfig()

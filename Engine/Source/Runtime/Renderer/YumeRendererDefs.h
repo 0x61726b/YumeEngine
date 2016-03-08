@@ -23,6 +23,7 @@
 #define __YumeRendererDefs_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+#include "Math/YumeHash.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {

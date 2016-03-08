@@ -30,7 +30,7 @@
 
 #include "Renderer/YumeRHI.h"
 
-#include <boost/thread/mutex.hpp>
+#include "Core/YumeVariant.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -113,7 +113,7 @@ namespace YumeEngine
 		void SetShaderParameter(YumeHash param,const Vector3& vector);
 		void SetShaderParameter(YumeHash param,const Matrix4& matrix);
 		void SetShaderParameter(YumeHash param,const Vector4& vector);
-		void SetShaderParameter(YumeHash param,const YumeVariant& value);
+		void SetShaderParameter(YumeHash param,const Variant& value);
 
 
 		void SetVertexBuffer(YumeVertexBuffer* buffer);

@@ -274,7 +274,7 @@ namespace YumeEngine
 #endif
 
 				if(newParam.location_ >= 0)
-					shaderParameters_[GenerateHash(paramName)] = newParam;
+					shaderParameters_[(paramName)] = newParam;
 			}
 			else if(location >= 0 && name[0] == 's')
 			{

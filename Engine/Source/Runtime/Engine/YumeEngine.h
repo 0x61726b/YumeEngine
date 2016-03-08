@@ -42,6 +42,8 @@ namespace YumeEngine
 	class YumeResourceManager;
 	class YumeObjectFactory;
 	class YumeRenderer;
+	class YumeWorkQueue;
+	class YumeDebugRenderer;
 
 	class YumeAPIExport YumeEngine3D
 	{
@@ -75,10 +77,13 @@ namespace YumeEngine
 
 	public:
 		boost::shared_ptr<YumeIO> GetIO() const;
+		SharedPtr<YumeTime> GetTimer() const { return timer_; }
 		SharedPtr<YumeEnvironment> GetEnvironment() const { return env_; }
 		YumeResourceManager* GetResourceManager() const { return resourceManager_; }
 		SharedPtr<YumeObjectFactory> GetObjFactory() const { return factory_; }
-
+		SharedPtr<YumeWorkQueue> GetWorkQueue() const { return workQueue_; }
+		SharedPtr<YumeDebugRenderer> GetDebugRenderer() const { return debugRenderer_; }
+		SharedPtr<YumeRenderer> GetRenderLogic() const { return renderer_; }
 
 		const YumeString& GetRendererName() const;
 	private:
@@ -90,6 +95,8 @@ namespace YumeEngine
 		boost::shared_ptr<YumeIO> io_;
 		boost::shared_ptr<YumeObjectFactory> factory_;
 		boost::shared_ptr<YumeRenderer> renderer_;
+		boost::shared_ptr<YumeWorkQueue> workQueue_;
+		SharedPtr<YumeDebugRenderer> debugRenderer_;
 
 		log4cplus::Initializer* log4cplusinitializer_;
 

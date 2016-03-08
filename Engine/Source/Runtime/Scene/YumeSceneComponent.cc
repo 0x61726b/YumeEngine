@@ -28,14 +28,14 @@
 
 namespace YumeEngine
 {
-	YumeHash YumeSceneComponent::type_ = GenerateHash("SceneComponent");
+	YumeHash YumeSceneComponent::type_ = ("SceneComponent");
 
 	YumeSceneComponent::YumeSceneComponent():
 		node_(0),
 		id_(0),
 		enabled_(true)
 	{
-		type_ = GenerateHash("SceneComponent");
+		type_ = ("SceneComponent");
 		typeName_ = "SceneComponent";
 	}
 

@@ -23,12 +23,17 @@
 #define __YumeDefaults_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+#include "Math/YumeColor.h"
+#include "Math/YumeMatrix4.h"
+#include "Math/YumeMatrix3x4.h"
+#include "Core/YumeVariant.h"
 
 #include <boost/filesystem.hpp>
 
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	
 	void CreateConfigFile(const boost::filesystem::path& path);
 	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(const YumeString&,bool skipFirst = true);
 	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(const char* cmdLine);
@@ -48,12 +53,43 @@ namespace YumeEngine
 	YumeAPIExport double ToDouble(const char* source);
 	YumeAPIExport int ToInt(const YumeString& source);
 	YumeAPIExport int ToInt(const char* source);
+	YumeAPIExport unsigned ToUInt(const YumeString& source);
+	YumeAPIExport unsigned ToUInt(const char* source);
+	YumeAPIExport YumeColor ToColor(const YumeString& source);
+	YumeAPIExport YumeColor ToColor(const char* source);
+	YumeAPIExport IntRect ToIntRect(const YumeString& source);
+	YumeAPIExport IntRect ToIntRect(const char* source);
+	YumeAPIExport IntVector2 ToIntVector2(const YumeString& source);
+	YumeAPIExport IntVector2 ToIntVector2(const char* source);
+	YumeAPIExport Quaternion ToQuaternion(const YumeString& source);
+	YumeAPIExport Quaternion ToQuaternion(const char* source);
+	YumeAPIExport Rect ToRect(const YumeString& source);
+	YumeAPIExport Rect ToRect(const char* source);
+	YumeAPIExport Vector2 ToVector2(const YumeString& source);
+	YumeAPIExport Vector2 ToVector2(const char* source);
+	YumeAPIExport Vector3 ToVector3(const YumeString& source);
+	YumeAPIExport Vector3 ToVector3(const char* source);
+	YumeAPIExport Vector4 ToVector4(const YumeString& source,bool allowMissingCoords = false);
+	YumeAPIExport Vector4 ToVector4(const char* source,bool allowMissingCoords = false);
+	YumeAPIExport Variant ToVectorVariant(const YumeString& source);
+	YumeAPIExport Variant ToVectorVariant(const char* source);
+	YumeAPIExport Matrix3 ToMatrix3(const YumeString& source);
+	YumeAPIExport Matrix3 ToMatrix3(const char* source);
+	YumeAPIExport Matrix3x4 ToMatrix3x4(const YumeString& source);
+	YumeAPIExport Matrix3x4 ToMatrix3x4(const char* source);
+	YumeAPIExport Matrix4 ToMatrix4(const YumeString& source);
+	YumeAPIExport Matrix4 ToMatrix4(const char* source);
+	YumeAPIExport YumeString ToString(void* value);
+	YumeAPIExport YumeString ToStringHex(unsigned value);
+	YumeAPIExport void StringToBuffer(YumeVector<unsigned char>::type& dest,const YumeString& source);
+	YumeAPIExport void StringToBuffer(YumeVector<unsigned char>::type& dest,const char* source);
 
 	YumeAPIExport bool IsDigit(unsigned ch);
+	YumeAPIExport bool IsAlpha(unsigned ch);
 
 	YumeAPIExport const YumeString& WCharToUtf8(const std::wstring&);
 
-	YumeAPIExport YumeHash GenerateHash(const YumeString& key);
+	YumeAPIExport YumeHash WtfIsThis(const YumeString& key);
 
 	YumeAPIExport void ErrorDialog(const YumeString& title,const YumeString& message);
 

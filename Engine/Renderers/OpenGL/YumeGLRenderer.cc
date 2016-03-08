@@ -1913,7 +1913,7 @@ namespace YumeEngine
 		}
 	}
 
-	void YumeGLRenderer::SetShaderParameter(YumeHash param,const YumeVariant& value)
+	void YumeGLRenderer::SetShaderParameter(YumeHash param,const Variant& value)
 	{
 
 	}
@@ -2752,16 +2752,16 @@ namespace YumeEngine
 
 	void YumeGLRenderer::RegisterFactories()
 	{
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(GenerateHash("Shader"),[](void) -> YumeBase * { return new YumeGLShader();});
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(GenerateHash("Texture2D"),[this](void) -> YumeBase * { return new YumeGLTexture2D(this);});
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(GenerateHash("IndexBuffer"),[this](void) -> YumeBase * { return new YumeGLIndexBuffer(this);});
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(GenerateHash("VertexBuffer"),[this](void) -> YumeBase * { return new YumeGLVertexBuffer(this);});
+		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("Shader"),[](void) -> YumeBase * { return new YumeGLShader();});
+		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("Texture2D"),[this](void) -> YumeBase * { return new YumeGLTexture2D(this);});
+		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("IndexBuffer"),[this](void) -> YumeBase * { return new YumeGLIndexBuffer(this);});
+		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("VertexBuffer"),[this](void) -> YumeBase * { return new YumeGLVertexBuffer(this);});
 	}
 	void YumeGLRenderer::UnregisterFactories()
 	{
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(GenerateHash("Shader"));
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(GenerateHash("Texture2D"));
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(GenerateHash("IndexBuffer"));
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(GenerateHash("VertexBuffer"));
+		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("Shader"));
+		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("Texture2D"));
+		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("IndexBuffer"));
+		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("VertexBuffer"));
 	}
 	}

@@ -65,6 +65,16 @@ set(SRC_RENDERER
 	Renderer/YumeAuxRenderer.cc
 	Renderer/YumeCamera.h
 	Renderer/YumeCamera.cc
+	Renderer/YumeDrawable.h
+	Renderer/YumeDrawable.cc
+	Renderer/YumeMaterial.h
+	Renderer/YumeMaterial.cc
+	Renderer/YumeLight.h
+	Renderer/YumeLight.cc
+	Renderer/YumeRendererEnv.h
+	Renderer/YumeRendererEnv.cc
+	Renderer/YumeGeometry.h
+	Renderer/YumeGeometry.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h
@@ -77,6 +87,10 @@ set( SRC_SCENE
 		Scene/YumeSceneComponent.cc
 		Scene/YumeSceneNode.h
 		Scene/YumeSceneNode.cc
+		Scene/YumeOctreeQuery.h
+		Scene/YumeOctreeQuery.cc
+		Scene/YumeOctree.h
+		Scene/YumeOctree.cc
 )
 
 set( SRC_MATH
@@ -106,12 +120,15 @@ set( SRC_MATH
 	Math/YumeFrustum.h
 	Math/YumeFrustum.cc
 	Math/YumeRay.h
+	Math/YumeRay.cc
 	Math/YumeMath.h
 	Math/YumeMath.cc
 	Math/YumeRect.h
 	Math/YumeRect.cc
 	Math/YumeColor.h
 	Math/YumeColor.cc
+	Math/YumeHash.h
+	Math/YumeHash.cc
 )
 
 set( SRC_CORE
@@ -133,6 +150,14 @@ set( SRC_CORE
 	Core/YumeMain.h
 	Core/YumeBase.h
 	Core/YumeBase.cc
+	Core/YumeWorkQueue.h
+	Core/YumeWorkQueue.cc
+	Core/YumeComponentAnimation.h
+	Core/YumeComponentAnimation.cc
+	Core/YumeComponentAnimInfo.h
+	Core/YumeComponentAnimInfo.cc
+	Core/YumeVectorBuffer.h
+	Core/YumeVectorBuffer.cc
 		)
 set( SRC_CORE_IO
 	Core/YumeIO.h

@@ -47,7 +47,7 @@ namespace YumeEngine
 
 	}
 
-	YumeHash YumeSceneNode::type_ = GenerateHash("SceneNode");
+	YumeHash YumeSceneNode::type_ = "SceneNode";
 	YumeSceneNode::~YumeSceneNode()
 	{
 		RemoveAllChildren();
@@ -68,7 +68,7 @@ namespace YumeEngine
 		if(name != name_)
 		{
 			name_ = name;
-			nameHash_ = GenerateHash(name_);
+			nameHash_ = (name_);
 
 			// Send change event
 			if(scene_)
@@ -635,7 +635,7 @@ namespace YumeEngine
 		}
 	}
 
-	void YumeSceneNode::SetVar(YumeHash key,const YumeVariant& value)
+	void YumeSceneNode::SetVar(YumeHash key,const Variant& value)
 	{
 		vars_[key] = value;
 	}
@@ -741,12 +741,12 @@ namespace YumeEngine
 
 	YumeSceneNode* YumeSceneNode::GetChild(const YumeString& name,bool recursive) const
 	{
-		return GetChild(GenerateHash(name),recursive);
+		return GetChild((name),recursive);
 	}
 
 	YumeSceneNode* YumeSceneNode::GetChild(const char* name,bool recursive) const
 	{
-		return GetChild(GenerateHash(name),recursive);
+		return GetChild((name),recursive);
 	}
 
 	YumeSceneNode* YumeSceneNode::GetChild(YumeHash nameHash,bool recursive) const
@@ -793,10 +793,10 @@ namespace YumeEngine
 		return false;
 	}
 
-	const YumeVariant& YumeSceneNode::GetVar(YumeHash key) const
+	const Variant& YumeSceneNode::GetVar(YumeHash key) const
 	{
-		HashVariantMap::const_iterator i = vars_.find(key);
-		return i != vars_.end() ? i->second : YumeVariant();
+		VariantMap::const_iterator i = vars_.find(key);
+		return i != vars_.end() ? i->second : Variant::EMPTY;
 	}
 
 

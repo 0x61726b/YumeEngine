@@ -32,9 +32,6 @@
 #include "Core/YumeVariant.h"
 #include "Renderer/YumeImage.h"
 
-#include <boost/shared_array.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/thread/mutex.hpp>
 
 #include <SDL.h>
 //----------------------------------------------------------------------------
@@ -142,7 +139,7 @@ namespace YumeEngine
 		virtual void  							SetShaderParameter(YumeHash param,const Vector3& vector) = 0;
 		virtual void  							SetShaderParameter(YumeHash param,const Matrix4& matrix) = 0;
 		virtual void  							SetShaderParameter(YumeHash param,const Vector4& vector) = 0;
-		virtual void  							SetShaderParameter(YumeHash param,const YumeVariant& value) = 0;
+		virtual void  							SetShaderParameter(YumeHash param,const Variant& value) = 0;
 
 		virtual void  							SetVertexBuffer(YumeVertexBuffer* buffer) = 0;
 		virtual void  							SetIndexBuffer(YumeIndexBuffer* buffer) = 0;

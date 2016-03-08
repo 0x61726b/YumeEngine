@@ -53,8 +53,8 @@ namespace YumeEngine
 		const FsPath& GetLogFile() { return logFile_; }
 		const FsPath& GetRoot() { return root_; }
 
-		YumeVariant GetVariant(const YumeString&);
-		void AddParameter(const YumeString&,const YumeVariant& value);
+		Variant GetVariant(const YumeHash&);
+		void AddParameter(const YumeHash&,const Variant& value);
 
 		YumeDynamicLibrary* LoadDynLib(const YumeString& name);
 		void UnloadDynLib(YumeDynamicLibrary*);

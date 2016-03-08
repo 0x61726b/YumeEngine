@@ -110,7 +110,7 @@ namespace YumeEngine
 
 	YumeShaderVariation* YumeGLShader::GetVariation(ShaderType type,const char* defines)
 	{
-		YumeHash definesHash = GenerateHash(defines);
+		YumeHash definesHash = (defines);
 		typedef YumeMap<YumeHash,SharedPtr<YumeGLShaderVariation> > ShaderMap;
 		ShaderMap::type& variations = (type == VS ? vsVariations_ : psVariations_);
 
@@ -121,7 +121,7 @@ namespace YumeEngine
 			// If shader not found, normalize the defines (to prevent duplicates) and check again. In that case make an alias
 			// so that further queries are faster
 			YumeString normalizedDefines = NormalizeDefines(defines);
-			YumeHash normalizedHash = GenerateHash(normalizedDefines);
+			YumeHash normalizedHash = (normalizedDefines);
 
 			i = variations.find(normalizedHash);
 			if(i != variations.end())

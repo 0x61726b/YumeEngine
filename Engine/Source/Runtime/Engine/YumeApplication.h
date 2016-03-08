@@ -26,8 +26,6 @@
 #include "YumeMain.h"
 #include "YumeDefaults.h"
 #include "YumeVariant.h"
-
-#include <boost/shared_ptr.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {

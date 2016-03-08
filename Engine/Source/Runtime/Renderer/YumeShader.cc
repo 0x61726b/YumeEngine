@@ -41,12 +41,12 @@
 
 namespace YumeEngine
 {
-	YumeHash YumeShader::shaderHash_ = GenerateHash("Shader");
+	YumeHash YumeShader::shaderHash_ = ("Shader");
 	YumeShader::YumeShader()
 		: timeStamp_(0),
 		numVariations_(0)
 	{
-		shaderHash_ = GenerateHash("Shader");
+		shaderHash_ = ("Shader");
 	}
 
 	YumeShader::~YumeShader()

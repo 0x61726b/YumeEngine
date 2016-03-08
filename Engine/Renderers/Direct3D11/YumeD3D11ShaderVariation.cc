@@ -116,7 +116,7 @@ namespace YumeEngine
 		SplitPath(owner_->GetName(),path,name,extension);
 		extension = type_ == VS ? ".vs4" : ".ps4";
 
-		YumeString binaryShaderName = path + "Cache/" + name + "_" + std::to_string(GenerateHash(defines_)) + extension;
+		YumeString binaryShaderName = path + "Cache/" + name + "_" + std::to_string((defines_)) + extension;
 
 		if(!Compile())
 			return false;
@@ -195,7 +195,7 @@ namespace YumeEngine
 			unsigned size = file_->ReadUInt();
 
 			ShaderParameter parameter(type_,name_,buffer,offset,size);
-			parameters_[GenerateHash(name)] = parameter;
+			parameters_[(name)] = parameter;
 		}
 
 		unsigned numTextureUnits = file_->ReadUInt();
@@ -397,7 +397,7 @@ namespace YumeEngine
 				if(varName[0] == 'c')
 				{
 					varName = varName.substr(1); // Strip the c to follow Urho3D constant naming convention
-					parameters_[GenerateHash(varName)] = ShaderParameter(type_,varName,cbRegister,varDesc.StartOffset,varDesc.Size);
+					parameters_[(varName)] = ShaderParameter(type_,varName,cbRegister,varDesc.StartOffset,varDesc.Size);
 				}
 			}
 		}

@@ -24,6 +24,8 @@
 
 #include "Renderer/YumeResourceManager.h"
 
+#include "Core/YumeVariant.h"
+
 #define BOOST_TEST_MODULE YumeTest
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/debug.hpp>
@@ -125,7 +127,7 @@ namespace YumeEngine
 		Destroy();
 	}
 
-	BOOST_AUTO_TEST_CASE(YumeVariantTest)
+	BOOST_AUTO_TEST_CASE(VariantTest)
 	{
 		VariantMap vm;
 
@@ -141,19 +143,19 @@ namespace YumeEngine
 		BOOST_REQUIRE(aBool == 0);
 		BOOST_REQUIRE(aString == YumeString());
 
-		YumeVariant var_(true);
+		Variant var_(true);
 
 		BOOST_REQUIRE(var_.Get<bool>() == true);
 		BOOST_REQUIRE(var_.Get<double>() == 0);
 		BOOST_REQUIRE(var_.GetType() == VAR_BOOL);
 
-		YumeVariant varInt_(42);
+		Variant varInt_(42);
 
 		BOOST_REQUIRE(varInt_.Get<int>() == 42);
 		BOOST_REQUIRE(varInt_.Get<double>() == 0);
 		BOOST_REQUIRE(varInt_.GetType() == VAR_INT);
 
-		YumeVariant varStr_("42");
+		Variant varStr_("42");
 
 		BOOST_REQUIRE(varStr_.Get<YumeString>() == "42");
 		BOOST_REQUIRE(varStr_.Get<double>() == 0);

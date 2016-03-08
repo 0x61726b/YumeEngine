@@ -90,7 +90,7 @@ namespace YumeEngine
 
 		if(It != resourceGroups_.end())
 		{
-			YumeHash nameHash = GenerateHash(resource);
+			YumeHash nameHash = (resource);
 
 			YumeMap<YumeHash,boost::shared_ptr<YumeResource> >::iterator rgIt = It->second.resources_.find(nameHash);
 
@@ -149,8 +149,8 @@ namespace YumeEngine
 		if(!resource)
 			return;
 
-		YumeHash nameHash = GenerateHash(resource->GetName());
-		YumeVector<YumeHash>::type& dependents = dependentResources_[GenerateHash(dep)];
+		YumeHash nameHash = (resource->GetName());
+		YumeVector<YumeHash>::type& dependents = dependentResources_[(dep)];
 		dependents.push_back(nameHash);
 	}
 
@@ -164,7 +164,7 @@ namespace YumeEngine
 			return resourceBase_;
 		}
 
-		YumeHash nameHash = GenerateHash(resource);
+		YumeHash nameHash = (resource);
 
 		resource_ = boost::static_pointer_cast<YumeResource>(YumeObjectFactory::Get()->Create(type));
 

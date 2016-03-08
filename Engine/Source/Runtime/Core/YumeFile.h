@@ -62,7 +62,7 @@ namespace YumeEngine
 		bool WriteBool(bool);
 		bool WriteFloat(float);
 		bool WriteDouble(double);
-		bool WriteVariantData(const YumeVariant& v);
+		bool WriteVariantData(const Variant& v);
 
 		YumeString ReadString();
 		YumeString ReadFileID();
@@ -75,8 +75,8 @@ namespace YumeEngine
 		unsigned char ReadUByte();
 		short ReadShort();
 		unsigned short ReadUShort();
-		YumeVariant ReadVariant();
-		YumeVariant ReadVariant(VariantType type);
+		Variant ReadVariant();
+		Variant ReadVariant(VariantType type);
 
 		unsigned GetSize();
 

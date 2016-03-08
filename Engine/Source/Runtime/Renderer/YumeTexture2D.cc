@@ -29,7 +29,7 @@
 
 namespace YumeEngine
 {
-	YumeHash YumeTexture2D::texture2Dhash_ = GenerateHash("Texture2D");
+	YumeHash YumeTexture2D::texture2Dhash_ = ("Texture2D");
 
 	YumeTexture2D::YumeTexture2D()
 	{

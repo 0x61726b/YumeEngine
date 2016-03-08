@@ -59,21 +59,21 @@ namespace YumeEngine
 		XmlNode multisample = graphics.child("MultiSample");
 
 
-		vm.insert( VariantMap::value_type("Renderer",YumeVariant(YumeString(renderer.text().get()))));
+		vm.insert( VariantMap::value_type("Renderer",Variant(YumeString(renderer.text().get()))));
 		
-		vm.insert( VariantMap::value_type("Fullscreen",YumeVariant(CastToType<bool>(GetStringValueFromXPath(fullscreen)))));
+		vm.insert( VariantMap::value_type("Fullscreen",Variant(CastToType<bool>(GetStringValueFromXPath(fullscreen)))));
 
-		vm.insert( VariantMap::value_type("WindowWidth",YumeVariant(CastToType<int>(GetStringValueFromXPath(width)))));
+		vm.insert( VariantMap::value_type("WindowWidth",Variant(CastToType<int>(GetStringValueFromXPath(width)))));
 
-		vm.insert( VariantMap::value_type("WindowHeight",YumeVariant(CastToType<int>(GetStringValueFromXPath(height)))));
+		vm.insert( VariantMap::value_type("WindowHeight",Variant(CastToType<int>(GetStringValueFromXPath(height)))));
 
-		vm.insert( VariantMap::value_type("Borderless",YumeVariant(CastToType<bool>(GetStringValueFromXPath(borderlessWindow)))));
+		vm.insert( VariantMap::value_type("Borderless",Variant(CastToType<bool>(GetStringValueFromXPath(borderlessWindow)))));
 
-		vm.insert( VariantMap::value_type("Vsync",YumeVariant(CastToType<bool>(GetStringValueFromXPath(vsync)))));
+		vm.insert( VariantMap::value_type("Vsync",Variant(CastToType<bool>(GetStringValueFromXPath(vsync)))));
 
-		vm.insert( VariantMap::value_type("TripleBuffer",YumeVariant(CastToType<bool>(GetStringValueFromXPath(tripleBuffer)))));
+		vm.insert( VariantMap::value_type("TripleBuffer",Variant(CastToType<bool>(GetStringValueFromXPath(tripleBuffer)))));
 
-		vm.insert( VariantMap::value_type("MultiSample",YumeVariant(CastToType<int>(GetStringValueFromXPath(multisample)))));
+		vm.insert( VariantMap::value_type("MultiSample",Variant(CastToType<int>(GetStringValueFromXPath(multisample)))));
 
 		 // ToDo(arkenthera): Check if values are valid
 

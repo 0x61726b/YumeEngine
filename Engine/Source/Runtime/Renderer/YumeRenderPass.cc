@@ -169,7 +169,7 @@ namespace YumeEngine
 	unsigned YumeRenderTechnique::litBasePassIndex = 0;
 	unsigned YumeRenderTechnique::litAlphaPassIndex = 0;
 	unsigned YumeRenderTechnique::shadowPassIndex = 0;
-	YumeHash YumeRenderTechnique::techHash_ = GenerateHash("RenderTechnique");
+	YumeHash YumeRenderTechnique::techHash_ = ("RenderTechnique");
 	YumeMap<YumeString,unsigned>::type YumeRenderTechnique::passIndices;
 
 	YumeRenderTechnique::YumeRenderTechnique():

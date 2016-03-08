@@ -116,7 +116,7 @@ namespace YumeEngine
 		YumeSceneNode* Clone();
 		void Remove();
 		void SetParent(YumeSceneNode* parent);
-		void SetVar(YumeHash key,const YumeVariant& value);
+		void SetVar(YumeHash key,const Variant& value);
 		void AddListener(YumeSceneComponent* component);
 		void RemoveListener(YumeSceneComponent* component);
 
@@ -267,9 +267,9 @@ namespace YumeEngine
 		const YumeVector<SharedPtr<YumeSceneComponent> >::type GetListeners() const { return listeners_; }
 
 		/// Return a user variable.
-		const YumeVariant& GetVar(YumeHash key) const;
+		const Variant& GetVar(YumeHash key) const;
 
-		const HashVariantMap& GetVars() const { return vars_; }
+		const VariantMap& GetVars() const { return vars_; }
 
 
 		template <class T> T* GetDerivedComponent(bool recursive = false) const;
@@ -291,7 +291,7 @@ namespace YumeEngine
 		unsigned GetNumPersistentComponents() const;
 
 	protected:
-		HashVariantMap vars_;
+		VariantMap vars_;
 
 	private:
 		/// Set enabled/disabled state with optional recursion. Optionally affect the remembered enable state.

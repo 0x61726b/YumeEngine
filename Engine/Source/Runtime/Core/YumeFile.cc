@@ -349,7 +349,7 @@ namespace YumeEngine
 		return ReadUByte() != 0;
 	}
 
-	YumeVariant YumeFile::ReadVariant()
+	Variant YumeFile::ReadVariant()
 	{
 		VariantType type = (VariantType)ReadUByte();
 		return ReadVariant(type);
@@ -371,81 +371,81 @@ namespace YumeEngine
 	}
 
 
-	YumeVariant YumeFile::ReadVariant(VariantType type)
+	Variant YumeFile::ReadVariant(VariantType type)
 	{
 		switch(type)
 		{
 		case VAR_INT:
-			return YumeVariant(ReadInt());
+			return Variant(ReadInt());
 
 		case VAR_BOOL:
-			return YumeVariant(ReadBool());
+			return Variant(ReadBool());
 
 		case VAR_FLOAT:
-			return YumeVariant(ReadFloat());
+			return Variant(ReadFloat());
 
 			//case VAR_VECTOR2:
-			//	return YumeVariant(ReadVector2());
+			//	return Variant(ReadVector2());
 
 			//case VAR_VECTOR3:
-			//	return YumeVariant(ReadVector3());
+			//	return Variant(ReadVector3());
 
 			//case VAR_VECTOR4:
-			//	return YumeVariant(ReadVector4());
+			//	return Variant(ReadVector4());
 
 			//case VAR_QUATERNION:
-			//	return YumeVariant(ReadQuaternion());
+			//	return Variant(ReadQuaternion());
 
 			//case VAR_COLOR:
-			//	return YumeVariant(ReadColor());
+			//	return Variant(ReadColor());
 
 		case VAR_STRING:
-			return YumeVariant(ReadString());
+			return Variant(ReadString());
 
 			/*case VAR_BUFFER:
-				return YumeVariant(ReadBuffer());*/
+				return Variant(ReadBuffer());*/
 
 			//	// Deserializing pointers is not supported. Return null
 			//case VAR_VOIDPTR:
 			//case VAR_PTR:
 			//	ReadUInt();
-			//	return YumeVariant((void*)0);
+			//	return Variant((void*)0);
 
 			//case VAR_RESOURCEREF:
-			//	return YumeVariant(ReadResourceRef());
+			//	return Variant(ReadResourceRef());
 
 			//case VAR_RESOURCEREFLIST:
-			//	return YumeVariant(ReadResourceRefList());
+			//	return Variant(ReadResourceRefList());
 
 			//case VAR_VARIANTVECTOR:
-			//	return YumeVariant(ReadVariantVector());
+			//	return Variant(ReadVariantVector());
 
 			//case VAR_STRINGVECTOR:
-			//	return YumeVariant(ReadStringVector());
+			//	return Variant(ReadStringVector());
 
 			//case VAR_VARIANTMAP:
-			//	return YumeVariant(ReadVariantMap());
+			//	return Variant(ReadVariantMap());
 
 			//case VAR_INTRECT:
-			//	return YumeVariant(ReadIntRect());
+			//	return Variant(ReadIntRect());
 
 			//case VAR_INTVECTOR2:
-			//	return YumeVariant(ReadIntVector2());
+			//	return Variant(ReadIntVector2());
 
 			//case VAR_MATRIX3:
-			//	return YumeVariant(ReadMatrix3());
+			//	return Variant(ReadMatrix3());
 
 			//case VAR_MATRIX3X4:
-			//	return YumeVariant(ReadMatrix3x4());
+			//	return Variant(ReadMatrix3x4());
 
 			//case VAR_MATRIX4:
-			//	return YumeVariant(ReadMatrix4());
+			//	return Variant(ReadMatrix4());
 
 		case VAR_DOUBLE:
-			return YumeVariant(ReadDouble());
+			return Variant(ReadDouble());
 
 		default:
-			return YumeVariant();
+			return Variant();
 		}
 	}
 
@@ -471,7 +471,7 @@ namespace YumeEngine
 	}
 
 
-	bool YumeFile::WriteVariantData(const YumeVariant& value)
+	bool YumeFile::WriteVariantData(const Variant& value)
 	{
 		switch(value.GetType())
 		{

@@ -24,8 +24,7 @@
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 #include "Core/YumeThread.h"
-
-#include <boost/thread/mutex.hpp>
+#include "Math/YumeHash.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {

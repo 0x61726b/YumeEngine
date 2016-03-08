@@ -252,7 +252,7 @@ namespace YumeEngine
 			if(i->second == unit)
 				return i->first;
 		}
-		return YumeString();
+		return EmptyString;
 	}
 	YumeTexture* YumeRHI::GetTexture(unsigned index) const
 	{

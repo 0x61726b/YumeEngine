@@ -105,7 +105,7 @@ namespace YumeEngine
 		virtual void  							SetShaderParameter(YumeHash param,const Vector3& vector) { };
 		virtual void  							SetShaderParameter(YumeHash param,const Matrix4& matrix) { };
 		virtual void  							SetShaderParameter(YumeHash param,const Vector4& vector) { };
-		virtual void  							SetShaderParameter(YumeHash param,const YumeVariant& value) { };
+		virtual void  							SetShaderParameter(YumeHash param,const Variant& value) { };
 
 		virtual void  							SetVertexBuffer(YumeVertexBuffer* buffer) { };
 		virtual void  							SetIndexBuffer(YumeIndexBuffer* buffer) { };
