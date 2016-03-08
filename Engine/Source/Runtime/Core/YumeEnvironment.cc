@@ -100,7 +100,7 @@ namespace YumeEngine
 		}
 		else
 		{
-			engineVariants_.insert(VariantMap::value_type(var,value));
+			engineVariants_[var] =value;
 		}
 	}
 

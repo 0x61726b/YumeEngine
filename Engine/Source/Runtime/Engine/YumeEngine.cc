@@ -133,7 +133,7 @@ namespace YumeEngine
 		YUMELOG_INFO("Engine Config Path: " << env_->GetRoot().generic_string().c_str());
 		YUMELOG_INFO("Running on: " << currentOs.c_str());
 
-		YumeString renderer = env_->GetVariant("Renderer").Get<YumeString>();
+		YumeString renderer = env_->GetVariant("Renderer").GetString();
 
 		if(env_->GetVariant("testing").Get<bool>())
 		{

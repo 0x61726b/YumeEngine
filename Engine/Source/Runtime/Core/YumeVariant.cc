@@ -73,7 +73,7 @@ namespace YumeEngine
 		switch(type_)
 		{
 		case VAR_STRING:
-			*(reinterpret_cast<YumeString*>(&value_)) = *(reinterpret_cast<const YumeString*>(&rhs.value_));
+			stringHack_ = rhs.stringHack_;
 			break;
 
 		case VAR_BUFFER:
@@ -572,7 +572,7 @@ namespace YumeEngine
 		switch(type_)
 		{
 		case VAR_STRING:
-			new(reinterpret_cast<YumeString*>(&value_)) YumeString();
+			//new(reinterpret_cast<YumeString*>(&value_)) YumeString();
 			break;
 
 		case VAR_BUFFER:

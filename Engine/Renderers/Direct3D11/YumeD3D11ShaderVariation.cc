@@ -116,7 +116,7 @@ namespace YumeEngine
 		SplitPath(owner_->GetName(),path,name,extension);
 		extension = type_ == VS ? ".vs4" : ".ps4";
 
-		YumeString binaryShaderName = path + "Cache/" + name + "_" + std::to_string((defines_)) + extension;
+		YumeString binaryShaderName = path + "Cache/" + name + "_" + (defines_) + extension;
 
 		if(!Compile())
 			return false;

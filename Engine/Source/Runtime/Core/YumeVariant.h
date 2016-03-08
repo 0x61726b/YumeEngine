@@ -270,7 +270,7 @@ namespace YumeEngine
 		Variant(const YumeString& value):
 			type_(VAR_EMPTY)
 		{
-			*this = value;
+			stringHack_ = value;
 		}
 
 		/// Construct from a C string.
@@ -416,7 +416,8 @@ namespace YumeEngine
 		/// Destruct.
 		~Variant()
 		{
-			SetType(VAR_EMPTY);
+			if(type_ != VAR_STRING)
+				SetType(VAR_EMPTY);
 		}
 
 		/// Reset to empty.
@@ -527,7 +528,7 @@ namespace YumeEngine
 		Variant& operator =(const YumeString& rhs)
 		{
 			SetType(VAR_STRING);
-			*(reinterpret_cast<YumeString*>(&value_)) = rhs;
+			stringHack_ = rhs;
 			return *this;
 		}
 
@@ -535,7 +536,7 @@ namespace YumeEngine
 		Variant& operator =(const char* rhs)
 		{
 			SetType(VAR_STRING);
-			*(reinterpret_cast<YumeString*>(&value_)) = YumeString(rhs);
+			stringHack_ = YumeString(rhs);
 			return *this;
 		}
 
@@ -917,7 +918,7 @@ namespace YumeEngine
 		const YumeColor& GetColor() const { return type_ == VAR_COLOR ? *reinterpret_cast<const YumeColor*>(&value_) : YumeColor::WHITE; }
 
 		/// Return string or empty on type mismatch.
-		const YumeString& GetString() const { return type_ == VAR_STRING ? *reinterpret_cast<const YumeString*>(&value_) : EmptyString; }
+		const YumeString& GetString() const { return type_ == VAR_STRING ? stringHack_ : EmptyString; }
 
 		/// Return buffer or empty on type mismatch.
 		const YumeVector<unsigned char>::type& GetBuffer() const
@@ -1045,6 +1046,8 @@ namespace YumeEngine
 		VariantType type_;
 		/// Variant value.
 		VariantValue value_;
+
+		YumeString stringHack_;
 	};
 
 	/// Return variant type from type.

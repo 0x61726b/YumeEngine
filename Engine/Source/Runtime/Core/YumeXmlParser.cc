@@ -59,21 +59,14 @@ namespace YumeEngine
 		XmlNode multisample = graphics.child("MultiSample");
 
 
-		vm.insert( VariantMap::value_type("Renderer",Variant(YumeString(renderer.text().get()))));
-		
-		vm.insert( VariantMap::value_type("Fullscreen",Variant(CastToType<bool>(GetStringValueFromXPath(fullscreen)))));
-
-		vm.insert( VariantMap::value_type("WindowWidth",Variant(CastToType<int>(GetStringValueFromXPath(width)))));
-
-		vm.insert( VariantMap::value_type("WindowHeight",Variant(CastToType<int>(GetStringValueFromXPath(height)))));
-
-		vm.insert( VariantMap::value_type("Borderless",Variant(CastToType<bool>(GetStringValueFromXPath(borderlessWindow)))));
-
-		vm.insert( VariantMap::value_type("Vsync",Variant(CastToType<bool>(GetStringValueFromXPath(vsync)))));
-
-		vm.insert( VariantMap::value_type("TripleBuffer",Variant(CastToType<bool>(GetStringValueFromXPath(tripleBuffer)))));
-
-		vm.insert( VariantMap::value_type("MultiSample",Variant(CastToType<int>(GetStringValueFromXPath(multisample)))));
+		vm["Renderer"] = YumeString(renderer.text().get());
+		vm["Fullscreen"] = CastToType<bool>(GetStringValueFromXPath(fullscreen));
+		vm["WindowWidth"] = CastToType<int>(GetStringValueFromXPath(width));
+		vm["WindowHeight"] = CastToType<int>(GetStringValueFromXPath(height));
+		vm["Borderless"] = CastToType<bool>(GetStringValueFromXPath(borderlessWindow));
+		vm["Vsync"] = CastToType<bool>(GetStringValueFromXPath(vsync));
+		vm["TripleBuffer"] = CastToType<bool>(GetStringValueFromXPath(tripleBuffer));
+		vm["MultiSample"] = CastToType<int>(GetStringValueFromXPath(multisample));
 
 		 // ToDo(arkenthera): Check if values are valid
 
