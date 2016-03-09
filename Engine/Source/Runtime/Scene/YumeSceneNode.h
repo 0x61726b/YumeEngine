@@ -286,7 +286,7 @@ namespace YumeEngine
 		void ResetScene();
 
 		YumeSceneNode* CreateChild(unsigned id);
-		void AddComponent(YumeSceneComponent* component,unsigned id);
+		void AddComponent(SharedPtr<YumeSceneComponent> component,unsigned id);
 		unsigned GetNumPersistentChildren() const;
 		unsigned GetNumPersistentComponents() const;
 

@@ -24,14 +24,36 @@
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 
-#include <functional>
+#include "Core/YumeVariant.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	enum YumeGeneralEvents
+	enum YumeEngineEvents
 	{
-		R_BEGINFRAME,
-		R_ENDFRAME
+		E_UPDATE,
+		E_POSTUPDATE,
+		R_UPDATE,
+		R_POSTUPDATE,
+		S_UPDATE,
+		S_POSTUPDATE
+	};
+
+	class YumeScene;
+
+	class YumeAPIExport EngineEventListener
+	{
+	public:
+		virtual void HandleUpdate(float timeStep) { };
+		virtual void HandlePostUpdate(float timeStep) { };
+		virtual void HandleRenderUpdate(float timeStep) { };
+		virtual void HandlePostRenderUpdate(float timeStep) { };
+	};
+
+	class YumeAPIExport SceneEventListener
+	{
+	public:
+		virtual void HandleSceneUpdate(YumeScene* scene,float timeStep) { };
+		virtual void HandleScenePostUpdate(YumeScene* scene,float timeStep) { };
 	};
 
 }

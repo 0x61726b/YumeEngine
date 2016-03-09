@@ -477,14 +477,14 @@ namespace YumeEngine
 	YumeSceneComponent* YumeSceneNode::CreateComponent(YumeHash type,unsigned id)
 	{
 		// Check that creation succeeds and that the object in fact is a component
-		SharedPtr<YumeSceneComponent> newComponent = boost::dynamic_pointer_cast<YumeSceneComponent>(YumeObjectFactory::Get()->Create(type));
+		SharedPtr<YumeSceneComponent> newComponent = boost::static_pointer_cast<YumeSceneComponent>(YumeObjectFactory::Get()->Create(type));
 		if(!newComponent)
 		{
 			YUMELOG_ERROR("Could not create unknown component type " + type);
 			return 0;
 		}
 
-		AddComponent(newComponent.get(),id);
+		AddComponent(newComponent,id);
 		return newComponent.get();
 	}
 
@@ -874,12 +874,12 @@ namespace YumeEngine
 		return newNode.get();
 	}
 
-	void YumeSceneNode::AddComponent(YumeSceneComponent* component,unsigned id)
+	void YumeSceneNode::AddComponent(SharedPtr<YumeSceneComponent> component,unsigned id)
 	{
 		if(!component)
 			return;
 
-		components_.push_back(SharedPtr<YumeSceneComponent>(component));
+		components_.push_back(component);
 
 		if(component->GetNode())
 			YUMELOG_WARN("Component " + component->GetTypeName() + " already belongs to a node!");
@@ -892,7 +892,7 @@ namespace YumeEngine
 			if(!id || scene_->GetComponent(id))
 				id = scene_->GetFreeComponentID();
 			component->SetID(id);
-			scene_->ComponentAdded(component);
+			scene_->ComponentAdded(component.get());
 		}
 		else
 			component->SetID(id);

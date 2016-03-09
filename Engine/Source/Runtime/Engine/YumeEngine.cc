@@ -44,6 +44,8 @@
 
 #include "Renderer/YumeRenderer.h"
 
+#include "Scene/YumeOctree.h"
+
 
 #include "Renderer/YumeShader.h"
 #include "Renderer/YumeShaderVariation.h"
@@ -186,11 +188,46 @@ namespace YumeEngine
 
 		return initialized_;
 	}
+
+	void YumeEngine3D::AddListener(EngineEventListener* listener)
+	{
+		if(std::find(engineListeners_.begin(),engineListeners_.end(),listener) != engineListeners_.end())
+			return;
+		engineListeners_.push_back(listener);
+	}
+
+	void YumeEngine3D::RemoveListener(EngineEventListener* listener)
+	{
+		EngineEventListeners::iterator i = std::find(engineListeners_.begin(),engineListeners_.end(),listener);
+		if(i != engineListeners_.end())
+			engineListeners_.erase(i);
+	}
+
+	void YumeEngine3D::FireEvent(YumeEngineEvents evt)
+	{
+		switch(evt)
+		{
+		case E_UPDATE:
+			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
+				(*i)->HandleUpdate(timer_->GetTimeStep());
+			break;
+		case E_POSTUPDATE:
+			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
+				(*i)->HandlePostUpdate(timer_->GetTimeStep());
+			break;
+		case R_UPDATE:
+			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
+				(*i)->HandleRenderUpdate(timer_->GetTimeStep());
+			break;
+		case R_POSTUPDATE:
+			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
+				(*i)->HandlePostRenderUpdate(timer_->GetTimeStep());
+			break;
+		}
+	}
+
 	void YumeEngine3D::RegisterFactories()
 	{
-		/*cachedHashMap_["Base"] = ("Base");
-		cachedHashMap_["Image"] = ("Image");*/
-
 		factory_ = SharedPtr<YumeObjectFactory>(new YumeObjectFactory);
 
 
@@ -198,6 +235,7 @@ namespace YumeEngine
 		YumeObjectRegistrar<YumeResource> resourceObj(("Resource"));
 		YumeObjectRegistrar<YumeImage> imageObj(("Image"));
 		YumeObjectRegistrar<YumeRenderTechnique> techObj(("RenderTechnique"));
+		YumeObjectRegistrar<Octree> octreeObj(("Octree"));
 
 	}
 	void YumeEngine3D::Render()
@@ -218,6 +256,11 @@ namespace YumeEngine
 		while(SDL_PollEvent(&evt))
 			if(evt.type == SDL_QUIT)
 				exiting_ = true;
+
+		FireEvent(E_UPDATE);
+		FireEvent(E_POSTUPDATE);
+		FireEvent(R_UPDATE);
+		FireEvent(R_POSTUPDATE);
 	}
 
 	void YumeEngine3D::Run()

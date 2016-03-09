@@ -23,7 +23,7 @@
 #include "YumeScene.h"
 #include "YumeSceneNode.h"
 #include "YumeSceneComponent.h"
-
+#include "Engine/YumeEngine.h"
 #include "Logging/logging.h"
 
 namespace YumeEngine
@@ -52,7 +52,7 @@ namespace YumeEngine
 		SetID(GetFreeNodeID());
 		NodeAdded(this);
 
-
+		REGISTER_ENGINE_LISTENER;
 	}
 
 	YumeScene::~YumeScene()
@@ -287,13 +287,13 @@ namespace YumeEngine
 		component->OnSceneSet(0);
 	}
 
-	void YumeScene::HandleUpdate(YumeHash eventType,VariantMap& eventData)
+	void YumeScene::HandleUpdate(float timeStep)
 	{
 		if(!updateEnabled_)
 			return;
 
 		
-		//Update(eventData[P_TIMESTEP].GetFloat());
+		Update(timeStep);
 	}
 
 

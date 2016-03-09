@@ -23,6 +23,7 @@
 #define __SampleCommon_h__
 //----------------------------------------------------------------------------
 #include "Engine/YumeApplication.h"
+#include "Scene/YumeScene.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -37,6 +38,8 @@ namespace YumeEngine
 		virtual void Exit();
 
 		void SetupWindowProperties();
+
+		SharedPtr<YumeScene> scene_;
 	};
 }
 

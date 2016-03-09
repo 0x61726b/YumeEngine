@@ -304,15 +304,15 @@ namespace YumeEngine
 		}
 	}
 
-	//YumeHash Octree::GetType() { return type_; }
-	//YumeHash Octree::type_ = "Octree";
+	YumeHash Octree::GetType() { return type_; }
+	YumeHash Octree::type_ = "Octree";
 
 
 	Octree::Octree():
 		Octant(BoundingBox(-DEFAULT_OCTREE_SIZE,DEFAULT_OCTREE_SIZE),0,0,this),
 		numLevels_(DEFAULT_OCTREE_LEVELS)
 	{
-
+		REGISTER_ENGINE_LISTENER;
 	}
 
 	Octree::~Octree()
@@ -518,7 +518,7 @@ namespace YumeEngine
 		DrawDebugGeometry(debug,depthTest);
 	}
 
-	void Octree::HandleRenderUpdate(YumeHash eventType,VariantMap& eventData)
+	void Octree::HandleRenderUpdate(float dt)
 	{
 		// When running in headless mode, update the Octree manually during the RenderUpdate event
 		YumeScene* scene = GetScene();
@@ -527,7 +527,7 @@ namespace YumeEngine
 
 		FrameInfo frame;
 		frame.frameNumber_ = YumeEngine3D::Get()->GetTimer()->GetFrameNumber();
-		frame.timeStep_ = eventData["timeStep"].Get<float>();
+		frame.timeStep_ = dt;
 		frame.camera_ = 0;
 
 		Update(frame);

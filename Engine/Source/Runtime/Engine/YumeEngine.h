@@ -25,8 +25,11 @@
 #include "YumeRequired.h"
 #include "Core/YumeVariant.h"
 #include "Core/YumeTimer.h"
+#include "Core/YumeEventHub.h"
 
 #include <boost/shared_ptr.hpp>
+
+#define REGISTER_ENGINE_LISTENER YumeEngine3D::Get()->AddListener(this)
 //----------------------------------------------------------------------------
 namespace log4cplus {
 	class Initializer;
@@ -72,7 +75,8 @@ namespace YumeEngine
 		void SetRenderer(YumeRHI* renderer);
 		YumeRHI* GetRenderer();
 
-
+		void FireEvent(YumeEngineEvents evt);
+		
 		void RegisterFactories();
 
 	public:
@@ -113,6 +117,12 @@ namespace YumeEngine
 
 		typedef YumeVector<YumeDynamicLibrary*>::type ExtLibList;
 		ExtLibList extLibs_;
+
+		typedef YumeVector<EngineEventListener*>::type EngineEventListeners;
+		EngineEventListeners engineListeners_;
+	public:
+		void AddListener(EngineEventListener* listener);
+		void RemoveListener(EngineEventListener* listener);
 	private:
 		bool initialized_;
 		bool exiting_;

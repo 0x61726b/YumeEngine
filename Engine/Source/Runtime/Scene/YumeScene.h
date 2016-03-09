@@ -24,7 +24,7 @@
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 #include "YumeSceneNode.h"
-
+#include "Core/YumeEventHub.h"
 
 #include <boost/thread/mutex.hpp>
 //----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ namespace YumeEngine
 {
 	static const unsigned FIRST_LOCAL_ID = 0x01000000;
 	static const unsigned LAST_LOCAL_ID = 0xffffffff;
-	class YumeAPIExport YumeScene : public YumeSceneNode
+	class YumeAPIExport YumeScene : public YumeSceneNode,public EngineEventListener
 	{
 	public:
 		YumeScene();
@@ -72,9 +72,9 @@ namespace YumeEngine
 		void SetVarNamesAttr(const YumeString& value);
 		YumeString GetVarNamesAttr() const;
 
-	private:
-		void HandleUpdate(YumeHash eventType,VariantMap& eventData);
+		void HandleUpdate(float timeStep);
 
+	private:
 
 		YumeMap<unsigned, YumeSceneNode*>::type localNodes_;
 		YumeMap<unsigned, YumeSceneComponent*>::type localComponents_;

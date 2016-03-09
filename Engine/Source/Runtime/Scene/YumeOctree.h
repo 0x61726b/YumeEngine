@@ -26,6 +26,7 @@
 #include "Renderer/YumeDrawable.h"
 #include "YumeOctreeQuery.h"
 #include "Core/YumeVariant.h"
+#include "Core/YumeEventHub.h"
 
 #include <boost/thread/mutex.hpp>
 //----------------------------------------------------------------------------
@@ -160,7 +161,7 @@ namespace YumeEngine
 	};
 
 	/// %Octree component. Should be added only to the root scene node
-	class YumeAPIExport Octree : public YumeSceneComponent,public Octant
+	class YumeAPIExport Octree : public YumeSceneComponent,public Octant,public EngineEventListener
 	{
 		friend void RaycastDrawablesWork(const WorkItem* item,unsigned threadIndex);
 	public:
@@ -168,6 +169,9 @@ namespace YumeEngine
 		Octree();
 		/// Destruct.
 		~Octree();
+
+		static YumeHash type_;
+		static YumeHash GetType();
 
 		/// Visualize the component as debug geometry.
 		virtual void DrawDebugGeometry(YumeDebugRenderer* debug,bool depthTest);
@@ -200,7 +204,7 @@ namespace YumeEngine
 
 	private:
 		/// Handle render update in case of headless execution.
-		void HandleRenderUpdate(YumeHash eventType,VariantMap& eventData);
+		void HandleRenderUpdate(float dt);
 
 		/// Drawable objects that require update.
 		YumeVector<YumeDrawable*>::type drawableUpdates_;
