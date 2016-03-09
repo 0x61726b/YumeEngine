@@ -281,7 +281,7 @@ namespace YumeEngine
 		}
 
 		/// Construct from a buffer.
-		Variant(const YumeVector<unsigned char>::type& value):
+		Variant(const std::vector<unsigned char>& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
