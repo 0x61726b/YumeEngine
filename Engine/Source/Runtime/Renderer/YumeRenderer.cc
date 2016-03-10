@@ -28,6 +28,10 @@
 #include "YumeIndexBuffer.h"
 #include "YumeInputLayout.h"
 
+#include "YumeGeometry.h"
+#include "YumeMaterial.h"
+#include "Scene/YumeOctree.h"
+
 #include "Math/YumeMatrix3x4.h"
 
 namespace YumeEngine
@@ -86,7 +90,6 @@ namespace YumeEngine
 		ib_ = rhi_->CreateIndexBuffer();
 		ib_->SetShadowed(true);
 		ib_->SetSize(36,false);
-
 		ib_->SetData(dummyIndices);
 
 

@@ -49,6 +49,16 @@ namespace YumeEngine
 		virtual void HandlePostRenderUpdate(float timeStep) { };
 	};
 
+	class YumeAPIExport RHIEventListener
+	{
+	public:
+		virtual void HandleGraphicsMode() { };
+	};
+
+	class YumeAPIExport InputEventListener
+	{
+	}
+	;
 	class YumeAPIExport SceneEventListener
 	{
 	public:

@@ -31,6 +31,7 @@
 #include "Math/YumeMatrix3x4.h"
 #include "Core/YumeVariant.h"
 #include "Renderer/YumeImage.h"
+#include "Core/YumeEventHub.h"
 
 
 #include <SDL.h>
@@ -89,7 +90,7 @@ namespace YumeEngine
 		virtual void							CreateRendererCapabilities() = 0;
 		virtual YumeVector<int>::type			GetMultiSampleLevels() const = 0;
 
-		
+
 		virtual void							Close() = 0;
 		virtual void							AdjustWindow(int& newWidth,int& newHeight,bool& newFullscreen,bool& newBorderless) = 0;
 		virtual void							Maximize() = 0;
@@ -108,12 +109,12 @@ namespace YumeEngine
 		virtual bool							IsDeviceLost() const = 0;
 
 
-		
+
 		virtual YumeVertexBuffer*				CreateVertexBuffer() = 0;
 		virtual YumeIndexBuffer* 				CreateIndexBuffer() = 0;
 		virtual YumeInputLayout* 				CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks) = 0;
 
-		
+
 		YumeShaderVariation* 				    GetVertexShader() const { return vertexShader_; }
 		YumeShaderVariation* 				    GetPixelShader() const { return pixelShader_; }
 
@@ -146,7 +147,7 @@ namespace YumeEngine
 		virtual bool  							SetVertexBuffers(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) = 0;
 		virtual bool  							SetVertexBuffers(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) = 0;
 
-		virtual bool							NeedParameterUpdate(ShaderParameterGroup group, const void* source) = 0;
+		virtual bool							NeedParameterUpdate(ShaderParameterGroup group,const void* source) = 0;
 		virtual void							SetFlushGPU(bool flushGpu) = 0;
 		virtual void  							SetBlendMode(BlendMode mode) = 0;
 		virtual void  							SetColorWrite(bool enable) = 0;
@@ -178,6 +179,8 @@ namespace YumeEngine
 		virtual void							ClearTransformSources() = 0;
 		virtual void 							CleanupShaderPrograms(YumeShaderVariation* variation) = 0;
 
+		bool									ToggleFullscreen();
+
 		void*									ReserveScratchBuffer(unsigned size);
 		void									FreeScratchBuffer(void* buffer);
 		void									CleanupScratchBuffers();
@@ -198,6 +201,18 @@ namespace YumeEngine
 		YumeRenderable*							GetDepthStencil() const { return depthStencil_; }
 		IntRect									GetViewport() const { return viewport_; }
 
+		SDL_Window*								GetWindow() const { return window_; }
+		bool									GetFullscreen() const { return fullscreen_; }
+		bool									GetResizable() const { return resizeable_; }
+		bool									GetBorderless() const { return borderless_; }
+		bool									GetVSync() const { return vsync_; }
+		bool									GetTripleBuffer() const { return tripleBuffer_; }
+		bool									GetSRGB() const { return sRGB_; }
+		bool									GetFlushGPU() const { return flushGpu_; }
+		unsigned								GetNumPrimitives() const { return numPrimitives_; }
+		unsigned								GetNumBatches() const { return numBatches_; }
+		int										GetWidth() const { return windowWidth_; }
+		int										GetHeight() const { return windowHeight_; }
 	protected:
 		void CreateWindowIcon();
 	protected:
@@ -205,6 +220,11 @@ namespace YumeEngine
 
 		YumeImage*	windowIcon_;
 
+		typedef YumeVector<RHIEventListener*>::type RHIEventListeners;
+		RHIEventListeners listeners_;
+	public:
+		void AddListener(RHIEventListener*);
+		void RemoveListener(RHIEventListener*);
 	protected:
 		YumeString								windowTitle_;
 		int										windowWidth_;

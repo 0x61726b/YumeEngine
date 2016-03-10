@@ -32,6 +32,7 @@ namespace YumeEngine
 	class YumeRenderable;
 	class YumeVertexBuffer;
 	class YumeIndexBuffer;
+	class YumeGeometry;
 
 	class YumeAPIExport YumeRenderer
 	{
@@ -57,6 +58,7 @@ namespace YumeEngine
 		YumeIndexBuffer* ib_;
 		std::vector<unsigned> elementMasks_;
 		std::vector<YumeVertexBuffer*> vbs_;
+		SharedPtr<YumeGeometry> debugGeo_;
 	};
 }
 

@@ -312,7 +312,7 @@ namespace YumeEngine
 		Octant(BoundingBox(-DEFAULT_OCTREE_SIZE,DEFAULT_OCTREE_SIZE),0,0,this),
 		numLevels_(DEFAULT_OCTREE_LEVELS)
 	{
-		REGISTER_ENGINE_LISTENER;
+
 	}
 
 	Octree::~Octree()

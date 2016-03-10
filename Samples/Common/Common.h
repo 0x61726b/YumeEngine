@@ -27,6 +27,7 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	class YumeSceneNode;
 	class BaseApplication : public YumeApplication
 	{
 	public:
@@ -40,6 +41,7 @@ namespace YumeEngine
 		void SetupWindowProperties();
 
 		SharedPtr<YumeScene> scene_;
+		SharedPtr<YumeSceneNode> cameraNode_;
 	};
 }
 

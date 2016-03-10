@@ -165,8 +165,9 @@ set( SRC_CORE_IO
 	Core/YumeFile.h
 	Core/YumeFile.cc
 )
-set( SRC_CORE_STL
-
+set( SRC_INPUT
+	Input/YumeInput.h
+	Input/YumeInput.cc
 )
 set( SRC_CORE_CONFIG
 	Core/YumeConfig.h
@@ -218,6 +219,7 @@ source_group(Yume\\\\Core\\\\IO FILES ${SRC_CORE_IO})
 source_group(Yume\\\\Core\\\\Utils FILES ${SRC_CORE_UTILS})
 source_group(Yume\\\\Engine FILES ${SRC_ENGINE})
 source_group(Yume\\\\Scene FILES ${SRC_SCENE})
+source_group(Yume\\\\Input FILES ${SRC_INPUT})
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Core)
@@ -247,6 +249,7 @@ ADD_LIBRARY(${YUME} SHARED
 						${SRC_RENDERER}
 						${SRC_ENGINE}
 						${SRC_SCENE}
+						${SRC_INPUT}
 						)
 
 

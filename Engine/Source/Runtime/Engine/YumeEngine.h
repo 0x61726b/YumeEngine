@@ -47,6 +47,7 @@ namespace YumeEngine
 	class YumeRenderer;
 	class YumeWorkQueue;
 	class YumeDebugRenderer;
+	class YumeInput;
 
 	class YumeAPIExport YumeEngine3D
 	{
@@ -88,7 +89,7 @@ namespace YumeEngine
 		SharedPtr<YumeWorkQueue> GetWorkQueue() const { return workQueue_; }
 		SharedPtr<YumeDebugRenderer> GetDebugRenderer() const { return debugRenderer_; }
 		SharedPtr<YumeRenderer> GetRenderLogic() const { return renderer_; }
-
+		SharedPtr<YumeInput> GetInput() const { return input_; }
 		const YumeString& GetRendererName() const;
 	private:
 		YumeRHI* graphics_;
@@ -101,6 +102,7 @@ namespace YumeEngine
 		boost::shared_ptr<YumeRenderer> renderer_;
 		boost::shared_ptr<YumeWorkQueue> workQueue_;
 		SharedPtr<YumeDebugRenderer> debugRenderer_;
+		SharedPtr<YumeInput> input_;
 
 		log4cplus::Initializer* log4cplusinitializer_;
 

@@ -77,8 +77,28 @@ namespace YumeEngine
 	{
 		CreateWindowIcon();
 
+		for(int i=0; i < listeners_.size(); ++i)
+			listeners_[i]->HandleGraphicsMode();
+
 		return true;
 	}
+
+	void YumeRHI::AddListener(RHIEventListener* listener)
+	{
+		RHIEventListeners::iterator i = std::find(listeners_.begin(),listeners_.end(),listener);
+
+		if(i == listeners_.end())
+			listeners_.push_back(listener);
+	}
+
+	void YumeRHI::RemoveListener(RHIEventListener* listener)
+	{
+		RHIEventListeners::iterator i = std::find(listeners_.begin(),listeners_.end(),listener);
+
+		if(i != listeners_.end())
+			listeners_.erase(i);
+	}
+
 	void YumeRHI::SetWindowIcon(YumeImage* image)
 	{
 		windowIcon_ = image;
@@ -119,6 +139,11 @@ namespace YumeEngine
 			if(texture)
 				texture->SetParametersDirty();
 		}
+	}
+
+	bool YumeRHI::ToggleFullscreen()
+	{
+		return SetGraphicsMode(windowWidth_,windowHeight_,!fullscreen_,borderless_,resizeable_,vsync_,tripleBuffer_,multiSample_);
 	}
 
 	void* YumeRHI::ReserveScratchBuffer(unsigned size)

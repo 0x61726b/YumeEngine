@@ -52,6 +52,8 @@
 #include "Renderer/YumeTexture2D.h"
 #include "Renderer/YumeRenderPass.h"
 
+#include "Input/YumeInput.h"
+
 #include <boost/filesystem.hpp>
 #include <log4cplus/initializer.h>
 #include <SDL.h>
@@ -70,7 +72,8 @@ namespace YumeEngine
 		maxFps_(200),
 		minFps_(10),
 		timeStepSmoothing_(2),
-		timeStep_(0)
+		timeStep_(0),
+		graphics_(0)
 	{
 		YumeEngineGlobal = this;
 	}
@@ -98,6 +101,8 @@ namespace YumeEngine
 		io_ = boost::shared_ptr<YumeIO>(YumeAPINew YumeIO);
 		timer_ = boost::shared_ptr<YumeTime>(YumeAPINew YumeTime);
 		env_ = boost::shared_ptr<YumeEnvironment>(YumeAPINew YumeEnvironment);
+		
+
 		resourceManager_ = YumeAPINew YumeResourceManager;
 		VariantMap::const_iterator It = variants.begin();
 
@@ -155,6 +160,9 @@ namespace YumeEngine
 		if(!initialized_)
 			return false;
 
+
+		
+
 		graphics_->SetWindowTitle("Yume Engine");
 		graphics_->SetWindowPos(Vector2(250,250));
 
@@ -179,6 +187,7 @@ namespace YumeEngine
 			return false;
 		frameTimer_.Reset();
 
+		input_ = SharedPtr<YumeInput>(YumeAPINew YumeInput);
 		//SharedPtr<YumeTexture2D> earth = resourceManager_->PrepareResource<YumeTexture2D>("Textures/Earth_Diffuse.dds");
 
 		renderer_->Initialize();
@@ -252,11 +261,6 @@ namespace YumeEngine
 
 	void YumeEngine3D::Update()
 	{
-		SDL_Event evt;
-		while(SDL_PollEvent(&evt))
-			if(evt.type == SDL_QUIT)
-				exiting_ = true;
-
 		FireEvent(E_UPDATE);
 		FireEvent(E_POSTUPDATE);
 		FireEvent(R_UPDATE);
@@ -284,6 +288,10 @@ namespace YumeEngine
 	{
 		if(!initialized_)
 			return;
+
+		unsigned maxFps = maxFps_;
+		if(input_ && !input_->HasFocus())
+			maxFps = Min(60,maxFps);
 
 		long long elapsed = 0;
 

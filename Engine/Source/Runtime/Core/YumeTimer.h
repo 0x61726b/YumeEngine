@@ -81,8 +81,8 @@ namespace YumeEngine
 	public:
 		virtual ~YumeTimerEventListener() { };
 
-		virtual void OnFrameBegin(int frameNumber) = 0;
-		virtual void OnFrameEnd(int frameNumber) = 0;
+		virtual void HandleBeginFrame(int frameNumber) { };
+		virtual void HandleEndFrame(int frameNumber) { };
 	};
 
 	class YumeAPIExport YumeTime
@@ -107,7 +107,7 @@ namespace YumeEngine
 	protected:
 		typedef YumeVector<YumeTimerEventListener*>::type TimeEventListeners;
 		TimeEventListeners listenerList_;
-
+	public:
 		void AddTimeEventListener(YumeTimerEventListener* listener);
 		void RemoveTimeEventListener(YumeTimerEventListener* listener);
 	protected:

@@ -108,7 +108,7 @@ namespace YumeEngine
 	{
 		for(TimeEventListeners::iterator l = listenerList_.begin(); l != listenerList_.end(); ++l)
 		{
-			(*l)->OnFrameBegin(frameNumber);
+			(*l)->HandleBeginFrame(frameNumber);
 		}
 	}
 
@@ -116,7 +116,7 @@ namespace YumeEngine
 	{
 		for(TimeEventListeners::iterator l = listenerList_.begin(); l != listenerList_.end(); ++l)
 		{
-			(*l)->OnFrameEnd(frameNumber);
+			(*l)->HandleEndFrame(frameNumber);
 		}
 	}
 
