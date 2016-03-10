@@ -48,6 +48,9 @@ namespace YumeEngine
 		unsigned Read(void* dest,int size);
 		YumeString ReadLine();
 
+		static YumeHash GetType() { return type_; }
+		static YumeHash type_;
+
 		bool Eof() const;
 
 		bool WriteString(const YumeString& str);

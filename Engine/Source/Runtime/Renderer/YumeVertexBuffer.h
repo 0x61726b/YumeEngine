@@ -67,30 +67,30 @@ namespace YumeEngine
 		virtual bool Create() = 0;
 		virtual bool UpdateToGPU() = 0;
 
-		/// Vertex element sizes in bytes.
+		
 		static const unsigned elementSize[];
 	protected:
-		/// Shadow data.
+		
 		boost::shared_array<unsigned char> shadowData_;
-		/// Number of vertices.
+		
 		unsigned vertexCount_;
-		/// Vertex size.
+		
 		unsigned vertexSize_;
-		/// Vertex element bitmask.
+		
 		unsigned elementMask_;
-		/// Vertex element offsets.
+		
 		unsigned elementOffset_[MAX_VERTEX_ELEMENTS];
-		/// Buffer locking state.
+		
 		LockState lockState_;
-		/// Lock start vertex.
+		
 		unsigned lockStart_;
-		/// Lock number of vertices.
+		
 		unsigned lockCount_;
-		/// Scratch buffer for fallback locking.
+		
 		void* lockScratchData_;
-		/// Shadowed flag.
+		
 		bool shadowed_;
-		/// Dynamic flag.
+		
 		bool dynamic_;
 	};
 }

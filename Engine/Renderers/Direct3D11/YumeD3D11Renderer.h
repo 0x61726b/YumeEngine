@@ -176,6 +176,24 @@ namespace YumeEngine
 		static unsigned							GetLinearDepthFormat();
 		static unsigned							GetDepthStencilFormat();
 		static unsigned							GetReadableDepthFormat();
+
+		//Non-static version
+		unsigned								GetAlphaFormatNs();
+		unsigned								GetLuminanceFormatNs();
+		unsigned								GetLuminanceAlphaFormatNs();
+		unsigned								GetRGBFormatNs();
+		unsigned								GetRGBAFormatNs();
+		unsigned								GetRGBA16FormatNs();
+		unsigned								GetRGBAFloat16FormatNs();
+		unsigned								GetRGBAFloat32FormatNs();
+		unsigned								GetRG16FormatNs();
+		unsigned								GetRGFloat16FormatNs();
+		unsigned								GetRGFloat32FormatNs();
+		unsigned								GetFloat16FormatNs();
+		unsigned								GetFloat32FormatNs();
+		unsigned								GetLinearDepthFormatNs();
+		unsigned								GetDepthStencilFormatNs();
+		unsigned								GetReadableDepthFormatNs();
 		static unsigned							GetFormat(const YumeString& formatName);
 	private:
 		void RegisterFactories();

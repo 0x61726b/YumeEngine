@@ -1,31 +1,31 @@
-///////////////////////////////////////////////////////////////////////////////////
-/// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 Alperen Gezer
 
-/// Permission is hereby granted, free of charge, to any person obtaining a copy
-/// of this software and associated documentation files (the "Software"), to deal
-/// in the Software without restriction, including without limitation the rights
-/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-/// copies of the Software, and to permit persons to whom the Software is
-/// furnished to do so, subject to the following conditions:
-/// 
-/// The above copyright notice and this permission notice shall be included in
-/// all copies or substantial portions of the Software.
-/// 
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-/// THE SOFTWARE.
-/// 
-/// File : <Filename> YumeQuaternion.h
-/// Date : 6.9.2015
-/// Comments : 
-///--------------------------------------------------------------------------------
-///////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #ifndef __YumeQuaternion_h__
 #define __YumeQuaternion_h__
 //--------------------------------------------------------------------------------
@@ -39,11 +39,11 @@
 namespace YumeEngine
 {
 
-	/// Rotation represented as a four-dimensional normalized vector.
+	
 	class YumeAPIExport Quaternion
 	{
 	public:
-		/// Construct an identity quaternion.
+		
 		Quaternion()
 #ifndef YUME_SSE
 			:w_(1.0f),
@@ -57,7 +57,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Copy-construct from another quaternion.
+		
 		Quaternion(const Quaternion& quat)
 #if defined(YUME_SSE) && (!defined(_MSC_VER) || _MSC_VER >= 1700) /* Visual Studio 2012 and newer. VS2010 has a bug with these, see https://github.com/YumeEngine/YumeEngine/issues/1044 */
 		{
@@ -72,7 +72,7 @@ namespace YumeEngine
 		}
 #endif
 
-		/// Construct from values.
+		
 		Quaternion(float w,float x,float y,float z)
 #ifndef YUME_SSE
 			:w_(w),
@@ -86,7 +86,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Construct from a float array.
+		
 		explicit Quaternion(const float* data)
 #ifndef YUME_SSE
 			:w_(data[0]),
@@ -100,37 +100,37 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Construct from an angle (in degrees) and axis.
+		
 		Quaternion(float angle,const Vector3& axis)
 		{
 			FromAngleAxis(angle,axis);
 		}
 
-		/// Construct from an angle (in degrees, for Urho2D).
+		
 		explicit Quaternion(float angle)
 		{
 			FromAngleAxis(angle,Vector3::FORWARD);
 		}
 
-		/// Construct from Euler angles (in degrees.)
+		
 		Quaternion(float x,float y,float z)
 		{
 			FromEulerAngles(x,y,z);
 		}
 
-		/// Construct from the rotation difference between two direction vectors.
+		
 		Quaternion(const Vector3& start,const Vector3& end)
 		{
 			FromRotationTo(start,end);
 		}
 
-		/// Construct from orthonormal axes.
+		
 		Quaternion(const Vector3& xAxis,const Vector3& yAxis,const Vector3& zAxis)
 		{
 			FromAxes(xAxis,yAxis,zAxis);
 		}
 
-		/// Construct from a rotation matrix.
+		
 		explicit Quaternion(const Matrix3& matrix)
 		{
 			FromRotationMatrix(matrix);
@@ -143,7 +143,7 @@ namespace YumeEngine
 		}
 #endif
 
-		/// Assign from another quaternion.
+		
 		Quaternion& operator =(const Quaternion& rhs)
 		{
 #if defined(YUME_SSE) && (!defined(_MSC_VER) || _MSC_VER >= 1700) /* Visual Studio 2012 and newer. VS2010 has a bug with these, see https://github.com/YumeEngine/YumeEngine/issues/1044 */
@@ -157,7 +157,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		/// Add-assign a quaternion.
+		
 		Quaternion& operator +=(const Quaternion& rhs)
 		{
 #ifdef YUME_SSE
@@ -171,7 +171,7 @@ namespace YumeEngine
 			return *this;
 }
 
-		/// Multiply-assign a scalar.
+		
 		Quaternion& operator *=(float rhs)
 		{
 #ifdef YUME_SSE
@@ -185,7 +185,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		/// Test for equality with another quaternion without epsilon.
+		
 		bool operator ==(const Quaternion& rhs) const
 		{
 #ifdef YUME_SSE
@@ -198,10 +198,10 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Test for inequality with another quaternion without epsilon.
+		
 		bool operator !=(const Quaternion& rhs) const { return !(*this == rhs); }
 
-		/// Multiply with a scalar.
+		
 		Quaternion operator *(float rhs) const
 		{
 #ifdef YUME_SSE
@@ -211,7 +211,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Return negation.
+		
 		Quaternion operator -() const
 		{
 #ifdef YUME_SSE
@@ -221,7 +221,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Add a quaternion.
+		
 		Quaternion operator +(const Quaternion& rhs) const
 		{
 #ifdef YUME_SSE
@@ -231,7 +231,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Subtract a quaternion.
+		
 		Quaternion operator -(const Quaternion& rhs) const
 		{
 #ifdef YUME_SSE
@@ -241,7 +241,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Multiply a quaternion.
+		
 		Quaternion operator *(const Quaternion& rhs) const
 		{
 #ifdef YUME_SSE
@@ -266,7 +266,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Multiply a Vector3.
+		
 		Vector3 operator *(const Vector3& rhs) const
 		{
 #ifdef YUME_SSE
@@ -298,20 +298,20 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Define from an angle (in degrees) and axis.
+		
 		void FromAngleAxis(float angle,const Vector3& axis);
-		/// Define from Euler angles (in degrees.)
+		
 		void FromEulerAngles(float x,float y,float z);
-		/// Define from the rotation difference between two direction vectors.
+		
 		void FromRotationTo(const Vector3& start,const Vector3& end);
-		/// Define from orthonormal axes.
+		
 		void FromAxes(const Vector3& xAxis,const Vector3& yAxis,const Vector3& zAxis);
-		/// Define from a rotation matrix.
+		
 		void FromRotationMatrix(const Matrix3& matrix);
-		/// Define from a direction to look in and an up direction. Return true if successful, or false if would result in a NaN, in which case the current value remains.
+		
 		bool FromLookRotation(const Vector3& direction,const Vector3& up = Vector3::UP);
 
-		/// Normalize to unit length.
+		
 		void Normalize()
 		{
 #ifdef YUME_SSE
@@ -337,7 +337,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Return normalized to unit length.
+		
 		Quaternion Normalized() const
 		{
 #ifdef YUME_SSE
@@ -362,7 +362,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Return inverse.
+		
 		Quaternion Inverse() const
 		{
 #ifdef YUME_SSE
@@ -382,7 +382,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Return squared length.
+		
 		float LengthSquared() const
 		{
 #ifdef YUME_SSE
@@ -396,7 +396,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Calculate dot product.
+		
 		float DotProduct(const Quaternion& rhs) const
 		{
 #ifdef YUME_SSE
@@ -411,16 +411,16 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Test for equality with another quaternion with epsilon.
+		
 		bool Equals(const Quaternion& rhs) const
 		{
 			return YumeEngine::Equals(w_,rhs.w_) && YumeEngine::Equals(x_,rhs.x_) && YumeEngine::Equals(y_,rhs.y_) && YumeEngine::Equals(z_,rhs.z_);
 		}
 
-		/// Return whether is NaN.
+		
 		bool IsNaN() const { return YumeEngine::IsNaN(w_) || YumeEngine::IsNaN(x_) || YumeEngine::IsNaN(y_) || YumeEngine::IsNaN(z_); }
 
-		/// Return conjugate.
+		
 		Quaternion Conjugate() const
 		{
 #ifdef YUME_SSE
@@ -431,37 +431,37 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Return Euler angles in degrees.
+		
 		Vector3 EulerAngles() const;
-		/// Return yaw angle in degrees.
+		
 		float YawAngle() const;
-		/// Return pitch angle in degrees.
+		
 		float PitchAngle() const;
-		/// Return roll angle in degrees.
+		
 		float RollAngle() const;
-		/// Return the rotation matrix that corresponds to this quaternion.
+		
 		Matrix3 RotationMatrix() const;
-		/// Spherical interpolation with another quaternion.
+		
 		Quaternion Slerp(Quaternion rhs,float t) const;
-		/// Normalized linear interpolation with another quaternion.
+		
 		Quaternion Nlerp(Quaternion rhs,float t,bool shortestPath = false) const;
 
-		/// Return float data.
+		
 		const float* Data() const { return &w_; }
 
-		/// Return as string.
+		
 		YumeString ToString() const;
 
-		/// W coordinate.
+		
 		float w_;
-		/// X coordinate.
+		
 		float x_;
-		/// Y coordinate.
+		
 		float y_;
-		/// Z coordinate.
+		
 		float z_;
 
-		/// Identity quaternion.
+		
 		static const Quaternion IDENTITY;
 	};
 }

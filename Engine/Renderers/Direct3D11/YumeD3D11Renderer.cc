@@ -201,7 +201,7 @@ namespace YumeEngine
 
 			gpuResources_.clear();
 		}
-		
+
 
 		// ToDo(arkenthera) not sure about this..
 		int size = constantBuffers_.size();
@@ -217,7 +217,7 @@ namespace YumeEngine
 
 		impl_->blendStates_.clear();
 
-		
+
 
 		DepthStatesMap::iterator depthIt;
 
@@ -227,7 +227,7 @@ namespace YumeEngine
 		impl_->depthStates_.clear();
 
 
-		
+
 		RasterizerStatesMap::iterator rasterizerIt;
 
 		for(rasterizerIt = impl_->rasterizerStates_.begin();rasterizerIt != impl_->rasterizerStates_.end(); ++rasterizerIt)
@@ -260,7 +260,7 @@ namespace YumeEngine
 		delete impl_;
 		impl_ = 0;
 
-		
+
 
 		UnregisterFactories();
 
@@ -2118,6 +2118,89 @@ namespace YumeEngine
 	}
 
 	unsigned YumeD3D11Renderer::GetReadableDepthFormat()
+	{
+		return DXGI_FORMAT_R24G8_TYPELESS;
+	}
+
+
+	unsigned YumeD3D11Renderer::GetAlphaFormatNs()
+	{
+		return DXGI_FORMAT_A8_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetLuminanceFormatNs()
+	{
+		// Note: not same sampling behavior as on D3D9; need to sample the R channel only
+		return DXGI_FORMAT_R8_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetLuminanceAlphaFormatNs()
+	{
+		// Note: not same sampling behavior as on D3D9; need to sample the RG channels
+		return DXGI_FORMAT_R8G8_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGBFormatNs()
+	{
+		return DXGI_FORMAT_R8G8B8A8_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGBAFormatNs()
+	{
+		return DXGI_FORMAT_R8G8B8A8_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGBA16FormatNs()
+	{
+		return DXGI_FORMAT_R16G16B16A16_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGBAFloat16FormatNs()
+	{
+		return DXGI_FORMAT_R16G16B16A16_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGBAFloat32FormatNs()
+	{
+		return DXGI_FORMAT_R32G32B32A32_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetRG16FormatNs()
+	{
+		return DXGI_FORMAT_R16G16_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGFloat16FormatNs()
+	{
+		return DXGI_FORMAT_R16G16_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetRGFloat32FormatNs()
+	{
+		return DXGI_FORMAT_R32G32_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetFloat16FormatNs()
+	{
+		return DXGI_FORMAT_R16_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetFloat32FormatNs()
+	{
+		return DXGI_FORMAT_R32_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetLinearDepthFormatNs()
+	{
+		return DXGI_FORMAT_R32_FLOAT;
+	}
+
+	unsigned YumeD3D11Renderer::GetDepthStencilFormatNs()
+	{
+		return DXGI_FORMAT_R24G8_TYPELESS;
+	}
+
+	unsigned YumeD3D11Renderer::GetReadableDepthFormatNs()
 	{
 		return DXGI_FORMAT_R24G8_TYPELESS;
 	}

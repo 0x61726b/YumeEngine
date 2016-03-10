@@ -64,9 +64,9 @@ namespace YumeEngine
 
 	protected:
 		YumeString mName;
-		/// Gets the last loading error
+		
 		YumeString dynlibError(void);
-		/// Handle to the loaded library.
+		
 		DYNLIB_HANDLE mInst;
 	};
 }

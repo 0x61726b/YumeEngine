@@ -39,37 +39,37 @@ namespace YumeEngine
 
 		virtual ~YumeTexture2D();
 
-		/// Load resource from stream. May be called from a worker thread. Return true if successful.
+		
 		virtual bool BeginLoad(YumeFile& source);
-		/// Finish resource loading. Always called from the main thread. Return true if successful.
+		
 		virtual bool EndLoad();
 
 		virtual void Release() { };
 
-		/// Set size, format and usage. Zero size will follow application window size. Return true if successful.
+		
 		virtual bool SetSize(int width,int height,unsigned format,TextureUsage usage = TEXTURE_STATIC) = 0;
-		/// Set data either partially or fully on a mip level. Return true if successful.
+		
 		virtual bool SetData(unsigned level,int x,int y,int width,int height,const void* data) = 0;
-		/// Set data from an image. Return true if successful. Optionally make a single channel image alpha-only.
+		
 		virtual bool SetData(SharedPtr<YumeImage> image,bool useAlpha = false) = 0;
 
 		virtual bool GetData(unsigned level,void* dest) const = 0;
 
-		/// Return render surface.
+		
 		YumeRenderable* GetRenderSurface() const { return renderSurface_.get(); }
 
 		static YumeHash GetType();
 		static YumeHash texture2Dhash_;
 
-		/// Create texture.
+		
 		virtual bool Create() = 0;
-		/// Handle render surface update event.
+		
 		virtual void HandleRenderSurfaceUpdate(YumeHash eventType,VariantMap& eventData) = 0;
 
 	protected:
-		/// Render surface.
+		
 		SharedPtr<YumeRenderable> renderSurface_;
-		/// Image file acquired during BeginLoad.
+		
 		SharedPtr<YumeImage> loadImage_;
 	};
 }

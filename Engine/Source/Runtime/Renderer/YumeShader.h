@@ -46,35 +46,35 @@ namespace YumeEngine
 
 		virtual bool EndLoad() = 0;
 
-		/// Return a variation with defines.
+		
 		virtual YumeShaderVariation* GetVariation(ShaderType type,const YumeString& defines) = 0;
-		/// Return a variation with defines.
+		
 		virtual YumeShaderVariation* GetVariation(ShaderType type,const char* defines) = 0;
 
 		virtual void RefreshMemoryUse() = 0;
 
-		/// Return either vertex or pixel shader source code.
+		
 		const YumeString& GetSourceCode(ShaderType type) const { return type == VS ? vsSourceCode_ : psSourceCode_; }
 
-		/// Return the latest timestamp of the shader code and its includes.
+		
 		unsigned GetTimeStamp() const { return timeStamp_; }
 
 	protected:
-		/// Process source code and include files. Return true if successful.
+		
 		bool ProcessSource(YumeString& code,YumeFile& file);
-		/// Sort the defines and strip extra spaces to prevent creation of unnecessary duplicate shader variations.
+		
 		YumeString NormalizeDefines(const YumeString& defines);
-		/// Recalculate the memory used by the shader.
+		
 		
 	protected:
-		/// Source code adapted for vertex shader.
+		
 		YumeString vsSourceCode_;
-		/// Source code adapted for pixel shader.
+		
 		YumeString psSourceCode_;
-		/// Vertex shader variations.
-		/// Source code timestamp.
+		
+		
 		unsigned timeStamp_;
-		/// Number of unique variations so far.
+		
 		unsigned numVariations_;
 
 	public:

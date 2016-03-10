@@ -35,11 +35,11 @@
 namespace YumeEngine
 {
 
-	/// 3x4 matrix for scene node transform calculations.
+	
 	class YumeAPIExport Matrix3x4
 	{
 	public:
-		/// Construct an identity matrix.
+		
 		Matrix3x4()
 #ifndef YUME_SSE
 			:m00_(1.0f),
@@ -63,7 +63,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Copy-construct from another matrix.
+		
 		Matrix3x4(const Matrix3x4& matrix)
 #if defined(YUME_SSE) && (!defined(_MSC_VER) || _MSC_VER >= 1700) /* Visual Studio 2012 and newer. VS2010 has a bug with these, see https://github.com/urho3d/Urho3D/issues/1044 */
 		{
@@ -88,7 +88,7 @@ namespace YumeEngine
 		}
 #endif
 
-		/// Copy-construct from a 3x3 matrix and set the extra elements to identity.
+		
 		Matrix3x4(const Matrix3& matrix):
 			m00_(matrix.m00_),
 			m01_(matrix.m01_),
@@ -105,7 +105,7 @@ namespace YumeEngine
 		{
 		}
 
-		/// Copy-construct from a 4x4 matrix which is assumed to contain no projection.
+		
 		Matrix3x4(const Matrix4& matrix)
 #ifndef YUME_SSE
 			:m00_(matrix.m00_),
@@ -148,7 +148,7 @@ namespace YumeEngine
 		{
 		}
 
-		/// Construct from a float array.
+		
 		explicit Matrix3x4(const float* data)
 #ifndef YUME_SSE
 			:m00_(data[0]),
@@ -172,7 +172,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Construct from translation, rotation and uniform scale.
+		
 		Matrix3x4(const Vector3& translation,const Quaternion& rotation,float scale)
 		{
 #ifdef YUME_SSE
@@ -186,7 +186,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Construct from translation, rotation and nonuniform scale.
+		
 		Matrix3x4(const Vector3& translation,const Quaternion& rotation,const Vector3& scale)
 		{
 #ifdef YUME_SSE
@@ -200,7 +200,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Assign from another matrix.
+		
 		Matrix3x4& operator =(const Matrix3x4& rhs)
 		{
 #if defined(YUME_SSE) && (!defined(_MSC_VER) || _MSC_VER >= 1700) /* Visual Studio 2012 and newer. VS2010 has a bug with these, see https://github.com/urho3d/Urho3D/issues/1044 */
@@ -224,7 +224,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		/// Assign from a 3x3 matrix and set the extra elements to identity.
+		
 		Matrix3x4& operator =(const Matrix3& rhs)
 		{
 			m00_ = rhs.m00_;
@@ -242,7 +242,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		/// Assign from a 4x4 matrix which is assumed to contain no projection.
+		
 		Matrix3x4& operator =(const Matrix4& rhs)
 		{
 #ifdef YUME_SSE
@@ -266,7 +266,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		/// Test for equality with another matrix without epsilon.
+		
 		bool operator ==(const Matrix3x4& rhs) const
 		{
 #ifdef YUME_SSE
@@ -294,10 +294,10 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Test for inequality with another matrix without epsilon.
+		
 		bool operator !=(const Matrix3x4& rhs) const { return !(*this == rhs); }
 
-		/// Multiply a Vector3 which is assumed to represent position.
+		
 		Vector3 operator *(const Vector3& rhs) const
 		{
 #ifdef YUME_SSE
@@ -327,7 +327,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Multiply a Vector4.
+		
 		Vector3 operator *(const Vector4& rhs) const
 		{
 #ifdef YUME_SSE
@@ -357,7 +357,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Add a matrix.
+		
 		Matrix3x4 operator +(const Matrix3x4& rhs) const
 		{
 #ifdef YUME_SSE
@@ -384,7 +384,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Subtract a matrix.
+		
 		Matrix3x4 operator -(const Matrix3x4& rhs) const
 		{
 #ifdef YUME_SSE
@@ -411,7 +411,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Multiply with a scalar.
+		
 		Matrix3x4 operator *(float rhs) const
 		{
 #ifdef YUME_SSE
@@ -439,7 +439,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Multiply a matrix.
+		
 		Matrix3x4 operator *(const Matrix3x4& rhs) const
 		{
 #ifdef YUME_SSE
@@ -490,7 +490,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Multiply a 4x4 matrix.
+		
 		Matrix4 operator *(const Matrix4& rhs) const
 		{
 #ifdef YUME_SSE
@@ -547,7 +547,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Set translation elements.
+		
 		void SetTranslation(const Vector3& translation)
 		{
 			m03_ = translation.x_;
@@ -555,7 +555,7 @@ namespace YumeEngine
 			m23_ = translation.z_;
 		}
 
-		/// Set rotation elements from a 3x3 matrix.
+		
 		void SetRotation(const Matrix3& rotation)
 		{
 			m00_ = rotation.m00_;
@@ -569,7 +569,7 @@ namespace YumeEngine
 			m22_ = rotation.m22_;
 		}
 
-		/// Set scaling elements.
+		
 		void SetScale(const Vector3& scale)
 		{
 			m00_ = scale.x_;
@@ -577,7 +577,7 @@ namespace YumeEngine
 			m22_ = scale.z_;
 		}
 
-		/// Set uniform scaling elements.
+		
 		void SetScale(float scale)
 		{
 			m00_ = scale;
@@ -585,7 +585,7 @@ namespace YumeEngine
 			m22_ = scale;
 		}
 
-		/// Return the combined rotation and scaling matrix.
+		
 		Matrix3 ToMatrix3() const
 		{
 			return Matrix3(
@@ -601,7 +601,7 @@ namespace YumeEngine
 				);
 		}
 
-		/// Convert to a 4x4 matrix by filling in an identity last row.
+		
 		Matrix4 ToMatrix4() const
 		{
 #ifdef YUME_SSE
@@ -634,7 +634,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Return the rotation matrix with scaling removed.
+		
 		Matrix3 RotationMatrix() const
 		{
 			Vector3 invScale(
@@ -646,7 +646,7 @@ namespace YumeEngine
 			return ToMatrix3().Scaled(invScale);
 		}
 
-		/// Return the translation part.
+		
 		Vector3 Translation() const
 		{
 			return Vector3(
@@ -656,10 +656,10 @@ namespace YumeEngine
 				);
 		}
 
-		/// Return the rotation part.
+		
 		Quaternion Rotation() const { return Quaternion(RotationMatrix()); }
 
-		/// Return the scaling part.
+		
 		Vector3 Scale() const
 		{
 			return Vector3(
@@ -669,7 +669,7 @@ namespace YumeEngine
 				);
 		}
 
-		/// Test for equality with another matrix with epsilon.
+		
 		bool Equals(const Matrix3x4& rhs) const
 		{
 			const float* leftData = Data();
@@ -684,15 +684,15 @@ namespace YumeEngine
 			return true;
 		}
 
-		/// Return decomposition to translation, rotation and scale.
+		
 		void Decompose(Vector3& translation,Quaternion& rotation,Vector3& scale) const;
-		/// Return inverse.
+		
 		Matrix3x4 Inverse() const;
 
-		/// Return float data.
+		
 		const float* Data() const { return &m00_; }
 
-		/// Return as string.
+		
 		YumeString ToString() const;
 
 		float m00_;
@@ -708,9 +708,9 @@ namespace YumeEngine
 		float m22_;
 		float m23_;
 
-		/// Zero matrix.
+		
 		static const Matrix3x4 ZERO;
-		/// Identity matrix.
+		
 		static const Matrix3x4 IDENTITY;
 
 #ifdef YUME_SSE
@@ -743,7 +743,7 @@ namespace YumeEngine
 #endif
 		};
 
-	/// Multiply a 3x4 matrix with a scalar.
+	
 	inline Matrix3x4 operator *(float lhs,const Matrix3x4& rhs) { return rhs * lhs; }
 
 		}

@@ -233,7 +233,7 @@ namespace YumeEngine
 
 		while(strings[i])
 		{
-			if(!boost::iequals(value,strings[i]))
+			if(boost::iequals(value,strings[i]))
 				return i;
 			++i;
 		}

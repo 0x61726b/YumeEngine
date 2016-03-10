@@ -32,10 +32,13 @@
 #include "YumeMaterial.h"
 #include "Scene/YumeOctree.h"
 
+#include "Core/YumeXmlFile.h"
+
+#include "YumeRenderPipeline.h"
+
+#include "Renderer/YumeResourceManager.h"
 #include "Engine/YumeEngine.h"
-
 #include "Scene/YumeScene.h"
-
 #include "Math/YumeMatrix3x4.h"
 
 #include "YumeCamera.h"
@@ -99,6 +102,14 @@ namespace YumeEngine
 		ib_->SetData(dummyIndices);
 
 		REGISTER_ENGINE_LISTENER;
+
+		YumeResourceManager* rm_ = YumeEngine3D::Get()->GetResourceManager();
+
+		
+		
+		
+		defaultPipeline_ = YumeAPINew YumeRenderPipeline;
+		defaultPipeline_->Load(rm_->PrepareResource<YumeXmlFile>("Shaders/Pipelines/Forward.xml").get());
 
 	}
 

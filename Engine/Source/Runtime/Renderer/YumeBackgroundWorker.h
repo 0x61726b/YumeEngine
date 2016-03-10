@@ -25,20 +25,12 @@
 #include "YumeRequired.h"
 #include "Core/YumeThread.h"
 #include "Math/YumeHash.h"
+#include "YumeWorkQueue.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class YumeResource;
 	class YumeResourceManager;
-
-	struct WorkItem
-	{
-		boost::shared_ptr<YumeResource> resource_;
-		
-		YumeSet<std::pair<YumeHash,YumeHash> >::type dependencies_;
-		YumeSet<std::pair<YumeHash,YumeHash> >::type dependents_;
-		bool sendEventOnFailure_;
-	};
 
 	class YumeAPIExport YumeBackgroundWorker : public YumeThreadWrapper
 	{
@@ -56,19 +48,19 @@ namespace YumeEngine
 
 		void FinishResources(int maxMs);
 
-		/// Return amount of resources in the load queue.
+		
 		unsigned GetNumQueuedResources() const;
 
 
 	private:
-		/// Finish one background loaded resource.
+		
 		void FinishBackgroundLoading(WorkItem& item);
 
-		/// Resource cache.
+		
 		YumeResourceManager* owner_;
-		/// Mutex for thread-safe access to the background load queue.
+		
 		mutable boost::mutex backgroundLoadMutex_;
-		/// Resources that are queued for background loading.
+		
 		YumeMap<std::pair<YumeHash,YumeHash>,WorkItem>::type backgroundLoadQueue_;
 	};
 }

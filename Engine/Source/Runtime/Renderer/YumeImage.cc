@@ -80,14 +80,14 @@ static const unsigned DDS_DXGI_FORMAT_BC3_UNORM_SRGB = 78;
 
 namespace YumeEngine
 {
-	/// DirectDraw color key definition.
+	
 	struct DDColorKey
 	{
 		unsigned dwColorSpaceLowValue_;
 		unsigned dwColorSpaceHighValue_;
 	};
 
-	/// DirectDraw pixel format definition.
+	
 	struct DDPixelFormat
 	{
 		unsigned dwSize_;
@@ -141,7 +141,7 @@ namespace YumeEngine
 		};
 	};
 
-	/// DirectDraw surface capabilities.
+	
 	struct DDSCaps2
 	{
 		unsigned dwCaps_;
@@ -163,7 +163,7 @@ namespace YumeEngine
 		unsigned reserved;
 	};
 
-	/// DirectDraw surface description.
+	
 	struct DDSurfaceDesc2
 	{
 		unsigned dwSize_;

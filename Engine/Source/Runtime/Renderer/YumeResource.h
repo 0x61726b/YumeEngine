@@ -31,18 +31,18 @@ namespace YumeEngine
 {
 	class YumeFile;
 	
-	/// Asynchronous loading state of a resource.
+	
 	enum AsyncLoadState
 	{
-		/// No async operation in progress.
+		
 		ASYNC_DONE = 0,
-		/// Queued for asynchronous loading.
+		
 		ASYNC_QUEUED = 1,
-		/// In progress of calling BeginLoad() in a worker thread.
+		
 		ASYNC_LOADING = 2,
-		/// BeginLoad() succeeded. EndLoad() can be called in the main thread.
+		
 		ASYNC_SUCCESS = 3,
-		/// BeginLoad() failed.
+		
 		ASYNC_FAIL = 4
 	};
 
@@ -70,28 +70,28 @@ namespace YumeEngine
 
 		const YumeString& GetName() const { return name_; }
 
-		/// Return name hash.
+		
 		std::size_t GetNameHash() const { return nameHash_; }
 
-		/// Return memory use in bytes, possibly approximate.
+		
 		unsigned GetMemoryUse() const { return memoryUse_; }
 
-		/// Return time since last use in milliseconds. If referred to elsewhere than in the resource cache, returns always zero.
+		
 		unsigned GetUseTimer();
 
-		/// Return the asynchronous loading state.
+		
 		AsyncLoadState GetAsyncLoadState() const { return asyncLoadState_; }
 
 	private:
-		/// Name.
+		
 		YumeString name_;
-		/// Name hash.
+		
 		std::size_t nameHash_;
-		/// Last used timer.
+		
 		YumeLowresTimer useTimer_;
-		/// Memory use in bytes.
+		
 		unsigned memoryUse_;
-		/// Asynchronous loading state.
+		
 		AsyncLoadState asyncLoadState_;
 	};
 }

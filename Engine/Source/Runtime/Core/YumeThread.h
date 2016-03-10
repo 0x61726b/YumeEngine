@@ -55,18 +55,18 @@ namespace YumeEngine
 		static void SetMainThread();
 
 		static ThreadID GetCurrentThreadID();
-		/// Return whether is executing in the main thread.
+		
 		static bool IsMainThread();
 
 		bool IsStarted() const { return threadHandle != 0; }
 
 	protected:
-		/// Thread handle.
+		
 		boost::thread* threadHandle;
-		/// Running flag.
+		
 		volatile bool shouldRun_;
 
-		/// Main thread's thread ID.
+		
 		static ThreadID mainThreadID;
 	};
 }

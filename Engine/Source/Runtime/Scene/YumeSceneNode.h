@@ -178,7 +178,7 @@ namespace YumeEngine
 			return worldRotation_;
 		}
 
-		/// Return direction in world space.
+		
 		Vector3 GetWorldDirection() const
 		{
 			if(dirty_)
@@ -187,7 +187,7 @@ namespace YumeEngine
 			return worldRotation_ * Vector3::FORWARD;
 		}
 
-		/// Return node's up vector in world space.
+		
 		Vector3 GetWorldUp() const
 		{
 			if(dirty_)
@@ -196,7 +196,7 @@ namespace YumeEngine
 			return worldRotation_ * Vector3::UP;
 		}
 
-		/// Return node's right vector in world space.
+		
 		Vector3 GetWorldRight() const
 		{
 			if(dirty_)
@@ -205,7 +205,7 @@ namespace YumeEngine
 			return worldRotation_ * Vector3::RIGHT;
 		}
 
-		/// Return scale in world space.
+		
 		Vector3 GetWorldScale() const
 		{
 			if(dirty_)
@@ -214,14 +214,14 @@ namespace YumeEngine
 			return worldTransform_.Scale();
 		}
 
-		/// Return scale in world space (for Urho2D).
+		
 		Vector2 GetWorldScale2D() const
 		{
 			Vector3 worldScale = GetWorldScale();
 			return Vector2(worldScale.x_,worldScale.y_);
 		}
 
-		/// Return world space transform matrix.
+		
 		const Matrix3x4& GetWorldTransform() const
 		{
 			if(dirty_)
@@ -266,7 +266,7 @@ namespace YumeEngine
 		bool HasComponent(YumeHash type) const;
 		const YumeVector<YumeSceneComponent*>::type GetListeners() const { return listeners_; }
 
-		/// Return a user variable.
+		
 		const Variant& GetVar(YumeHash key) const;
 
 		const VariantMap& GetVars() const { return vars_; }
@@ -294,63 +294,63 @@ namespace YumeEngine
 		VariantMap vars_;
 
 	private:
-		/// Set enabled/disabled state with optional recursion. Optionally affect the remembered enable state.
+		
 		void SetEnabled(bool enable,bool recursive,bool storeSelf);
-		/// Create component, allowing UnknownComponent if actual type is not supported. Leave typeName empty if not known.
+		
 		YumeSceneComponent* SafeCreateComponent(const YumeString& typeName,YumeHash type,unsigned id);
-		/// Recalculate the world transform.
+		
 		void UpdateWorldTransform() const;
-		/// Remove child node by iterator.
+		
 		void RemoveChild(YumeVector<SharedPtr<YumeSceneNode> >::iterator i);
-		/// Return child nodes recursively.
+		
 		void GetChildrenRecursive(YumeVector<YumeSceneNode*>::type& dest) const;
-		/// Return child nodes with a specific component recursively.
+		
 		void GetChildrenWithComponentRecursive(YumeVector<YumeSceneNode*>::type& dest,YumeHash  type) const;
-		/// Return child nodes with a specific tag recursively.
+		
 		void GetChildrenWithTagRecursive(YumeVector<YumeSceneNode*>::type& dest,const YumeString& tag) const;
-		/// Return specific components recursively.
+		
 		void GetComponentsRecursive(YumeVector<YumeSceneComponent*>::type& dest,YumeHash  type) const;
-		/// Clone node recursively.
+		
 		YumeSceneNode* CloneRecursive(YumeSceneNode* parent);
-		/// Remove a component from this node with the specified iterator.
+		
 		void RemoveComponent(YumeVector<SharedPtr<YumeSceneComponent> >::iterator i);
 
 	protected:
-		/// World-space transform matrix.
+		
 		mutable Matrix3x4 worldTransform_;
-		/// World transform needs update flag.
+		
 		mutable bool dirty_;
-		/// Enabled flag.
+		
 		bool enabled_;
-		/// Last SetEnabled flag before any SetDeepEnabled.
+		
 		bool enabledPrev_;
-		/// Parent scene node.
+		
 		YumeSceneNode* parent_;
-		/// Scene (root node.)
+		
 		YumeScene* scene_;
-		/// Unique ID within the scene.
+		
 		unsigned id_;
-		/// Position.
+		
 		Vector3 position_;
-		/// Rotation.
+		
 		Quaternion rotation_;
-		/// Scale.
+		
 		Vector3 scale_;
-		/// World-space rotation.
+		
 		mutable Quaternion worldRotation_;
-		/// Components.
+		
 		YumeVector<SharedPtr<YumeSceneComponent> >::type components_;
-		/// Child scene nodes.
+		
 		YumeVector<SharedPtr<YumeSceneNode> >::type children_;
-		/// Node listeners.
+		
 		YumeVector<YumeSceneComponent*>::type listeners_;
-		/// Nodes this node depends on for network updates.
+		
 		YumeVector<YumeSceneNode*> dependencyNodes_;
-		/// Name.
+		
 		YumeString name_;
-		/// Tag strings.
+		
 		StringVector tags_;
-		/// Name hash.
+		
 		YumeHash nameHash_;
 	};
 

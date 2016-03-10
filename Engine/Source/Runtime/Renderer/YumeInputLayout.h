@@ -40,7 +40,7 @@ namespace YumeEngine
 		void* GetInputLayout() const { return inputLayout_; }
 
 	protected:
-		/// Input layout object.
+		
 		void* inputLayout_;
 	};
 }

@@ -32,42 +32,42 @@ namespace YumeEngine
 {
 	class YumeShader;
 	struct ShaderParameter;
-	/// Vertex or pixel shader on the GPU.
+	
 	class YumeAPIExport YumeShaderVariation
 	{
 	public:
-		/// Construct.
+		
 		YumeShaderVariation();
-		/// Destruct.
+		
 		virtual ~YumeShaderVariation();
 
 		virtual void Release() { };
 
-		/// Compile the shader. Return true if successful.
+		
 		virtual bool Create() = 0;
-		/// Set name.
+		
 		void SetName(const YumeString& name);
-		/// Set defines.
+		
 		void SetDefines(const YumeString& defines) ;
 
-		/// Return the owner resource.
+		
 		YumeShader* GetOwner() const;
 
 		unsigned GetElementMask() const { return elementMask_; }
 
-		/// Return shader type.
+		
 		ShaderType GetShaderType() const { return type_; }
 
-		/// Return name.
+		
 		const YumeString& GetName() const { return name_; }
 
-		/// Return defines.
+		
 		const YumeString& GetDefines() const { return defines_; }
 
-		/// Return full shader name.
+		
 		YumeString GetFullName() const { return name_ + "(" + defines_ + ")"; }
 
-		/// Return compile error/warning string.
+		
 		const YumeString& GetCompilerOutput() const { return compilerOutput_; }
 
 		bool HasTextureUnit(TextureUnit unit) const { return useTextureUnit_[unit]; }
@@ -79,15 +79,15 @@ namespace YumeEngine
 		const YumeVector<unsigned char>::type& GetByteCode() const { return byteCode_; }
 
 	protected:
-		/// Shader this variation belongs to.
+		
 		YumeShader* owner_;
-		/// Shader type.
+		
 		ShaderType type_;
-		/// Shader name.
+		
 		YumeString name_;
-		/// Defines to use in compiling.
+		
 		YumeString defines_;
-		/// Shader compile error string.
+		
 		YumeString compilerOutput_;
 
 		unsigned elementMask_;

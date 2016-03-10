@@ -14,47 +14,25 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : <Filename> YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeGpuResource_h__
-#define __YumeGpuResource_h__
-//----------------------------------------------------------------------------
-#include "YumeRequired.h"
-#include "YumeBase.h"
-//----------------------------------------------------------------------------
+#include "YumeHeaders.h"
+#include "YumeBatch.h"
+
+#include "YumeCamera.h"
+#include "YumeGeometry.h"
+#include "YumeRHI.h"
+#include "YumeMaterial.h"
+#include "YumeRenderer.h"
+#include "YumeShaderVariation.h"
+#include "YumeRenderPass.h"
+#include "YumeVertexBuffer.h"
+#include "YumeRenderView.h"
+
 namespace YumeEngine
 {
 
-	class YumeRHI;
-	class YumeEngine3D;
-
-	
-	class YumeAPIExport YumeGpuResource
-	{
-	public:
-		YumeGpuResource(YumeRHI*);
-		
-		virtual ~YumeGpuResource();
-
-		
-		virtual void Release() {};
-
-		
-		virtual void ClearDataLost() = 0;
-
-		
-		virtual bool IsDataLost() const = 0;
-
-		
-		virtual bool HasPendingData() const = 0;
-	protected:
-		YumeRHI* rhi_;
-	};
 }
-
-
-//----------------------------------------------------------------------------
-#endif

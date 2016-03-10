@@ -1,31 +1,31 @@
-///////////////////////////////////////////////////////////////////////////////////
-/// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 Alperen Gezer
 
-/// Permission is hereby granted, free of charge, to any person obtaining a copy
-/// of this software and associated documentation files (the "Software"), to deal
-/// in the Software without restriction, including without limitation the rights
-/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-/// copies of the Software, and to permit persons to whom the Software is
-/// furnished to do so, subject to the following conditions:
-/// 
-/// The above copyright notice and this permission notice shall be included in
-/// all copies or substantial portions of the Software.
-/// 
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-/// THE SOFTWARE.
-/// 
-/// File : <Filename> YumeMemoryAllocatorSTL.h
-/// Date : 8.31.2015
-/// Comments : 
-///
-///////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //---------------------------------------------------------------------------------
 #ifndef __YumeMemoryAllocatorSTL_h__
@@ -58,7 +58,7 @@ namespace YumeEngine
 	class YumeSTLAllocator : public STLAllocatorBase<T>
 	{
 	public:
-		/// define our types, as per ISO C++
+		
 		typedef STLAllocatorBase<T>			Base;
 		typedef typename Base::value_type	value_type;
 		typedef value_type*					pointer;
@@ -69,36 +69,36 @@ namespace YumeEngine
 		typedef std::ptrdiff_t				difference_type;
 
 
-		/// the standard rebind mechanism
+		
 		template<typename U>
 		struct rebind
 		{
 			typedef YumeSTLAllocator<U, AllocPolicy> other;
 		};
 
-		/// ctor
+		
 		inline explicit YumeSTLAllocator()
 		{ }
 
-		/// dtor
+		
 		virtual ~YumeSTLAllocator()
 		{ }
 
-		/// copy ctor - done component wise
+		
 		inline YumeSTLAllocator(YumeSTLAllocator const&)
 		{ }
 
-		/// cast
+		
 		template <typename U>
 		inline YumeSTLAllocator(YumeSTLAllocator<U, AllocPolicy> const&)
 		{ }
 
-		/// cast
+		
 		template <typename U, typename P>
 		inline YumeSTLAllocator(YumeSTLAllocator<U, P> const&)
 		{ }
 
-		/// memory allocation (elements, used by STL)
+		
 		inline pointer allocate(size_type count,
 			typename std::allocator<void>::const_pointer ptr = 0)
 		{
@@ -109,7 +109,7 @@ namespace YumeEngine
 			return p;
 		}
 
-		/// memory deallocation (elements, used by STL)
+		
 		inline void deallocate(pointer ptr, size_type)
 		{
 			// convert request to bytes, but we can't use this?
@@ -154,8 +154,8 @@ namespace YumeEngine
 
 	};
 
-	/// determine equality, can memory from another allocator
-	/// be released by this allocator, (ISO C++)
+	
+	
 	template<typename T, typename T2, typename P>
 	inline bool operator==(YumeSTLAllocator<T, P> const&,
 		YumeSTLAllocator<T2, P> const&)
@@ -164,16 +164,16 @@ namespace YumeEngine
 		return true;
 	}
 
-	/// determine equality, can memory from another allocator
-	/// be released by this allocator, (ISO C++)
+	
+	
 	template<typename T, typename P, typename OtherAllocator>
 	inline bool operator==(YumeSTLAllocator<T, P> const&,
 		OtherAllocator const&)
 	{
 		return false;
 	}
-	/// determine equality, can memory from another allocator
-	/// be released by this allocator, (ISO C++)
+	
+	
 	template<typename T, typename T2, typename P>
 	inline bool operator!=(YumeSTLAllocator<T, P> const&,
 		YumeSTLAllocator<T2, P> const&)
@@ -182,8 +182,8 @@ namespace YumeEngine
 		return false;
 	}
 
-	/// determine equality, can memory from another allocator
-	/// be released by this allocator, (ISO C++)
+	
+	
 	template<typename T, typename P, typename OtherAllocator>
 	inline bool operator!=(YumeSTLAllocator<T, P> const&,
 		OtherAllocator const&)

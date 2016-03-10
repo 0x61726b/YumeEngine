@@ -41,6 +41,8 @@
 #include "Core/YumeIO.h"
 #include "Core/YumeDefaults.h"
 #include "Core/YumeBase.h"
+#include "Core/YumeXmlFile.h"
+#include "Core/YumeWorkQueue.h"
 
 #include "Renderer/YumeRenderer.h"
 
@@ -52,6 +54,7 @@
 #include "Renderer/YumeShaderVariation.h"
 #include "Renderer/YumeTexture2D.h"
 #include "Renderer/YumeRenderPass.h"
+#include "Renderer/YumeRenderPipeline.h"
 
 #include "Input/YumeInput.h"
 
@@ -102,7 +105,7 @@ namespace YumeEngine
 		io_ = boost::shared_ptr<YumeIO>(YumeAPINew YumeIO);
 		timer_ = boost::shared_ptr<YumeTime>(YumeAPINew YumeTime);
 		env_ = boost::shared_ptr<YumeEnvironment>(YumeAPINew YumeEnvironment);
-		
+		workQueue_ = SharedPtr<YumeWorkQueue>(YumeAPINew YumeWorkQueue);
 
 		resourceManager_ = YumeAPINew YumeResourceManager;
 		VariantMap::const_iterator It = variants.begin();
@@ -124,7 +127,8 @@ namespace YumeEngine
 			YumeEngine::Log::ToggleLogging(false);
 		}
 
-
+		unsigned NumThreads = 4;
+		workQueue_->CreateThreads(NumThreads);
 
 		YUMELOG_INFO("Initialized environment...Current system time " << timer_->GetTimeStamp());
 
@@ -247,7 +251,7 @@ namespace YumeEngine
 		YumeObjectRegistrar<YumeRenderTechnique> techObj(("RenderTechnique"));
 		YumeObjectRegistrar<Octree> octreeObj(("Octree"));
 		YumeObjectRegistrar<YumeCamera> cameraObj(("Camera"));
-
+		YumeObjectRegistrar<YumeXmlFile> xmlFile(("XmlFile"));
 	}
 	void YumeEngine3D::Render()
 	{

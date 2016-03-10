@@ -75,6 +75,12 @@ set(SRC_RENDERER
 	Renderer/YumeRendererEnv.cc
 	Renderer/YumeGeometry.h
 	Renderer/YumeGeometry.cc
+	Renderer/YumeRenderPipeline.h
+	Renderer/YumeRenderPipeline.cc
+	Renderer/YumeBatch.h
+	Renderer/YumeBatch.cc
+	Renderer/YumeRenderView.h
+	Renderer/YumeRenderView.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h
@@ -158,6 +164,8 @@ set( SRC_CORE
 	Core/YumeComponentAnimInfo.cc
 	Core/YumeVectorBuffer.h
 	Core/YumeVectorBuffer.cc
+	Core/YumeXmlFile.h
+	Core/YumeXmlFile.cc
 		)
 set( SRC_CORE_IO
 	Core/YumeIO.h

@@ -37,24 +37,24 @@ namespace YumeEngine
 	typedef YumeMap<YumeHash,ResourceGroup>::type ResourceGroupHashMap;
 	typedef YumeMap<YumeHash,SharedPtr<YumeResource> >::type ResourceHashMap;
 
-	/// Sets to priority so that a package or file is pushed to the end of the vector.
+	
 	static const unsigned PRIORITY_LAST = 0xffffffff;
 
-	/// Container of resources with specific type.
+	
 	struct ResourceGroup
 	{
-		/// Construct with defaults.
+		
 		ResourceGroup():
 			memoryBudget_(0),
 			memoryUse_(0)
 		{
 		}
 
-		/// Memory budget.
+		
 		unsigned long long memoryBudget_;
-		/// Current memory use.
+		
 		unsigned long long memoryUse_;
-		/// Resources.
+		
 		YumeMap<YumeHash,boost::shared_ptr<YumeResource> >::type resources_;
 	};
 

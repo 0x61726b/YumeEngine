@@ -35,11 +35,11 @@ namespace YumeEngine
 	class YumeDrawable;
 	class YumeSceneNode;
 
-	/// Base class for octree queries.
+	
 	class YumeAPIExport OctreeQuery
 	{
 	public:
-		/// Construct with query parameters.
+		
 		OctreeQuery(YumeVector<YumeDrawable*>::type& result,unsigned char drawableFlags,unsigned viewMask):
 			result_(result),
 			drawableFlags_(drawableFlags),
@@ -47,35 +47,35 @@ namespace YumeEngine
 		{
 		}
 
-		/// Destruct.
+		
 		virtual ~OctreeQuery()
 		{
 		}
 
-		/// Intersection test for an octant.
+		
 		virtual Intersection TestOctant(const BoundingBox& box,bool inside) = 0;
-		/// Intersection test for drawables.
+		
 		virtual void TestDrawables(YumeDrawable** start,YumeDrawable** end,bool inside) = 0;
 
-		/// Result vector reference.
+		
 		YumeVector<YumeDrawable*>::type& result_;
-		/// Drawable flags to include.
+		
 		unsigned char drawableFlags_;
-		/// Drawable layers to include.
+		
 		unsigned viewMask_;
 
 	private:
-		/// Prevent copy construction.
+		
 		OctreeQuery(const OctreeQuery& rhs);
-		/// Prevent assignment.
+		
 		OctreeQuery& operator =(const OctreeQuery& rhs);
 	};
 
-	/// Point octree query.
+	
 	class YumeAPIExport PointOctreeQuery : public OctreeQuery
 	{
 	public:
-		/// Construct with point and query parameters.
+		
 		PointOctreeQuery(YumeVector<YumeDrawable*>::type& result,const Vector3& point,unsigned char drawableFlags = DRAWABLE_ANY,
 			unsigned viewMask = DEFAULT_VIEWMASK):
 			OctreeQuery(result,drawableFlags,viewMask),
@@ -83,20 +83,20 @@ namespace YumeEngine
 		{
 		}
 
-		/// Intersection test for an octant.
+		
 		virtual Intersection TestOctant(const BoundingBox& box,bool inside);
-		/// Intersection test for drawables.
+		
 		virtual void TestDrawables(YumeDrawable** start,YumeDrawable** end,bool inside);
 
-		/// Point.
+		
 		Vector3 point_;
 	};
 
-	/// %Sphere octree query.
+	
 	class YumeAPIExport SphereOctreeQuery : public OctreeQuery
 	{
 	public:
-		/// Construct with sphere and query parameters.
+		
 		SphereOctreeQuery(YumeVector<YumeDrawable*>::type& result,const Sphere& sphere,unsigned char drawableFlags = DRAWABLE_ANY,
 			unsigned viewMask = DEFAULT_VIEWMASK):
 			OctreeQuery(result,drawableFlags,viewMask),
@@ -104,20 +104,20 @@ namespace YumeEngine
 		{
 		}
 
-		/// Intersection test for an octant.
+		
 		virtual Intersection TestOctant(const BoundingBox& box,bool inside);
-		/// Intersection test for drawables.
+		
 		virtual void TestDrawables(YumeDrawable** start,YumeDrawable** end,bool inside);
 
-		/// Sphere.
+		
 		Sphere sphere_;
 	};
 
-	/// Bounding box octree query.
+	
 	class YumeAPIExport BoxOctreeQuery : public OctreeQuery
 	{
 	public:
-		/// Construct with bounding box and query parameters.
+		
 		BoxOctreeQuery(YumeVector<YumeDrawable*>::type& result,const BoundingBox& box,unsigned char drawableFlags = DRAWABLE_ANY,
 			unsigned viewMask = DEFAULT_VIEWMASK):
 			OctreeQuery(result,drawableFlags,viewMask),
@@ -125,20 +125,20 @@ namespace YumeEngine
 		{
 		}
 
-		/// Intersection test for an octant.
+		
 		virtual Intersection TestOctant(const BoundingBox& box,bool inside);
-		/// Intersection test for drawables.
+		
 		virtual void TestDrawables(YumeDrawable** start,YumeDrawable** end,bool inside);
 
-		/// Bounding box.
+		
 		BoundingBox box_;
 	};
 
-	/// %Frustum octree query.
+	
 	class YumeAPIExport FrustumOctreeQuery : public OctreeQuery
 	{
 	public:
-		/// Construct with frustum and query parameters.
+		
 		FrustumOctreeQuery(YumeVector<YumeDrawable*>::type& result,const Frustum& frustum,unsigned char drawableFlags = DRAWABLE_ANY,
 			unsigned viewMask = DEFAULT_VIEWMASK):
 			OctreeQuery(result,drawableFlags,viewMask),
@@ -146,35 +146,35 @@ namespace YumeEngine
 		{
 		}
 
-		/// Intersection test for an octant.
+		
 		virtual Intersection TestOctant(const BoundingBox& box,bool inside);
-		/// Intersection test for drawables.
+		
 		virtual void TestDrawables(YumeDrawable** start,YumeDrawable** end,bool inside);
 
-		/// Frustum.
+		
 		Frustum frustum_;
 	};
 
-	/// General octree query result. Used for Lua bindings only.
+	
 	struct YumeAPIExport OctreeQueryResult
 	{
-		/// Construct with defaults.
+		
 		OctreeQueryResult():
 			drawable_(0),
 			node_(0)
 		{
 		}
 
-		/// Test for inequality, added to prevent GCC from complaining.
+		
 		bool operator !=(const OctreeQueryResult& rhs) const { return drawable_ != rhs.drawable_ || node_ != rhs.node_; }
 
-		/// Drawable.
+		
 		YumeDrawable* drawable_;
-		/// Scene node.
+		
 		YumeSceneNode* node_;
 	};
 
-	/// Graphics raycast detail level.
+	
 	enum RayQueryLevel
 	{
 		RAY_AABB = 0,
@@ -183,17 +183,17 @@ namespace YumeEngine
 		RAY_TRIANGLE_UV
 	};
 
-	/// Raycast result.
+	
 	struct YumeAPIExport RayQueryResult
 	{
-		/// Construct with defaults.
+		
 		RayQueryResult():
 			drawable_(0),
 			node_(0)
 		{
 		}
 
-		/// Test for inequality, added to prevent GCC from complaining.
+		
 		bool operator !=(const RayQueryResult& rhs) const
 		{
 			return position_ != rhs.position_ ||
@@ -205,27 +205,27 @@ namespace YumeEngine
 				subObject_ != rhs.subObject_;
 		}
 
-		/// Hit position in world space.
+		
 		Vector3 position_;
-		/// Hit normal in world space. Negation of ray direction if per-triangle data not available.
+		
 		Vector3 normal_;
-		/// Hit texture position
+		
 		Vector2 textureUV_;
-		/// Distance from ray origin.
+		
 		float distance_;
-		/// Drawable.
+		
 		YumeDrawable* drawable_;
-		/// Scene node.
+		
 		YumeSceneNode* node_;
-		/// Drawable specific subobject if applicable.
+		
 		unsigned subObject_;
 	};
 
-	/// Raycast octree query.
+	
 	class YumeAPIExport RayOctreeQuery
 	{
 	public:
-		/// Construct with ray and query parameters.
+		
 		RayOctreeQuery(YumeVector<RayQueryResult>::type& result,const Ray& ray,RayQueryLevel level = RAY_TRIANGLE,
 			float maxDistance = M_INFINITY,unsigned char drawableFlags = DRAWABLE_ANY,unsigned viewMask = DEFAULT_VIEWMASK):
 			result_(result),
@@ -237,38 +237,38 @@ namespace YumeEngine
 		{
 		}
 
-		/// Result vector reference.
+		
 		YumeVector<RayQueryResult>::type& result_;
-		/// Ray.
+		
 		Ray ray_;
-		/// Drawable flags to include.
+		
 		unsigned char drawableFlags_;
-		/// Drawable layers to include.
+		
 		unsigned viewMask_;
-		/// Maximum ray distance.
+		
 		float maxDistance_;
-		/// Raycast detail level.
+		
 		RayQueryLevel level_;
 
 	private:
-		/// Prevent copy construction.
+		
 		RayOctreeQuery(const RayOctreeQuery& rhs);
-		/// Prevent assignment.
+		
 		RayOctreeQuery& operator =(const RayOctreeQuery& rhs);
 	};
 
 	class YumeAPIExport AllContentOctreeQuery : public OctreeQuery
 	{
 	public:
-		/// Construct.
+		
 		AllContentOctreeQuery(YumeVector<YumeDrawable*>::type& result,unsigned char drawableFlags,unsigned viewMask):
 			OctreeQuery(result,drawableFlags,viewMask)
 		{
 		}
 
-		/// Intersection test for an octant.
+		
 		virtual Intersection TestOctant(const BoundingBox& box,bool inside);
-		/// Intersection test for drawables.
+		
 		virtual void TestDrawables(YumeDrawable** start,YumeDrawable** end,bool inside);
 	};
 }

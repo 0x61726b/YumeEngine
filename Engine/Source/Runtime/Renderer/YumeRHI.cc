@@ -36,6 +36,8 @@
 
 #include "Logging/logging.h"
 
+#include <boost/algorithm/string.hpp>
+
 namespace YumeEngine
 {
 	YumeRHI::YumeRHI():
@@ -293,5 +295,48 @@ namespace YumeEngine
 	YumeVertexBuffer* YumeRHI::GetVertexBuffer(unsigned index) const
 	{
 		return index < MAX_VERTEX_STREAMS ? vertexBuffers_[index] : 0;
+	}
+
+
+	unsigned YumeRHI::GetFormatNs(const YumeString& formatName)
+	{
+		YumeString nameLower = formatName;
+		boost::to_lower(nameLower);
+		boost::trim(nameLower);
+
+		if(nameLower == "a")
+			return GetAlphaFormatNs();
+		if(nameLower == "l")
+			return GetLuminanceFormatNs();
+		if(nameLower == "la")
+			return GetLuminanceAlphaFormatNs();
+		if(nameLower == "rgb")
+			return GetRGBFormatNs();
+		if(nameLower == "rgba")
+			return GetRGBAFormatNs();
+		if(nameLower == "rgba16")
+			return GetRGBA16FormatNs();
+		if(nameLower == "rgba16f")
+			return GetRGBAFloat16FormatNs();
+		if(nameLower == "rgba32f")
+			return GetRGBAFloat32FormatNs();
+		if(nameLower == "rg16")
+			return GetRG16FormatNs();
+		if(nameLower == "rg16f")
+			return GetRGFloat16FormatNs();
+		if(nameLower == "rg32f")
+			return GetRGFloat32FormatNs();
+		if(nameLower == "r16f")
+			return GetFloat16FormatNs();
+		if(nameLower == "r32f" || nameLower == "float")
+			return GetFloat32FormatNs();
+		if(nameLower == "lineardepth" || nameLower == "depth")
+			return GetLinearDepthFormatNs();
+		if(nameLower == "d24s8")
+			return GetDepthStencilFormatNs();
+		if(nameLower == "readabledepth" || nameLower == "hwdepth")
+			return GetReadableDepthFormatNs();
+
+		return GetRGBFormatNs();
 	}
 }

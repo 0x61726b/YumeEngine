@@ -30,20 +30,20 @@
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	/// Low-resolution operating system timer.
+	
 	class YumeAPIExport YumeLowresTimer
 	{
 	public:
-		/// Construct. Get the starting clock value.
+		
 		YumeLowresTimer();
 
-		/// Return elapsed milliseconds and optionally reset.
+		
 		unsigned GetMSec(bool reset);
-		/// Reset the timer.
+		
 		void Reset();
 
 	private:
-		/// Starting clock value in milliseconds.
+		
 		unsigned startTime_;
 	};
 
@@ -52,27 +52,27 @@ namespace YumeEngine
 		friend class YumeTime;
 
 	public:
-		/// Construct. Get the starting high-resolution clock value.
+		
 		YumeHiresTimer();
 
-		/// Return elapsed microseconds and optionally reset.
+		
 		long long GetUSec(bool reset);
-		/// Reset the timer.
+		
 		void Reset();
 
-		/// Return if high-resolution timer is supported.
+		
 		static bool IsSupported() { return supported; }
 
-		/// Return high-resolution timer frequency if supported.
+		
 		static long long GetFrequency() { return frequency; }
 
 	private:
-		/// Starting clock value in CPU ticks.
+		
 		long long startTime_;
 
-		/// High-resolution timer support flag.
+		
 		static bool supported;
-		/// High-resolution timer frequency.
+		
 		static long long frequency;
 	};
 

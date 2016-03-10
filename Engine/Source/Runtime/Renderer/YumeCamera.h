@@ -43,7 +43,7 @@ namespace YumeEngine
 	static const unsigned VO_DISABLE_SHADOWS = 0x2;
 	static const unsigned VO_DISABLE_OCCLUSION = 0x4;
 
-	/// %Camera component.
+	
 	class YumeAPIExport YumeCamera : public YumeSceneComponent
 	{
 	public:

@@ -999,7 +999,7 @@ namespace YumeEngine
 			break;
 
 		default:
-			/// ETC1 & PVRTC not yet implemented
+			
 			break;
 		}
 	}
@@ -1064,7 +1064,7 @@ namespace YumeEngine
 			break;
 
 		default:
-			/// ETC1 & PVRTC not yet implemented
+			
 			break;
 		}
 	}

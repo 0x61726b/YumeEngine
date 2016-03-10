@@ -19,63 +19,26 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeVectorBuffer_h__
-#define __YumeVectorBuffer_h__
+#ifndef __YumeXmlFile_h__
+#define __YumeXmlFile_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+#include "Renderer/YumeResource.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeFile;
-
-	
-	class YumeAPIExport VectorBuffer
+	class YumeAPIExport YumeXmlFile : public YumeResource
 	{
 	public:
-		
-		VectorBuffer();
-		
-		VectorBuffer(const YumeVector<unsigned char>::type& data);
-		
-		VectorBuffer(const void* data,unsigned size);
-		
-		VectorBuffer(YumeFile& source,unsigned size);
+		YumeXmlFile();
 
-		
-		virtual unsigned Read(void* dest,unsigned size);
-		
-		virtual unsigned Seek(unsigned position);
-		
-		virtual unsigned Write(const void* data,unsigned size);
+		virtual bool BeginLoad(YumeFile& source);
 
-		
-		void SetData(const YumeVector<unsigned char>::type& data);
-		
-		void SetData(const void* data,unsigned size);
-		
-		void SetData(YumeFile& source,unsigned size);
-		
-		void Clear();
-		
-		void Resize(unsigned size);
+		const YumeString& GetXml() const { return wholeXmlString; }
+		YumeString wholeXmlString;
 
-		
-		const unsigned char* GetData() const { return size_ ? &buffer_[0] : 0; }
-
-		
-		unsigned char* GetModifiableData() { return size_ ? &buffer_[0] : 0; }
-
-		
-		const YumeVector<unsigned char>::type& GetBuffer() const { return buffer_; }
-
-		unsigned GetSize() const { return size_; }
-
-	private:
-		
-		YumeVector<unsigned char>::type buffer_;
-
-		unsigned size_;
-		unsigned position_;
+		static YumeHash type_;
+		static YumeHash GetType() { return type_; }
 	};
 }
 

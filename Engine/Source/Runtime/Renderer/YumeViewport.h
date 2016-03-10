@@ -31,80 +31,49 @@
 namespace YumeEngine
 {
 	class YumeCamera;
-	class YumeRenderPath;
-	class YumeRenderPath;
+	class YumeRenderPipeline;
 	class YumeView;
 	class YumeScene;
+	class YumeXmlFile;
 
 
-	/// %Viewport definition either for a render surface or the backbuffer.
+	
 	class YumeAPIExport YumeViewport
 	{
 	public:
-		/// Construct with defaults.
 		YumeViewport();
-		/// Construct with a full rectangle.
-		YumeViewport(YumeScene* scene, YumeCamera* camera, YumeRenderPath* renderPath = 0);
-		/// Construct with a specified rectangle.
-		YumeViewport(YumeCamera* camera,const IntRect& rect,YumeRenderPath* renderPath = 0);
-		/// Destruct.
+		YumeViewport(YumeScene* scene, YumeCamera* camera, YumeRenderPipeline* renderPath = 0);
+		YumeViewport(YumeCamera* camera,const IntRect& rect,YumeRenderPipeline* renderPath = 0);
 		~YumeViewport();
 
 		void SetCamera(YumeCamera* camera);
-	//	/// Set rectangle.
-	//	void SetRect(const IntRect& rect);
-	//	/// Set rendering path.
-		void SetRenderPath(YumeRenderPath* path);
-	//	/// Set rendering path from an XML file.
-	//	void SetRenderPath();
-	//	/// Set whether to render debug geometry. Default true.
-	//	void SetDrawDebug(bool enable);
-	//	/// Set separate camera to use for culling. Sharing a culling camera between several viewports allows to prepare the view only once, saving in CPU use. The culling camera's frustum should cover all the viewport cameras' frusta or else objects may be missing from the rendered view.
-	//	void SetCullCamera(YumeCamera* camera);
+		void SetScene(YumeScene* scene);
+		void SetRect(const IntRect& rect);
+		void SetRenderPath(YumeRenderPipeline* path);
+		void SetRenderPath(YumeXmlFile* file);
+		void SetDrawDebug(bool enable);
+		void SetCullCamera(YumeCamera* camera);
 
-	//	/// Return viewport camera.
 		YumeCamera* GetCamera() const;
-	//	/// Return the internal rendering structure. May be null if the viewport has not been rendered yet.
-	//	YumeView* GetView() const;
-
 		YumeScene* GetScene() const;
-
-	//	/// Return rectangle.
 		const IntRect& GetRect() const { return rect_; }
+		YumeRenderPipeline* GetRenderPath() const;
+		bool GetDrawDebug() const { return drawDebug_; }
 
-	//	/// Return rendering path.
-	//	YumeRenderPath* GetRenderPath() const;
-
-	//	/// Return whether to draw debug geometry.
-	//	bool GetDrawDebug() const { return drawDebug_; }
-
-	//	/// Return the culling camera. If null, the viewport camera will be used for culling (normal case.)
-	//	YumeCamera* GetCullCamera() const;
-
-	//	/// Return ray corresponding to normalized screen coordinates.
-	//	Ray GetScreenRay(int x,int y) const;
-	//	// Convert a world space point to normalized screen coordinates.
-	//	Vector2 WorldToScreenPoint(const Vector3& worldPos) const;
-	//	// Convert screen coordinates and depth to a world space point.
-	//	Vector3 ScreenToWorldPoint(int x,int y,float depth) const;
-
-	//	/// Allocate the view structure. Called by Renderer.
-	//	void AllocateView();
+		YumeCamera* GetCullCamera() const;
+		Ray GetScreenRay(int x,int y) const;
+		IntVector2 WorldToScreenPoint(const Vector3& worldPos) const;
+		Vector3 ScreenToWorldPoint(int x,int y,float depth) const;
+		void AllocateView();
 
 	private:
-		/// Camera pointer.
 		YumeCamera* camera_;
-		/// Culling camera pointer.
 		YumeCamera* cullCamera_;
 
 		YumeScene* scene_;
-		/// Viewport rectangle.
 		IntRect rect_;
-		/// Rendering path.
-		SharedPtr<YumeRenderPath> renderPath_;
-		/// Internal rendering structure.
+		SharedPtr<YumeRenderPipeline> renderPath_;
 		SharedPtr<YumeView> view_;
-		/// Debug draw flag.
 		bool drawDebug_;
 	};
 }

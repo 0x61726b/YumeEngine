@@ -42,6 +42,7 @@ namespace YumeEngine
 		"w+b"
 	};
 
+	YumeHash YumeFile::type_ = "File";
 
 	YumeFile::YumeFile(const YumeString& file,FileMode fileMode)
 		: file_(file),fileMode_(fileMode),position_(0),size_(0),handle_(0)

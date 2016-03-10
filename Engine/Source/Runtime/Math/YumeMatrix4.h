@@ -1,31 +1,31 @@
-///////////////////////////////////////////////////////////////////////////////////
-/// Yume Engine MIT License (MIT)
 
-/// Copyright (c) 2015 Alperen Gezer
 
-/// Permission is hereby granted, free of charge, to any person obtaining a copy
-/// of this software and associated documentation files (the "Software"), to deal
-/// in the Software without restriction, including without limitation the rights
-/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-/// copies of the Software, and to permit persons to whom the Software is
-/// furnished to do so, subject to the following conditions:
-/// 
-/// The above copyright notice and this permission notice shall be included in
-/// all copies or substantial portions of the Software.
-/// 
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-/// THE SOFTWARE.
-/// 
-/// File : <Filename> YumeMatrix4.h
-/// Date : 6.9.2015
-/// Comments : 
-///--------------------------------------------------------------------------------
-///////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #ifndef __YumeMatrix4_h__
 #define __YumeMatrix4_h__
 //--------------------------------------------------------------------------------
@@ -42,11 +42,11 @@ namespace YumeEngine
 {
 	class Matrix3x4;
 
-	/// 4x4 matrix for arbitrary linear transforms including projection.
+	
 	class YumeAPIExport Matrix4
 	{
 	public:
-		/// Construct an identity matrix.
+		
 		Matrix4()
 #ifndef YUME_SSE
 			:m00_(1.0f),
@@ -75,7 +75,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Copy-construct from another matrix.
+		
 		Matrix4(const Matrix4& matrix)
 #ifndef YUME_SSE
 			:m00_(matrix.m00_),
@@ -104,7 +104,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Copy-cnstruct from a 3x3 matrix and set the extra elements to identity.
+		
 		Matrix4(const Matrix3& matrix):
 			m00_(matrix.m00_),
 			m01_(matrix.m01_),
@@ -149,7 +149,7 @@ namespace YumeEngine
 		{
 		}
 
-		/// Construct from a float array.
+		
 		explicit Matrix4(const float* data)
 #ifndef YUME_SSE
 			:m00_(data[0]),
@@ -178,7 +178,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Assign from another matrix.
+		
 		Matrix4& operator =(const Matrix4& rhs)
 		{
 #ifdef YUME_SSE
@@ -207,7 +207,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		/// Assign from a 3x3 matrix. Set the extra elements to identity.
+		
 		Matrix4& operator =(const Matrix3& rhs)
 		{
 			m00_ = rhs.m00_;
@@ -229,7 +229,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		/// Test for equality with another matrix without epsilon.
+		
 		bool operator ==(const Matrix4& rhs) const
 		{
 #ifdef YUME_SSE
@@ -259,10 +259,10 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Test for inequality with another matrix without epsilon.
+		
 		bool operator !=(const Matrix4& rhs) const { return !(*this == rhs); }
 
-		/// Multiply a Vector3 which is assumed to represent position.
+		
 		Vector3 operator *(const Vector3& rhs) const
 		{
 #ifdef YUME_SSE
@@ -294,7 +294,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Multiply a Vector4.
+		
 		Vector4 operator *(const Vector4& rhs) const
 		{
 #ifdef YUME_SSE
@@ -324,7 +324,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Add a matrix.
+		
 		Matrix4 operator +(const Matrix4& rhs) const
 		{
 #ifdef YUME_SSE
@@ -356,7 +356,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Subtract a matrix.
+		
 		Matrix4 operator -(const Matrix4& rhs) const
 		{
 #ifdef YUME_SSE
@@ -388,7 +388,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Multiply with a scalar.
+		
 		Matrix4 operator *(float rhs) const
 		{
 #ifdef YUME_SSE
@@ -421,7 +421,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Multiply a matrix.
+		
 		Matrix4 operator *(const Matrix4& rhs) const
 		{
 #ifdef YUME_SSE
@@ -483,10 +483,10 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Multiply with a 3x4 matrix.
+		
 		Matrix4 operator *(const Matrix3x4& rhs) const;
 
-		/// Set translation elements.
+		
 		void SetTranslation(const Vector3& translation)
 		{
 			m03_ = translation.x_;
@@ -494,7 +494,7 @@ namespace YumeEngine
 			m23_ = translation.z_;
 		}
 
-		/// Set rotation elements from a 3x3 matrix.
+		
 		void SetRotation(const Matrix3& rotation)
 		{
 			m00_ = rotation.m00_;
@@ -524,7 +524,7 @@ namespace YumeEngine
 			m22_ = scale;
 		}
 
-		/// Return the combined rotation and scaling matrix.
+		
 		Matrix3 ToMatrix3() const
 		{
 			return Matrix3(
@@ -540,7 +540,7 @@ namespace YumeEngine
 				);
 		}
 
-		/// Return the rotation matrix with scaling removed.
+		
 		Matrix3 RotationMatrix() const
 		{
 			Vector3 invScale(
@@ -552,7 +552,7 @@ namespace YumeEngine
 			return ToMatrix3().Scaled(invScale);
 		}
 
-		/// Return the translation part.
+		
 		Vector3 Translation() const
 		{
 			return Vector3(
@@ -562,10 +562,10 @@ namespace YumeEngine
 				);
 		}
 
-		/// Return the rotation part.
+		
 		Quaternion Rotation() const { return Quaternion(RotationMatrix()); }
 
-		/// Return the scaling part
+		
 		Vector3 Scale() const
 		{
 			return Vector3(
@@ -575,7 +575,7 @@ namespace YumeEngine
 				);
 		}
 
-		/// Return transpose
+		
 		Matrix4 Transpose() const
 		{
 #ifdef YUME_SSE
@@ -612,7 +612,7 @@ namespace YumeEngine
 #endif
 		}
 
-		/// Test for equality with another matrix with epsilon.
+		
 		bool Equals(const Matrix4& rhs) const
 		{
 			const float* leftData = Data();
@@ -627,15 +627,15 @@ namespace YumeEngine
 			return true;
 		}
 
-		/// Return decomposition to translation, rotation and scale.
+		
 		void Decompose(Vector3& translation,Quaternion& rotation,Vector3& scale) const;
-		/// Return inverse.
+		
 		Matrix4 Inverse() const;
 
-		/// Return float data
+		
 		const float* Data() const { return &m00_; }
 
-		/// Return as string.
+		
 		YumeString ToString() const;
 
 		float m00_;
@@ -655,7 +655,7 @@ namespace YumeEngine
 		float m32_;
 		float m33_;
 
-		/// Bulk transpose matrices.
+		
 		static void BulkTranspose(float* dest,const float* src,unsigned count)
 		{
 			for(unsigned i = 0; i < count; ++i)
@@ -693,13 +693,13 @@ namespace YumeEngine
 			}
 		}
 
-		/// Zero matrix.
+		
 		static const Matrix4 ZERO;
-		/// Identity matrix.
+		
 		static const Matrix4 IDENTITY;
 		};
 
-	/// Multiply a 4x4 matrix with a scalar
+	
 	inline Matrix4 operator *(float lhs,const Matrix4& rhs) { return rhs * lhs; }
 
 }

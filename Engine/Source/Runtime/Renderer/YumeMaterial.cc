@@ -178,7 +178,7 @@ namespace YumeEngine
 
 	bool YumeMaterial::BeginLoad(YumeFile& source)
 	{
-		//// In headless mode, do not actually load the material, just return success
+		
 		//Graphics* graphics = GetSubsystem<Graphics>();
 		//if(!graphics)
 		//	return true;
@@ -205,7 +205,7 @@ namespace YumeEngine
 		//		return true;
 		//}
 
-		//// All loading failed
+		
 		//ResetToDefaults();
 		//loadJSONFile_.Reset();
 		return false;
@@ -213,7 +213,7 @@ namespace YumeEngine
 
 	bool YumeMaterial::EndLoad()
 	{
-		//// In headless mode, do not actually load the material, just return success
+		
 		//Graphics* graphics = GetSubsystem<Graphics>();
 		//if(!graphics)
 		//	return true;
@@ -261,7 +261,7 @@ namespace YumeEngine
 		//				{
 		//					String name = textureElem.GetAttribute("name");
 		//					// Detect cube maps by file extension: they are defined by an XML file
-		//					/// \todo Differentiate with 3D textures by actually reading the XML content
+		//					
 		//					if(GetExtension(name) == ".xml")
 		//					{
 		//#ifdef DESKTOP_GRAPHICS

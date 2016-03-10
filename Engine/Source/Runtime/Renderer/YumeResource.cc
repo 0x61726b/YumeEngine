@@ -88,7 +88,7 @@ namespace YumeEngine
 
 	unsigned YumeResource::GetUseTimer()
 	{
-		//// If more references than the resource cache, return always 0 & reset the timer
+		
 		//if(Refs() > 1)
 		//{
 		//	useTimer_.Reset();

@@ -2689,49 +2689,6 @@ namespace YumeEngine
 		}
 	}
 
-
-	unsigned YumeGLRenderer::GetFormat(const YumeString& formatName)
-	{
-		YumeString nameLower = formatName;
-		boost::to_lower(nameLower);
-		boost::trim(nameLower);
-
-		if(nameLower == "a")
-			return GetAlphaFormat();
-		if(nameLower == "l")
-			return GetLuminanceFormat();
-		if(nameLower == "la")
-			return GetLuminanceAlphaFormat();
-		if(nameLower == "rgb")
-			return GetRGBFormat();
-		if(nameLower == "rgba")
-			return GetRGBAFormat();
-		if(nameLower == "rgba16")
-			return GetRGBA16Format();
-		if(nameLower == "rgba16f")
-			return GetRGBAFloat16Format();
-		if(nameLower == "rgba32f")
-			return GetRGBAFloat32Format();
-		if(nameLower == "rg16")
-			return GetRG16Format();
-		if(nameLower == "rg16f")
-			return GetRGFloat16Format();
-		if(nameLower == "rg32f")
-			return GetRGFloat32Format();
-		if(nameLower == "r16f")
-			return GetFloat16Format();
-		if(nameLower == "r32f" || nameLower == "float")
-			return GetFloat32Format();
-		if(nameLower == "lineardepth" || nameLower == "depth")
-			return GetLinearDepthFormat();
-		if(nameLower == "d24s8")
-			return GetDepthStencilFormat();
-		if(nameLower == "readabledepth" || nameLower == "hwdepth")
-			return GetReadableDepthFormat();
-
-		return GetRGBFormat();
-	}
-
 	void YumeGLRenderer::AddGpuResource(YumeGpuResource* gpuRes)
 	{
 		boost::mutex::scoped_lock lock(gpuResourceMutex_);

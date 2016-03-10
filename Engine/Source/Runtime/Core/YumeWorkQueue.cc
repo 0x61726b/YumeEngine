@@ -29,30 +29,30 @@
 namespace YumeEngine
 {
 
-	/// Worker thread managed by the work queue.
+	
 	class WorkerThread : public YumeThreadWrapper
 	{
 	public:
-		/// Construct.
+		
 		WorkerThread(YumeWorkQueue* owner,unsigned index):
 			owner_(owner),
 			index_(index)
 		{
 		}
 
-		/// Process work items until stopped.
+		
 		virtual void ThreadRunner()
 		{
 			owner_->ProcessItems(index_);
 		}
 
-		/// Return thread index.
+		
 		unsigned GetIndex() const { return index_; }
 
 	private:
-		/// Work queue.
+		
 		YumeWorkQueue* owner_;
-		/// Thread index.
+		
 		unsigned index_;
 	};
 
@@ -87,8 +87,11 @@ namespace YumeEngine
 		// Start threads in paused mode
 		Pause();
 
+		
+
 		for(unsigned i = 0; i < numThreads; ++i)
 		{
+			YUMELOG_INFO("Creating worker thread #" << i);
 			SharedPtr<WorkerThread> thread(new WorkerThread(this,i + 1));
 			thread->Run();
 			threads_.push_back(thread);

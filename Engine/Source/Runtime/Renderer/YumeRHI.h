@@ -59,11 +59,11 @@ namespace YumeEngine
 		{
 		}
 
-		/// Buffer data.
+		
 		boost::shared_array<unsigned char> data_;
-		/// Data size.
+		
 		unsigned size_;
-		/// Reserved flag.
+		
 		bool reserved_;
 	};
 
@@ -127,6 +127,7 @@ namespace YumeEngine
 		TextureFilterMode 						GetDefaultTextureFilterMode() const { return defaultTextureFilterMode_; }
 		unsigned GetTextureAnisotropy()			const { return textureAnisotropy_; }
 		virtual unsigned						GetFormat(CompressedFormat format) const = 0;
+		unsigned int							GetFormatNs(const YumeString&);
 
 		virtual void						    SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps) = 0;
 
@@ -178,6 +179,24 @@ namespace YumeEngine
 		virtual void							ClearParameterSources() = 0;
 		virtual void							ClearTransformSources() = 0;
 		virtual void 							CleanupShaderPrograms(YumeShaderVariation* variation) = 0;
+
+		
+		virtual unsigned							GetAlphaFormatNs() = 0;
+		virtual unsigned							GetLuminanceFormatNs() = 0;
+		virtual unsigned							GetLuminanceAlphaFormatNs() = 0;
+		virtual unsigned							GetRGBFormatNs() = 0;
+		virtual unsigned							GetRGBAFormatNs() = 0;
+		virtual unsigned							GetRGBA16FormatNs() = 0;
+		virtual unsigned							GetRGBAFloat16FormatNs() = 0;
+		virtual unsigned							GetRGBAFloat32FormatNs() = 0;
+		virtual unsigned							GetRG16FormatNs() = 0;
+		virtual unsigned							GetRGFloat16FormatNs() = 0;
+		virtual unsigned							GetRGFloat32FormatNs() = 0;
+		virtual unsigned							GetFloat16FormatNs() = 0;
+		virtual unsigned							GetFloat32FormatNs() = 0;
+		virtual unsigned							GetLinearDepthFormatNs() = 0;
+		virtual unsigned							GetDepthStencilFormatNs() = 0;
+		virtual unsigned							GetReadableDepthFormatNs() = 0;
 
 		bool									ToggleFullscreen();
 

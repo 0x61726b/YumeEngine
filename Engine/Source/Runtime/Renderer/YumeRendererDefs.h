@@ -28,7 +28,7 @@
 namespace YumeEngine
 {
 
-	/// Primitive type.
+	
 	enum PrimitiveType
 	{
 		TRIANGLE_LIST = 0,
@@ -39,7 +39,7 @@ namespace YumeEngine
 		TRIANGLE_FAN
 	};
 
-	/// %Geometry type.
+	
 	enum GeometryType
 	{
 		GEOM_STATIC = 0,
@@ -51,7 +51,7 @@ namespace YumeEngine
 		MAX_GEOMETRYTYPES = 5,
 	};
 
-	/// Blending mode.
+	
 	enum BlendMode
 	{
 		BLEND_REPLACE = 0,
@@ -66,7 +66,7 @@ namespace YumeEngine
 		MAX_BLENDMODES
 	};
 
-	/// Depth or stencil compare mode.
+	
 	enum CompareMode
 	{
 		CMP_ALWAYS = 0,
@@ -79,7 +79,7 @@ namespace YumeEngine
 		MAX_COMPAREMODES
 	};
 
-	/// Culling mode.
+	
 	enum CullMode
 	{
 		CULL_NONE = 0,
@@ -88,7 +88,7 @@ namespace YumeEngine
 		MAX_CULLMODES
 	};
 
-	/// Fill mode.
+	
 	enum FillMode
 	{
 		FILL_SOLID = 0,
@@ -96,7 +96,7 @@ namespace YumeEngine
 		FILL_POINT
 	};
 
-	/// Stencil operation.
+	
 	enum StencilOp
 	{
 		OP_KEEP = 0,
@@ -106,7 +106,7 @@ namespace YumeEngine
 		OP_DECR
 	};
 
-	/// Vertex/index buffer lock state.
+	
 	enum LockState
 	{
 		LOCK_NONE = 0,
@@ -115,7 +115,7 @@ namespace YumeEngine
 		LOCK_SCRATCH
 	};
 
-	/// Vertex elements.
+	
 	enum VertexElement
 	{
 		ELEMENT_POSITION = 0,
@@ -136,7 +136,7 @@ namespace YumeEngine
 		MAX_VERTEX_ELEMENTS
 	};
 
-	/// Texture filtering mode.
+	
 	enum TextureFilterMode
 	{
 		FILTER_NEAREST = 0,
@@ -147,7 +147,7 @@ namespace YumeEngine
 		MAX_FILTERMODES
 	};
 
-	/// Texture addressing mode.
+	
 	enum TextureAddressMode
 	{
 		ADDRESS_WRAP = 0,
@@ -157,7 +157,7 @@ namespace YumeEngine
 		MAX_ADDRESSMODES
 	};
 
-	/// Texture coordinates.
+	
 	enum TextureCoordinate
 	{
 		COORD_U = 0,
@@ -166,7 +166,7 @@ namespace YumeEngine
 		MAX_COORDS
 	};
 
-	/// Texture usage types.
+	
 	enum TextureUsage
 	{
 		TEXTURE_STATIC = 0,
@@ -175,7 +175,7 @@ namespace YumeEngine
 		TEXTURE_DEPTHSTENCIL
 	};
 
-	/// Cube map faces.
+	
 	enum CubeMapFace
 	{
 		FACE_POSITIVE_X = 0,
@@ -187,7 +187,7 @@ namespace YumeEngine
 		MAX_CUBEMAP_FACES
 	};
 
-	/// Cubemap single image layout modes.
+	
 	enum CubeMapLayout
 	{
 		CML_HORIZONTAL = 0,
@@ -197,7 +197,7 @@ namespace YumeEngine
 		CML_BLENDER
 	};
 
-	/// Update mode for render surface viewports.
+	
 	enum RenderSurfaceUpdateMode
 	{
 		SURFACE_MANUALUPDATE = 0,
@@ -205,14 +205,14 @@ namespace YumeEngine
 		SURFACE_UPDATEALWAYS
 	};
 
-	/// Shader types.
+	
 	enum ShaderType
 	{
 		VS = 0,
 		PS,
 	};
 
-	/// Shader parameter groups for determining need to update. On APIs that support constant buffers, these correspond to different constant buffers.
+	
 	enum ShaderParameterGroup
 	{
 		SP_FRAME = 0,
@@ -225,7 +225,7 @@ namespace YumeEngine
 		MAX_SHADER_PARAMETER_GROUPS
 	};
 
-	/// Texture units.
+	
 	enum TextureUnit
 	{
 		TU_DIFFUSE = 0,
@@ -250,7 +250,7 @@ namespace YumeEngine
 		MAX_TEXTURE_UNITS = 16
 	};
 
-	/// Billboard camera facing modes.
+	
 	enum FaceCameraMode
 	{
 		FC_NONE = 0,
@@ -261,7 +261,7 @@ namespace YumeEngine
 		FC_DIRECTION
 	};
 
-	/// Shadow type
+	
 	enum ShadowQuality
 	{
 		SHADOWQUALITY_SIMPLE_16BIT = 0,

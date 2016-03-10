@@ -65,23 +65,23 @@ namespace YumeEngine
 		virtual void* MapBuffer(unsigned start,unsigned count,bool discard) = 0;
 		virtual void UnmapBuffer() = 0;
 	protected:
-		/// Shadow data.
+		
 		boost::shared_array<unsigned char> shadowData_;
-		/// Number of indices.
+		
 		unsigned indexCount_;
-		/// Index size.
+		
 		unsigned indexSize_;
-		/// Buffer locking state.
+		
 		LockState lockState_;
-		/// Lock start vertex.
+		
 		unsigned lockStart_;
-		/// Lock number of vertices.
+		
 		unsigned lockCount_;
-		/// Scratch buffer for fallback locking.
+		
 		void* lockScratchData_;
-		/// Dynamic flag.
+		
 		bool dynamic_;
-		/// Shadowed flag.
+		
 		bool shadowed_;
 	};
 }

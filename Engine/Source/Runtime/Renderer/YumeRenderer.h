@@ -36,6 +36,7 @@ namespace YumeEngine
 	class YumeVertexBuffer;
 	class YumeIndexBuffer;
 	class YumeGeometry;
+	class YumeRenderPipeline;
 
 	class YumeAPIExport YumeRenderer : public EngineEventListener
 	{
@@ -53,8 +54,10 @@ namespace YumeEngine
 
 		void HandleRenderUpdate(float timeStep);
 		//Getters
-		int GetTextureQuality() const { return textureQuality_; }
 
+
+		int GetTextureQuality() const { return textureQuality_; }
+		YumeRenderPipeline* GetDefaultPipeline() { return defaultPipeline_; }
 
 	protected:
 		int textureQuality_;
@@ -69,6 +72,8 @@ namespace YumeEngine
 		std::vector<unsigned> elementMasks_;
 		std::vector<YumeVertexBuffer*> vbs_;
 		SharedPtr<YumeGeometry> debugGeo_;
+
+		YumeRenderPipeline* defaultPipeline_;
 	};
 }
 

@@ -14,47 +14,28 @@
 //51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
 //----------------------------------------------------------------------------
 //
-// File : <Filename> YumeGraphics.h
-// Date : 2.19.2016
+// File : <Filename>
+// Date : <Date>
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeGpuResource_h__
-#define __YumeGpuResource_h__
-//----------------------------------------------------------------------------
-#include "YumeRequired.h"
-#include "YumeBase.h"
-//----------------------------------------------------------------------------
+#include "YumeHeaders.h"
+#include "YumeXmlFile.h"
+#include "YumeFile.h"
+
+
 namespace YumeEngine
 {
+	YumeHash YumeXmlFile::type_ = "XmlFile";
 
-	class YumeRHI;
-	class YumeEngine3D;
-
-	
-	class YumeAPIExport YumeGpuResource
+	YumeXmlFile::YumeXmlFile()
 	{
-	public:
-		YumeGpuResource(YumeRHI*);
-		
-		virtual ~YumeGpuResource();
 
-		
-		virtual void Release() {};
+	}
 
-		
-		virtual void ClearDataLost() = 0;
-
-		
-		virtual bool IsDataLost() const = 0;
-
-		
-		virtual bool HasPendingData() const = 0;
-	protected:
-		YumeRHI* rhi_;
-	};
+	bool YumeXmlFile::BeginLoad(YumeFile& source)
+	{
+		wholeXmlString = source.ReadString();
+		return true;
+	}
 }
-
-
-//----------------------------------------------------------------------------
-#endif

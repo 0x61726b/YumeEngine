@@ -95,12 +95,12 @@ namespace YumeEngine
 		YumeRHI* graphics_;
 
 
-		boost::shared_ptr<YumeEnvironment> env_;
-		boost::shared_ptr<YumeTime> timer_;
-		boost::shared_ptr<YumeIO> io_;
-		boost::shared_ptr<YumeObjectFactory> factory_;
-		boost::shared_ptr<YumeRenderer> renderer_;
-		boost::shared_ptr<YumeWorkQueue> workQueue_;
+		SharedPtr<YumeEnvironment> env_;
+		SharedPtr<YumeTime> timer_;
+		SharedPtr<YumeIO> io_;
+		SharedPtr<YumeObjectFactory> factory_;
+		SharedPtr<YumeRenderer> renderer_;
+		SharedPtr<YumeWorkQueue> workQueue_;
 		SharedPtr<YumeDebugRenderer> debugRenderer_;
 		SharedPtr<YumeInput> input_;
 
