@@ -35,7 +35,11 @@ namespace YumeEngine
 		R_UPDATE,
 		R_POSTUPDATE,
 		S_UPDATE,
-		S_POSTUPDATE
+		S_POSTUPDATE,
+		I_KEYDOWN,
+		I_KEYUP,
+		I_MBUTTONDOWN,
+		I_MBUTTONUP
 	};
 
 	class YumeScene;
@@ -57,8 +61,13 @@ namespace YumeEngine
 
 	class YumeAPIExport InputEventListener
 	{
-	}
-	;
+	public:
+		virtual void HandleKeyDown(unsigned key,unsigned mouseButton,int repeat) { }
+		virtual void HandleKeyUp(unsigned key,unsigned mouseButton,int repeat) { }
+		virtual void HandleMouseButtonDown(int button,unsigned buttons) { }
+		virtual void HandleMouseButtonUp(int button,unsigned buttons) { }
+
+	};
 	class YumeAPIExport SceneEventListener
 	{
 	public:

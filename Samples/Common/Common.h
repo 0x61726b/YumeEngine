@@ -24,11 +24,12 @@
 //----------------------------------------------------------------------------
 #include "Engine/YumeApplication.h"
 #include "Scene/YumeScene.h"
+#include "Core/YumeEventHub.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class YumeSceneNode;
-	class BaseApplication : public YumeApplication
+	class BaseApplication : public YumeApplication,public InputEventListener
 	{
 	public:
 		BaseApplication();
@@ -38,10 +39,20 @@ namespace YumeEngine
 		virtual void Start();
 		virtual void Exit();
 
+		//Input
+		virtual void HandleKeyDown(unsigned key,unsigned mouseButton,int repeat);
+		virtual void HandleKeyUp(unsigned key,unsigned mouseButton,int repeat) { }
+		virtual void HandleMouseButtonDown(int button,unsigned buttons) { }
+		virtual void HandleMouseButtonUp(int button,unsigned buttons) { }
+		//~
+
 		void SetupWindowProperties();
 
 		SharedPtr<YumeScene> scene_;
-		SharedPtr<YumeSceneNode> cameraNode_;
+		YumeSceneNode* cameraNode_;
+
+		float yaw_;
+		float pitch_;
 	};
 }
 

@@ -376,9 +376,8 @@ namespace YumeEngine
 		SetDepthWrite(true);
 		PreDraw();
 
-		Vector4 c(0,1,0,0);
 		if((flags & CLEAR_COLOR) && impl_->renderTargetViews_[0])
-			impl_->deviceContext_->ClearRenderTargetView(impl_->renderTargetViews_[0],c.Data());
+			impl_->deviceContext_->ClearRenderTargetView(impl_->renderTargetViews_[0],color.Data());
 
 		if((flags & (CLEAR_DEPTH | CLEAR_STENCIL)) && impl_->depthStencilView_)
 		{

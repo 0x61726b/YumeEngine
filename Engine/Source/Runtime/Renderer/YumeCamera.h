@@ -27,6 +27,8 @@
 #include "Math/YumeFrustum.h"
 #include "Math/YumeRay.h"
 #include "Renderer/YumeRendererDefs.h"
+
+
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -48,6 +50,9 @@ namespace YumeEngine
 		YumeCamera();
 		virtual ~YumeCamera();
 
+		static YumeHash cameraType_;
+		static YumeHash GetType() { return cameraType_; };
+		virtual const YumeString& GetTypeName() { return "Camera"; };
 
 		virtual void DrawDebugGeometry(YumeDebugRenderer* debug,bool depthTest);
 

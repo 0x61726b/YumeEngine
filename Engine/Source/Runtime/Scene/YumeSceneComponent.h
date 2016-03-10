@@ -69,7 +69,7 @@ namespace YumeEngine
 		virtual void OnNodeSetEnabled(YumeSceneNode* node);
 
 		static YumeHash GetType();
-		const YumeString& GetTypeName();
+		virtual const YumeString& GetTypeName();
 		static YumeHash type_;
 		YumeString typeName_;
 

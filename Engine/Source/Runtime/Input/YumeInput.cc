@@ -45,7 +45,7 @@ namespace YumeEngine
 		mouseMoveWheel_(0),
 		windowID_(0),
 		toggleFullscreen_(true),
-		mouseVisible_(false),
+		mouseVisible_(true),
 		lastMouseVisible_(false),
 		mouseGrabbed_(false),
 		mouseMode_(MM_ABSOLUTE),
@@ -378,7 +378,7 @@ namespace YumeEngine
 		if(!graphics || !graphics->IsInitialized())
 			return;
 
-		graphics_ = SharedPtr<YumeRHI>(graphics);
+		graphics_ = graphics;
 
 		// In external window mode only visible mouse is supported
 
@@ -473,6 +473,7 @@ namespace YumeEngine
 			mouseButtonDown_ &= ~button;
 		}
 		//ToDo mbutton down event
+		FireMouseButtonDown(newState,button,mouseButtonDown_);
 	}
 
 	void YumeInput::SetKey(int key,int scancode,unsigned raw,bool newState)
@@ -495,6 +496,7 @@ namespace YumeEngine
 		}
 
 		//ToDo Key Up down event
+		FireKeyDown(newState,key,mouseButtonDown_,repeat);
 
 		if((key == KEY_RETURN || key == KEY_RETURN2 || key == KEY_KP_ENTER) && newState && !repeat && toggleFullscreen_ &&
 			(GetKeyDown(KEY_LALT) || GetKeyDown(KEY_RALT)))
@@ -519,7 +521,37 @@ namespace YumeEngine
 		SDL_WarpMouseInWindow(graphics_->GetWindow(),position.x_,position.y_);
 	}
 
+	void YumeInput::AddListener(InputEventListener* listener)
+	{
+		if(std::find(listeners_.begin(),listeners_.end(),listener) != listeners_.end())
+			return;
+		listeners_.push_back(listener);
+	}
 
+	void YumeInput::RemoveListener(InputEventListener* listener)
+	{
+		InputEventListeners::iterator i = std::find(listeners_.begin(),listeners_.end(),listener);
+		if(i != listeners_.end())
+			listeners_.erase(i);
+	}
+	void YumeInput::FireMouseButtonDown(bool state,int button,unsigned buttons)
+	{
+		if(state)
+			for(InputEventListeners::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
+				(*i)->HandleMouseButtonDown(button,buttons);
+		else
+			for(InputEventListeners::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
+				(*i)->HandleMouseButtonUp(button,buttons);
+	}
+	void YumeInput::FireKeyDown(bool state,int key,unsigned buttons,int repeat)
+	{
+		if(state)
+			for(InputEventListeners::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
+				(*i)->HandleKeyDown(key,buttons,repeat);
+		else
+			for(InputEventListeners::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
+				(*i)->HandleKeyUp(key,buttons,repeat);
+	}
 	void YumeInput::HandleSDLEvent(void* sdlEvent)
 	{
 		SDL_Event& evt = *static_cast<SDL_Event*>(sdlEvent);
@@ -608,7 +640,9 @@ namespace YumeEngine
 		break;
 
 		case SDL_QUIT:
-			//SendEvent(E_EXITREQUESTED);
+		{
+			YumeEngine3D::Get()->Exit();
+		}
 			break;
 
 		default: break;

@@ -49,6 +49,8 @@ namespace YumeEngine
 		0.0f,0.0f,0.0f,1.0f
 		);
 
+	YumeHash YumeCamera::cameraType_ = "Camera";
+
 	YumeCamera::YumeCamera():
 		viewDirty_(true),
 		projectionDirty_(true),
@@ -73,6 +75,8 @@ namespace YumeEngine
 		useClipping_(false)
 	{
 		reflectionMatrix_ = reflectionPlane_.ReflectionMatrix();
+		typeName_ = "Camera";
+		type_ = "Camera";
 	}
 
 	YumeCamera::~YumeCamera()

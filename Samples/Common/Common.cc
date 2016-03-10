@@ -25,9 +25,13 @@
 #include "Renderer/YumeRHI.h"
 #include "Core/YumeEnvironment.h"
 
+#include "Input/YumeInput.h"
+
 namespace YumeEngine
 {
 	BaseApplication::BaseApplication()
+		: yaw_(0.0f),
+		pitch_(0.0f)
 	{
 
 	}
@@ -48,11 +52,29 @@ namespace YumeEngine
 		engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
 	}
 
+
+	void BaseApplication::HandleKeyDown(unsigned key,unsigned mouseButton,int repeat)
+	{
+		SharedPtr<YumeInput> input = YumeEngine3D::Get()->GetInput();
+
+		if(key == KEY_ESC)
+		{
+			engine_->Exit();
+		}
+
+		if(key == KEY_1)
+		{
+			input->SetMouseVisible(!input->IsMouseVisible());
+		}
+	}
+
+
+
 	void BaseApplication::Start()
 	{
 		SetupWindowProperties();
 
-		
+		YumeEngine3D::Get()->GetInput()->AddListener(this);
 	}
 
 	void BaseApplication::Exit()

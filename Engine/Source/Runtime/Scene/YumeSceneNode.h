@@ -264,7 +264,7 @@ namespace YumeEngine
 		YumeSceneComponent* GetComponent(YumeHash type,bool recursive = false) const;
 		YumeSceneComponent* GetParentComponent(YumeHash type,bool fullTraversal = false) const;
 		bool HasComponent(YumeHash type) const;
-		const YumeVector<SharedPtr<YumeSceneComponent> >::type GetListeners() const { return listeners_; }
+		const YumeVector<YumeSceneComponent*>::type GetListeners() const { return listeners_; }
 
 		/// Return a user variable.
 		const Variant& GetVar(YumeHash key) const;
@@ -343,7 +343,7 @@ namespace YumeEngine
 		/// Child scene nodes.
 		YumeVector<SharedPtr<YumeSceneNode> >::type children_;
 		/// Node listeners.
-		YumeVector<SharedPtr<YumeSceneComponent> >::type listeners_;
+		YumeVector<YumeSceneComponent*>::type listeners_;
 		/// Nodes this node depends on for network updates.
 		YumeVector<YumeSceneNode*> dependencyNodes_;
 		/// Name.

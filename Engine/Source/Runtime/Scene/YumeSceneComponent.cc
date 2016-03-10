@@ -35,7 +35,6 @@ namespace YumeEngine
 		id_(0),
 		enabled_(true)
 	{
-		type_ = ("SceneComponent");
 		typeName_ = "SceneComponent";
 	}
 
@@ -43,7 +42,6 @@ namespace YumeEngine
 	{
 
 	}
-
 	YumeHash YumeSceneComponent::GetType()
 	{
 		return type_;

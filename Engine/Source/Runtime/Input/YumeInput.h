@@ -31,6 +31,7 @@
 #include <SDL_gamecontroller.h>
 #include <SDL_keycode.h>
 #include <SDL_mouse.h>
+#include <boost/weak_ptr.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -477,11 +478,22 @@ namespace YumeEngine
 		void HandleSDLEvent(void* sdlEvent);
 		void SendInputFocusEvent();
 
+		
+		void AddListener(InputEventListener* listener);
+		void RemoveListener(InputEventListener* listener);
+
 	private:
+		void FireMouseButtonDown(bool state,int button,unsigned buttons);
+		void FireKeyDown(bool state,int key,unsigned buttons,int repeat);
+
+	private:
+		typedef YumeVector<InputEventListener*>::type InputEventListeners;
+		InputEventListeners listeners_;
+
 		YumeVector<int>::type keyDown_;
 		YumeVector<int>::type keyPress_;
 
-		SharedPtr<YumeRHI> graphics_;
+		YumeRHI* graphics_;
 
 
 		unsigned mouseButtonDown_;

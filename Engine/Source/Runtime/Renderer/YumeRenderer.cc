@@ -32,7 +32,13 @@
 #include "YumeMaterial.h"
 #include "Scene/YumeOctree.h"
 
+#include "Engine/YumeEngine.h"
+
+#include "Scene/YumeScene.h"
+
 #include "Math/YumeMatrix3x4.h"
+
+#include "YumeCamera.h"
 
 namespace YumeEngine
 {
@@ -92,7 +98,7 @@ namespace YumeEngine
 		ib_->SetSize(36,false);
 		ib_->SetData(dummyIndices);
 
-
+		REGISTER_ENGINE_LISTENER;
 
 	}
 
@@ -101,6 +107,20 @@ namespace YumeEngine
 
 	}
 
+	void YumeRenderer::SetViewport(int index,SharedPtr<YumeViewport> viewport)
+	{
+		if(index >= viewports_.size())
+			viewports_.resize(index + 1);
+
+		viewports_[index] = viewport;
+	}
+
+	void YumeRenderer::Update(float timeStep)
+	{
+		YumeScene* scene = viewports_[0]->GetScene();
+		frame_.timeStep_ = timeStep;
+		frame_.camera_ = viewports_[0]->GetCamera();
+	}
 
 	void YumeRenderer::Render()
 	{
@@ -112,47 +132,20 @@ namespace YumeEngine
 		rhi_->ResetRenderTargets();
 		rhi_->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL);
 
-		float nearClip = 0.1f;
-		float farClip_ = 1000.0f;
-		float aspectRatio_ = 16.0f/9.0f;
-
+	
 		YumeShaderVariation* vs = rhi_->GetShader(VS,"Basic","");
 		YumeShaderVariation* ps = rhi_->GetShader(PS,"Basic","");
 
 
 
-		Matrix4 projection_ = Matrix4::ZERO;
-
-		float h = (1.0f / tanf(60.0f * M_PI / 180.0f * 0.5f)) * 1;
-		float w = h / aspectRatio_;
-		float q,r;
-
-
-		q = farClip_ / (farClip_ - nearClip);
-		r = -q * nearClip;
-
-		Vector2 projectionOffset_ = Vector2::ZERO;
-
-		projection_.m00_ = w;
-		projection_.m02_ = projectionOffset_.x_ * 2.0f;
-		projection_.m11_ = h;
-		projection_.m12_ = projectionOffset_.y_ * 2.0f;
-		projection_.m22_ = q;
-		projection_.m23_ = r;
-		projection_.m32_ = 1.0f;
-
 
 		Matrix3x4 world = Matrix3x4::IDENTITY;
 		world.SetTranslation(Vector3(0,0,0));
 
-		Vector3 cameraPos = Vector3(0,0,5);
-		Vector3 lookAt = Vector3(0,0,0);
-		Quaternion lookAtRot;
-		lookAtRot.FromLookRotation(lookAt - cameraPos);
 
 
-		Matrix3x4 view_ = Matrix3x4(cameraPos,lookAtRot,1);
-		Matrix4 viewProj = projection_* view_;
+		Matrix3x4 view_ = frame_.camera_->GetView();
+		Matrix4 viewProj = frame_.camera_->GetProjection() * view_;
 		rhi_->SetShaders(vs,ps);
 
 		rhi_->ClearParameterSources();
@@ -166,14 +159,8 @@ namespace YumeEngine
 		rhi_->SetShaderParameter(VSP_MODEL,world);
 		rhi_->SetShaderParameter(VSP_VIEW,view_);
 		rhi_->SetShaderParameter(VSP_VIEWINV,view_.Inverse());
-		rhi_->SetShaderParameter(VSP_VIEWPROJ,projection_ * view_);
+		rhi_->SetShaderParameter(VSP_VIEWPROJ,viewProj);
 		rhi_->SetShaderParameter(PSP_MATDIFFCOLOR,YumeColor(1.0f,1.0f,1.0f,1.0f));
-		rhi_->SetShaderParameter(VSP_CAMERAPOS,Vector3(0,0,-10));
-		rhi_->SetShaderParameter(VSP_CAMERAROT,Matrix3::IDENTITY);
-		rhi_->SetShaderParameter(VSP_NEARCLIP,0.0f);
-		rhi_->SetShaderParameter(VSP_FARCLIP,1000.0f);
-		rhi_->SetShaderParameter(PSP_NEARCLIP,0.0f);
-		rhi_->SetShaderParameter(PSP_FARCLIP,1000.0f);
 
 
 		rhi_->SetVertexBuffers(vbs_,elementMasks_);
@@ -184,5 +171,10 @@ namespace YumeEngine
 		rhi_->SetShaderParameter(VSP_DEPTHMODE,depth);
 
 		rhi_->Draw(TRIANGLE_LIST,0,36,0,8);
+	}
+
+	void YumeRenderer::HandleRenderUpdate(float timeStep)
+	{
+		Update(timeStep);
 	}
 }

@@ -10,10 +10,10 @@
 #define __BasicRenderWindow_h__
 //--------------------------------------------------------------------------------
 #include "Common/Common.h"
-
+#include "Core/YumeEventHub.h"
 namespace YumeEngine
 {
-	class HelloWorld : public BaseApplication
+	class HelloWorld : public BaseApplication,public EngineEventListener
 	{
 	public:
 		HelloWorld();
@@ -21,6 +21,10 @@ namespace YumeEngine
 
 		virtual void Start();
 		virtual void Setup();
+
+		void MoveCamera(float timeStep);
+
+		virtual void HandleUpdate(float timeStep);
 	};
 }
 

@@ -23,8 +23,11 @@
 #define __YumeRenderer_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-
+#include "YumeDrawable.h"
+#include "YumeViewport.h"
 #include <boost/weak_ptr.hpp>
+
+#include "Core/YumeEventHub.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -34,17 +37,21 @@ namespace YumeEngine
 	class YumeIndexBuffer;
 	class YumeGeometry;
 
-	class YumeAPIExport YumeRenderer
+	class YumeAPIExport YumeRenderer : public EngineEventListener
 	{
 	public:
 		YumeRenderer(YumeRHI*);
 		virtual ~YumeRenderer();
 
 		void Render();
+		void Update(float timeStep);
 		void QueueRenderable(YumeRenderable* renderTarget);
+
+		void SetViewport(int index,SharedPtr<YumeViewport> viewport);
 
 		void Initialize();
 
+		void HandleRenderUpdate(float timeStep);
 		//Getters
 		int GetTextureQuality() const { return textureQuality_; }
 
@@ -54,6 +61,9 @@ namespace YumeEngine
 
 	private:
 		YumeRHI* rhi_;
+		FrameInfo frame_;
+
+		YumeVector<SharedPtr<YumeViewport> >::type viewports_;
 
 		YumeIndexBuffer* ib_;
 		std::vector<unsigned> elementMasks_;

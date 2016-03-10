@@ -21,7 +21,7 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 #include "YumeViewport.h"
-
+#include "YumeCamera.h"
 
 
 namespace YumeEngine
@@ -34,8 +34,9 @@ namespace YumeEngine
 		SetRenderPath((YumeRenderPath*)0);
 	}
 
-	YumeViewport::YumeViewport(YumeCamera* camera,YumeRenderPath* renderPath):
+	YumeViewport::YumeViewport(YumeScene* scene,YumeCamera* camera,YumeRenderPath* renderPath):
 		camera_(camera),
+		scene_(scene),
 		rect_(IntRect::ZERO),
 		drawDebug_(true)
 	{
@@ -55,5 +56,20 @@ namespace YumeEngine
 
 	void YumeViewport::SetRenderPath(YumeRenderPath*)
 	{
+	}
+
+	YumeCamera* YumeViewport::GetCamera() const
+	{
+		return camera_;
+	}
+
+	YumeScene* YumeViewport::GetScene() const
+	{
+		return scene_;
+	}
+
+	void YumeViewport::SetCamera(YumeCamera* camera)
+	{
+
 	}
 }

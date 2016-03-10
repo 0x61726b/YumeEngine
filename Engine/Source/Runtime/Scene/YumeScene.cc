@@ -65,6 +65,7 @@ namespace YumeEngine
 		// Remove scene reference and owner from all nodes that still exist
 		for(YumeMap<unsigned,YumeSceneNode*>::iterator i = localNodes_.begin(); i != localNodes_.end(); ++i)
 			i->second->ResetScene();
+		localNodes_.clear();
 	}
 
 

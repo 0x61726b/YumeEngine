@@ -42,7 +42,8 @@ namespace YumeEngine
 		position_(Vector3::ZERO),
 		rotation_(Quaternion::IDENTITY),
 		scale_(Vector3::ONE),
-		worldRotation_(Quaternion::IDENTITY)
+		worldRotation_(Quaternion::IDENTITY),
+		name_(EmptyString)
 	{
 
 	}
@@ -357,9 +358,9 @@ namespace YumeEngine
 			if(cur->dirty_)
 				return;
 			cur->dirty_ = true;
-			for(YumeVector<SharedPtr<YumeSceneComponent> >::iterator i = cur->listeners_.begin(); i != cur->listeners_.end();)
+			for(YumeVector<YumeSceneComponent*>::iterator i = cur->listeners_.begin(); i != cur->listeners_.end();)
 			{
-				YumeSceneComponent *c = (*i).get();
+				YumeSceneComponent *c = (*i);
 				if(c)
 				{
 					c->OnMarkedDirty(cur);
@@ -426,7 +427,7 @@ namespace YumeEngine
 		}
 
 		// Add to the child vector, then add to the scene if not added yet
-		children_.insert(children_.begin()+index,nodeShared);
+		children_.push_back(nodeShared);
 		if(scene_ && node->GetScene() != scene_)
 			scene_->NodeAdded(node);
 
@@ -468,9 +469,10 @@ namespace YumeEngine
 		{
 			bool remove = false;
 			YumeSceneNode* childNode = children_[i].get();
-
 			if(recursive)
 				childNode->RemoveChildren(true);
+
+			children_.erase( children_.begin()+i);
 		}
 	}
 
@@ -646,13 +648,13 @@ namespace YumeEngine
 			return;
 
 		// Check for not adding twice
-		for(YumeVector<SharedPtr<YumeSceneComponent> >::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
+		for(YumeVector<YumeSceneComponent*>::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
 		{
-			if((*i).get() == component)
+			if((*i) == component)
 				return;
 		}
 
-		listeners_.push_back(SharedPtr<YumeSceneComponent>(component));
+		listeners_.push_back(component);
 		// If the node is currently dirty, notify immediately
 		if(dirty_)
 			component->OnMarkedDirty(this);
@@ -660,9 +662,9 @@ namespace YumeEngine
 
 	void YumeSceneNode::RemoveListener(YumeSceneComponent* component)
 	{
-		for(YumeVector<SharedPtr<YumeSceneComponent> >::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
+		for(YumeVector<YumeSceneComponent*>::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
 		{
-			if((*i).get() == component)
+			if((*i) == component)
 			{
 				listeners_.erase(i);
 				return;
@@ -858,7 +860,7 @@ namespace YumeEngine
 
 	YumeSceneNode* YumeSceneNode::CreateChild(unsigned id)
 	{
-		SharedPtr<YumeSceneNode> newNode(new YumeSceneNode);
+		YumeSceneNode* newNode = new YumeSceneNode;
 
 		// If zero ID specified, or the ID is already taken, let the scene assign
 		if(scene_)
@@ -870,8 +872,8 @@ namespace YumeEngine
 		else
 			newNode->SetID(id);
 
-		AddChild(newNode.get());
-		return newNode.get();
+		AddChild(newNode);
+		return newNode;
 	}
 
 	void YumeSceneNode::AddComponent(SharedPtr<YumeSceneComponent> component,unsigned id)
@@ -923,7 +925,7 @@ namespace YumeEngine
 			enabled_ = enable;
 
 			// Notify listener components of the state change
-			for(YumeVector<SharedPtr<YumeSceneComponent> >::iterator i = listeners_.begin(); i != listeners_.end();)
+			for(YumeVector<YumeSceneComponent*>::iterator i = listeners_.begin(); i != listeners_.end();)
 			{
 				if(*i)
 				{

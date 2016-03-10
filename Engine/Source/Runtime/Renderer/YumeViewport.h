@@ -34,6 +34,7 @@ namespace YumeEngine
 	class YumeRenderPath;
 	class YumeRenderPath;
 	class YumeView;
+	class YumeScene;
 
 
 	/// %Viewport definition either for a render surface or the backbuffer.
@@ -43,13 +44,13 @@ namespace YumeEngine
 		/// Construct with defaults.
 		YumeViewport();
 		/// Construct with a full rectangle.
-		YumeViewport(YumeCamera* camera,YumeRenderPath* renderPath = 0);
+		YumeViewport(YumeScene* scene, YumeCamera* camera, YumeRenderPath* renderPath = 0);
 		/// Construct with a specified rectangle.
 		YumeViewport(YumeCamera* camera,const IntRect& rect,YumeRenderPath* renderPath = 0);
 		/// Destruct.
 		~YumeViewport();
 
-	//	void SetCamera(YumeCamera* camera);
+		void SetCamera(YumeCamera* camera);
 	//	/// Set rectangle.
 	//	void SetRect(const IntRect& rect);
 	//	/// Set rendering path.
@@ -62,12 +63,14 @@ namespace YumeEngine
 	//	void SetCullCamera(YumeCamera* camera);
 
 	//	/// Return viewport camera.
-	//	YumeCamera* GetCamera() const;
+		YumeCamera* GetCamera() const;
 	//	/// Return the internal rendering structure. May be null if the viewport has not been rendered yet.
 	//	YumeView* GetView() const;
 
+		YumeScene* GetScene() const;
+
 	//	/// Return rectangle.
-	//	const IntRect& GetRect() const { return rect_; }
+		const IntRect& GetRect() const { return rect_; }
 
 	//	/// Return rendering path.
 	//	YumeRenderPath* GetRenderPath() const;
@@ -93,6 +96,8 @@ namespace YumeEngine
 		YumeCamera* camera_;
 		/// Culling camera pointer.
 		YumeCamera* cullCamera_;
+
+		YumeScene* scene_;
 		/// Viewport rectangle.
 		IntRect rect_;
 		/// Rendering path.

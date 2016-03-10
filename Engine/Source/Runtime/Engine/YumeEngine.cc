@@ -45,6 +45,7 @@
 #include "Renderer/YumeRenderer.h"
 
 #include "Scene/YumeOctree.h"
+#include "Renderer/YumeCamera.h"
 
 
 #include "Renderer/YumeShader.h"
@@ -245,11 +246,12 @@ namespace YumeEngine
 		YumeObjectRegistrar<YumeImage> imageObj(("Image"));
 		YumeObjectRegistrar<YumeRenderTechnique> techObj(("RenderTechnique"));
 		YumeObjectRegistrar<Octree> octreeObj(("Octree"));
+		YumeObjectRegistrar<YumeCamera> cameraObj(("Camera"));
 
 	}
 	void YumeEngine3D::Render()
 	{
-		if(!graphics_->BeginFrame())
+		if(!graphics_ || !graphics_->BeginFrame())
 			return;
 
 		//Renderer
@@ -427,13 +429,20 @@ namespace YumeEngine
 
 	void YumeEngine3D::Exit()
 	{
+		if(exiting_) //Not normally exited,return
+			return;
 		exiting_ = true;
 
 		YUMELOG_INFO("Exiting Yume Engine...");
 
 		YumeAPIDelete resourceManager_;
 
+		if(graphics_)
+			graphics_->Close();
+
 		UnloadExternalLibraries();
+
+		graphics_ = 0;
 
 		YUMELOG_INFO("Engine stats: ");
 		YUMELOG_INFO("Total frames: " << timer_->GetFrameNumber());
