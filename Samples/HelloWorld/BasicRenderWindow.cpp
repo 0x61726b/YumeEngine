@@ -54,7 +54,7 @@ namespace YumeEngine
 
 		SharedPtr<YumeViewport> viewport = SharedPtr<YumeViewport>(new YumeViewport(scene_.get(),cameraNode_->GetComponent<YumeCamera>()));
 
-		SharedPtr<YumeRenderer> renderer = YumeEngine3D::Get()->GetRenderLogic();
+		YumeRenderer* renderer = YumeEngine3D::Get()->GetRenderLogic();
 		renderer->SetViewport(0,viewport);
 
 	}
