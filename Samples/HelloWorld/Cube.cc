@@ -32,6 +32,21 @@
 #include "Scene/YumeSceneNode.h"
 namespace YumeEngine
 {
+	struct TestVertex
+	{
+		Vector3 Pos;
+		Vector3 Normal;
+		Vector2 Tex;
+		Vector3 Tangent;
+
+		TestVertex(Vector3 p,Vector3 n,Vector2 tex = Vector2::ZERO,Vector3 t = Vector3::ZERO)
+		{
+			Pos = p;
+			Normal = n;
+			Tex = tex;
+			Tangent = t;
+		}
+	};
 	static const float dummyVertices[] =
 	{
 		1,1,-1,0,
@@ -65,29 +80,7 @@ namespace YumeEngine
 	Cube::Cube()
 		: YumeDrawable(DRAWABLE_GEOMETRY)
 	{
-		YumeRHI* graphics_ = YumeEngine3D::Get()->GetRenderer();
-
-		YumeVertexBuffer* dlvb = (graphics_->CreateVertexBuffer());
-		dlvb->SetShadowed(true);
-		dlvb->SetSize(8,MASK_POSITION | MASK_COLOR);
-		dlvb->SetData(dummyVertices);
-
-		YumeIndexBuffer* dlib = (graphics_->CreateIndexBuffer());
-		dlib->SetShadowed(true);
-		dlib->SetSize(36,false);
-		dlib->SetData(dummyIndices);
-
-		geo_ = SharedPtr<YumeGeometry>(new YumeGeometry);
-		geo_->SetVertexBuffer(0,dlvb);
-		geo_->SetIndexBuffer(dlib);
-		geo_->SetDrawRange(TRIANGLE_LIST,0,dlib->GetIndexCount());
-
-		const Matrix3x4 worldTransform = Matrix3x4::IDENTITY;
-		batches_.resize(1);
-		batches_[0].worldTransform_ = &worldTransform;
-
-
-
+	
 
 
 	}
