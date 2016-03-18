@@ -87,7 +87,7 @@ namespace YumeEngine
 	static const float OCCLUSION_Z_SCALE = 16777216.0f;
 
 	/// Software renderer for occlusion.
-	class YumeAPIExport OcclusionBuffer
+	class YumeAPIExport OcclusionBuffer : public YumeBase
 	{
 	public:
 		/// Construct.

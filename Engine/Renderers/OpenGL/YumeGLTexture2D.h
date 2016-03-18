@@ -24,39 +24,37 @@
 //----------------------------------------------------------------------------
 #include "YumeGLRequired.h"
 #include "Renderer/YumeTexture2D.h"
-
+#include "Core/YumeEventHub.h"
 #include "YumeGLGpuResource.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeGLExport YumeGLTexture2D : public YumeTexture2D,public YumeGLResource
+	class YumeGLExport YumeGLTexture2D : public YumeTexture2D,public YumeGLResource,public RendererEventListener
 	{
 	public:
-		YumeGLTexture2D(YumeRHI* rhi);
+		YumeGLTexture2D();
 		virtual ~YumeGLTexture2D();
 
 		virtual void Release();
-
 		virtual void OnDeviceLost();
 		virtual void OnDeviceReset();
 
-		/// Set size, format and usage. Zero size will follow application window size. Return true if successful.
 		virtual bool SetSize(int width,int height,unsigned format,TextureUsage usage = TEXTURE_STATIC);
-		/// Set data either partially or fully on a mip level. Return true if successful.
 		virtual bool SetData(unsigned level,int x,int y,int width,int height,const void* data);
-		/// Set data from an image. Return true if successful. Optionally make a single channel image alpha-only.
 		virtual bool SetData(SharedPtr<YumeImage> image,bool useAlpha = false);
 
+
 		virtual bool GetData(unsigned level,void* dest) const;
-
 		static unsigned GetDataType(unsigned format);
-
 		static unsigned GetExternalFormat(unsigned format);
 
-		/// Create texture.
+		virtual void HandleRenderTargetUpdate();
+
 		virtual bool Create();
-		/// Handle render surface update event.
-		virtual void HandleRenderSurfaceUpdate(YumeHash eventType,VariantMap& eventData);
+
+
+		virtual bool IsDataLost();
+		virtual void ClearDataLost();
 
 		virtual unsigned GetRowDataSize(int width) const;
 
@@ -68,13 +66,12 @@ namespace YumeEngine
 
 		virtual bool IsCompressed() const;
 
-		const unsigned GetTarget() { return target_; }
+		
+		virtual unsigned GetSRVFormat(unsigned format) { return 0; }
+		virtual unsigned GetDSVFormat(unsigned format) { return 0; }
+		virtual unsigned GetSRGBFormat(unsigned format) { return 0; }
 
-		unsigned GetSRVFormat(unsigned format) { return 0; }
-		/// Return the depth-stencil view format corresponding to a texture format. Handles conversion of typeless depth texture formats.
-		unsigned GetDSVFormat(unsigned format) { return 0; }
-		/// Convert format to sRGB.
-		unsigned GetSRGBFormat(unsigned format) { return 0; }
+		const unsigned GetTarget() { return target_; }
 	};
 }
 

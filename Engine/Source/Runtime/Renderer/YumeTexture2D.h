@@ -30,7 +30,7 @@
 namespace YumeEngine
 {
 	class YumeImage;
-	class YumeGLRenderable;
+	class YumeXmlFile;
 
 	class YumeAPIExport YumeTexture2D : public YumeTexture
 	{
@@ -39,38 +39,29 @@ namespace YumeEngine
 
 		virtual ~YumeTexture2D();
 
-		
 		virtual bool BeginLoad(YumeFile& source);
-		
 		virtual bool EndLoad();
-
 		virtual void Release() { };
 
-		
 		virtual bool SetSize(int width,int height,unsigned format,TextureUsage usage = TEXTURE_STATIC) = 0;
-		
 		virtual bool SetData(unsigned level,int x,int y,int width,int height,const void* data) = 0;
-		
 		virtual bool SetData(SharedPtr<YumeImage> image,bool useAlpha = false) = 0;
-
 		virtual bool GetData(unsigned level,void* dest) const = 0;
 
 		
-		YumeRenderable* GetRenderSurface() const { return renderSurface_.get(); }
+		SharedPtr<YumeRenderable> GetRenderSurface() const { return renderSurface_; }
 
-		static YumeHash GetType();
-		static YumeHash texture2Dhash_;
+		static YumeHash GetTypeStatic() { return type_; };
+		virtual YumeHash GetType() { return type_; };
+		static YumeHash type_;
 
 		
 		virtual bool Create() = 0;
-		
-		virtual void HandleRenderSurfaceUpdate(YumeHash eventType,VariantMap& eventData) = 0;
-
 	protected:
 		
 		SharedPtr<YumeRenderable> renderSurface_;
-		
 		SharedPtr<YumeImage> loadImage_;
+		SharedPtr<YumeXmlFile> loadParameters_;
 	};
 }
 

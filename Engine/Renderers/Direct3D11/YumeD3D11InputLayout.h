@@ -30,7 +30,7 @@ namespace YumeEngine
 	class YumeD3DExport YumeD3D11InputLayout : public YumeInputLayout
 	{
 	public:
-		YumeD3D11InputLayout(YumeRHI* graphics,YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks);
+		YumeD3D11InputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks);
 
 		virtual ~YumeD3D11InputLayout();
 

@@ -29,7 +29,7 @@
 namespace YumeEngine
 {
 	class YumeSceneNode;
-	class BaseApplication : public YumeApplication,public InputEventListener
+	class BaseApplication : public YumeApplication,public InputEventListener,public EngineEventListener
 	{
 	public:
 		BaseApplication();
@@ -46,6 +46,8 @@ namespace YumeEngine
 		virtual void HandleMouseButtonUp(int button,unsigned buttons) { }
 		//~
 
+		virtual void HandlePostRenderUpdate(float timeStep);
+
 		void SetupWindowProperties();
 
 		SharedPtr<YumeScene> scene_;
@@ -53,6 +55,8 @@ namespace YumeEngine
 
 		float yaw_;
 		float pitch_;
+
+		bool drawDebug_;
 	};
 }
 

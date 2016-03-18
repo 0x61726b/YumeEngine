@@ -39,20 +39,19 @@ set(SRC_RENDERER_D3D11
   YumeD3D11InputLayout.h
   YumeD3D11InputLayout.cc
   YumeD3D11ShaderProgram.h
-  YumeD3D11Texture.h
-  YumeD3D11Texture.cc
   YumeD3D11Texture2D.h
   YumeD3D11Texture2D.cc
   YumeD3D11IndexBuffer.h
   YumeD3D11IndexBuffer.cc
   YumeD3D11Renderable.h
   YumeD3D11Renderable.cc
+  YumeD3D11Texture3D.h
+  YumeD3D11Texture3D.cc
+  YumeD3D11TextureCube.h
+	YumeD3D11TextureCube.cc
 )
 
-if(DirectX_FOUND)
-  include_directories(${DirectX_INCLUDE_DIR})
-  include_directories(${DirectX_D3D11_INCLUDE_DIR})
-else()
+if(NOT DIRECT3D_DLL)
   message( FATAL_ERROR "Direct3D 11 not found on Windows.We can't continue." )
 endif()
 

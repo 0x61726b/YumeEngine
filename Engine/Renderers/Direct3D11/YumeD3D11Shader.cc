@@ -57,6 +57,8 @@ namespace YumeEngine
 			}
 		}
 	}
+
+	YumeHash YumeD3D11Shader::type_ = "D3D11Shader";
 	YumeD3D11Shader::YumeD3D11Shader()
 	{
 	}
@@ -67,7 +69,7 @@ namespace YumeEngine
 
 	bool YumeD3D11Shader::BeginLoad(YumeFile& source)
 	{
-		YumeRHI* graphics_ = YumeEngine3D::Get()->GetRenderer();
+		YumeRHI* graphics_ = gYume->pRHI;
 
 		if(!graphics_)
 			return false;
@@ -136,10 +138,10 @@ namespace YumeEngine
 				++numVariations_;
 				RefreshMemoryUse();
 
-				return boost::static_pointer_cast<YumeShaderVariation>(ret.first->second).get();
+				return StaticCast<YumeShaderVariation>(ret.first->second);
 			}
 		}
-		return (YumeShaderVariation*)i->second.get();
+		return (YumeShaderVariation*)i->second;
 	}
 
 	void YumeD3D11Shader::RefreshMemoryUse()

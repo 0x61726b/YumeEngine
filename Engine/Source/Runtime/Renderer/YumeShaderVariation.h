@@ -33,7 +33,7 @@ namespace YumeEngine
 	class YumeShader;
 	struct ShaderParameter;
 	
-	class YumeAPIExport YumeShaderVariation
+	class YumeAPIExport YumeShaderVariation : public YumeBase
 	{
 	public:
 		

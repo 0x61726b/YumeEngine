@@ -22,7 +22,7 @@
 #include "YumeHeaders.h"
 #include "YumeIndexBuffer.h"
 
-
+#include "Logging/logging.h"
 
 namespace YumeEngine
 {
@@ -40,5 +40,6 @@ namespace YumeEngine
 
 	YumeIndexBuffer::~YumeIndexBuffer()
 	{
+		
 	}
 }

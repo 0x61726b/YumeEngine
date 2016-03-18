@@ -33,6 +33,8 @@
 #include <unistd.h>
 #endif
 
+
+
 namespace YumeEngine
 {
 	bool YumeHiresTimer::supported(false);

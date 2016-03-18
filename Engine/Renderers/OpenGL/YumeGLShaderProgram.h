@@ -37,7 +37,7 @@ namespace YumeEngine
 	{
 	public:
 		/// Construct.
-		YumeGLShaderProgram(YumeRHI* graphics,YumeShaderVariation* vertexShader,YumeShaderVariation* pixelShader);
+		YumeGLShaderProgram(YumeShaderVariation* vertexShader,YumeShaderVariation* pixelShader);
 
 		/// Destruct.
 		~YumeGLShaderProgram();

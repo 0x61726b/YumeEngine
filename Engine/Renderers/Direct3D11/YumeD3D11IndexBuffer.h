@@ -33,7 +33,7 @@ namespace YumeEngine
 	class YumeD3DExport YumeD3D11IndexBuffer : public YumeIndexBuffer,public YumeD3D11Resource
 	{
 	public:
-		YumeD3D11IndexBuffer(YumeRHI*);
+		YumeD3D11IndexBuffer();
 		virtual ~YumeD3D11IndexBuffer();
 
 		void Release();

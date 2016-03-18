@@ -1,10 +1,8 @@
 set(SAMPLE_TARGET "HelloWorld")
 
-set(SOURCE_FILES
-	BasicRenderWindow.cpp)
+set(SOURCE_FILES HelloWorld.cpp)
 
-set(HEADER_FILES
-	BasicRenderWindow.h)
+set(HEADER_FILES HelloWorld.h)
 
 if(OS_LINUX OR OS_MACOSX)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DBOOST_ALL_NO_LIB=1 -g -O0 --coverage")
@@ -35,7 +33,6 @@ if(YUME_BUILD_OPENGL)
 endif()
 
 target_link_libraries(${SAMPLE_TARGET} ${YUME})
-
 set_target_properties(${SAMPLE_TARGET} PROPERTIES FOLDER "Samples")
 
 source_group(${SAMPLE_TARGET} FILES ${HEADER_FILES} ${SOURCE_FILES})

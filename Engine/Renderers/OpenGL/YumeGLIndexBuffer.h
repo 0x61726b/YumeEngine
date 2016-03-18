@@ -33,7 +33,7 @@ namespace YumeEngine
 	class YumeGLExport YumeGLIndexBuffer : public YumeIndexBuffer,public YumeGLResource
 	{
 	public:
-		YumeGLIndexBuffer(YumeRHI*);
+		YumeGLIndexBuffer();
 		virtual ~YumeGLIndexBuffer();
 
 		void OnDeviceReset();

@@ -64,7 +64,7 @@ namespace YumeEngine
 
 	void YumeGLRenderable::OnDeviceLost()
 	{
-		YumeRHI* graphics = YumeEngine3D::Get()->GetRenderer();
+		YumeRHI* graphics = gYume->pRHI;
 
 		for(unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
 		{
@@ -83,7 +83,7 @@ namespace YumeEngine
 
 	void YumeGLRenderable::Release()
 	{
-		YumeRHI* graphics = YumeEngine3D::Get()->GetRenderer();
+		YumeRHI* graphics = gYume->pRHI;
 		if(!graphics)
 			return;
 
@@ -106,5 +106,10 @@ namespace YumeEngine
 		}
 
 		renderBuffer_ = 0;
+	}
+
+	void YumeGLRenderable::SetTarget(unsigned target)
+	{
+		target_ = target;
 	}
 }

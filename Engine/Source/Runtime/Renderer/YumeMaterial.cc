@@ -24,6 +24,8 @@
 
 #include "YumeTexture.h"
 #include "YumeTexture2D.h"
+#include "YumeTexture3D.h"
+#include "YumeTextureCube.h"
 #include "Core/YumeIO.h"
 #include "Core/YumeFile.h"
 #include "Renderer/YumeResourceManager.h"
@@ -158,9 +160,10 @@ namespace YumeEngine
 
 	void ShaderParameterAnimationInfo::ApplyValue(const Variant& newValue)
 	{
-		static_cast<YumeMaterial*>(target_.get())->SetShaderParameter(name_,newValue);
+		static_cast<YumeMaterial*>(target_.Get())->SetShaderParameter(name_,newValue);
 	}
 
+	YumeHash YumeMaterial::type_ = "Material";
 	YumeMaterial::YumeMaterial():
 		auxViewFrameNumber_(0),
 		shaderParameterHash_(0),
@@ -178,111 +181,83 @@ namespace YumeEngine
 
 	bool YumeMaterial::BeginLoad(YumeFile& source)
 	{
-		
-		//Graphics* graphics = GetSubsystem<Graphics>();
-		//if(!graphics)
-		//	return true;
+		YumeString extension = GetExtension(source.GetName());
 
-		//String extension = GetExtension(source.GetName());
+		bool success = false;
+		if(extension == ".xml")
+		{
+			success = BeginLoadXML(source);
 
-		//bool success = false;
-		//if(extension == ".xml")
-		//{
-		//	success = BeginLoadXML(source);
-		//	if(!success)
-		//		success = BeginLoadJSON(source);
+			if(success)
+				return true;
+		}
 
-		//	if(success)
-		//		return true;
-		//}
-		//else // Load JSON file
-		//{
-		//	success = BeginLoadJSON(source);
-		//	if(!success)
-		//		success = BeginLoadXML(source);
-
-		//	if(success)
-		//		return true;
-		//}
 
 		
-		//ResetToDefaults();
-		//loadJSONFile_.Reset();
-		return false;
+		return true;
 	}
 
 	bool YumeMaterial::EndLoad()
 	{
-		
-		//Graphics* graphics = GetSubsystem<Graphics>();
-		//if(!graphics)
-		//	return true;
+		bool success = false;
+		if(loadXMLFile_)
+		{
+			YumeString xmlData = loadXMLFile_->GetXml();
+			pugi::xml_document xmlDoc;
+			xmlDoc.load(xmlData.c_str());
+			success = Load(xmlDoc.child("Material"));
+		}
 
-		//bool success = false;
-		//if(loadXMLFile_)
-		//{
-		//	// If async loading, get the techniques / textures which should be ready now
-		//	XMLElement rootElem = loadXMLFile_->GetRoot();
-		//	success = Load(rootElem);
-		//}
 
-		//if(loadJSONFile_)
-		//{
-		//	JSONValue rootVal = loadJSONFile_->GetRoot();
-		//	success = Load(rootVal);
-		//}
-
-		//loadXMLFile_.Reset();
-		//loadJSONFile_.Reset();
+		loadXMLFile_.Reset();
 		return false;
 	}
 
 	bool YumeMaterial::BeginLoadXML(YumeFile& source)
 	{
-		//		ResetToDefaults();
-		//		loadXMLFile_ = new XMLFile(context_);
-		//		if(loadXMLFile_->Load(source))
+		ResetToDefaults();
+		loadXMLFile_ = SharedPtr<YumeXmlFile>(new YumeXmlFile);
+		if(loadXMLFile_->Load(source))
+		{
+			return true;
+		}
+		//	YumeString xmlData = loadXMLFile_->GetXml();
+		//	pugi::xml_document xmlDoc;
+		//	xmlDoc.load(xmlData.c_str());
+		//	if(GetAsyncLoadState() == ASYNC_LOADING)
+		//	{
+		//		YumeResourceManager* cache = gYume->pResourceManager;
+		//		XmlNode rootElem = xmlDoc.root();
+		//		XmlNode techniqueElems = rootElem.child("Techniques");
+		//		for(XmlNode tech = techniqueElems.first_child(); tech; tech = tech.next_sibling())
 		//		{
-		//			// If async loading, scan the XML content beforehand for technique & texture resources
-		//			// and request them to also be loaded. Can not do anything else at this point
-		//			if(GetAsyncLoadState() == ASYNC_LOADING)
-		//			{
-		//				ResourceCache* cache = GetSubsystem<ResourceCache>();
-		//				XMLElement rootElem = loadXMLFile_->GetRoot();
-		//				XMLElement techniqueElem = rootElem.GetChild("technique");
-		//				while(techniqueElem)
-		//				{
-		//					cache->BackgroundLoadResource<Technique>(techniqueElem.GetAttribute("name"),true,this);
-		//					techniqueElem = techniqueElem.GetNext("technique");
-		//				}
-		//
-		//				XMLElement textureElem = rootElem.GetChild("texture");
-		//				while(textureElem)
-		//				{
-		//					String name = textureElem.GetAttribute("name");
-		//					// Detect cube maps by file extension: they are defined by an XML file
-		//					
-		//					if(GetExtension(name) == ".xml")
-		//					{
-		//#ifdef DESKTOP_GRAPHICS
-		//						TextureUnit unit = TU_DIFFUSE;
-		//						if(textureElem.HasAttribute("unit"))
-		//							unit = ParseTextureUnitName(textureElem.GetAttribute("unit"));
-		//						if(unit == TU_VOLUMEMAP)
-		//							cache->BackgroundLoadResource<Texture3D>(name,true,this);
-		//						else
-		//#endif
-		//							cache->BackgroundLoadResource<TextureCube>(name,true,this);
-		//				}
-		//					else
-		//						cache->BackgroundLoadResource<Texture2D>(name,true,this);
-		//					textureElem = textureElem.GetNext("texture");
-		//			}
+		//			cache->BackgroundLoadResource<YumeRenderTechnique>(tech.attribute("name").as_string(),true,this);
 		//		}
-		//
-		//			return true;
+
+		//		XmlNode textureElems = rootElem.child("Textures");
+		//		for(XmlNode tex = textureElems.first_child(); tex; tex = tex.next_sibling())
+		//		{
+		//			YumeString name = tex.attribute("name").as_string();
+		//			// Detect cube maps by file extension: they are defined by an XML file
+
+		//			if(GetExtension(name) == ".xml")
+		//			{
+		//				TextureUnit unit = TU_DIFFUSE;
+		//				if(!tex.attribute("unit").empty())
+		//					unit = ParseTextureUnitName(tex.attribute("unit").as_string());
+		//				if(unit == TU_VOLUMEMAP)
+		//					cache->BackgroundLoadResource<YumeTexture3D>(name,true,this);
+		//				else
+		//					cache->BackgroundLoadResource<YumeTextureCube>(name,true,this);
+		//			}
+		//			else
+		//				cache->BackgroundLoadResource<YumeTexture2D>(name,true,this);
+		//		}
 		//	}
-		//
+
+		//	return true;
+		//}
+
 		return false;
 	}
 
@@ -299,7 +274,116 @@ namespace YumeEngine
 
 	bool YumeMaterial::Load(const XmlNode& source)
 	{
-		
+		YumeResourceManager* cache = gYume->pResourceManager;
+
+		techniques_.clear();
+
+		XmlNode techniqueElems = source.child("Techniques");
+		for(XmlNode tech = techniqueElems.first_child(); tech; tech = tech.next_sibling())
+		{
+			YumeRenderTechnique* technique = cache->PrepareResource<YumeRenderTechnique>(tech.attribute("name").as_string());
+			if(tech)
+			{
+				TechniqueEntry newTechnique;
+				newTechnique.technique_ = technique;
+				if(!tech.attribute("quality").empty())
+					newTechnique.qualityLevel_ = tech.attribute("quality").as_int();
+				if(!tech.attribute("loddistance").empty())
+					newTechnique.lodDistance_ = tech.attribute("loddistance").as_float();
+				techniques_.push_back(newTechnique);
+			}
+		}
+
+		SortTechniques();
+
+		XmlNode textureElems = source.child("Textures");
+		for(XmlNode textureElem = textureElems.first_child(); textureElem; textureElem = textureElem.next_sibling())
+		{
+			TextureUnit unit = TU_DIFFUSE;
+			if(!textureElem.attribute("unit").empty())
+				unit = ParseTextureUnitName(textureElem.attribute("unit").as_string());
+			if(unit < MAX_TEXTURE_UNITS)
+			{
+				YumeString name = textureElem.attribute("name").as_string();
+				if(GetExtension(name) == ".xml")
+				{
+					if(unit == TU_VOLUMEMAP)
+						SetTexture(unit,cache->PrepareResource<YumeTexture3D>(name));
+					else
+						SetTexture(unit,cache->PrepareResource<YumeTextureCube>(name));
+				}
+				else
+					SetTexture(unit,cache->PrepareResource<YumeTexture2D>(name));
+			}
+		}
+
+		XmlNode paramElems = source.child("Parameters");
+		for(XmlNode parameterElem = paramElems.first_child(); parameterElem; parameterElem = parameterElem.next_sibling())
+		{
+			YumeString name = parameterElem.attribute("name").as_string();
+			if(!parameterElem.attribute("type"))
+				SetShaderParameter(name,ParseShaderParameterValue(parameterElem.attribute("value").as_string()));
+			else
+				SetShaderParameter(name,Variant(parameterElem.attribute("type").as_string(),parameterElem.attribute("value").as_string()));
+		}
+		batchedParameterUpdate_ = false;
+
+		XmlNode cullElem = source.child("Cull");
+		if(!cullElem.empty())
+			SetCullMode((CullMode)GetStringListIndex(cullElem.attribute("value").as_string(),cullModeNames,CULL_CCW));
+
+
+	/*	XMLElement parameterAnimationElem = source.GetChild("parameteranimation");
+		while(parameterAnimationElem)
+		{
+			String name = parameterAnimationElem.GetAttribute("name");
+			SharedPtr<ValueAnimation> animation(new ValueAnimation(context_));
+			if(!animation->LoadXML(parameterAnimationElem))
+			{
+				URHO3D_LOGERROR("Could not load parameter animation");
+				return false;
+			}
+
+			String wrapModeString = parameterAnimationElem.GetAttribute("wrapmode");
+			WrapMode wrapMode = WM_LOOP;
+			for(int i = 0; i <= WM_CLAMP; ++i)
+			{
+				if(wrapModeString == wrapModeNames[i])
+				{
+					wrapMode = (WrapMode)i;
+					break;
+				}
+			}
+
+			float speed = parameterAnimationElem.GetFloat("speed");
+			SetShaderParameterAnimation(name,animation,wrapMode,speed);
+
+			parameterAnimationElem = parameterAnimationElem.GetNext("parameteranimation");
+		}
+
+		XMLElement cullElem = source.GetChild("cull");
+		if(cullElem)
+			SetCullMode((CullMode)GetStringListIndex(cullElem.GetAttribute("value").CString(),cullModeNames,CULL_CCW));
+
+		XMLElement shadowCullElem = source.GetChild("shadowcull");
+		if(shadowCullElem)
+			SetShadowCullMode((CullMode)GetStringListIndex(shadowCullElem.GetAttribute("value").CString(),cullModeNames,CULL_CCW));
+
+		XMLElement fillElem = source.GetChild("fill");
+		if(fillElem)
+			SetFillMode((FillMode)GetStringListIndex(fillElem.GetAttribute("value").CString(),fillModeNames,FILL_SOLID));
+
+		XMLElement depthBiasElem = source.GetChild("depthbias");
+		if(depthBiasElem)
+			SetDepthBias(BiasParameters(depthBiasElem.GetFloat("constant"),depthBiasElem.GetFloat("slopescaled")));
+
+		XMLElement renderOrderElem = source.GetChild("renderorder");
+		if(renderOrderElem)
+			SetRenderOrder((unsigned char)renderOrderElem.GetUInt("value"));*/
+
+		RefreshShaderParameterHash();
+		RefreshMemoryUse();
+		CheckOcclusion();
 		return true;
 	}
 
@@ -497,7 +581,7 @@ namespace YumeEngine
 	{
 		for(unsigned i = 0; i < techniques_.size(); ++i)
 		{
-			YumeRenderTechnique* tech = techniques_[i].technique_.get();
+			YumeRenderTechnique* tech = techniques_[i].technique_;
 			if(tech)
 				tech->ReleaseShaders();
 		}
@@ -505,8 +589,8 @@ namespace YumeEngine
 
 	SharedPtr<YumeMaterial> YumeMaterial::Clone(const YumeString& cloneName) const
 	{
-		SharedPtr<YumeMaterial> ret = boost::shared_ptr<YumeMaterial>(new YumeMaterial);
-		
+		SharedPtr<YumeMaterial> ret = SharedPtr<YumeMaterial>(new YumeMaterial);
+
 		ret->SetName(cloneName);
 		ret->techniques_ = techniques_;
 		ret->shaderParameters_ = shaderParameters_;
@@ -540,19 +624,19 @@ namespace YumeEngine
 
 	YumeRenderTechnique* YumeMaterial::GetTechnique(unsigned index) const
 	{
-		return index < techniques_.size() ? techniques_[index].technique_.get() : (YumeRenderTechnique*)0;
+		return index < techniques_.size() ? techniques_[index].technique_ : (YumeRenderTechnique*)0;
 	}
 
 	YumeRenderPass* YumeMaterial::GetPass(unsigned index,const YumeString& passName) const
 	{
-		YumeRenderTechnique* tech = index < techniques_.size() ? techniques_[index].technique_.get() : (YumeRenderTechnique*)0;
+		YumeRenderTechnique* tech = index < techniques_.size() ? techniques_[index].technique_ : (YumeRenderTechnique*)0;
 		return tech ? tech->GetPass(passName) : 0;
 	}
 
 	YumeTexture* YumeMaterial::GetTexture(TextureUnit unit) const
 	{
 		YumeMap<TextureUnit,SharedPtr<YumeTexture> >::const_iterator i = textures_.find(unit);
-		return i != textures_.end() ? i->second.get() : (YumeTexture*)0;
+		return i != textures_.end() ? i->second : (YumeTexture*)0;
 	}
 
 	const Variant& YumeMaterial::GetShaderParameter(const YumeString& name) const
@@ -581,7 +665,7 @@ namespace YumeEngine
 
 	YumeScene* YumeMaterial::GetScene() const
 	{
-		return scene_.get();
+		return scene_;
 	}
 
 	YumeString YumeMaterial::GetTextureUnitName(TextureUnit unit)
@@ -605,7 +689,7 @@ namespace YumeEngine
 		occlusion_ = false;
 		for(unsigned i = 0; i < techniques_.size(); ++i)
 		{
-			YumeRenderTechnique* tech = techniques_[i].technique_.get();
+			YumeRenderTechnique* tech = techniques_[i].technique_;
 			if(tech)
 			{
 				YumeRenderPass* pass = tech->GetPass("base");
@@ -622,7 +706,7 @@ namespace YumeEngine
 			return;
 
 		SetNumTechniques(1);
-		SetTechnique(0,YumeEngine3D::Get()->GetResourceManager()->PrepareResource<YumeRenderTechnique>("Techniques/NoTexture.xml").get());
+		SetTechnique(0,gYume->pResourceManager->PrepareResource<YumeRenderTechnique>("Techniques/NoTexture.xml"));
 
 		textures_.clear();
 
@@ -650,17 +734,17 @@ namespace YumeEngine
 	{
 		/*VectorBuffer temp;
 		for(YumeMap<YumeHash,MaterialShaderParameter>::const_iterator i = shaderParameters_.begin();
-			i != shaderParameters_.end(); ++i)
+		i != shaderParameters_.end(); ++i)
 		{
-			temp.WriteYumeHash(i->first);
-			temp.WriteVariant(i->second.value_);
+		temp.WriteYumeHash(i->first);
+		temp.WriteVariant(i->second.value_);
 		}
 
 		shaderParameterHash_ = 0;
 		const unsigned char* data = temp.GetData();
 		unsigned dataSize = temp.GetSize();
 		for(unsigned i = 0; i < dataSize; ++i)
-			shaderParameterHash_ = SDBMHash(shaderParameterHash_,data[i]);*/
+		shaderParameterHash_ = SDBMHash(shaderParameterHash_,data[i]);*/
 	}
 
 	void YumeMaterial::RefreshMemoryUse()
@@ -680,7 +764,7 @@ namespace YumeEngine
 		YumeMap<YumeHash,SharedPtr<ShaderParameterAnimationInfo> >::const_iterator i = shaderParameterAnimationInfos_.find(nameHash);
 		if(i == shaderParameterAnimationInfos_.end())
 			return 0;
-		return i->second.get();
+		return i->second;
 	}
 
 	void YumeMaterial::UpdateEventSubscription()

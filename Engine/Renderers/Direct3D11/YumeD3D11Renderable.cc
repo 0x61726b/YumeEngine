@@ -43,7 +43,7 @@ namespace YumeEngine
 
 	void YumeD3D11Renderable::Release()
 	{
-		YumeRHI* graphics = YumeEngine3D::Get()->GetRenderer();
+		YumeRHI* graphics = gYume->pRHI;
 		if(!graphics)
 			return;
 		if(graphics && renderTargetView_)

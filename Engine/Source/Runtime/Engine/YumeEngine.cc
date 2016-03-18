@@ -55,6 +55,13 @@
 #include "Renderer/YumeTexture2D.h"
 #include "Renderer/YumeRenderPass.h"
 #include "Renderer/YumeRenderPipeline.h"
+#include "Renderer/YumeLight.h"
+#include "Renderer/YumeMaterial.h"
+#include "Renderer/YumeModel.h"
+#include "Renderer/YumeStaticModel.h"
+#include "Renderer/YumeAuxRenderer.h"
+#include "Renderer/YumeSkybox.h"
+#include "Renderer/YumeRendererEnv.h"
 
 #include "Input/YumeInput.h"
 
@@ -73,22 +80,20 @@ namespace YumeEngine
 		: exiting_(false),
 		initialized_(false),
 		inactiveFps_(60),
-		maxFps_(200),
+		maxFps_(344),
 		minFps_(10),
 		timeStepSmoothing_(2),
-		timeStep_(0),
-		graphics_(0)
+		timeStep_(0)
 	{
 		YumeEngineGlobal = this;
+
+		gYume = new GlobalSystems;
+		gYume->pEngine = this;
 	}
 
 	YumeEngine3D::~YumeEngine3D()
 	{
 
-	}
-	YumeEngine3D* YumeEngine3D::Get()
-	{
-		return YumeEngineGlobal;
 	}
 
 	bool YumeEngine3D::Initialize(const VariantMap& variants)
@@ -101,36 +106,38 @@ namespace YumeEngine
 
 		RegisterFactories();
 
+		assert(gYume);
 
-		io_ = boost::shared_ptr<YumeIO>(YumeAPINew YumeIO);
-		timer_ = boost::shared_ptr<YumeTime>(YumeAPINew YumeTime);
-		env_ = boost::shared_ptr<YumeEnvironment>(YumeAPINew YumeEnvironment);
-		workQueue_ = SharedPtr<YumeWorkQueue>(YumeAPINew YumeWorkQueue);
+		gYume->pIO = (YumeAPINew YumeIO);
+		gYume->pTimer = (YumeAPINew YumeTime);
+		gYume->pEnv = (YumeAPINew YumeEnvironment);
+		gYume->pWorkSystem = (YumeAPINew YumeWorkQueue);
 
-		resourceManager_ = YumeAPINew YumeResourceManager;
+		gYume->pResourceManager = YumeAPINew YumeResourceManager;
+
 		VariantMap::const_iterator It = variants.begin();
 
 		for(It;It != variants.end(); ++It)
 		{
-			env_->AddParameter(It->first,It->second);
+			gYume->pEnv->AddParameter(It->first,It->second);
 		}
 
 
 
-		if(!env_->GetVariant("turnOffLogging").Get<bool>())
+		if(!gYume->pEnv->GetVariant("turnOffLogging").Get<bool>())
 		{
 			log4cplusinitializer_ = new log4cplus::Initializer;
-			YumeEngine::Log::InitLogging(env_->GetLogFile().generic_string().c_str());
+			YumeEngine::Log::InitLogging(gYume->pEnv->GetLogFile().generic_string().c_str());
 		}
 		else
 		{
 			YumeEngine::Log::ToggleLogging(false);
 		}
 
-		unsigned NumThreads = 4;
-		workQueue_->CreateThreads(NumThreads);
+		unsigned NumThreads = 5;
+		gYume->pWorkSystem->CreateThreads(NumThreads);
 
-		YUMELOG_INFO("Initialized environment...Current system time " << timer_->GetTimeStamp());
+		YUMELOG_INFO("Initialized environment...Current system time " << gYume->pTimer->GetTimeStamp());
 
 		std::string currentOs;
 
@@ -142,12 +149,12 @@ namespace YumeEngine
 		currentOs = "Osx";
 #endif
 
-		YUMELOG_INFO("Engine Config Path: " << env_->GetRoot().generic_string().c_str());
+		YUMELOG_INFO("Engine Config Path: " << gYume->pEnv->GetRoot().generic_string().c_str());
 		YUMELOG_INFO("Running on: " << currentOs.c_str());
 
-		YumeString renderer = env_->GetVariant("Renderer").GetString();
+		YumeString renderer = gYume->pEnv->GetVariant("Renderer").GetString();
 
-		if(env_->GetVariant("testing").Get<bool>())
+		if(gYume->pEnv->GetVariant("testing").Get<bool>())
 		{
 			renderer = "Null";
 		}
@@ -160,46 +167,55 @@ namespace YumeEngine
 
 		//This is where renderer library is getting loaded!
 		initialized_ = LoadExternalLibrary(rendererName_);
-		renderer_ = boost::shared_ptr<YumeRenderer>(YumeAPINew YumeRenderer(graphics_));
-
+		rendererName_ = renderer;
+		gYume->pRenderer = (YumeAPINew YumeRenderer(gYume->pRHI,renderer));
 		if(!initialized_)
 			return false;
 
-
 		
 
-		graphics_->SetWindowTitle("Yume Engine");
-		graphics_->SetWindowPos(Vector2(250,250));
 
-		FsPath resourceTree = FsPath(env_->GetVariant("ResourceTree").Get<YumeString>());
-		resourceTree = io_->GetBinaryRoot() / "Yume" / resourceTree;
+		gYume->pRHI->SetWindowTitle("Yume Engine");
+		gYume->pRHI->SetWindowPos(Vector2(250,250));
 
-		resourceManager_->AddResourcePath(resourceTree);
+		FsPath resourceTree = FsPath(gYume->pEnv->GetVariant("ResourceTree").Get<YumeString>());
+		resourceTree = gYume->pIO->GetBinaryRoot() / "Yume" / resourceTree;
+
+		gYume->pResourceManager->AddResourcePath(resourceTree);
 
 		YumeThreadWrapper::SetMainThread();
 
-		SharedPtr<YumeImage> appIcon = resourceManager_->PrepareResource<YumeImage>("Textures/appIcon.png");
-		graphics_->SetWindowIcon(appIcon.get());
+		YumeImage* appIcon = gYume->pResourceManager->PrepareResource<YumeImage>("Textures/appIcon.png");
+		gYume->pRHI->SetWindowIcon(appIcon);
 
-		if(!graphics_->SetGraphicsMode(env_->GetVariant("WindowWidth").Get<int>(),
-			env_->GetVariant("WindowHeight").Get<int>(),
-			env_->GetVariant("Fullscreen").Get<bool>(),
-			env_->GetVariant("Borderless").Get<bool>(),
+		if(!gYume->pRHI->SetGraphicsMode(gYume->pEnv->GetVariant("WindowWidth").Get<int>(),
+			gYume->pEnv->GetVariant("WindowHeight").Get<int>(),
+			gYume->pEnv->GetVariant("Fullscreen").Get<bool>(),
+			gYume->pEnv->GetVariant("Borderless").Get<bool>(),
 			true,
-			env_->GetVariant("Vsync").Get<bool>(),
-			env_->GetVariant("TripleBuffer").Get<bool>(),
-			env_->GetVariant("MultiSample").Get<int>()))
+			gYume->pEnv->GetVariant("Vsync").Get<bool>(),
+			gYume->pEnv->GetVariant("TripleBuffer").Get<bool>(),
+			gYume->pEnv->GetVariant("MultiSample").Get<int>()))
 			return false;
 		frameTimer_.Reset();
 
-		input_ = SharedPtr<YumeInput>(YumeAPINew YumeInput);
+		gYume->pInput = (YumeAPINew YumeInput);
 		//SharedPtr<YumeTexture2D> earth = resourceManager_->PrepareResource<YumeTexture2D>("Textures/Earth_Diffuse.dds");
 
-		renderer_->Initialize();
+		gYume->pRenderer->Initialize();
+
+		gYume->pDebugRenderer = (new YumeDebugRenderer);
+
 
 		YUMELOG_INFO("Initialized Yume Engine...");
 
-
+		assert(gYume->pEnv);
+		assert(gYume->pIO);
+		assert(gYume->pRenderer);
+		assert(gYume->pResourceManager);
+		assert(gYume->pRHI);
+		assert(gYume->pTimer);
+		assert(gYume->pWorkSystem);
 		return initialized_;
 	}
 
@@ -223,26 +239,26 @@ namespace YumeEngine
 		{
 		case E_UPDATE:
 			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
-				(*i)->HandleUpdate(timer_->GetTimeStep());
+				(*i)->HandleUpdate(gYume->pTimer->GetTimeStep());
 			break;
 		case E_POSTUPDATE:
 			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
-				(*i)->HandlePostUpdate(timer_->GetTimeStep());
+				(*i)->HandlePostUpdate(gYume->pTimer->GetTimeStep());
 			break;
 		case R_UPDATE:
 			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
-				(*i)->HandleRenderUpdate(timer_->GetTimeStep());
+				(*i)->HandleRenderUpdate(gYume->pTimer->GetTimeStep());
 			break;
 		case R_POSTUPDATE:
 			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
-				(*i)->HandlePostRenderUpdate(timer_->GetTimeStep());
+				(*i)->HandlePostRenderUpdate(gYume->pTimer->GetTimeStep());
 			break;
 		}
 	}
 
 	void YumeEngine3D::RegisterFactories()
 	{
-		factory_ = SharedPtr<YumeObjectFactory>(new YumeObjectFactory);
+		gYume->pObjFactory = (new YumeObjectFactory);
 
 
 		YumeObjectRegistrar<YumeBase> baseObj(("Base"));
@@ -252,21 +268,30 @@ namespace YumeEngine
 		YumeObjectRegistrar<Octree> octreeObj(("Octree"));
 		YumeObjectRegistrar<YumeCamera> cameraObj(("Camera"));
 		YumeObjectRegistrar<YumeXmlFile> xmlFile(("XmlFile"));
+		YumeObjectRegistrar<YumeLight> light(("Light"));
+		YumeObjectRegistrar<YumeMaterial> material(("Material"));
+		YumeObjectRegistrar<YumeModel> model(("Model"));
+		YumeObjectRegistrar<YumeStaticModel> staticmodel(("StaticModel"));
+		YumeObjectRegistrar<YumeDebugRenderer> debugRenderer(("DebugRenderer"));
+		YumeObjectRegistrar<YumeSkybox> skybox(("Skybox"));
+		YumeObjectRegistrar<YumeRendererEnvironment> rendererEnv(("RendererEnvironment"));
 	}
 	void YumeEngine3D::Render()
 	{
-		if(!graphics_ || !graphics_->BeginFrame())
+		if(exiting_ || !gYume->pRHI || !gYume->pRHI->BeginFrame())
 			return;
 
 		//Renderer
-		renderer_->Render();
+		gYume->pRenderer->Render();
 
-		graphics_->EndFrame();
+		gYume->pRHI->EndFrame();
 	}
 
 
 	void YumeEngine3D::Update()
 	{
+		if(exiting_)
+			return;
 		FireEvent(E_UPDATE);
 		FireEvent(E_POSTUPDATE);
 		FireEvent(R_UPDATE);
@@ -280,14 +305,14 @@ namespace YumeEngine
 		if(exiting_)
 			return;
 
-		timer_->BeginFrame(timeStep_);
+		gYume->pTimer->BeginFrame(timeStep_);
 
 		Update();
 		Render();
 
 		LimitFrames();
 
-		timer_->EndFrame();
+		gYume->pTimer->EndFrame();
 	}
 
 	void YumeEngine3D::LimitFrames()
@@ -296,7 +321,7 @@ namespace YumeEngine
 			return;
 
 		unsigned maxFps = maxFps_;
-		if(input_ && !input_->HasFocus())
+		if(gYume->pInput && !gYume->pInput->HasFocus())
 			maxFps = Min(60,maxFps);
 
 		long long elapsed = 0;
@@ -347,7 +372,7 @@ namespace YumeEngine
 
 	bool YumeEngine3D::LoadExternalLibrary(const YumeString& lib)
 	{
-		YumeDynamicLibrary* dynLib = env_->LoadDynLib(lib);
+		YumeDynamicLibrary* dynLib = gYume->pEnv->LoadDynLib(lib);
 
 		if(dynLib)
 		{
@@ -387,7 +412,7 @@ namespace YumeEngine
 				// this must call uninstallPlugin
 				pFunc(this);
 				// Unload library (destroyed by DynLibManager)
-				env_->UnloadDynLib(*i);
+				gYume->pEnv->UnloadDynLib(*i);
 				extLibs_.erase(i);
 				return;
 			}
@@ -404,7 +429,7 @@ namespace YumeEngine
 			// this must call uninstallPlugin
 			pFunc(this);
 			// Unload library (destroyed by DynLibManager)
-			env_->UnloadDynLib(*i);
+			gYume->pEnv->UnloadDynLib(*i);
 		}
 		extLibs_.clear();
 	}
@@ -416,20 +441,11 @@ namespace YumeEngine
 	}
 
 
-	boost::shared_ptr<YumeIO> YumeEngine3D::GetIO() const
-	{
-		return io_;
-	}
-
 	void YumeEngine3D::SetRenderer(YumeRHI* renderer)
 	{
-		graphics_ = renderer;
+		gYume->pRHI = (renderer);
 	}
 
-	YumeRHI* YumeEngine3D::GetRenderer()
-	{
-		return graphics_;
-	}
 
 	void YumeEngine3D::Exit()
 	{
@@ -439,23 +455,26 @@ namespace YumeEngine
 
 		YUMELOG_INFO("Exiting Yume Engine...");
 
-		YumeAPIDelete resourceManager_;
 
-		if(graphics_)
-			graphics_->Close();
 
-		UnloadExternalLibraries();
+		if(gYume->pRHI)
+			gYume->pRHI->Close();
 
-		graphics_ = 0;
+
+		//UnloadExternalLibraries();
+		//YumeAPIDelete resourceManager_;
+		/*graphics_.reset();
+		renderer_.reset();*/
 
 		YUMELOG_INFO("Engine stats: ");
-		YUMELOG_INFO("Total frames: " << timer_->GetFrameNumber());
-		YUMELOG_INFO("Time elapsed since start: " << timer_->GetElapsedTime());
+		YUMELOG_INFO("Total frames: " << gYume->pTimer->GetFrameNumber());
+		YUMELOG_INFO("Time elapsed since start: " << gYume->pTimer->GetElapsedTime());
 
-		YUMELOG_INFO("Exited at time " << timer_->GetTimeStamp());
+		YUMELOG_INFO("Exited at time " << gYume->pTimer->GetTimeStamp());
 
-		if(!env_->GetVariant("turnOffLogging").Get<bool>())
+		if(!gYume->pEnv->GetVariant("turnOffLogging").Get<bool>())
 		{
+			Log::ToggleLogging(false);
 			delete log4cplusinitializer_;
 		}
 

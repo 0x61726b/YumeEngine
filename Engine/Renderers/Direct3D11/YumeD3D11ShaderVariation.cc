@@ -40,16 +40,17 @@
 #include "YumeD3D11VertexBuffer.h"
 #include "Renderer/YumeRHI.h"
 
+#include <d3dcompiler.h>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string.hpp>
 
+
 namespace YumeEngine
 {
-	YumeD3D11ShaderVariation::YumeD3D11ShaderVariation(YumeShader* owner,ShaderType type):
-		YumeD3D11Resource(static_cast<YumeD3D11Renderer*>(YumeEngine3D::Get()->GetRenderer()))
+	YumeD3D11ShaderVariation::YumeD3D11ShaderVariation(YumeShader* owner,ShaderType type)
 	{
 		owner_ = owner;
 		type_ = type;
@@ -69,20 +70,20 @@ namespace YumeEngine
 	{
 		if(object_)
 		{
-			if(!rhi_)
+			if(!gYume->pRHI)
 				return;
 
-			static_cast<YumeD3D11Renderer*>(rhi_)->CleanupShaderPrograms(this);
+			static_cast<YumeD3D11Renderer*>(gYume->pRHI)->CleanupShaderPrograms(this);
 
 			if(type_ == VS)
 			{
-				if(rhi_->GetVertexShader() == this)
-					rhi_->SetShaders(0,0);
+				if(gYume->pRHI->GetVertexShader() == this)
+					gYume->pRHI->SetShaders(0,0);
 			}
 			else
 			{
-				if(rhi_->GetPixelShader() == this)
-					rhi_->SetShaders(0,0);
+				if(gYume->pRHI->GetPixelShader() == this)
+					gYume->pRHI->SetShaders(0,0);
 			}
 
 			D3D_SAFE_RELEASE(object_);
@@ -103,7 +104,7 @@ namespace YumeEngine
 	{
 		Release();
 
-		if(!rhi_)
+		if(!gYume->pRHI)
 			return false;
 
 		if(!owner_)
@@ -130,7 +131,7 @@ namespace YumeEngine
 		}*/
 
 		// Then create shader from the bytecode
-		ID3D11Device* device = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice();
+		ID3D11Device* device = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice();
 		if(type_ == VS)
 		{
 			if(device && byteCode_.size())
@@ -165,8 +166,8 @@ namespace YumeEngine
 
 	bool YumeD3D11ShaderVariation::LoadByteCode(const YumeString& binaryShaderName)
 	{
-		SharedPtr<YumeIO> io_ = YumeEngine3D::Get()->GetIO();
-		YumeResourceManager* rm_ = YumeEngine3D::Get()->GetResourceManager();
+		YumeIO* io_ = gYume->pIO;
+		YumeResourceManager* rm_ = gYume->pResourceManager;
 		if(!rm_->Exists(binaryShaderName))
 			return false;
 
@@ -259,7 +260,6 @@ namespace YumeEngine
 		}
 
 		flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-
 		YUMELOG_INFO("Compiling shader " << GetFullName());
 
 		YumeVector<YumeString>::type defineValues;
@@ -300,6 +300,8 @@ namespace YumeEngine
 		ID3DBlob* shaderCode = 0;
 		ID3DBlob* errorMsgs = 0;
 
+		const char* str = owner_->GetName().c_str();
+
 		HRESULT hr = D3DCompile(sourceCode.c_str(),sourceCode.length(),owner_->GetName().c_str(),&macros.front(),0,
 			entryPoint,profile,flags,0,&shaderCode,&errorMsgs);
 		if(FAILED(hr))
@@ -323,10 +325,13 @@ namespace YumeEngine
 			// Then strip everything not necessary to use the shader
 			//ID3DBlob* strippedCode = 0;
 			//D3DStripShader(bufData,bufSize,
-			//	0,&strippedCode);
+			//	D3DCOMPILER_STRIP_REFLECTION_DATA | D3DCOMPILER_STRIP_DEBUG_INFO | D3DCOMPILER_STRIP_TEST_BLOBS,&strippedCode);
+			//byteCode_.resize((unsigned)strippedCode->GetBufferSize());
+			//memcpy(&byteCode_[0],strippedCode->GetBufferPointer(),byteCode_.size());
+			//strippedCode->Release();
+
 			byteCode_.resize(bufSize);
 			memcpy(&byteCode_[0],bufData,byteCode_.size());
-			/*strippedCode->Release();*/
 		}
 
 		D3D_SAFE_RELEASE(shaderCode);
@@ -358,7 +363,7 @@ namespace YumeEngine
 				reflection->GetInputParameterDesc((UINT)i,&paramDesc);
 				for(unsigned j = 0; j < MAX_VERTEX_ELEMENTS; ++j)
 				{
-					if(!strcmp(paramDesc.SemanticName,YumeD3D11VertexBuffer::elementSemantics[j]) == 0 &&
+					if(strcmp(paramDesc.SemanticName,YumeD3D11VertexBuffer::elementSemantics[j]) == 0 &&
 						paramDesc.SemanticIndex == YumeD3D11VertexBuffer::elementSemanticIndices[j])
 					{
 						elementMask_ |= (1 << j);
@@ -407,8 +412,8 @@ namespace YumeEngine
 
 	void YumeD3D11ShaderVariation::SaveByteCode(const YumeString& binaryShaderName)
 	{
-		SharedPtr<YumeIO> io_ = YumeEngine3D::Get()->GetIO();
-		YumeResourceManager* rm_ = YumeEngine3D::Get()->GetResourceManager();
+		YumeIO* io_ = gYume->pIO;
+		YumeResourceManager* rm_ = gYume->pResourceManager;
 
 		YumeString path = GetPath(rm_->GetFullPath(owner_->GetName())) + "Cache/";
 
@@ -452,7 +457,7 @@ namespace YumeEngine
 		{
 			if(useTextureUnit_[i])
 			{
-				file_->WriteString(rhi_->GetTextureUnitName((TextureUnit)i));
+				file_->WriteString(gYume->pRHI->GetTextureUnitName((TextureUnit)i));
 				file_->WriteUByte((unsigned char)i);
 			}
 		}

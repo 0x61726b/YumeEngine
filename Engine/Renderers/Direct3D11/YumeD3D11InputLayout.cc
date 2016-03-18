@@ -35,8 +35,8 @@
 
 namespace YumeEngine
 {
-	YumeD3D11InputLayout::YumeD3D11InputLayout(YumeRHI* rhi,YumeShaderVariation* vertexShader,YumeVertexBuffer** vertexBuffers,unsigned* elementMasks)
-		: YumeInputLayout(rhi,vertexShader,vertexBuffers,elementMasks)
+	YumeD3D11InputLayout::YumeD3D11InputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** vertexBuffers,unsigned* elementMasks)
+		: YumeInputLayout(vertexShader,vertexBuffers,elementMasks)
 	{
 		YumeVector<D3D11_INPUT_ELEMENT_DESC>::type elementDescs;
 
@@ -71,7 +71,7 @@ namespace YumeEngine
 
 		const YumeVector<unsigned char>::type& byteCode = vertexShader->GetByteCode();
 
-		HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi)->GetImpl()->GetDevice()->CreateInputLayout(&elementDescs[0],(UINT)elementDescs.size(),&byteCode[0],
+		HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateInputLayout(&elementDescs[0],(UINT)elementDescs.size(),&byteCode[0],
 			byteCode.size(),(ID3D11InputLayout**)&inputLayout_);
 		if(FAILED(hr))
 		{
@@ -83,6 +83,6 @@ namespace YumeEngine
 
 	YumeD3D11InputLayout::~YumeD3D11InputLayout()
 	{
-		D3D_SAFE_RELEASE(inputLayout_);
+		D3D_SAFE_RELEASE(inputLayout_);	
 	}
 }

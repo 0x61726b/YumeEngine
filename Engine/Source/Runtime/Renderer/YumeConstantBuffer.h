@@ -23,14 +23,13 @@
 #define __YumeConstantBuffer_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-
 #include <boost/shared_array.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class YumeRenderer;
 
-	class YumeAPIExport YumeConstantBuffer
+	class YumeAPIExport YumeConstantBuffer : public YumeBase
 	{
 	public:
 		YumeConstantBuffer();

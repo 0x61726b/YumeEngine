@@ -33,6 +33,7 @@
 #include "Engine/YumeEngine.h"
 
 
+
 #include "Logging/logging.h"
 
 namespace YumeEngine
@@ -272,22 +273,19 @@ namespace YumeEngine
 
 	bool YumeDrawable::IsInView() const
 	{
-		// Note: in headless mode there is no renderer subsystem and no view frustum tests are performed, so return
-		// always false in that case
-		YumeRenderer* renderer = YumeEngine3D::Get()->GetRenderLogic().get();
-		return false;
+		YumeRenderer* renderer = gYume->pRenderer;
+		return renderer && viewFrameNumber_ == renderer->GetFrameInfo().frameNumber_ && !viewCameras_.empty();
 	}
 
 	bool YumeDrawable::IsInView(YumeCamera* camera) const
 	{
-		YumeRenderer* renderer = YumeEngine3D::Get()->GetRenderLogic().get();
-		/*return renderer && viewFrameNumber_ == renderer->GetFrameInfo().frameNumber_ && (!camera || std::find(viewCameras_.begin(),viewCameras_.end(),camera) == viewCameras_.end());*/
-		return false;
+		YumeRenderer* renderer = gYume->pRenderer;
+		return renderer && viewFrameNumber_ == renderer->GetFrameInfo().frameNumber_ && (!camera || std::find(viewCameras_.begin(),viewCameras_.end(),camera) != viewCameras_.end());
 	}
 
 	bool YumeDrawable::IsInView(const FrameInfo& frame,bool anyCamera) const
 	{
-		return viewFrameNumber_ == frame.frameNumber_ && (anyCamera || std::find(viewCameras_.begin(),viewCameras_.end(),frame.camera_) == viewCameras_.end());
+		return viewFrameNumber_ == frame.frameNumber_ && (anyCamera || std::find(viewCameras_.begin(),viewCameras_.end(),frame.camera_) != viewCameras_.end());
 	}
 
 	void YumeDrawable::SetZone(YumeRendererEnvironment* zone,bool temporary)
@@ -401,8 +399,7 @@ namespace YumeEngine
 		YumeScene* scene = GetScene();
 		if(scene)
 		{
-			YumeHash t = Octree::GetType();
-			Octree* octree = static_cast<Octree*>(scene->GetComponent(t));
+			Octree* octree = scene->GetComponent<Octree>();
 			if(octree)
 				octree->InsertDrawable(this);
 			else

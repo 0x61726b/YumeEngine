@@ -21,6 +21,8 @@
 #Minimal application with empty window
 add_subdirectory(HelloWorld)
 
+add_subdirectory(Lighting)
+
 if(NOT OS_MACOSX)
   add_subdirectory(TestSuite)
 endif()

@@ -68,7 +68,7 @@ namespace YumeEngine
 		virtual void OnMarkedDirty(YumeSceneNode* node);
 		virtual void OnNodeSetEnabled(YumeSceneNode* node);
 
-		static YumeHash GetType();
+		virtual YumeHash GetType();
 		virtual const YumeString& GetTypeName();
 		static YumeHash type_;
 		YumeString typeName_;
@@ -79,7 +79,7 @@ namespace YumeEngine
 		YumeSceneNode* node_;
 	};
 
-	template <class T> T* YumeSceneComponent::GetComponent() const { return static_cast<T*>(GetComponent(T::GetType())); }
+	template <class T> T* YumeSceneComponent::GetComponent() const { return static_cast<T*>(GetComponent(T::GetTypeStatic())); }
 
 	template <class T> void YumeSceneComponent::GetComponents(std::vector<T*>& dest) const
 	{

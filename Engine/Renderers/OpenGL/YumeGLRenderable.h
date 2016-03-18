@@ -31,28 +31,22 @@ namespace YumeEngine
 {
 	class YumeTexture;
 
-	/// %Color or depth-stencil surface that can be rendered into.
 	class YumeGLExport YumeGLRenderable : public YumeRenderable
 	{
 	public:
-		/// Construct with parent texture.
 		YumeGLRenderable(YumeTexture* parentTexture);
-		/// Destruct.
 		~YumeGLRenderable();
 
-		/// Create a renderbuffer. Return true if successful.
 		bool CreateRenderBuffer(unsigned width,unsigned height,unsigned format);
-		/// Handle device loss.
 		void OnDeviceLost();
-		/// Release renderbuffer if any.
 		virtual void Release();
 
 		unsigned GetRenderBuffer() const { return renderBuffer_; }
 		unsigned GetTarget() const { return target_; }
+
+		void SetTarget(unsigned target);
 	private:
-		/// OpenGL target.
 		unsigned target_;
-		/// OpenGL renderbuffer.
 		unsigned renderBuffer_;
 	};
 }

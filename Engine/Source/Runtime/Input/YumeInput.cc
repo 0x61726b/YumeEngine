@@ -57,14 +57,14 @@ namespace YumeEngine
 		screenModeChanged_(false),
 		initialized_(false)
 	{
-		YumeEngine3D::Get()->GetTimer()->AddTimeEventListener(this);
+		gYume->pTimer->AddTimeEventListener(this);
 
 		Initialize();
 	}
 
 	YumeInput::~YumeInput()
 	{
-		YumeEngine3D::Get()->GetTimer()->RemoveTimeEventListener(this);
+		gYume->pTimer->RemoveTimeEventListener(this);
 	}
 
 
@@ -374,7 +374,7 @@ namespace YumeEngine
 
 	void YumeInput::Initialize()
 	{
-		YumeRHI* graphics = YumeEngine3D::Get()->GetRenderer();
+		YumeRHI* graphics = gYume->pRHI;
 		if(!graphics || !graphics->IsInitialized())
 			return;
 
@@ -641,7 +641,7 @@ namespace YumeEngine
 
 		case SDL_QUIT:
 		{
-			YumeEngine3D::Get()->Exit();
+			gYume->pEngine->Exit();
 		}
 			break;
 

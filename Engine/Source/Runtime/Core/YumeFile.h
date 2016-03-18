@@ -25,6 +25,8 @@
 #include "YumeRequired.h"
 #include "YumeVariant.h"
 
+#include "Math/YumeBoundingBox.h"
+
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 //----------------------------------------------------------------------------
@@ -36,7 +38,7 @@ namespace YumeEngine
 		FILEMODE_WRITE,
 		FILEMODE_READWRITE
 	};
-	class YumeAPIExport YumeFile : public GeneralObjAlloc
+	class YumeAPIExport YumeFile : public YumeBase
 	{
 	public:
 		YumeFile(const std::string& file,FileMode = FILEMODE_READ);
@@ -48,7 +50,8 @@ namespace YumeEngine
 		unsigned Read(void* dest,int size);
 		YumeString ReadLine();
 
-		static YumeHash GetType() { return type_; }
+		static YumeHash GetTypeStatic() { return type_; }
+		virtual YumeHash GetType() { return type_; }
 		static YumeHash type_;
 
 		bool Eof() const;
@@ -68,7 +71,6 @@ namespace YumeEngine
 		bool WriteVariantData(const Variant& v);
 
 		YumeString ReadString();
-		YumeString ReadFileID();
 		signed char ReadByte();
 		unsigned ReadUInt();
 		int ReadInt();
@@ -80,6 +82,9 @@ namespace YumeEngine
 		unsigned short ReadUShort();
 		Variant ReadVariant();
 		Variant ReadVariant(VariantType type);
+		BoundingBox ReadBoundingBox();
+		Vector3 ReadVector3();
+		Quaternion ReadQuaternion();
 
 		unsigned GetSize();
 

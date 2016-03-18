@@ -44,7 +44,7 @@ namespace YumeEngine
 	struct VAnimEventFrame;
 
 	
-	class ValueAnimationInfo
+	class ValueAnimationInfo : public RefCounted
 	{
 	public:
 		
@@ -71,7 +71,7 @@ namespace YumeEngine
 		YumeBase* GetTarget() const;
 
 		
-		ValueAnimation* GetAnimation() const { return animation_.get(); }
+		ValueAnimation* GetAnimation() const { return animation_; }
 
 		
 		WrapMode GetWrapMode() const { return wrapMode_; }

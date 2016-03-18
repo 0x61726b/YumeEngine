@@ -44,11 +44,14 @@
 #include "YumeD3D11IndexBuffer.h"
 #include "YumeD3D11InputLayout.h"
 
-#include "Renderer/YumeTexture2D.h"
+#include "YumeD3D11Texture2D.h"
+#include "YumeD3D11Texture3D.h"
+#include "YumeD3D11TextureCube.h"
 
 #include "Renderer/YumeRenderable.h"
-
+#include "Renderer/YumeGeometry.h"
 #include "Renderer/YumeImage.h"
+#include "Renderer/YumeRenderer.h"
 
 #include "Core/YumeBase.h"
 #include "Core/YumeDefaults.h"
@@ -161,14 +164,14 @@ namespace YumeEngine
 
 	extern "C" void YumeD3DExport LoadModule(YumeEngine3D* engine) throw()
 	{
-		YumeRHI* graphics_ = new YumeD3D11Renderer;
-		engine->SetRenderer(graphics_);
+		YumeD3D11Renderer* renderer = (new YumeD3D11Renderer);
+		engine->SetRenderer(renderer);
 	}
 	//---------------------------------------------------------------------	
 	extern "C" void YumeD3DExport UnloadModule(YumeEngine3D* engine) throw()
 	{
-		YumeRHI* graphics_ = engine->GetRenderer();
-		delete graphics_;
+		YumeRHI* renderer = gYume->pRHI;
+		delete renderer;
 	}
 	//---------------------------------------------------------------------
 	YumeD3D11Renderer::YumeD3D11Renderer()
@@ -190,83 +193,6 @@ namespace YumeEngine
 	YumeD3D11Renderer::~YumeD3D11Renderer()
 	{
 
-		{
-			boost::mutex::scoped_lock lock(gpuResourceMutex_);
-
-			for(int i=0; i < gpuResources_.size(); ++i)
-			{
-				if(gpuResources_[i])
-					gpuResources_[i]->Release();
-			}
-
-			gpuResources_.clear();
-		}
-
-
-		// ToDo(arkenthera) not sure about this..
-		int size = constantBuffers_.size();
-		for(int i=0; i < size; ++i)
-			constantBuffers_[i].reset();
-		constantBuffers_.clear();
-		vertexDeclarations_.clear();
-
-		BlendStatesMap::iterator blendIt;
-
-		for(blendIt = impl_->blendStates_.begin();blendIt != impl_->blendStates_.end(); ++blendIt)
-			D3D_SAFE_RELEASE(blendIt->second);
-
-		impl_->blendStates_.clear();
-
-
-
-		DepthStatesMap::iterator depthIt;
-
-		for(depthIt = impl_->depthStates_.begin();depthIt != impl_->depthStates_.end(); ++depthIt)
-			D3D_SAFE_RELEASE(depthIt->second);
-
-		impl_->depthStates_.clear();
-
-
-
-		RasterizerStatesMap::iterator rasterizerIt;
-
-		for(rasterizerIt = impl_->rasterizerStates_.begin();rasterizerIt != impl_->rasterizerStates_.end(); ++rasterizerIt)
-			D3D_SAFE_RELEASE(rasterizerIt->second);
-		impl_->rasterizerStates_.clear();
-
-		D3D_SAFE_RELEASE(impl_->defaultRenderTargetView_);
-		D3D_SAFE_RELEASE(impl_->defaultDepthStencilView_);
-		D3D_SAFE_RELEASE(impl_->defaultDepthTexture_);
-		D3D_SAFE_RELEASE(impl_->resolveTexture_);
-		D3D_SAFE_RELEASE(impl_->swapChain_);
-		D3D_SAFE_RELEASE(impl_->deviceContext_);
-		D3D_SAFE_RELEASE(impl_->device_);
-
-		lastShader_.reset();
-
-		if(impl_->debug_)
-		{
-			impl_->debug_->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-			D3D_SAFE_RELEASE(impl_->debug_);
-		}
-
-		if(window_)
-		{
-			SDL_ShowCursor(SDL_TRUE);
-			SDL_DestroyWindow(window_);
-			window_ = 0;
-		}
-
-		delete impl_;
-		impl_ = 0;
-
-
-
-		UnregisterFactories();
-
-		// Shut down SDL now. Graphics should be the last SDL-using subsystem to be destroyed
-		SDL_Quit();
-
 	}
 
 	bool YumeD3D11Renderer::BeginFrame()
@@ -277,8 +203,13 @@ namespace YumeEngine
 		if(fullscreen_ && (SDL_GetWindowFlags(window_) & SDL_WINDOW_MINIMIZED))
 			return false;
 
-		numPrimitives_	= 0;
-		numBatches_		= 0;
+		ResetRenderTargets();
+
+		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
+			SetTexture(i,0);
+
+		numPrimitives_ = 0;
+		numBatches_ = 0;
 
 		return true;
 	}
@@ -289,6 +220,8 @@ namespace YumeEngine
 			return;
 
 		impl_->swapChain_->Present(vsync_ ? 1 : 0,0);
+
+		CleanupScratchBuffers();
 	}
 
 	void YumeD3D11Renderer::ResetCache()
@@ -302,17 +235,16 @@ namespace YumeEngine
 			impl_->vertexOffsets_[i] = 0;
 		}
 
-		//
 		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
 		{
-			//textures_[i] = 0;
+			textures_[i] = 0;
 			impl_->shaderResourceViews_[i] = 0;
 			impl_->samplers_[i] = 0;
 		}
 
 		for(unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
 		{
-			//renderTargets_[i] = 0;
+			renderTargets_[i] = 0;
 			impl_->renderTargetViews_[i] = 0;
 		}
 
@@ -325,7 +257,6 @@ namespace YumeEngine
 		depthStencil_ = 0;
 		impl_->depthStencilView_ = 0;
 		viewport_ = IntRect(0,0,windowWidth_,windowHeight_);
-		textureAnisotropy_ = 1;
 
 		indexBuffer_ = 0;
 		vertexDeclarationHash_ = 0;
@@ -334,6 +265,7 @@ namespace YumeEngine
 		pixelShader_ = 0;
 		shaderProgram_ = 0;
 		blendMode_ = BLEND_REPLACE;
+		textureAnisotropy_ = 1;
 		colorWrite_ = true;
 		cullMode_ = CULL_CCW;
 		constantDepthBias_ = 0.0f;
@@ -353,7 +285,7 @@ namespace YumeEngine
 		stencilWriteMask_ = M_MAX_UNSIGNED;
 		useClipPlane_ = false;
 		renderTargetsDirty_ = true;
-		texturesDirty_ = false;
+		texturesDirty_ = true;
 		vertexDeclarationDirty_ = true;
 		blendStateDirty_ = true;
 		depthStateDirty_ = true;
@@ -370,25 +302,64 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::Clear(unsigned flags,const YumeColor& color,float depth,unsigned stencil)
 	{
+		IntVector2 rtSize = GetRenderTargetDimensions();
+
 		bool oldColorWrite = colorWrite_;
 		bool oldDepthWrite = depthWrite_;
-		// Make sure we use the read-write version of the depth stencil
-		SetDepthWrite(true);
-		PreDraw();
 
-		if((flags & CLEAR_COLOR) && impl_->renderTargetViews_[0])
-			impl_->deviceContext_->ClearRenderTargetView(impl_->renderTargetViews_[0],color.Data());
-
-		if((flags & (CLEAR_DEPTH | CLEAR_STENCIL)) && impl_->depthStencilView_)
+		// D3D11 clear always clears the whole target regardless of viewport or scissor test settings
+		// Emulate partial clear by rendering a quad
+		if(!viewport_.left_ && !viewport_.top_ && viewport_.right_ == rtSize.x_ && viewport_.bottom_ == rtSize.y_)
 		{
-			unsigned depthClearFlags = 0;
-			if(flags & CLEAR_DEPTH)
-				depthClearFlags |= D3D11_CLEAR_DEPTH;
-			if(flags & CLEAR_STENCIL)
-				depthClearFlags |= D3D11_CLEAR_STENCIL;
-			impl_->deviceContext_->ClearDepthStencilView(impl_->depthStencilView_,depthClearFlags,depth,(UINT8)stencil);
+			// Make sure we use the read-write version of the depth stencil
+			SetDepthWrite(true);
+			PreDraw();
+
+			if((flags & CLEAR_COLOR) && impl_->renderTargetViews_[0])
+				impl_->deviceContext_->ClearRenderTargetView(impl_->renderTargetViews_[0],color.Data());
+
+			if((flags & (CLEAR_DEPTH | CLEAR_STENCIL)) && impl_->depthStencilView_)
+			{
+				unsigned depthClearFlags = 0;
+				if(flags & CLEAR_DEPTH)
+					depthClearFlags |= D3D11_CLEAR_DEPTH;
+				if(flags & CLEAR_STENCIL)
+					depthClearFlags |= D3D11_CLEAR_STENCIL;
+				impl_->deviceContext_->ClearDepthStencilView(impl_->depthStencilView_,depthClearFlags,depth,(UINT8)stencil);
+			}
+		}
+		else
+		{
+			YumeRenderer* renderer = gYume->pRenderer;
+			if(!renderer)
+				return;
+
+			YumeGeometry* geometry = renderer->GetQuadGeometry();
+
+			Matrix3x4 model = Matrix3x4::IDENTITY;
+			Matrix4 projection = Matrix4::IDENTITY;
+			model.m23_ = Clamp(depth,0.0f,1.0f);
+
+			SetBlendMode(BLEND_REPLACE);
+			SetColorWrite((flags & CLEAR_COLOR) != 0);
+			SetCullMode(CULL_NONE);
+			SetDepthTest(CMP_ALWAYS);
+			SetDepthWrite((flags & CLEAR_DEPTH) != 0);
+			SetFillMode(FILL_SOLID);
+			SetScissorTest(false);
+			SetStencilTest((flags & CLEAR_STENCIL) != 0,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,stencil);
+			SetShaders(GetShader(VS,"ClearFramebuffer"),GetShader(PS,"ClearFramebuffer"));
+			SetShaderParameter(VSP_MODEL,model);
+			SetShaderParameter(VSP_VIEWPROJ,projection);
+			SetShaderParameter(PSP_MATDIFFCOLOR,color);
+
+			geometry->Draw(this);
+
+			SetStencilTest(false);
+			ClearParameterSources();
 		}
 
+		// Restore color & depth write state now
 		SetColorWrite(oldColorWrite);
 		SetDepthWrite(oldDepthWrite);
 	}
@@ -482,31 +453,29 @@ namespace YumeEngine
 		viewport_ = rectCopy;
 
 		// Disable scissor test, needs to be re-enabled by the user
-		//SetScissorTest(false);
+		SetScissorTest(false);
 	}
 
 	IntVector2 YumeD3D11Renderer::GetRenderTargetDimensions() const
 	{
 		int width,height;
 
-		//if(renderTargets_[0])
-		//{
-		//	width = renderTargets_[0]->GetWidth();
-		//	height = renderTargets_[0]->GetHeight();
-		//}
-		//else if(depthStencil_) // Depth-only rendering
-		//{
-		//	width = depthStencil_->GetWidth();
-		//	height = depthStencil_->GetHeight();
-		//}
-		//else
-		//{
-		//	width = windowWidth_;
-		//	height = windowHeight_;
-		//}
+		if(renderTargets_[0])
+		{
+			width = renderTargets_[0]->GetWidth();
+			height = renderTargets_[0]->GetHeight();
+		}
+		else if(depthStencil_) // Depth-only rendering
+		{
+			width = depthStencil_->GetWidth();
+			height = depthStencil_->GetHeight();
+		}
+		else
+		{
+			width = windowWidth_;
+			height = windowHeight_;
+		}
 
-		width = windowWidth_;
-		height = windowHeight_;
 		return IntVector2(width,height);
 	}
 
@@ -608,6 +577,82 @@ namespace YumeEngine
 			SDL_DestroyWindow(window_);
 			window_ = 0;
 		}
+		{
+			MutexLock lock(gpuResourceMutex_);
+
+			for(int i=0; i < gpuResources_.size(); ++i)
+			{
+				if(gpuResources_[i])
+					gpuResources_[i]->Release();
+			}
+
+			gpuResources_.clear();
+		}
+
+
+		// ToDo(arkenthera) not sure about this..
+		int size = constantBuffers_.size();
+		for(int i=0; i < size; ++i)
+			constantBuffers_[i].Reset();
+		constantBuffers_.clear();
+		vertexDeclarations_.clear();
+
+		BlendStatesMap::iterator blendIt;
+
+		for(blendIt = impl_->blendStates_.begin();blendIt != impl_->blendStates_.end(); ++blendIt)
+			D3D_SAFE_RELEASE(blendIt->second);
+
+		impl_->blendStates_.clear();
+
+
+
+		DepthStatesMap::iterator depthIt;
+
+		for(depthIt = impl_->depthStates_.begin();depthIt != impl_->depthStates_.end(); ++depthIt)
+			D3D_SAFE_RELEASE(depthIt->second);
+
+		impl_->depthStates_.clear();
+
+
+
+		RasterizerStatesMap::iterator rasterizerIt;
+
+		for(rasterizerIt = impl_->rasterizerStates_.begin();rasterizerIt != impl_->rasterizerStates_.end(); ++rasterizerIt)
+			D3D_SAFE_RELEASE(rasterizerIt->second);
+		impl_->rasterizerStates_.clear();
+
+		D3D_SAFE_RELEASE(impl_->defaultRenderTargetView_);
+		D3D_SAFE_RELEASE(impl_->defaultDepthStencilView_);
+		D3D_SAFE_RELEASE(impl_->defaultDepthTexture_);
+		D3D_SAFE_RELEASE(impl_->resolveTexture_);
+		D3D_SAFE_RELEASE(impl_->swapChain_);
+		D3D_SAFE_RELEASE(impl_->deviceContext_);
+		D3D_SAFE_RELEASE(impl_->device_);
+
+		//lastShader_.reset();
+
+		if(impl_->debug_)
+		{
+			impl_->debug_->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+			D3D_SAFE_RELEASE(impl_->debug_);
+		}
+
+		if(window_)
+		{
+			SDL_ShowCursor(SDL_TRUE);
+			SDL_DestroyWindow(window_);
+			window_ = 0;
+		}
+
+		delete impl_;
+		impl_ = 0;
+
+
+
+		UnregisterFactories();
+
+		// Shut down SDL now. Graphics should be the last SDL-using subsystem to be destroyed
+		SDL_Quit();
 	}
 
 	bool YumeD3D11Renderer::SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,
@@ -726,7 +771,7 @@ namespace YumeEngine
 				0,
 				D3D_DRIVER_TYPE_HARDWARE,
 				0,
-				D3D11_CREATE_DEVICE_DEBUG,
+				0,
 				0,
 				0,
 				D3D11_SDK_VERSION,
@@ -791,7 +836,31 @@ namespace YumeEngine
 		dxgiAdapter->Release();
 		dxgiDevice->Release();
 
-		impl_->GetDevice()->QueryInterface(__uuidof(ID3D11Debug),reinterpret_cast<void**>(&impl_->debug_));
+//
+//
+//#ifdef _DEBUG
+//		impl_->GetDevice()->QueryInterface(__uuidof(ID3D11Debug),reinterpret_cast<void**>(&impl_->debug_));
+//		ID3D11InfoQueue *d3dInfoQueue = nullptr;
+//		impl_->GetDevice()->QueryInterface( __uuidof(ID3D11InfoQueue), (void**)&d3dInfoQueue );
+//
+//		
+//
+//		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION,true);
+//		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR,true);
+//
+//		D3D11_MESSAGE_ID hide[] =
+//		{
+//			D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS,
+//			(D3D11_MESSAGE_ID)3146081
+//		};
+//
+//		D3D11_INFO_QUEUE_FILTER filter;
+//		memset(&filter,0,sizeof(filter));
+//		filter.DenyList.NumIDs = _countof(hide);
+//		filter.DenyList.pIDList = hide;
+//		d3dInfoQueue->AddStorageFilterEntries(&filter);
+//		d3dInfoQueue->Release();
+//#endif
 
 		if(FAILED(hr))
 		{
@@ -912,7 +981,7 @@ namespace YumeEngine
 	{
 		if(lastShaderName_ != name || !lastShader_)
 		{
-			YumeResourceManager* resource_ = YumeEngine3D::Get()->GetResourceManager();
+			YumeResourceManager* resource_ = gYume->pResourceManager;
 			YumeString fullShaderName = shaderPath_ + name + shaderExtension_;
 			// Try to reduce repeated error log prints because of missing shaders
 			if(lastShaderName_ == name && !resource_->Exists(fullShaderName))
@@ -923,6 +992,11 @@ namespace YumeEngine
 		}
 
 		return lastShader_ ? lastShader_->GetVariation(type,defines) : (YumeD3D11ShaderVariation*)0;
+	}
+
+	bool YumeD3D11Renderer::HasShaderParameter(YumeHash param)
+	{
+		return shaderProgram_ && shaderProgram_->parameters_.find(param) != shaderProgram_->parameters_.end();
 	}
 
 	void YumeD3D11Renderer::SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps)
@@ -960,7 +1034,7 @@ namespace YumeEngine
 			}
 
 			impl_->deviceContext_->VSSetShader((ID3D11VertexShader*)(vs ? vsVar_->GetGPUObject() : 0),0,0);
-			vertexShader_ = vsVar_;
+			vertexShader_ = vs;
 			vertexDeclarationDirty_ = true;
 		}
 
@@ -983,7 +1057,7 @@ namespace YumeEngine
 			}
 
 			impl_->deviceContext_->PSSetShader((ID3D11PixelShader*)(psVar_ ? psVar_->GetGPUObject() : 0),0,0);
-			pixelShader_ = psVar_;
+			pixelShader_ = ps;
 		}
 
 		// Update current shader parameters & constant buffers
@@ -992,11 +1066,11 @@ namespace YumeEngine
 			std::pair<YumeShaderVariation*,YumeShaderVariation*> key = std::make_pair(vertexShader_,pixelShader_);
 			ShaderProgramMap::iterator i = shaderPrograms_.find(key);
 			if(i != shaderPrograms_.end())
-				shaderProgram_ = i->second.get();
+				shaderProgram_ = i->second;
 			else
 			{
 				SharedPtr<YumeD3D11ShaderProgram> newProgram = shaderPrograms_[key] = SharedPtr<YumeD3D11ShaderProgram>(new YumeD3D11ShaderProgram(this,vertexShader_,pixelShader_));
-				shaderProgram_ = newProgram.get();
+				shaderProgram_ = newProgram;
 			}
 
 			bool vsBuffersChanged = false;
@@ -1004,31 +1078,23 @@ namespace YumeEngine
 
 			for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
 			{
-				if(shaderProgram_->vsConstantBuffers_[i])
+				ID3D11Buffer* vsBuffer = shaderProgram_->vsConstantBuffers_[i] ? (ID3D11Buffer*)static_cast<YumeD3D11ConstantBuffer*>(shaderProgram_->vsConstantBuffers_[i])->
+					GetGPUObject() : 0;
+				if(vsBuffer != impl_->constantBuffers_[VS][i])
 				{
-					ID3D11Buffer* vsBuffer = shaderProgram_->vsConstantBuffers_[i] ? (ID3D11Buffer*)static_cast<YumeD3D11ConstantBuffer*>(shaderProgram_->vsConstantBuffers_[i])->
-						GetGPUObject() : 0;
-					if(vsBuffer != impl_->constantBuffers_[VS][i])
-					{
-						impl_->constantBuffers_[VS][i] = vsBuffer;
-						shaderParameterSources_[i] = (const void*)0xffffffff;
-						vsBuffersChanged = true;
-					}
+					impl_->constantBuffers_[VS][i] = vsBuffer;
+					shaderParameterSources_[i] = (const void*)0xffffffff;
+					vsBuffersChanged = true;
 				}
 
-				if(shaderProgram_->psConstantBuffers_[i])
+				ID3D11Buffer* psBuffer = shaderProgram_->psConstantBuffers_[i] ? (ID3D11Buffer*)static_cast<YumeD3D11ConstantBuffer*>(shaderProgram_->psConstantBuffers_[i])->
+					GetGPUObject() : 0;
+				if(psBuffer != impl_->constantBuffers_[PS][i])
 				{
-					ID3D11Buffer* psBuffer = shaderProgram_->psConstantBuffers_[i] ? (ID3D11Buffer*)static_cast<YumeD3D11ConstantBuffer*>(shaderProgram_->psConstantBuffers_[i])->
-						GetGPUObject() : 0;
-					if(psBuffer != impl_->constantBuffers_[PS][i])
-					{
-						impl_->constantBuffers_[PS][i] = psBuffer;
-						shaderParameterSources_[i] = (const void*)0xffffffff;
-						psBuffersChanged = true;
-					}
+					impl_->constantBuffers_[PS][i] = psBuffer;
+					shaderParameterSources_[i] = (const void*)0xffffffff;
+					psBuffersChanged = true;
 				}
-
-
 			}
 
 			if(vsBuffersChanged)
@@ -1174,13 +1240,51 @@ namespace YumeEngine
 		switch(value.GetType())
 		{
 		case VAR_BOOL:
-			SetShaderParameter(param,value.Get<bool>());
+			SetShaderParameter(param,value.GetBool());
 			break;
 
 		case VAR_FLOAT:
-			SetShaderParameter(param,value.Get<float>());
+			SetShaderParameter(param,value.GetFloat());
 			break;
+
+		case VAR_VECTOR2:
+			SetShaderParameter(param,value.GetVector2());
+			break;
+
+		case VAR_VECTOR3:
+			SetShaderParameter(param,value.GetVector3());
+			break;
+
+		case VAR_VECTOR4:
+			SetShaderParameter(param,value.GetVector4());
+			break;
+
+		case VAR_COLOR:
+			SetShaderParameter(param,value.GetColor());
+			break;
+
+		case VAR_MATRIX3:
+			SetShaderParameter(param,value.GetMatrix3());
+			break;
+
+		case VAR_MATRIX3X4:
+			SetShaderParameter(param,value.GetMatrix3x4());
+			break;
+
+		case VAR_MATRIX4:
+			SetShaderParameter(param,value.GetMatrix4());
+			break;
+
+		case VAR_BUFFER:
+		{
+			const YumeVector<unsigned char>::type& buffer = value.GetBuffer();
+			if(buffer.size() >= sizeof(float))
+				SetShaderParameter(param,reinterpret_cast<const float*>(&buffer[0]),buffer.size() / sizeof(float));
+		}
+		break;
+
 		default:
+			// Unsupported parameter type, do nothing
 			break;
 		}
 	}
@@ -1489,17 +1593,30 @@ namespace YumeEngine
 
 	YumeVertexBuffer* YumeD3D11Renderer::CreateVertexBuffer()
 	{
-		return YumeAPINew YumeD3D11VertexBuffer(this);
+		return YumeAPINew YumeD3D11VertexBuffer();
 	}
 
 	YumeIndexBuffer* YumeD3D11Renderer::CreateIndexBuffer()
 	{
-		return YumeAPINew YumeD3D11IndexBuffer(this);
+		return YumeAPINew YumeD3D11IndexBuffer();
+	}
+
+	YumeTexture2D* YumeD3D11Renderer::CreateTexture2D()
+	{
+		return YumeAPINew YumeD3D11Texture2D();
+	}
+	YumeTexture3D* YumeD3D11Renderer::CreateTexture3D()
+	{
+		return YumeAPINew YumeD3D11Texture3D();
+	}
+	YumeTextureCube* YumeD3D11Renderer::CreateTextureCube()
+	{
+		return YumeAPINew YumeD3D11TextureCube();
 	}
 
 	YumeInputLayout* YumeD3D11Renderer::CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks)
 	{
-		return YumeAPINew YumeD3D11InputLayout(this,vertexShader,buffers,elementMasks);
+		return YumeAPINew YumeD3D11InputLayout(vertexShader,buffers,elementMasks);
 	}
 
 	void YumeD3D11Renderer::CleanupShaderPrograms(YumeShaderVariation* variation)
@@ -1524,13 +1641,13 @@ namespace YumeEngine
 		unsigned key = type | (index << 1) | (size << 4);
 		YumeMap<unsigned,SharedPtr<YumeConstantBuffer> >::iterator i = constantBuffers_.find(key);
 		if(i != constantBuffers_.end())
-			return i->second.get();
+			return i->second;
 		else
 		{
-			SharedPtr<YumeConstantBuffer> newConstantBuffer(new YumeD3D11ConstantBuffer(this));
+			SharedPtr<YumeConstantBuffer> newConstantBuffer(new YumeD3D11ConstantBuffer());
 			newConstantBuffer->SetSize(size);
 			constantBuffers_[key] = newConstantBuffer;
-			return newConstantBuffer.get();
+			return newConstantBuffer;
 		}
 	}
 
@@ -1608,7 +1725,65 @@ namespace YumeEngine
 
 	bool YumeD3D11Renderer::SetVertexBuffers(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset)
 	{
-		return SetVertexBuffers(reinterpret_cast<const YumeVector<YumeVertexBuffer*>::type&>(buffers),elementMasks,instanceOffset);
+		if(buffers.size() > MAX_VERTEX_STREAMS)
+		{
+			YUMELOG_ERROR("Too many vertex buffers");
+			return false;
+		}
+		if(buffers.size() != elementMasks.size())
+		{
+			YUMELOG_ERROR("Amount of element masks and vertex buffers does not match");
+			return false;
+		}
+
+		for(unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
+		{
+			YumeD3D11VertexBuffer* buffer = 0;
+			bool changed = false;
+
+			buffer = i < buffers.size() ? static_cast<YumeD3D11VertexBuffer*>(buffers[i].Get()) : 0;
+			if(buffer)
+			{
+				unsigned elementMask = buffer->GetElementMask() & elementMasks[i];
+				unsigned offset = (elementMask & MASK_INSTANCEMATRIX1) ? instanceOffset * buffer->GetVertexSize() : 0;
+
+				if(buffer != vertexBuffers_[i] || elementMask != elementMasks_[i] || offset != impl_->vertexOffsets_[i])
+				{
+					vertexBuffers_[i] = buffer;
+					elementMasks_[i] = elementMask;
+					impl_->vertexBuffers_[i] = (ID3D11Buffer*)buffer->GetGPUObject();
+					impl_->vertexSizes_[i] = buffer->GetVertexSize();
+					impl_->vertexOffsets_[i] = offset;
+					changed = true;
+				}
+			}
+			else if(vertexBuffers_[i])
+			{
+				vertexBuffers_[i] = 0;
+				elementMasks_[i] = 0;
+				impl_->vertexBuffers_[i] = 0;
+				impl_->vertexSizes_[i] = 0;
+				impl_->vertexOffsets_[i] = 0;
+				changed = true;
+			}
+
+			if(changed)
+			{
+				vertexDeclarationDirty_ = true;
+
+				if(firstDirtyVB_ == M_MAX_UNSIGNED)
+					firstDirtyVB_ = lastDirtyVB_ = i;
+				else
+				{
+					if(i < firstDirtyVB_)
+						firstDirtyVB_ = i;
+					if(i > lastDirtyVB_)
+						lastDirtyVB_ = i;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	void YumeD3D11Renderer::SetIndexBuffer(YumeIndexBuffer* buffer)
@@ -1656,7 +1831,6 @@ namespace YumeEngine
 			if(!renderTargets_[0] &&
 				(!depthStencil_ || (depthStencil_ && depthStencil_->GetWidth() == windowWidth_ && depthStencil_->GetHeight() == windowHeight_)))
 				impl_->renderTargetViews_[0] = impl_->defaultRenderTargetView_;
-
 			impl_->deviceContext_->OMSetRenderTargets(MAX_RENDERTARGETS,&impl_->renderTargetViews_[0],impl_->depthStencilView_);
 			renderTargetsDirty_ = false;
 		}
@@ -1702,11 +1876,12 @@ namespace YumeEngine
 					std::pair<YumeMap<unsigned long long,SharedPtr<YumeInputLayout>>::iterator,bool> ret;
 					if(i == vertexDeclarations_.end())
 					{
-						SharedPtr<YumeInputLayout> newVertexDeclaration(new YumeD3D11InputLayout(this,vertexShader_,vertexBuffers_,
+						SharedPtr<YumeInputLayout> newVertexDeclaration(new YumeD3D11InputLayout(vertexShader_,vertexBuffers_,
 							elementMasks_));
 						ret = vertexDeclarations_.insert(std::make_pair(newVertexDeclarationHash,newVertexDeclaration));
-
 					}
+					else
+						ret.first = i;
 
 					impl_->deviceContext_->IASetInputLayout((ID3D11InputLayout*)ret.first->second->GetInputLayout());
 					vertexDeclarationHash_ = newVertexDeclarationHash;
@@ -1743,12 +1918,14 @@ namespace YumeEngine
 					if(FAILED(hr))
 					{
 						D3D_SAFE_RELEASE(newBlendState);
-						YUMELOG_ERROR("Failed to create blend state",hr);
+						YUMELOG_ERROR("Failed to create blend state " << hr);
 					}
 
 
 					ret = impl_->blendStates_.insert(std::make_pair(newBlendStateHash,newBlendState));
 				}
+				else
+					ret.first = i;
 
 				impl_->deviceContext_->OMSetBlendState(ret.first->second,0,M_MAX_UNSIGNED);
 				blendStateHash_ = newBlendStateHash;
@@ -1795,9 +1972,9 @@ namespace YumeEngine
 					}
 
 					ret = impl_->depthStates_.insert(std::make_pair(newDepthStateHash,newDepthState));
-
 				}
-
+				else
+					ret.first = i;
 				impl_->deviceContext_->OMSetDepthStencilState(ret.first->second,stencilRef_);
 				depthStateHash_ = newDepthStateHash;
 			}
@@ -1845,6 +2022,8 @@ namespace YumeEngine
 
 					ret = impl_->rasterizerStates_.insert(std::make_pair(newRasterizerStateHash,newRasterizerState));
 				}
+				else
+					ret.first = i;
 
 				impl_->deviceContext_->RSSetState(ret.first->second);
 				rasterizerStateHash_ = newRasterizerStateHash;
@@ -1945,6 +2124,60 @@ namespace YumeEngine
 		++numBatches_;
 	}
 
+	bool YumeD3D11Renderer::ResolveToTexture(YumeTexture2D* destination,const IntRect& viewport)
+	{
+		if(!destination || !destination->GetRenderSurface())
+			return false;
+
+		IntRect vpCopy = viewport;
+		if(vpCopy.right_ <= vpCopy.left_)
+			vpCopy.right_ = vpCopy.left_ + 1;
+		if(vpCopy.bottom_ <= vpCopy.top_)
+			vpCopy.bottom_ = vpCopy.top_ + 1;
+
+		D3D11_BOX srcBox;
+		srcBox.left = Clamp(vpCopy.left_,0,windowWidth_);
+		srcBox.top = Clamp(vpCopy.top_,0,windowHeight_);
+		srcBox.right = Clamp(vpCopy.right_,0,windowWidth_);
+		srcBox.bottom = Clamp(vpCopy.bottom_,0,windowHeight_);
+		srcBox.front = 0;
+		srcBox.back = 1;
+
+		ID3D11Resource* source = 0;
+		bool resolve = multiSample_ > 1;
+		impl_->defaultRenderTargetView_->GetResource(&source);
+
+		if(!resolve)
+		{
+			if(!srcBox.left && !srcBox.top && srcBox.right == windowWidth_ && srcBox.bottom == windowHeight_)
+				impl_->deviceContext_->CopyResource((ID3D11Resource*)static_cast<YumeD3D11Texture2D*>(destination)->GetGPUObject(),source);
+			else
+				impl_->deviceContext_->CopySubresourceRegion((ID3D11Resource*)static_cast<YumeD3D11Texture2D*>(destination)->GetGPUObject(),0,0,0,0,source,0,&srcBox);
+		}
+		else
+		{
+			if(!srcBox.left && !srcBox.top && srcBox.right == windowWidth_ && srcBox.bottom == windowHeight_)
+			{
+				impl_->deviceContext_->ResolveSubresource((ID3D11Resource*)static_cast<YumeD3D11Texture2D*>(destination)->GetGPUObject(),0,source,0,(DXGI_FORMAT)
+					destination->GetFormat());
+			}
+			else
+			{
+				CreateResolveTexture();
+
+				if(impl_->resolveTexture_)
+				{
+					impl_->deviceContext_->ResolveSubresource(impl_->resolveTexture_,0,source,0,DXGI_FORMAT_R8G8B8A8_UNORM);
+					impl_->deviceContext_->CopySubresourceRegion((ID3D11Resource*)static_cast<YumeD3D11Texture2D*>(destination)->GetGPUObject(),0,0,0,0,impl_->resolveTexture_,0,&srcBox);
+				}
+			}
+		}
+
+		source->Release();
+
+		return true;
+	}
+
 
 	void YumeD3D11Renderer::Maximize()
 	{
@@ -2008,14 +2241,14 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::AddGpuResource(YumeGpuResource* gpuRes)
 	{
-		boost::mutex::scoped_lock lock(gpuResourceMutex_);
+		MutexLock lock(gpuResourceMutex_);
 
 		gpuResources_.push_back(gpuRes);
 	}
 
 	void YumeD3D11Renderer::RemoveGpuResource(YumeGpuResource* gpuRes)
 	{
-		boost::mutex::scoped_lock lock(gpuResourceMutex_);
+		MutexLock lock(gpuResourceMutex_);
 
 		//Check if valid
 		GpuResourceVector::iterator It = std::find(gpuResources_.begin(),gpuResources_.end(),gpuRes);
@@ -2026,19 +2259,47 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::RegisterFactories()
 	{
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("Shader"),[](void) -> YumeBase * { return new YumeD3D11Shader();});
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("Texture2D"),[this](void) -> YumeBase * { return new YumeD3D11Texture2D(this);});
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("IndexBuffer"),[this](void) -> YumeBase * { return new YumeD3D11IndexBuffer(this);});
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("VertexBuffer"),[this](void) -> YumeBase * { return new YumeD3D11VertexBuffer(this);});
+		gYume->pObjFactory->RegisterFactoryFunction(("D3D11Shader"),[](void) -> YumeBase * { return new YumeD3D11Shader();});
+		gYume->pObjFactory->RegisterFactoryFunction(("Texture2D"),[this](void) -> YumeBase * { return new YumeD3D11Texture2D();});
+		gYume->pObjFactory->RegisterFactoryFunction(("Texture3D"),[this](void) -> YumeBase * { return new YumeD3D11Texture3D();});
+		gYume->pObjFactory->RegisterFactoryFunction(("TextureCube"),[this](void) -> YumeBase * { return new YumeD3D11TextureCube();});
+		gYume->pObjFactory->RegisterFactoryFunction(("IndexBuffer"),[this](void) -> YumeBase * { return new YumeD3D11IndexBuffer();});
+		gYume->pObjFactory->RegisterFactoryFunction(("VertexBuffer"),[this](void) -> YumeBase * { return new YumeD3D11VertexBuffer();});
 	}
 	void YumeD3D11Renderer::UnregisterFactories()
 	{
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("Shader"));
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("Texture2D"));
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("IndexBuffer"));
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("VertexBuffer"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("D3D11Shader"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("Texture2D"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("Texture3D"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("TextureCube"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("IndexBuffer"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("VertexBuffer"));
 	}
 
+	void YumeD3D11Renderer::CreateResolveTexture()
+	{
+		if(impl_->resolveTexture_)
+			return;
+
+		D3D11_TEXTURE2D_DESC textureDesc;
+		memset(&textureDesc,0,sizeof textureDesc);
+		textureDesc.Width = (UINT)windowWidth_;
+		textureDesc.Height = (UINT)windowHeight_;
+		textureDesc.MipLevels = 1;
+		textureDesc.ArraySize = 1;
+		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		textureDesc.SampleDesc.Count = 1;
+		textureDesc.SampleDesc.Quality = 0;
+		textureDesc.Usage = D3D11_USAGE_DEFAULT;
+		textureDesc.CPUAccessFlags = 0;
+
+		HRESULT hr = impl_->device_->CreateTexture2D(&textureDesc,0,&impl_->resolveTexture_);
+		if(FAILED(hr))
+		{
+			D3D_SAFE_RELEASE(impl_->resolveTexture_);
+			YUMELOG_ERROR("Could not create resolve texture",hr);
+		}
+	}
 
 	unsigned YumeD3D11Renderer::GetAlphaFormat()
 	{

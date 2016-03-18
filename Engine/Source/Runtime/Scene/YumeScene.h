@@ -26,7 +26,7 @@
 #include "YumeSceneNode.h"
 #include "Core/YumeEventHub.h"
 
-#include <boost/thread/mutex.hpp>
+#include "Core/YumeMutex.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -35,8 +35,14 @@ namespace YumeEngine
 	class YumeAPIExport YumeScene : public YumeSceneNode,public EngineEventListener
 	{
 	public:
+		using YumeSceneNode::GetComponent;
+	public:
 		YumeScene();
 		virtual ~YumeScene();
+
+		virtual YumeHash GetType() { return type_; };
+		static YumeHash GetTypeStatic() { return type_; };
+		static YumeHash type_;
 
 		void Clear();
 		void SetUpdateEnabled(bool enable);
@@ -76,11 +82,11 @@ namespace YumeEngine
 
 	private:
 
-		YumeMap<unsigned, YumeSceneNode*>::type localNodes_;
-		YumeMap<unsigned, YumeSceneComponent*>::type localComponents_;
+		YumeMap<unsigned,YumeSceneNode*>::type localNodes_;
+		YumeMap<unsigned,YumeSceneComponent*>::type localComponents_;
 
 		YumeVector<YumeSceneComponent*>::type delayedDirtyComponents_;
-		boost::mutex sceneMutex_;
+		Mutex sceneMutex_;
 		VariantMap smoothingData_;
 
 		unsigned localNodeID_;

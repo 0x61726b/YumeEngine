@@ -37,7 +37,7 @@ namespace YumeEngine
 	static const float DEFAULT_SMOOTHING_CONSTANT = 50.0f;
 	static const float DEFAULT_SNAP_THRESHOLD = 5.0f;
 
-
+	YumeHash YumeScene::type_ = "Scene";
 
 	YumeScene::YumeScene():
 		localComponentID_(0x01000000),
@@ -149,7 +149,7 @@ namespace YumeEngine
 
 	void YumeScene::DelayedMarkedDirty(YumeSceneComponent* component)
 	{
-		boost::mutex::scoped_lock lock(sceneMutex_);
+		MutexLock lock(sceneMutex_);
 		delayedDirtyComponents_.push_back(component);
 	}
 
@@ -218,10 +218,10 @@ namespace YumeEngine
 		// Add already created components and child nodes now
 		const YumeVector<SharedPtr<YumeSceneComponent> >::type& components = node->GetComponents();
 		for(YumeVector<SharedPtr<YumeSceneComponent> >::const_iterator i = components.begin(); i != components.end(); ++i)
-			ComponentAdded((*i).get());
+			ComponentAdded((*i));
 		const YumeVector<SharedPtr<YumeSceneNode> >::type& children = node->GetChildren();
 		for(YumeVector<SharedPtr<YumeSceneNode> >::const_iterator i = children.begin(); i != children.end(); ++i)
-			NodeAdded((*i).get());
+			NodeAdded((*i));
 	}
 
 
@@ -240,10 +240,10 @@ namespace YumeEngine
 		// Remove components and child nodes as well
 		const YumeVector<SharedPtr<YumeSceneComponent> >::type& components = node->GetComponents();
 		for(YumeVector<SharedPtr<YumeSceneComponent> >::const_iterator i = components.begin(); i != components.end(); ++i)
-			ComponentAdded((*i).get());
+			ComponentRemoved((*i));
 		const YumeVector<SharedPtr<YumeSceneNode> >::type& children = node->GetChildren();
 		for(YumeVector<SharedPtr<YumeSceneNode> >::const_iterator i = children.begin(); i != children.end(); ++i)
-			NodeAdded((*i).get());
+			NodeRemoved((*i));
 	}
 
 	void YumeScene::ComponentAdded(YumeSceneComponent* component)

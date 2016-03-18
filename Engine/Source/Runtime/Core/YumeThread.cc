@@ -52,7 +52,7 @@ namespace YumeEngine
 
 	ThreadID YumeThreadWrapper::mainThreadID;
 
-	YumeThreadWrapper::YumeThreadWrapper(): shouldRun_(false), threadHandle(0)
+	YumeThreadWrapper::YumeThreadWrapper(): shouldRun_(false),threadHandle(0)
 	{
 	}
 
@@ -68,7 +68,15 @@ namespace YumeEngine
 
 		shouldRun_ = true;
 
-		threadHandle = new boost::thread(boost::bind(&YumeThreadWrapper::ThreadRunner,this));
+#ifdef _WIN32
+		threadHandle = CreateThread(0,0,ThreadFunctionStatic,this,0,0);
+#else
+		threadHandle = new pthread_t;
+		pthread_attr_t type;
+		pthread_attr_init(&type);
+		pthread_attr_setdetachstate(&type,PTHREAD_CREATE_JOINABLE);
+		pthread_create((pthread_t*)threadHandle,&type,ThreadFunctionStatic,this);
+#endif
 
 		return threadHandle != 0;
 	}
@@ -78,10 +86,17 @@ namespace YumeEngine
 		if(!threadHandle)
 			return;
 
+
 		shouldRun_ = false;
-
-		threadHandle->interrupt();
-
+#ifdef _WIN32
+		WaitForSingleObject((HANDLE)threadHandle,INFINITE);
+		CloseHandle((HANDLE)threadHandle);
+#else
+		pthread_t* thread = (pthread_t*)threadHandle;
+		if(thread)
+			pthread_join(*thread,0);
+		delete thread;
+#endif
 		threadHandle = 0;
 	}
 
@@ -92,11 +107,10 @@ namespace YumeEngine
 
 
 #ifdef _WIN32
-		if(threadHandle->native_handle())
-			SetThreadPriority((HANDLE)threadHandle->native_handle(),pr);
+		SetThreadPriority((HANDLE)threadHandle,pr);
 #endif
 #if defined(__linux__)
-		pthread_t* thread = (pthread_t*)threadHandle->native_handle();
+		pthread_t* thread = (pthread_t*)threadHandle;
 		if(thread)
 			pthread_setschedprio(*thread,pr);
 #endif
@@ -121,4 +135,4 @@ namespace YumeEngine
 	{
 		return GetCurrentThreadID() == mainThreadID;
 	}
-}
+	}

@@ -32,7 +32,7 @@ namespace YumeEngine
 {
 	class YumeD3D11ConstantBuffer;
 	/// Combined information for specific vertex and pixel shaders.
-	class YumeD3DExport YumeD3D11ShaderProgram
+	class YumeD3DExport YumeD3D11ShaderProgram : public YumeBase
 	{
 	public:
 		/// Construct.

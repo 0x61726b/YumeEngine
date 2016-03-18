@@ -29,7 +29,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#define REGISTER_ENGINE_LISTENER YumeEngine3D::Get()->AddListener(this)
+#define REGISTER_ENGINE_LISTENER gYume->pEngine->AddListener(this)
 //----------------------------------------------------------------------------
 namespace log4cplus {
 	class Initializer;
@@ -49,15 +49,13 @@ namespace YumeEngine
 	class YumeDebugRenderer;
 	class YumeInput;
 
-	class YumeAPIExport YumeEngine3D
+	class YumeAPIExport YumeEngine3D : public YumeBase
 	{
 	public:
 		YumeEngine3D();
 
 		virtual ~YumeEngine3D();
 		bool Initialize(const VariantMap& variants);
-
-		static YumeEngine3D* Get();
 
 		void Run();
 
@@ -74,39 +72,17 @@ namespace YumeEngine
 		bool IsExiting() const { return exiting_; }
 
 		void SetRenderer(YumeRHI* renderer);
-		YumeRHI* GetRenderer();
 
 		void FireEvent(YumeEngineEvents evt);
 		
 		void RegisterFactories();
 
 	public:
-		boost::shared_ptr<YumeIO> GetIO() const;
-		SharedPtr<YumeTime> GetTimer() const { return timer_; }
-		SharedPtr<YumeEnvironment> GetEnvironment() const { return env_; }
-		YumeResourceManager* GetResourceManager() const { return resourceManager_; }
-		SharedPtr<YumeObjectFactory> GetObjFactory() const { return factory_; }
-		SharedPtr<YumeWorkQueue> GetWorkQueue() const { return workQueue_; }
-		SharedPtr<YumeDebugRenderer> GetDebugRenderer() const { return debugRenderer_; }
-		SharedPtr<YumeRenderer> GetRenderLogic() const { return renderer_; }
-		SharedPtr<YumeInput> GetInput() const { return input_; }
 		const YumeString& GetRendererName() const;
-	private:
-		YumeRHI* graphics_;
 
-
-		SharedPtr<YumeEnvironment> env_;
-		SharedPtr<YumeTime> timer_;
-		SharedPtr<YumeIO> io_;
-		SharedPtr<YumeObjectFactory> factory_;
-		SharedPtr<YumeRenderer> renderer_;
-		SharedPtr<YumeWorkQueue> workQueue_;
-		SharedPtr<YumeDebugRenderer> debugRenderer_;
-		SharedPtr<YumeInput> input_;
 
 		log4cplus::Initializer* log4cplusinitializer_;
 
-		YumeResourceManager* resourceManager_;
 	private:
 		void LimitFrames();
 		unsigned inactiveFps_;

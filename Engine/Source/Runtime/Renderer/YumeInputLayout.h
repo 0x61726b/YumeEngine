@@ -30,10 +30,10 @@ namespace YumeEngine
 	class YumeShaderVariation;
 	class YumeVertexBuffer;
 
-	class YumeAPIExport YumeInputLayout
+	class YumeAPIExport YumeInputLayout : public YumeBase
 	{
 	public:
-		YumeInputLayout(YumeRHI* graphics,YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks) { };
+		YumeInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks) { };
 		virtual ~YumeInputLayout() { };
 
 		

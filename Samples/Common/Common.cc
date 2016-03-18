@@ -20,10 +20,14 @@
 //
 //----------------------------------------------------------------------------
 #include "Common.h"
+#include "YumeHeaders.h"
 
 #include "Engine/YumeEngine.h"
 #include "Renderer/YumeRHI.h"
 #include "Core/YumeEnvironment.h"
+#include "Scene/YumeOctree.h"
+#include "Renderer/YumeAuxRenderer.h"
+#include "Renderer/YumeRenderer.h"
 
 #include "Input/YumeInput.h"
 
@@ -31,9 +35,10 @@ namespace YumeEngine
 {
 	BaseApplication::BaseApplication()
 		: yaw_(0.0f),
-		pitch_(0.0f)
+		pitch_(0.0f),
+		drawDebug_(false)
 	{
-
+		REGISTER_ENGINE_LISTENER;
 	}
 
 	BaseApplication::~BaseApplication()
@@ -55,7 +60,7 @@ namespace YumeEngine
 
 	void BaseApplication::HandleKeyDown(unsigned key,unsigned mouseButton,int repeat)
 	{
-		SharedPtr<YumeInput> input = YumeEngine3D::Get()->GetInput();
+		YumeInput* input = gYume->pInput;
 
 		if(key == KEY_ESC)
 		{
@@ -66,15 +71,25 @@ namespace YumeEngine
 		{
 			input->SetMouseVisible(!input->IsMouseVisible());
 		}
+
+		if(input->GetKeyPress(KEY_SPACE))
+			drawDebug_ = !drawDebug_;
 	}
 
-
+	void BaseApplication::HandlePostRenderUpdate(float timeStep)
+	{
+		if(drawDebug_)
+		{
+			gYume->pRenderer->DrawDebugGeometry(false);
+			scene_->GetComponent<Octree>()->DrawDebugGeometry(false);
+		}
+	}
 
 	void BaseApplication::Start()
 	{
 		SetupWindowProperties();
 
-		YumeEngine3D::Get()->GetInput()->AddListener(this);
+		gYume->pInput->AddListener(this);
 	}
 
 	void BaseApplication::Exit()

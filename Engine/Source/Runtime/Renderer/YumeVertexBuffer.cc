@@ -24,7 +24,7 @@
 #include "Renderer/YumeRHI.h"
 
 
-
+#include "Logging/logging.h"
 
 namespace YumeEngine
 {

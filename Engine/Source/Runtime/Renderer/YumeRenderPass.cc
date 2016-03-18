@@ -169,7 +169,7 @@ namespace YumeEngine
 	unsigned YumeRenderTechnique::litBasePassIndex = 0;
 	unsigned YumeRenderTechnique::litAlphaPassIndex = 0;
 	unsigned YumeRenderTechnique::shadowPassIndex = 0;
-	YumeHash YumeRenderTechnique::techHash_ = ("RenderTechnique");
+	YumeHash YumeRenderTechnique::type_ = ("RenderTechnique");
 	YumeMap<YumeString,unsigned>::type YumeRenderTechnique::passIndices;
 
 	YumeRenderTechnique::YumeRenderTechnique():
@@ -182,10 +182,6 @@ namespace YumeEngine
 	{
 	}
 
-	YumeHash YumeRenderTechnique::GetType()
-	{
-		return techHash_;
-	}
 
 	bool YumeRenderTechnique::BeginLoad(YumeFile& source)
 	{
@@ -213,6 +209,7 @@ namespace YumeEngine
 			globalPSDefines += ' ';
 
 		bool globalAlphaMask = technique.attribute("alphamask").as_bool();
+
 
 		for(XmlNode pass = technique.first_child(); pass; pass = pass.next_sibling())
 		{
@@ -283,9 +280,9 @@ namespace YumeEngine
 
 	void YumeRenderTechnique::ReleaseShaders()
 	{
-		for(YumeVector<SharedPtr<YumeRenderPass> >::const_iterator i = passes_.begin(); i != passes_.end(); ++i)
+		for(YumeVector<SharedPtr<YumeRenderPass> >::iterator i = passes_.begin(); i != passes_.end(); ++i)
 		{
-			YumeRenderPass* pass = i->get();
+			YumeRenderPass* pass = *i;
 			if(pass)
 				pass->ReleaseShaders();
 		}
@@ -297,7 +294,7 @@ namespace YumeEngine
 		if(oldPass)
 			return oldPass;
 
-		SharedPtr<YumeRenderPass> newPass(new YumeRenderPass(name));
+		SharedPtr<YumeRenderPass> newPass = SharedPtr<YumeRenderPass>(new YumeRenderPass(name));
 		unsigned passIndex = newPass->GetIndex();
 		if(passIndex >= passes_.size())
 			passes_.resize(passIndex + 1);
@@ -306,7 +303,7 @@ namespace YumeEngine
 		// Calculate memory use now
 		SetMemoryUsage((unsigned)(sizeof(YumeRenderTechnique) + GetNumPasses() * sizeof(YumeRenderPass)));
 
-		return newPass.get();
+		return newPass;
 	}
 
 	void YumeRenderTechnique::RemovePass(const YumeString& name)
@@ -316,9 +313,9 @@ namespace YumeEngine
 		YumeMap<YumeString,unsigned>::const_iterator i = passIndices.find(lower);
 		if(i == passIndices.end())
 			return;
-		else if(i->second < passes_.size() && passes_[i->second].get())
+		else if(i->second < passes_.size() && passes_[i->second])
 		{
-			passes_[i->second].reset();
+			passes_[i->second].Reset();
 			SetMemoryUsage((unsigned)(sizeof(YumeRenderTechnique) + GetNumPasses() * sizeof(YumeRenderPass)));
 		}
 	}
@@ -353,7 +350,7 @@ namespace YumeEngine
 
 		for(YumeVector<SharedPtr<YumeRenderPass> >::const_iterator i = passes_.begin(); i != passes_.end(); ++i)
 		{
-			if(i->get())
+			if(*i)
 				++ret;
 		}
 
@@ -366,7 +363,7 @@ namespace YumeEngine
 
 		for(YumeVector<SharedPtr<YumeRenderPass> >::const_iterator i = passes_.begin(); i != passes_.end(); ++i)
 		{
-			YumeRenderPass* pass = i->get();
+			YumeRenderPass* pass = *i;
 			if(pass)
 				ret.push_back(pass->GetName());
 		}
@@ -380,7 +377,7 @@ namespace YumeEngine
 
 		for(YumeVector<SharedPtr<YumeRenderPass> >::const_iterator i = passes_.begin(); i != passes_.end(); ++i)
 		{
-			YumeRenderPass* pass = i->get();
+			YumeRenderPass* pass = *i;
 			if(pass)
 				ret.push_back(pass);
 		}

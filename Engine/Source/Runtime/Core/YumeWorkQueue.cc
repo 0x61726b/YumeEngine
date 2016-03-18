@@ -30,29 +30,21 @@ namespace YumeEngine
 {
 
 	
-	class WorkerThread : public YumeThreadWrapper
+	class WorkerThread : public YumeThreadWrapper,public RefCounted
 	{
 	public:
-		
 		WorkerThread(YumeWorkQueue* owner,unsigned index):
 			owner_(owner),
 			index_(index)
 		{
 		}
-
-		
 		virtual void ThreadRunner()
 		{
 			owner_->ProcessItems(index_);
 		}
-
-		
 		unsigned GetIndex() const { return index_; }
-
 	private:
-		
 		YumeWorkQueue* owner_;
-		
 		unsigned index_;
 	};
 
@@ -65,7 +57,7 @@ namespace YumeEngine
 		lastSize_(0),
 		maxNonThreadedWorkMs_(5)
 	{
-
+		gYume->pTimer->AddTimeEventListener(this);
 	}
 
 	YumeWorkQueue::~YumeWorkQueue()
@@ -122,7 +114,7 @@ namespace YumeEngine
 			YUMELOG_ERROR("Null work item submitted to the work queue");
 			return;
 		}
-		assert(std::find(workItems_.begin(),workItems_.end(),item) != workItems_.end());
+		assert(std::find(workItems_.begin(),workItems_.end(),item) == workItems_.end());
 			
 
 		// Push to the main thread list to keep item alive
@@ -132,18 +124,18 @@ namespace YumeEngine
 
 		// Make sure worker threads' list is safe to modify
 		if(threads_.size() && !paused_)
-			queueMutex_.lock();
+			queueMutex_.Acquire();
 
 		// Find position for new item
 		if(queue_.empty())
-			queue_.push_back(item.get());
+			queue_.push_back(item);
 		else
 		{
 			for(YumeVector<WorkItem*>::iterator i = queue_.begin(); i != queue_.end(); ++i)
 			{
 				if((*i)->priority_ <= item->priority_)
 				{
-					queue_.insert(i,item.get());
+					queue_.insert(i,item);
 					break;
 				}
 			}
@@ -151,7 +143,7 @@ namespace YumeEngine
 
 		if(threads_.size())
 		{
-			queueMutex_.unlock();
+			queueMutex_.Release();
 			paused_ = false;
 		}
 	}
@@ -161,10 +153,10 @@ namespace YumeEngine
 		if(!item)
 			return false;
 
-		boost::mutex::scoped_lock lock(queueMutex_);
+		MutexLock lock(queueMutex_);
 
 		// Can only remove successfully if the item was not yet taken by threads for execution
-		YumeVector<WorkItem*>::iterator i = std::find(queue_.begin(),queue_.end(),item.get());
+		YumeVector<WorkItem*>::iterator i = std::find(queue_.begin(),queue_.end(),item);
 		if(i != queue_.end())
 		{
 			YumeVector<SharedPtr<WorkItem> >::iterator j = std::find(workItems_.begin(),workItems_.end(),item);
@@ -182,12 +174,12 @@ namespace YumeEngine
 
 	unsigned YumeWorkQueue::RemoveWorkItems(const YumeVector<SharedPtr<WorkItem> >::type& items)
 	{
-		boost::mutex::scoped_lock lock(queueMutex_);
+		MutexLock lock(queueMutex_);
 		unsigned removed = 0;
 
 		for(YumeVector<SharedPtr<WorkItem> >::const_iterator i = items.begin(); i != items.end(); ++i)
 		{
-			YumeVector<WorkItem*>::iterator j = std::find(queue_.begin(),queue_.end(),i->get());
+			YumeVector<WorkItem*>::iterator j = std::find(queue_.begin(),queue_.end(),i->Get());
 			if(j != queue_.end())
 			{
 				YumeVector<SharedPtr<WorkItem> >::iterator k = std::find(workItems_.begin(),workItems_.end(),*i);
@@ -210,7 +202,7 @@ namespace YumeEngine
 		{
 			pausing_ = true;
 
-			queueMutex_.lock();
+			queueMutex_.Acquire();
 			paused_ = true;
 
 			pausing_ = false;
@@ -221,7 +213,7 @@ namespace YumeEngine
 	{
 		if(paused_)
 		{
-			queueMutex_.unlock();
+			queueMutex_.Release();
 			paused_ = false;
 		}
 	}
@@ -238,18 +230,18 @@ namespace YumeEngine
 			// Take work items also in the main thread until queue empty or no high-priority items anymore
 			while(!queue_.empty())
 			{
-				queueMutex_.lock();
+				queueMutex_.Acquire();
 				if(!queue_.empty() && queue_.front()->priority_ >= priority)
 				{
 					WorkItem* item = queue_.front();
 					queue_.erase(queue_.begin());
-					queueMutex_.unlock();
+					queueMutex_.Release();
 					item->workFunction_(item,0);
 					item->completed_ = true;
 				}
 				else
 				{
-					queueMutex_.unlock();
+					queueMutex_.Release();
 					break;
 				}
 			}
@@ -303,14 +295,14 @@ namespace YumeEngine
 				YumeTime::Sleep(0);
 			else
 			{
-				queueMutex_.lock();
+				queueMutex_.Acquire();
 				if(!queue_.empty())
 				{
 					wasActive = true;
 
 					WorkItem* item = queue_.front();
 					queue_.erase(queue_.begin());
-					queueMutex_.unlock();
+					queueMutex_.Release();
 					item->workFunction_(item,threadIndex);
 					item->completed_ = true;
 				}
@@ -318,7 +310,7 @@ namespace YumeEngine
 				{
 					wasActive = false;
 
-					queueMutex_.unlock();
+					queueMutex_.Release();
 					YumeTime::Sleep(0);
 				}
 			}
@@ -380,7 +372,7 @@ namespace YumeEngine
 		}
 	}
 
-	void YumeWorkQueue::HandleBeginFrame(YumeHash eventType,VariantMap& eventData)
+	void YumeWorkQueue::HandleBeginFrame(int frameNumber)
 	{
 		// If no worker threads, complete low-priority work here
 		if(threads_.empty() && !queue_.empty())

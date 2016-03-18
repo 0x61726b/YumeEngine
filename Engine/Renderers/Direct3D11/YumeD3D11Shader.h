@@ -39,6 +39,10 @@ namespace YumeEngine
 
 		virtual bool EndLoad();
 
+		static YumeHash GetTypeStatic() { return type_; };
+		virtual YumeHash GetType() { return type_; };
+		static YumeHash type_;
+
 		/// Return a variation with defines.
 		virtual YumeShaderVariation* GetVariation(ShaderType type,const YumeString& defines);
 		/// Return a variation with defines.

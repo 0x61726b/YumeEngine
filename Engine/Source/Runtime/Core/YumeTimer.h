@@ -76,16 +76,7 @@ namespace YumeEngine
 		static long long frequency;
 	};
 
-	class YumeAPIExport YumeTimerEventListener
-	{
-	public:
-		virtual ~YumeTimerEventListener() { };
-
-		virtual void HandleBeginFrame(int frameNumber) { };
-		virtual void HandleEndFrame(int frameNumber) { };
-	};
-
-	class YumeAPIExport YumeTime
+	class YumeAPIExport YumeTime : public RefCounted
 	{
 	public:
 		YumeTime();

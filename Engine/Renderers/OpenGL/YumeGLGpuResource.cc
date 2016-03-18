@@ -27,8 +27,7 @@
 namespace YumeEngine
 {
 
-	YumeGLResource::YumeGLResource(YumeRHI* renderer):
-		YumeGpuResource(renderer),
+	YumeGLResource::YumeGLResource():
 		dataPending_(false),
 		dataLost_(false),
 		object_(0)
@@ -38,7 +37,7 @@ namespace YumeEngine
 
 	YumeGLResource::~YumeGLResource()
 	{
-
+		gYume->pRHI->RemoveGpuResource(this);
 	}
 
 	void YumeGLResource::OnDeviceLost()

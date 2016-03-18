@@ -108,7 +108,7 @@ namespace YumeEngine
 
 	YumeBase* ValueAnimationInfo::GetTarget() const
 	{
-		return target_.get();
+		return target_;
 	}
 
 	void ValueAnimationInfo::ApplyValue(const Variant& newValue)

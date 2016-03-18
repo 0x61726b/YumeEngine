@@ -83,7 +83,7 @@ namespace YumeEngine
 		height_ = height;
 
 		// Build work buffers for threading
-		unsigned numThreadBuffers = YumeEngine3D::Get()->GetWorkQueue()->GetNumThreads();
+		unsigned numThreadBuffers = gYume->pWorkSystem->GetNumThreads();
 		buffers_.resize(numThreadBuffers);
 		for(unsigned i = 0; i < numThreadBuffers; ++i)
 		{
@@ -213,7 +213,7 @@ namespace YumeEngine
 		else if(buffers_.size() > 1)
 		{
 			// Threaded
-			YumeWorkQueue* queue = YumeEngine3D::Get()->GetWorkQueue().get();
+			YumeWorkQueue* queue = gYume->pWorkSystem;
 
 			for(YumeVector<OcclusionBatch>::iterator i = batches_.begin(); i != batches_.end(); ++i)
 			{

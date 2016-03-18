@@ -35,23 +35,13 @@ namespace YumeEngine
 	class YumeAPIExport YumeGpuResource
 	{
 	public:
-		YumeGpuResource(YumeRHI*);
-		
+		YumeGpuResource();
 		virtual ~YumeGpuResource();
 
-		
-		virtual void Release() {};
-
-		
+		virtual void Release() {};		
 		virtual void ClearDataLost() = 0;
-
-		
 		virtual bool IsDataLost() const = 0;
-
-		
 		virtual bool HasPendingData() const = 0;
-	protected:
-		YumeRHI* rhi_;
 	};
 }
 

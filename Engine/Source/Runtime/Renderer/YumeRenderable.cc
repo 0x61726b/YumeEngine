@@ -53,7 +53,7 @@ namespace YumeEngine
 		if(index >= viewports_.size())
 			viewports_.resize(index + 1);
 
-		viewports_[index] = SharedPtr<YumeViewport>(viewport);
+		viewports_[index] = viewport;
 	}
 
 	void YumeRenderable::SetUpdateMode(RenderSurfaceUpdateMode mode)
@@ -100,6 +100,6 @@ namespace YumeEngine
 
 	YumeViewport* YumeRenderable::GetViewport(unsigned index) const
 	{
-		return index < viewports_.size() ? viewports_[index].get() : (YumeViewport*)0;
+		return index < viewports_.size() ? viewports_[index] : (YumeViewport*)0;
 	}
 }

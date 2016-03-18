@@ -79,6 +79,8 @@ namespace YumeEngine
 		minView_ = Max(minView_,SHADOW_MIN_VIEW);
 	}
 
+	YumeHash YumeLight::type_ = "Light";
+
 	YumeLight::YumeLight():
 		YumeDrawable(DRAWABLE_LIGHT),
 		lightType_(DEFAULT_LIGHTTYPE),
@@ -302,15 +304,15 @@ namespace YumeEngine
 		
 	}
 
-	void YumeLight::SetRampTexture(YumeTexture* texture)
+	void YumeLight::SetRampTexture(SharedPtr<YumeTexture> texture)
 	{
-		rampTexture_ = SharedPtr<YumeTexture>(texture);
+		rampTexture_ = (texture);
 		
 	}
 
-	void YumeLight::SetShapeTexture(YumeTexture* texture)
+	void YumeLight::SetShapeTexture(SharedPtr<YumeTexture> texture)
 	{
-		shapeTexture_ = SharedPtr<YumeTexture>(texture);
+		shapeTexture_ = (texture);
 		
 	}
 

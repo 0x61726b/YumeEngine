@@ -236,7 +236,7 @@ namespace YumeEngine
 		}
 	}
 
-	YumeHash YumeImage::imageHash_ = ("Image");
+	YumeHash YumeImage::type_ = ("Image");
 
 	YumeImage::YumeImage():
 		width_(0),
@@ -251,11 +251,6 @@ namespace YumeEngine
 
 	YumeImage::~YumeImage()
 	{
-	}
-
-	YumeHash YumeImage::GetType()
-	{
-		return imageHash_;
 	}
 
 	bool YumeImage::BeginLoad(YumeFile& source)
@@ -415,9 +410,9 @@ namespace YumeEngine
 				if(faceIndex < imageChainCount - 1)
 				{
 					// Build the image chain
-					boost::shared_ptr<YumeImage> nextImage(new YumeImage());
+					SharedPtr<YumeImage> nextImage(new YumeImage());
 					currentImage->nextSibling_ = nextImage;
-					currentImage = nextImage.get();
+					currentImage = nextImage;
 				}
 			}
 
@@ -511,7 +506,7 @@ namespace YumeEngine
 					// Replace with converted data
 					currentImage->data_ = rgbaData;
 					currentImage->SetMemoryUsage(numPixels * 4);
-					currentImage = currentImage->GetNextSibling().get();
+					currentImage = currentImage->GetNextSibling();
 				}
 			}
 		}
@@ -575,7 +570,7 @@ namespace YumeEngine
 		components_ = components;
 		compressedFormat_ = CF_NONE;
 		numCompressedLevels_ = 0;
-		nextLevel_.reset();
+		nextLevel_.Reset();
 
 		SetMemoryUsage(width * height * depth * components);
 		return true;
@@ -633,7 +628,7 @@ namespace YumeEngine
 		}
 
 		memcpy(data_.get(),pixelData,width_ * height_ * depth_ * components_);
-		nextLevel_.reset();
+		nextLevel_.Reset();
 	}
 
 	bool YumeImage::LoadColorLUT(YumeFile& source)
@@ -1094,17 +1089,17 @@ namespace YumeEngine
 		return colorNear.Lerp(colorFar,zF);
 	}
 
-	boost::shared_ptr<YumeImage> YumeImage::GetNextLevel() const
+	SharedPtr<YumeImage> YumeImage::GetNextLevel() const
 	{
 		if(IsCompressed())
 		{
 			YUMELOG_ERROR("Can not generate mip level from compressed data");
-			return boost::shared_ptr<YumeImage>();
+			return SharedPtr<YumeImage>();
 		}
 		if(components_ < 1 || components_ > 4)
 		{
 			YUMELOG_ERROR("Illegal number of image components for mip level generation");
-			return boost::shared_ptr<YumeImage>();
+			return SharedPtr<YumeImage>();
 		}
 
 		if(nextLevel_)
@@ -1121,7 +1116,7 @@ namespace YumeEngine
 		if(depthOut < 1)
 			depthOut = 1;
 
-		boost::shared_ptr<YumeImage> mipImage(new YumeImage());
+		SharedPtr<YumeImage> mipImage(new YumeImage());
 
 		if(depth_ > 1)
 			mipImage->SetSize(widthOut,heightOut,depthOut,components_);
@@ -1393,29 +1388,29 @@ namespace YumeEngine
 		return mipImage;
 	}
 
-	boost::shared_ptr<YumeImage> YumeImage::ConvertToRGBA() const
+	SharedPtr<YumeImage> YumeImage::ConvertToRGBA() const
 	{
 		if(IsCompressed())
 		{
 			YUMELOG_ERROR("Can not convert compressed image to RGBA");
-			return boost::shared_ptr<YumeImage>();
+			return SharedPtr<YumeImage>();
 		}
 		if(components_ < 1 || components_ > 4)
 		{
 			YUMELOG_ERROR("Illegal number of image components for conversion to RGBA");
-			return boost::shared_ptr<YumeImage>();
+			return SharedPtr<YumeImage>();
 		}
 		if(!data_)
 		{
 			YUMELOG_ERROR("Can not convert image without data to RGBA");
-			return boost::shared_ptr<YumeImage>();
+			return SharedPtr<YumeImage>();
 		}
 
 		// Already RGBA?
 		if(components_ == 4)
-			return boost::shared_ptr<YumeImage>(const_cast<YumeImage*>(this));
+			return SharedPtr<YumeImage>(const_cast<YumeImage*>(this));
 
-		boost::shared_ptr<YumeImage> ret(new YumeImage());
+		SharedPtr<YumeImage> ret(new YumeImage());
 		ret->SetSize(width_,height_,depth_,4);
 
 		const unsigned char* src = data_.get();
@@ -1777,11 +1772,11 @@ namespace YumeEngine
 		if(!data_ || IsCompressed())
 			return;
 
-		nextLevel_.reset();
+		nextLevel_.Reset();
 
 		if(width_ > 1 || height_ > 1)
 		{
-			boost::shared_ptr<YumeImage> current = GetNextLevel();
+			SharedPtr<YumeImage> current = GetNextLevel();
 			nextLevel_ = current;
 			while(current && (current->width_ > 1 || current->height_ > 1))
 			{

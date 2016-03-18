@@ -35,10 +35,11 @@
 
 namespace YumeEngine
 {
+	static const SharedPtr<YumeResource> nullResource;
 
 	YumeResourceManager::YumeResourceManager()
 	{
-		//backgroundWorker_ = boost::shared_ptr<YumeBackgroundWorker>(YumeAPINew YumeBackgroundWorker(this));
+		//backgroundWorker_ = SharedPtr<YumeBackgroundWorker>(YumeAPINew YumeBackgroundWorker(this));
 	}
 
 	YumeResourceManager::~YumeResourceManager()
@@ -47,7 +48,7 @@ namespace YumeEngine
 
 	void YumeResourceManager::AddResourcePath(const FsPath& path)
 	{
-		SharedPtr<YumeIO> io_ = YumeEngine3D::Get()->GetIO();
+		YumeIO* io_ = gYume->pIO;
 
 		if(!YumeIO::IsDirectoryExist(path))
 		{
@@ -67,24 +68,63 @@ namespace YumeEngine
 
 	}
 
-	boost::shared_ptr<YumeFile> YumeResourceManager::GetFile(const YumeString& name)
+	SharedPtr<YumeFile> YumeResourceManager::GetFile(const YumeString& name)
 	{
-		boost::mutex::scoped_lock lock(resourceMutex_);
+		MutexLock lock(resourceMutex_);
 
 		if(name.length() > 0)
 		{
-			SharedPtr<YumeFile> file = 0;
+			YumeFile* file = 0;
 			file = SearchResourcesPath(name);
 
 			if(file)
-				return file;
+				return SharedPtr<YumeFile>(file);
 		}
 
 
-		return boost::shared_ptr<YumeFile>();
+		return SharedPtr<YumeFile>();
 	}
 
-	SharedPtr<YumeResource> YumeResourceManager::RetrieveResource(YumeHash type,const YumeString& resource)
+	void YumeResourceManager::GetResources(YumeVector<YumeResource*>::type& result,YumeHash type) const
+	{
+		result.clear();
+		YumeMap<YumeHash,ResourceGroup>::const_iterator i = resourceGroups_.find(type);
+		if(i != resourceGroups_.end())
+		{
+			for(YumeMap<YumeHash,SharedPtr<YumeResource> >::const_iterator j = i->second.resources_.begin();
+				j != i->second.resources_.end(); ++j)
+				result.push_back(j->second);
+		}
+	}
+
+	bool YumeResourceManager::ReloadResource(YumeResource* resource)
+	{
+		if(!resource)
+			return false;
+
+		//Send event
+
+		SharedPtr<YumeFile> file_ = GetFile(resource->GetName());
+
+		if(!file_)
+			return 0;
+
+		YUMELOG_INFO("Reloading resource " << resource->GetName().c_str() << "...");
+		if(!resource->Load(*(file_)))
+		{
+			//Log error
+		}
+		else
+		{
+			resource->ResetUseTimer();
+			UpdateResourceGroup(resource->GetType());
+			return true;
+		}
+
+		return false;
+	}
+
+	YumeResource* YumeResourceManager::RetrieveResource(YumeHash type,const YumeString& resource)
 	{
 		ResourceGroupHashMap::iterator It = resourceGroups_.find(type);
 
@@ -92,7 +132,7 @@ namespace YumeEngine
 		{
 			YumeHash nameHash = (resource);
 
-			YumeMap<YumeHash,boost::shared_ptr<YumeResource> >::iterator rgIt = It->second.resources_.find(nameHash);
+			YumeMap<YumeHash,SharedPtr<YumeResource> >::iterator rgIt = It->second.resources_.find(nameHash);
 
 			if(rgIt != It->second.resources_.end())
 			{
@@ -103,18 +143,18 @@ namespace YumeEngine
 		}
 		else
 		{
-			return 0;
+			return SharedPtr<YumeResource>();
 		}
 	}
 
 	bool YumeResourceManager::Exists(const YumeString& name)
 	{
-		boost::mutex::scoped_lock lock(resourceMutex_);
+		MutexLock lock(resourceMutex_);
 
 		if(name.empty())
 			return false;
 
-		SharedPtr<YumeIO> io_ = YumeEngine3D::Get()->GetIO();
+		YumeIO* io_ = gYume->pIO;
 
 		for(size_t i = 0; i < resourcePaths_.size(); ++i)
 		{
@@ -128,9 +168,9 @@ namespace YumeEngine
 
 	YumeString YumeResourceManager::GetFullPath(const YumeString& resource)
 	{
-		boost::mutex::scoped_lock lock(resourceMutex_);
+		MutexLock lock(resourceMutex_);
 
-		SharedPtr<YumeIO> io_ = YumeEngine3D::Get()->GetIO();
+		YumeIO* io_ = gYume->pIO;
 
 		for(size_t i = 0; i < resourcePaths_.size(); ++i)
 		{
@@ -144,7 +184,7 @@ namespace YumeEngine
 
 	void YumeResourceManager::StoreResourceDependency(YumeResource* resource,const YumeString& dep)
 	{
-		boost::mutex::scoped_lock lock(resourceMutex_);
+		MutexLock lock(resourceMutex_);
 
 		if(!resource)
 			return;
@@ -154,11 +194,46 @@ namespace YumeEngine
 		dependents.push_back(nameHash);
 	}
 
-	SharedPtr<YumeResource> YumeResourceManager::PrepareResource(YumeHash type,const YumeString& resource)
+	void YumeResourceManager::ResetDependencies(YumeResource* resource)
 	{
-		SharedPtr<YumeResource> resourceBase_ = RetrieveResource(type,resource);
+		if(!resource)
+			return;
 
-		SharedPtr<YumeResource> resource_ = 0;
+		MutexLock lock(resourceMutex_);
+
+		YumeHash nameHash(resource->GetName());
+
+		for(YumeMap<YumeHash,YumeVector<YumeHash>::type >::iterator i = dependentResources_.begin(); i != dependentResources_.end();)
+		{
+			YumeVector<YumeHash>::type& dependents = i->second;
+			dependents.erase(std::find(dependents.begin(),dependents.end(),nameHash));
+			if(dependents.empty())
+				i = dependentResources_.erase(i);
+			else
+				++i;
+		}
+	}
+
+	const SharedPtr<YumeResource>& YumeResourceManager::FindResource(YumeHash type,YumeHash nameHash)
+	{
+		MutexLock lock(resourceMutex_);
+
+		YumeMap<YumeHash,ResourceGroup>::iterator i = resourceGroups_.find(type);
+		if(i == resourceGroups_.end())
+			return nullResource;
+		YumeMap<YumeHash,SharedPtr<YumeResource> >::iterator j = i->second.resources_.find(nameHash);
+		if(j == i->second.resources_.end())
+			return nullResource;
+
+		return j->second;
+	}
+
+	YumeResource* YumeResourceManager::PrepareResource(YumeHash type,const YumeString& resource)
+	{
+		const SharedPtr<YumeResource>& resourceBase_ = FindResource(type,resource);
+
+
+		SharedPtr<YumeResource> resource_;
 		if(resourceBase_)
 		{
 			return resourceBase_;
@@ -166,7 +241,7 @@ namespace YumeEngine
 
 		YumeHash nameHash = (resource);
 
-		resource_ = boost::static_pointer_cast<YumeResource>(YumeObjectFactory::Get()->Create(type));
+		resource_ = DynamicCast<YumeResource>(gYume->pObjFactory->Create(type));
 
 		if(!resource_)
 		{
@@ -182,7 +257,7 @@ namespace YumeEngine
 		resource_->SetName(resource);
 
 		YUMELOG_INFO("Loading resource " << resource.c_str() << "...");
-		if(!resource_->Load(*(file_.get())))
+		if(!resource_->Load(*(file_)))
 		{
 			//Log error
 		}
@@ -190,13 +265,45 @@ namespace YumeEngine
 		resourceGroups_[type].resources_[nameHash] = resource_;
 
 		YUMELOG_INFO("Resource " << resource.c_str() << " is loaded succesfully");
+		UpdateResourceGroup(type);
+		return resource_;
+	}
+
+	SharedPtr<YumeResource> YumeResourceManager::GetTempResource(YumeHash type,const YumeString& resource)
+	{
+		if(resource.empty())
+			return SharedPtr<YumeResource>();
+
+		SharedPtr<YumeResource> resource_;
+
+		resource_ = DynamicCast<YumeResource>(YumeObjectFactory::Get()->Create(type));
+
+		if(!resource_)
+		{
+			YUMELOG_ERROR("Couldn't create object type " << type);
+			return SharedPtr<YumeResource>();
+		}
+
+		SharedPtr<YumeFile> file_ = GetFile(resource);
+
+		if(!file_)
+			return SharedPtr<YumeResource>();
+
+		YUMELOG_DEBUG("Loading temporary resource " + resource);
+		resource_->SetName(file_->GetName());
+
+		if(!resource_->Load(*(file_)))
+		{
+			//Log error
+			return SharedPtr<YumeResource>();
+		}
 
 		return resource_;
 	}
 
-	SharedPtr<YumeFile> YumeResourceManager::SearchResourcesPath(const YumeString& resource)
+	YumeFile* YumeResourceManager::SearchResourcesPath(const YumeString& resource)
 	{
-		SharedPtr<YumeIO> io_ = YumeEngine3D::Get()->GetIO();
+		YumeIO* io_ = gYume->pIO;
 
 		for(size_t i = 0; i < resourcePaths_.size(); ++i)
 		{
@@ -204,10 +311,51 @@ namespace YumeEngine
 			{
 				YumeFile* file = YumeAPINew YumeFile(resourcePaths_[i] / resource);
 				file->SetName(resource);
-				return boost::shared_ptr<YumeFile>(file);
+				return (file);
 			}
 		}
 		return 0;
+	}
+
+
+	void YumeResourceManager::UpdateResourceGroup(YumeHash type)
+	{
+		YumeMap<YumeHash,ResourceGroup>::iterator i = resourceGroups_.find(type);
+		if(i == resourceGroups_.end())
+			return;
+
+		for(;;)
+		{
+			unsigned totalSize = 0;
+			unsigned oldestTimer = 0;
+			YumeMap<YumeHash,SharedPtr<YumeResource> >::iterator oldestResource = i->second.resources_.end();
+
+			for(YumeMap<YumeHash,SharedPtr<YumeResource> >::iterator j = i->second.resources_.begin();
+				j != i->second.resources_.end(); ++j)
+			{
+				totalSize += j->second->GetMemoryUse();
+				unsigned useTimer = j->second->GetUseTimer();
+				if(useTimer > oldestTimer)
+				{
+					oldestTimer = useTimer;
+					oldestResource = j;
+				}
+			}
+
+			i->second.memoryUse_ = totalSize;
+
+			// If memory budget defined and is exceeded, remove the oldest resource and loop again
+			// (resources in use always return a zero timer and can not be removed)
+			if(i->second.memoryBudget_ && i->second.memoryUse_ > i->second.memoryBudget_ &&
+				oldestResource != i->second.resources_.end())
+			{
+				YUMELOG_DEBUG("Resource group " + oldestResource->second->GetName()+ " over memory budget, releasing resource " +
+					oldestResource->second->GetName());
+				i->second.resources_.erase(oldestResource);
+			}
+			else
+				break;
+		}
 	}
 
 	bool YumeResourceManager::AddManualResource(YumeResource* resource)

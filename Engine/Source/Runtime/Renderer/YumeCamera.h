@@ -50,9 +50,11 @@ namespace YumeEngine
 		YumeCamera();
 		virtual ~YumeCamera();
 
-		static YumeHash cameraType_;
-		static YumeHash GetType() { return cameraType_; };
-		virtual const YumeString& GetTypeName() { return "Camera"; };
+		static YumeHash GetTypeStatic() { return type_; };
+		virtual YumeHash GetType() { return type_; };
+		static YumeHash type_;
+		virtual const YumeString& GetTypeName() { return typeName_; };
+		YumeString typeName_;
 
 		virtual void DrawDebugGeometry(YumeDebugRenderer* debug,bool depthTest);
 

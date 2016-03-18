@@ -22,12 +22,35 @@
 #include "YumeHeaders.h"
 #include "YumeTexture.h"
 #include "YumeRHI.h"
+#include "Engine/YumeEngine.h"
+#include "Core/YumeXmlFile.h"
 
-
-
+#include "Core/YumeDefaults.h"
 
 namespace YumeEngine
 {
+
+	static const char* addressModeNames[] =
+	{
+		"wrap",
+		"mirror",
+		"clamp",
+		"border",
+		0
+	};
+
+	static const char* filterModeNames[] =
+	{
+		"nearest",
+		"bilinear",
+		"trilinear",
+		"anisotropic",
+		"default",
+		0
+	};
+
+	YumeHash YumeTexture::textureType_ = "Texture";
+
 	YumeTexture::YumeTexture()
 		: shaderResourceView_(0),
 		sampler_(0),
@@ -87,9 +110,8 @@ namespace YumeEngine
 
 	void YumeTexture::SetSRGB(bool enable)
 	{
-		//ToDo(arkenthera) enable later
-		//if(graphics_)
-		//	enable &= graphics_->GetSRGBSupport();
+		if(gYume->pRHI)
+			enable &= gYume->pRHI->GetSRGBSupport();
 
 		sRGB_ = enable;
 	}
@@ -155,9 +177,60 @@ namespace YumeEngine
 			return GetRowDataSize(width_) / width_;
 	}
 
-	void YumeTexture::SetParameters()
+	void YumeTexture::SetParameters(YumeXmlFile* file)
 	{
+		YumeString xmlData = file->GetXml();
+		pugi::xml_document doc;
+		doc.load(xmlData.c_str());
+		XmlNode root = doc.root();
+		SetParameters(root);
+	}
 
+	void YumeTexture::SetParameters(const XmlNode& element)
+	{
+		XmlNode texture = element.child("texture");
+		for(XmlNode child = texture.first_child(); child; child = child.next_sibling())
+		{
+			YumeString name = child.name();
+
+			if(name == "address")
+			{
+				YumeString coord = child.attribute("coord").as_string();
+				if(coord.length() >= 1)
+				{
+					TextureCoordinate coordIndex = (TextureCoordinate)(coord[0] - 'u');
+					YumeString mode = child.attribute("mode").as_string();
+					SetAddressMode(coordIndex,(TextureAddressMode)GetStringListIndex(mode.c_str(),addressModeNames,ADDRESS_WRAP));
+				}
+			}
+
+			if(name == "border")
+				SetBorderColor(ToColor(child.attribute("color").as_string()));
+
+			if(name == "filter")
+			{
+				YumeString mode = child.attribute("mode").as_string();
+				SetFilterMode((TextureFilterMode)GetStringListIndex(mode.c_str(),filterModeNames,FILTER_DEFAULT));
+			}
+
+			if(name == "mipmap")
+				SetNumLevels(child.attribute("enable").as_bool() ? 0 : 1);
+
+			if(name == "quality")
+			{
+				if(child.attribute("low").empty())
+					SetMipsToSkip(QUALITY_LOW,child.attribute("low").as_int());
+				if(child.attribute("med").empty())
+					SetMipsToSkip(QUALITY_MEDIUM,child.attribute("med").as_int());
+				if(child.attribute("medium").empty())
+					SetMipsToSkip(QUALITY_MEDIUM,child.attribute("medium").as_int());
+				if(child.attribute("high").empty())
+					SetMipsToSkip(QUALITY_HIGH,child.attribute("high").as_int());
+			}
+
+			if(name == "srgb")
+				SetSRGB(child.attribute("enable").as_bool());
+		}
 	}
 	void YumeTexture::SetParametersDirty()
 	{

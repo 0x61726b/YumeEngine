@@ -35,7 +35,7 @@ namespace YumeEngine
 	class YumeGLExport YumeGLConstantBuffer : public YumeConstantBuffer,public YumeGLResource
 	{
 	public:
-		YumeGLConstantBuffer(YumeRHI* renderer);
+		YumeGLConstantBuffer();
 
 		virtual ~YumeGLConstantBuffer();
 

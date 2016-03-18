@@ -26,10 +26,13 @@
 #include "YumeImage.h"
 
 #include "Core/YumeDefaults.h"
+#include "Engine/YumeEngine.h"
+#include "Renderer/YumeResourceManager.h"
 
+#include "Core/YumeXmlFile.h"
 namespace YumeEngine
 {
-	YumeHash YumeTexture2D::texture2Dhash_ = ("Texture2D");
+	YumeHash YumeTexture2D::type_ = ("Texture2D");
 
 	YumeTexture2D::YumeTexture2D()
 	{
@@ -37,17 +40,17 @@ namespace YumeEngine
 
 	YumeTexture2D::~YumeTexture2D()
 	{
-		
+
 	}
 
 	bool YumeTexture2D::BeginLoad(YumeFile& source)
 	{
 
 		// Load the image data for EndLoad()
-		loadImage_ = boost::shared_ptr<YumeImage>(YumeAPINew YumeImage);
+		loadImage_ = SharedPtr<YumeImage>(YumeAPINew YumeImage);
 		if(!loadImage_->Load(source))
 		{
-			loadImage_.reset();
+			loadImage_.Reset();
 			return false;
 		}
 
@@ -56,6 +59,12 @@ namespace YumeEngine
 			loadImage_->PrecalculateLevels();
 
 		// Load the optional parameters file
+		YumeResourceManager* rm_ = gYume->pResourceManager;
+		YumeString xmlName;
+		YumeString path,file,extension;
+		SplitPath(GetName(),path,file,extension);
+		xmlName =  path + file + ".xml";
+		loadParameters_ = rm_->GetTempResource<YumeXmlFile>(xmlName);
 
 		return true;
 	}
@@ -65,15 +74,13 @@ namespace YumeEngine
 		// If over the texture budget, see if materials can be freed to allow textures to be freed
 		CheckTextureBudget(GetType());
 
+		if(loadParameters_)
+			SetParameters(loadParameters_);
+
 		bool success = SetData(loadImage_);
 
-		loadImage_.reset();
+		loadImage_.Reset();
 
 		return success;
-	}
-
-	YumeHash YumeTexture2D::GetType()
-	{
-		return texture2Dhash_;
 	}
 }

@@ -39,13 +39,14 @@ namespace YumeEngine
 		TS_WORLD
 	};
 
-	class YumeAPIExport YumeSceneNode
+	class YumeAPIExport YumeSceneNode : public YumeBase
 	{
 	public:
 		YumeSceneNode();
 		virtual ~YumeSceneNode();
 
-		static YumeHash GetType();
+		virtual YumeHash GetType() { return type_; };
+		static YumeHash GetTypeStatic() { return type_; };
 		static YumeHash type_;
 
 		void SetName(const YumeString& name);
@@ -357,7 +358,7 @@ namespace YumeEngine
 
 	template <class T> T* YumeSceneNode::CreateComponent(unsigned id)
 	{
-		return static_cast<T*>(CreateComponent(T::GetType(),id));
+		return static_cast<T*>(CreateComponent(T::GetTypeStatic(),id));
 	}
 
 	template <class T> T* YumeSceneNode::GetOrCreateComponent(unsigned id)
@@ -365,25 +366,25 @@ namespace YumeEngine
 		return static_cast<T*>(GetOrCreateComponent(T::GetTypeStatic(),id));
 	}
 
-	template <class T> void YumeSceneNode::RemoveComponent() { RemoveComponent(T::GetType()); }
+	template <class T> void YumeSceneNode::RemoveComponent() { RemoveComponent(T::GetTypeStatic()); }
 
-	template <class T> void YumeSceneNode::RemoveComponents() { RemoveComponents(T::GetType()); }
+	template <class T> void YumeSceneNode::RemoveComponents() { RemoveComponents(T::GetTypeStatic()); }
 
 	template <class T> void YumeSceneNode::GetChildrenWithComponent(std::vector<YumeSceneNode*>& dest,bool recursive) const
 	{
-		GetChildrenWithComponent(dest,T::GetType(),recursive);
+		GetChildrenWithComponent(dest,T::GetTypeStatic(),recursive);
 	}
 
-	template <class T> T* YumeSceneNode::GetComponent(bool recursive) const { return static_cast<T*>(GetComponent(T::GetType(),recursive)); }
+	template <class T> T* YumeSceneNode::GetComponent(bool recursive) const { return static_cast<T*>(GetComponent(T::GetTypeStatic(),recursive)); }
 
-	template <class T> T* YumeSceneNode::GetParentComponent(bool fullTraversal) const { return static_cast<T*>(GetParentComponent(T::GetType(),fullTraversal)); }
+	template <class T> T* YumeSceneNode::GetParentComponent(bool fullTraversal) const { return static_cast<T*>(GetParentComponent(T::GetTypeStatic(),fullTraversal)); }
 
 	template <class T> void YumeSceneNode::GetComponents(std::vector<T*>& dest,bool recursive) const
 	{
-		GetComponents(reinterpret_cast<YumeVector<YumeSceneComponent*>::type&>(dest),T::GetType(),recursive);
+		GetComponents(reinterpret_cast<YumeVector<YumeSceneComponent*>::type&>(dest),T::GetTypeStatic(),recursive);
 	}
 
-	template <class T> bool YumeSceneNode::HasComponent() const { return HasComponent(T::GetType()); }
+	template <class T> bool YumeSceneNode::HasComponent() const { return HasComponent(T::GetTypeStatic()); }
 
 	template <class T> T* YumeSceneNode::GetDerivedComponent(bool recursive) const
 	{

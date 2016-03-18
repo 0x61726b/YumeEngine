@@ -43,6 +43,10 @@ set(SRC_RENDERER_GL
 	YumeGLRenderable.cc
 	YumeGLTexture2D.h
 	YumeGLTexture2D.cc
+	YumeGLTexture3D.h
+	YumeGLTexture3D.cc
+	YumeGLTextureCube.h
+	YumeGLTextureCube.cc
 )
 
 if(OPENGL_FOUND)

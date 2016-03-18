@@ -108,8 +108,7 @@ namespace YumeEngine
 
 
 
-	YumeGLVertexBuffer::YumeGLVertexBuffer(YumeRHI* rhi)
-		: YumeGLResource(rhi)
+	YumeGLVertexBuffer::YumeGLVertexBuffer()
 	{
 		UpdateOffsets();
 	}
@@ -138,18 +137,18 @@ namespace YumeEngine
 
 		if(object_)
 		{
-			if(!rhi_)
+			if(!gYume->pRHI)
 				return;
 
-			if(!rhi_->IsDeviceLost())
+			if(!gYume->pRHI->IsDeviceLost())
 			{
 				for(unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
 				{
-					if(rhi_->GetVertexBuffer(i) == this)
-						rhi_->SetVertexBuffer(0);
+					if(gYume->pRHI->GetVertexBuffer(i) == this)
+						gYume->pRHI->SetVertexBuffer(0);
 				}
 
-				static_cast<YumeGLRenderer*>(rhi_)->SetVBO(0);
+				static_cast<YumeGLRenderer*>(gYume->pRHI)->SetVBO(0);
 				glDeleteBuffers(1,(GLuint*)&object_);
 			}
 
@@ -207,9 +206,9 @@ namespace YumeEngine
 
 		if(object_)
 		{
-			if(!rhi_->IsDeviceLost())
+			if(!gYume->pRHI->IsDeviceLost())
 			{
-				static_cast<YumeGLRenderer*>(rhi_)->SetVBO(object_);
+				static_cast<YumeGLRenderer*>(gYume->pRHI)->SetVBO(object_);
 				glBufferData(GL_ARRAY_BUFFER,vertexCount_ * vertexSize_,data,dynamic_ ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 			}
 			else
@@ -254,9 +253,9 @@ namespace YumeEngine
 
 		if(object_)
 		{
-			if(!rhi_->IsDeviceLost())
+			if(!gYume->pRHI->IsDeviceLost())
 			{
-				static_cast<YumeGLRenderer*>(rhi_)->SetVBO(object_);
+				static_cast<YumeGLRenderer*>(gYume->pRHI)->SetVBO(object_);
 				if(!discard || start != 0)
 					glBufferSubData(GL_ARRAY_BUFFER,start * vertexSize_,count * vertexSize_,data);
 				else
@@ -303,10 +302,10 @@ namespace YumeEngine
 			lockState_ = LOCK_SHADOW;
 			return shadowData_.get() + start * vertexSize_;
 		}
-		else if(rhi_)
+		else if(gYume->pRHI)
 		{
 			lockState_ = LOCK_SCRATCH;
-			lockScratchData_ = rhi_->ReserveScratchBuffer(count * vertexSize_);
+			lockScratchData_ = gYume->pRHI->ReserveScratchBuffer(count * vertexSize_);
 			return lockScratchData_;
 		}
 		else
@@ -324,8 +323,8 @@ namespace YumeEngine
 
 		case LOCK_SCRATCH:
 			SetDataRange(lockScratchData_,lockStart_,lockCount_);
-			if(rhi_)
-				rhi_->FreeScratchBuffer(lockScratchData_);
+			if(gYume->pRHI)
+				gYume->pRHI->FreeScratchBuffer(lockScratchData_);
 			lockScratchData_ = 0;
 			lockState_ = LOCK_NONE;
 			break;
@@ -387,9 +386,9 @@ namespace YumeEngine
 			return true;
 		}
 
-		if(rhi_)
+		if(gYume->pRHI)
 		{
-			if(rhi_->IsDeviceLost())
+			if(gYume->pRHI->IsDeviceLost())
 			{
 				YUMELOG_WARN("Vertex buffer creation while device is lost");
 				return true;
@@ -403,7 +402,7 @@ namespace YumeEngine
 				return false;
 			}
 
-			static_cast<YumeGLRenderer*>(rhi_)->SetVBO(object_);
+			static_cast<YumeGLRenderer*>(gYume->pRHI)->SetVBO(object_);
 			glBufferData(GL_ARRAY_BUFFER,vertexCount_ * vertexSize_,0,dynamic_ ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 		}
 

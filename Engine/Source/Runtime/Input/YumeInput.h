@@ -419,7 +419,7 @@ namespace YumeEngine
 	class YumeRHI;
 	
 
-	class YumeAPIExport YumeInput : public YumeTimerEventListener,public RHIEventListener
+	class YumeAPIExport YumeInput : public YumeTimerEventListener,public RHIEventListener,public RefCounted
 	{
 	public:
 		YumeInput();

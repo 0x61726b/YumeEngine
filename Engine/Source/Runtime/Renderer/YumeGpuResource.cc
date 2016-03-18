@@ -28,16 +28,14 @@
 namespace YumeEngine
 {
 
-	YumeGpuResource::YumeGpuResource(YumeRHI* rhi):
-		rhi_(rhi)
+	YumeGpuResource::YumeGpuResource()
 	{
-		if(rhi_)
-			rhi_->AddGpuResource(this);
+		if(gYume->pRHI)
+			gYume->pRHI->AddGpuResource(this);
 	}
 
 	YumeGpuResource::~YumeGpuResource()
 	{
-		if(rhi_)
-			rhi_->RemoveGpuResource(this);
+		
 	}
 }

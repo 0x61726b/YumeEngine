@@ -36,8 +36,7 @@
 #include "Renderer/YumeRHI.h"
 
 #include "Renderer/YumeShader.h"
-
-#include <boost/thread/mutex.hpp>
+#include "YumeD3D11ShaderProgram.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -45,14 +44,17 @@ namespace YumeEngine
 	class YumeD3D11RendererImpl;
 	class YumeShaderVariation;
 	class YumeD3D11ShaderProgram;
+	class YumeTexture2D;
+	class YumeTexture3D;
+	class YumeTextureCube;
 
 	typedef YumeMap<std::pair<YumeShaderVariation*,YumeShaderVariation*>,SharedPtr<YumeD3D11ShaderProgram> >::type ShaderProgramMap;
 
-	class YumeD3DExport YumeD3D11Renderer : public YumeRHI
+	class YumeD3DExport YumeD3D11Renderer : public YumeRHI,std::enable_shared_from_this<YumeD3D11Renderer>
 	{
 	public:
 		YumeD3D11Renderer();
-		~YumeD3D11Renderer();
+		virtual ~YumeD3D11Renderer();
 		YumeD3D11RendererImpl* GetImpl() const { return impl_; }
 
 		virtual bool							SetGraphicsMode(int width,int height,bool fullscreen,bool borderless,bool resizable,bool vsync,bool tripleBuffer,int multiSample);
@@ -97,6 +99,9 @@ namespace YumeEngine
 
 		virtual YumeVertexBuffer*				CreateVertexBuffer();
 		virtual YumeIndexBuffer* 				CreateIndexBuffer();
+		virtual YumeTexture2D*					CreateTexture2D();
+		virtual YumeTexture3D*					CreateTexture3D();
+		virtual YumeTextureCube*				CreateTextureCube();
 		virtual YumeInputLayout* 				CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks);
 
 
@@ -108,7 +113,7 @@ namespace YumeEngine
 		virtual void						    SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps);
 
 
-
+		virtual bool							HasShaderParameter(YumeHash param);
 		virtual void  							SetShaderParameter(YumeHash param,const float* data,unsigned count);
 		virtual void  							SetShaderParameter(YumeHash param,float value);
 		virtual void  							SetShaderParameter(YumeHash param,bool value);
@@ -153,12 +158,15 @@ namespace YumeEngine
 		virtual void 							Draw(PrimitiveType type,unsigned vertexStart,unsigned vertexCount);
 		virtual void 							Draw(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount);
 		virtual void 							DrawInstanced(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount,unsigned instanceCount);
-
+		virtual bool							ResolveToTexture(YumeTexture2D* destination, const IntRect& viewport);
 		virtual void							ClearParameterSource(ShaderParameterGroup group);
 		virtual void							ClearParameterSources();
 		virtual void							ClearTransformSources();
 		virtual void 							CleanupShaderPrograms(YumeShaderVariation* variation);
 
+		virtual const Vector2&					GetPixelUVOffset() { return pixelUVOffset; }
+		virtual bool							GetGL3SupportNs() { return false; } //kehkehkeh
+		virtual unsigned						GetOpenGLOnlyTextureDataType(unsigned format) { return 0; };
 
 		static unsigned							GetAlphaFormat();
 		static unsigned							GetLuminanceFormat();
@@ -198,6 +206,7 @@ namespace YumeEngine
 	private:
 		void RegisterFactories();
 		void UnregisterFactories();
+		void CreateResolveTexture();
 	private:
 		YumeVector<Vector2>::type				GetScreenResolutions();
 	private:

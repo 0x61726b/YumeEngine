@@ -25,6 +25,7 @@
 #include "Core/YumeXmlFile.h"
 #include "Renderer/YumeRenderPipeline.h"
 #include "Renderer/YumeRenderer.h"
+#include "YumeRenderView.h"
 
 #include "YumeRHI.h"
 #include "Engine/YumeEngine.h"
@@ -35,7 +36,9 @@ namespace YumeEngine
 
 	YumeViewport::YumeViewport():
 		rect_(IntRect::ZERO),
-		drawDebug_(true)
+		drawDebug_(true),
+		view_(0),
+		cullCamera_(0)
 	{
 		SetRenderPath((YumeRenderPipeline*)0);
 	}
@@ -44,7 +47,9 @@ namespace YumeEngine
 		camera_(camera),
 		scene_(scene),
 		rect_(IntRect::ZERO),
-		drawDebug_(true)
+		drawDebug_(true),
+		view_(0),
+		cullCamera_(0)
 	{
 		SetRenderPath(renderPath);
 	}
@@ -52,7 +57,9 @@ namespace YumeEngine
 	YumeViewport::YumeViewport(YumeCamera* camera,const IntRect& rect,YumeRenderPipeline* renderPath):
 		camera_(camera),
 		rect_(rect),
-		drawDebug_(true)
+		drawDebug_(true),
+		view_(0),
+		cullCamera_(0)
 	{
 		SetRenderPath(renderPath);
 	}
@@ -63,12 +70,12 @@ namespace YumeEngine
 	void YumeViewport::SetRenderPath(YumeRenderPipeline* path)
 	{
 		if(path)
-			renderPath_ = SharedPtr<YumeRenderPipeline>(path);
+			renderPath_ = (path);
 		else
 		{
-			SharedPtr<YumeRenderer> renderer= YumeEngine3D::Get()->GetRenderLogic();
+			YumeRenderer* renderer= gYume->pRenderer;
 			if(renderer)
-				renderPath_ = SharedPtr<YumeRenderPipeline>(renderer->GetDefaultPipeline());
+				renderPath_ = (renderer->GetDefaultPipeline());
 		}
 	}
 
@@ -121,7 +128,7 @@ namespace YumeEngine
 
 	YumeRenderPipeline* YumeViewport::GetRenderPath() const
 	{
-		return renderPath_.get();
+		return renderPath_;
 	}
 
 
@@ -135,7 +142,7 @@ namespace YumeEngine
 
 		if(rect_ == IntRect::ZERO)
 		{
-			YumeRHI* graphics = YumeEngine3D::Get()->GetRenderer();
+			YumeRHI* graphics = gYume->pRHI;
 			screenX = (float)x / (float)graphics->GetWidth();
 			screenY = (float)y / (float)graphics->GetHeight();
 		}
@@ -159,7 +166,7 @@ namespace YumeEngine
 		int y;
 		if(rect_ == IntRect::ZERO)
 		{
-			YumeRHI* graphics = YumeEngine3D::Get()->GetRenderer();
+			YumeRHI* graphics = gYume->pRHI;
 			x = (int)(screenPoint.x_ * graphics->GetWidth());
 			y = (int)(screenPoint.y_ * graphics->GetHeight());
 		}
@@ -182,7 +189,7 @@ namespace YumeEngine
 
 		if(rect_ == IntRect::ZERO)
 		{
-			YumeRHI* graphics = YumeEngine3D::Get()->GetRenderer();
+			YumeRHI* graphics = gYume->pRHI;
 			screenX = (float)x / (float)graphics->GetWidth();
 			screenY = (float)y / (float)graphics->GetHeight();
 		}
@@ -197,5 +204,6 @@ namespace YumeEngine
 
 	void YumeViewport::AllocateView()
 	{
+		view_ = SharedPtr<YumeRenderView>(new YumeRenderView);
 	}
 }

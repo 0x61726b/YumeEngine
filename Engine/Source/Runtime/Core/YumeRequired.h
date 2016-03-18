@@ -1,30 +1,24 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//----------------------------------------------------------------------------
+//Yume Engine
+//Copyright (C) 2015  arkenthera
+//This program is free software; you can redistribute it and/or modify
+//it under the terms of the GNU General Public License as published by
+//the Free Software Foundation; either version 2 of the License, or
+//(at your option) any later version.
+//This program is distributed in the hope that it will be useful,
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//GNU General Public License for more details.
+//You should have received a copy of the GNU General Public License along
+//with this program; if not, write to the Free Software Foundation, Inc.,
+//51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.*/
+//----------------------------------------------------------------------------
+//
+// File : <Filename> YumeGraphics.h
+// Date : 2.19.2016
+// Comments :
+//
+//----------------------------------------------------------------------------
 
 #ifndef __YumeRequired_h__
 #define __YumeRequired_h__
@@ -45,6 +39,7 @@ namespace YumeEngine
 //---------------------------------------------------------------------------------
 #include "YumeStdHeaders.h"
 #include "YumeMemoryAllocatorConfig.h"
+#include "Core/SharedPtr.h"
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -56,29 +51,28 @@ namespace YumeEngine
 
 	static YumeString EmptyString = "";
 
-	typedef unsigned char yuchar;
-	typedef unsigned short yushort;
-	typedef unsigned int yuint;
-	typedef unsigned long yulong;
+	class YumeEngine3D;
+	class YumeRenderer;
+	class YumeRHI;
+	class YumeResourceManager;
+	class YumeIO;
+	class YumeTime;
+	class YumeWorkQueue;
+	class YumeEnvironment;
+	class YumeDebugRenderer;
+	class YumeInput;
+	class YumeObjectFactory;
 
-	typedef float Real;
-
-	//Math predefinitions
-	class Radian;
-	class Degree;
-	class Angle;
-	class Math;
 	class Vector2;
 	class Vector3;
 	class Vector4;
+
+	class Matrix3x4;
 	class Matrix3;
 	class Matrix4;
+
+
 	class Quaternion;
-	class Ray;
-	class AxisAlignedBox;
-	class Sphere;
-	class Plane;
-	class PlaneBoundedVolume;
 }
 //---------------------------------------------------------------------------------
 #include "Math/YumeHash.h"
@@ -179,6 +173,24 @@ namespace YumeEngine
 
 #include <boost/shared_array.hpp>
 
+#include "Core/YumeBase.h"
+
+struct YumeAPIExport GlobalSystems
+{
+	YumeEngine::YumeEngine3D*								pEngine;
+	YumeEngine::YumeRHI*									pRHI;
+	YumeEngine::YumeRenderer*								pRenderer;
+	YumeEngine::YumeResourceManager*						pResourceManager;
+	YumeEngine::YumeIO*										pIO;
+	YumeEngine::YumeTime*									pTimer;
+	YumeEngine::YumeWorkQueue*								pWorkSystem;
+	YumeEngine::YumeEnvironment*							pEnv;
+	YumeEngine::YumeDebugRenderer*							pDebugRenderer;
+	YumeEngine::YumeInput*									pInput;
+	YumeEngine::YumeObjectFactory*							pObjFactory;
+};
+
+extern YumeAPIExport GlobalSystems* gYume;
 //---------------------------------------------------------------------------------
 #endif
 //~End of YumeRequired.h

@@ -52,7 +52,7 @@ namespace YumeEngine
 		if(instance != nullptr)
 			return SharedPtr<YumeBase>(instance);
 		else
-			return nullptr;
+			return SharedPtr<YumeBase>();
 	}
 
 	YumeObjectFactory* YumeObjectFactory::Get()

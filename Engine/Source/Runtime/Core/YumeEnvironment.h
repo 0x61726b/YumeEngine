@@ -38,7 +38,7 @@ namespace YumeEngine
 	class YumeFile;
 
 
-	class YumeAPIExport YumeEnvironment
+	class YumeAPIExport YumeEnvironment : public RefCounted
 	{
 	public:
 		YumeEnvironment();

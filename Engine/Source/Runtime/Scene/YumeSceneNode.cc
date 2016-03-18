@@ -59,11 +59,6 @@ namespace YumeEngine
 			scene_->NodeRemoved(this);
 	}
 
-	YumeHash YumeSceneNode::GetType()
-	{
-		return type_;
-	}
-
 	void YumeSceneNode::SetName(const YumeString& name)
 	{
 		if(name != name_)
@@ -375,7 +370,7 @@ namespace YumeEngine
 			YumeVector<SharedPtr<YumeSceneNode> >::iterator i = cur->children_.begin();
 			if(i != cur->children_.end())
 			{
-				YumeSceneNode *next = (*i).get();
+				YumeSceneNode *next = (*i);
 				for(++i; i != cur->children_.end(); ++i)
 					(*i)->MarkDirty();
 				cur = next;
@@ -448,7 +443,7 @@ namespace YumeEngine
 
 		for(YumeVector<SharedPtr<YumeSceneNode> >::iterator i = children_.begin(); i != children_.end(); ++i)
 		{
-			if((*i).get() == node)
+			if((*i) == node)
 			{
 				RemoveChild(i);
 				return;
@@ -468,18 +463,18 @@ namespace YumeEngine
 		for(unsigned i = children_.size() - 1; i < children_.size(); --i)
 		{
 			bool remove = false;
-			YumeSceneNode* childNode = children_[i].get();
+			YumeSceneNode* childNode = children_[i];
 			if(recursive)
 				childNode->RemoveChildren(true);
 
-			children_.erase( children_.begin()+i);
+			RemoveChild( children_.begin()+i);
 		}
 	}
 
 	YumeSceneComponent* YumeSceneNode::CreateComponent(YumeHash type,unsigned id)
 	{
 		// Check that creation succeeds and that the object in fact is a component
-		SharedPtr<YumeSceneComponent> newComponent = boost::static_pointer_cast<YumeSceneComponent>(YumeObjectFactory::Get()->Create(type));
+		SharedPtr<YumeSceneComponent> newComponent = DynamicCast<YumeSceneComponent>(YumeObjectFactory::Get()->Create(type));
 		if(!newComponent)
 		{
 			YUMELOG_ERROR("Could not create unknown component type " + type);
@@ -487,7 +482,7 @@ namespace YumeEngine
 		}
 
 		AddComponent(newComponent,id);
-		return newComponent.get();
+		return newComponent;
 	}
 
 	YumeSceneComponent* YumeSceneNode::GetOrCreateComponent(YumeHash type,unsigned id)
@@ -521,7 +516,7 @@ namespace YumeEngine
 	{
 		for(YumeVector<SharedPtr<YumeSceneComponent> >::iterator i = components_.begin(); i != components_.end(); ++i)
 		{
-			if((*i).get() == component)
+			if((*i) == component)
 			{
 				RemoveComponent(i);
 				return;
@@ -548,7 +543,7 @@ namespace YumeEngine
 		for(unsigned i = components_.size() - 1; i < components_.size(); --i)
 		{
 
-			YumeSceneComponent* component = components_[i].get();
+			YumeSceneComponent* component = components_[i];
 			RemoveComponent(components_.begin() + i);
 			++numRemoved;
 
@@ -582,14 +577,14 @@ namespace YumeEngine
 
 		for(YumeVector<SharedPtr<YumeSceneComponent> >::const_iterator i = components_.begin(); i != components_.end(); ++i)
 		{
-			YumeSceneComponent* component = (*i).get();
+			YumeSceneComponent* component = (*i);
 
 			YumeSceneComponent* cloneComponent = cloneNode->CloneComponent(component,0);
 		}
 
 		for(YumeVector<SharedPtr<YumeSceneNode> >::const_iterator i = children_.begin(); i != children_.end(); ++i)
 		{
-			YumeSceneNode* node = (*i).get();
+			YumeSceneNode* node = (*i);
 
 			node->CloneRecursive(cloneNode);
 		}
@@ -714,7 +709,7 @@ namespace YumeEngine
 		if(!recursive)
 		{
 			for(YumeVector<SharedPtr<YumeSceneNode> >::const_iterator i = children_.begin(); i != children_.end(); ++i)
-				dest.push_back((*i).get());
+				dest.push_back((*i));
 		}
 		else
 			GetChildrenRecursive(dest);
@@ -729,7 +724,7 @@ namespace YumeEngine
 			for(YumeVector<SharedPtr<YumeSceneNode> >::const_iterator i = children_.begin(); i != children_.end(); ++i)
 			{
 				if((*i)->HasComponent(type))
-					dest.push_back((*i).get());
+					dest.push_back((*i));
 			}
 		}
 		else
@@ -738,7 +733,7 @@ namespace YumeEngine
 
 	YumeSceneNode* YumeSceneNode::GetChild(unsigned index) const
 	{
-		return index < children_.size() ? children_[index].get() : 0;
+		return index < children_.size() ? children_[index].Get() : 0;
 	}
 
 	YumeSceneNode* YumeSceneNode::GetChild(const YumeString& name,bool recursive) const
@@ -756,7 +751,7 @@ namespace YumeEngine
 		for(YumeVector<SharedPtr<YumeSceneNode> >::const_iterator i = children_.begin(); i != children_.end(); ++i)
 		{
 			if((*i)->GetNameHash() == nameHash)
-				return (*i).get();
+				return (*i);
 
 			if(recursive)
 			{
@@ -778,7 +773,7 @@ namespace YumeEngine
 			for(YumeVector<SharedPtr<YumeSceneComponent> >::const_iterator i = components_.begin(); i != components_.end(); ++i)
 			{
 				if((*i)->GetType() == type)
-					dest.push_back((*i).get());
+					dest.push_back((*i));
 			}
 		}
 		else
@@ -807,7 +802,7 @@ namespace YumeEngine
 		for(YumeVector<SharedPtr<YumeSceneComponent> >::const_iterator i = components_.begin(); i != components_.end(); ++i)
 		{
 			if((*i)->GetType() == type)
-				return (*i).get();
+				return (*i);
 		}
 
 		if(recursive)
@@ -894,7 +889,7 @@ namespace YumeEngine
 			if(!id || scene_->GetComponent(id))
 				id = scene_->GetFreeComponentID();
 			component->SetID(id);
-			scene_->ComponentAdded(component.get());
+			scene_->ComponentAdded(component);
 		}
 		else
 			component->SetID(id);
@@ -911,7 +906,7 @@ namespace YumeEngine
 	void YumeSceneNode::SetEnabled(bool enable,bool recursive,bool storeSelf)
 	{
 		// The enabled state of the whole scene can not be changed. SetUpdateEnabled() is used instead to start/stop updates.
-		if(GetType() == YumeScene::GetType())
+		if(GetType() == YumeScene::GetTypeStatic())
 		{
 			YUMELOG_ERROR("Can not change enabled state of the Scene");
 			return;
@@ -989,7 +984,7 @@ namespace YumeEngine
 	void YumeSceneNode::RemoveChild(YumeVector<SharedPtr<YumeSceneNode> >::iterator i)
 	{
 		// Send change event. Do not send when already being destroyed
-		YumeSceneNode* child = (*i).get();
+		YumeSceneNode* child = (*i);
 
 
 
@@ -1005,7 +1000,7 @@ namespace YumeEngine
 	{
 		for(YumeVector<SharedPtr<YumeSceneNode> >::const_iterator i = children_.begin(); i != children_.end(); ++i)
 		{
-			YumeSceneNode* node = (*i).get();
+			YumeSceneNode* node = (*i);
 			dest.push_back(node);
 			if(!node->children_.empty())
 				node->GetChildrenRecursive(dest);
@@ -1016,7 +1011,7 @@ namespace YumeEngine
 	{
 		for(YumeVector<SharedPtr<YumeSceneNode> >::const_iterator i = children_.begin(); i != children_.end(); ++i)
 		{
-			YumeSceneNode* node = (*i).get();
+			YumeSceneNode* node = (*i);
 			if(node->HasComponent(type))
 				dest.push_back(node);
 			if(!node->children_.empty())
@@ -1029,7 +1024,7 @@ namespace YumeEngine
 		for(YumeVector<SharedPtr<YumeSceneComponent> >::const_iterator i = components_.begin(); i != components_.end(); ++i)
 		{
 			if((*i)->GetType() == type)
-				dest.push_back((*i).get());
+				dest.push_back((*i));
 		}
 		for(YumeVector<SharedPtr<YumeSceneNode> >::const_iterator i = children_.begin(); i != children_.end(); ++i)
 			(*i)->GetComponentsRecursive(dest,type);
@@ -1037,9 +1032,9 @@ namespace YumeEngine
 
 	void YumeSceneNode::RemoveComponent(YumeVector<SharedPtr<YumeSceneComponent> >::iterator i)
 	{
-		RemoveListener((*i).get());
+		RemoveListener((*i));
 		if(scene_)
-			scene_->ComponentRemoved((*i).get());
+			scene_->ComponentRemoved((*i));
 		(*i)->SetNode(0);
 		components_.erase(i);
 	}

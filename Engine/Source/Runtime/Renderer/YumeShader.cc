@@ -41,12 +41,11 @@
 
 namespace YumeEngine
 {
-	YumeHash YumeShader::shaderHash_ = ("Shader");
+	YumeHash YumeShader::type_ = ("Shader");
 	YumeShader::YumeShader()
 		: timeStamp_(0),
 		numVariations_(0)
 	{
-		shaderHash_ = ("Shader");
 	}
 
 	YumeShader::~YumeShader()
@@ -55,8 +54,8 @@ namespace YumeEngine
 
 	bool YumeShader::ProcessSource(YumeString& code,YumeFile& file)
 	{
-		YumeResourceManager* rm_ = YumeEngine3D::Get()->GetResourceManager();
-		SharedPtr<YumeIO> io_ = YumeEngine3D::Get()->GetIO();
+		YumeResourceManager* rm_ = gYume->pResourceManager;
+		YumeIO* io_ = gYume->pIO;
 
 		YumeString fullPath = rm_->GetFullPath(file.GetName());
 		unsigned timestamp = io_->GetLastModifiedTime(fullPath);
@@ -85,7 +84,7 @@ namespace YumeEngine
 				if(!file_)
 					return false;
 
-				if(!ProcessSource(code,*file_.get()))
+				if(!ProcessSource(code,*file_))
 					return false;
 			}
 			else
@@ -108,10 +107,5 @@ namespace YumeEngine
 		
 		std::sort(defs.begin(),defs.end());
 		return boost::join(defs," ");;
-	}
-
-	YumeHash YumeShader::GetType()
-	{
-		return shaderHash_;
 	}
 }

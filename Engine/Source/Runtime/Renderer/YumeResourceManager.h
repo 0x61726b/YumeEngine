@@ -27,6 +27,8 @@
 #include "YumeResource.h"
 
 #include "YumeIO.h"
+#include "Core/YumeMutex.h"
+#undef FindResource
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -37,29 +39,25 @@ namespace YumeEngine
 	typedef YumeMap<YumeHash,ResourceGroup>::type ResourceGroupHashMap;
 	typedef YumeMap<YumeHash,SharedPtr<YumeResource> >::type ResourceHashMap;
 
-	
+
 	static const unsigned PRIORITY_LAST = 0xffffffff;
 
-	
+
 	struct ResourceGroup
 	{
-		
 		ResourceGroup():
 			memoryBudget_(0),
 			memoryUse_(0)
 		{
 		}
 
-		
 		unsigned long long memoryBudget_;
-		
 		unsigned long long memoryUse_;
-		
-		YumeMap<YumeHash,boost::shared_ptr<YumeResource> >::type resources_;
+		YumeMap<YumeHash,SharedPtr<YumeResource> >::type resources_;
 	};
 
 
-	class YumeAPIExport YumeResourceManager
+	class YumeAPIExport YumeResourceManager : public YumeBase
 	{
 	public:
 		YumeResourceManager();
@@ -68,39 +66,73 @@ namespace YumeEngine
 		void AddResourcePath(const FsPath&);
 
 		bool AddManualResource(YumeResource* resource);
-		boost::shared_ptr<YumeFile> GetFile(const YumeString& name);
+		SharedPtr<YumeFile> GetFile(const YumeString& name);
 
 		YumeString GetFullPath(const YumeString& resource);
 
-		SharedPtr<YumeFile> SearchResourcesPath(const YumeString& resource);
-
-		SharedPtr<YumeResource> RetrieveResource(YumeHash type,const YumeString& resource);
-
-		SharedPtr<YumeResource> PrepareResource(YumeHash type,const YumeString& resource);
-
+		YumeFile* SearchResourcesPath(const YumeString& resource);
+		YumeResource* RetrieveResource(YumeHash type,const YumeString& resource);
+		YumeResource* PrepareResource(YumeHash type,const YumeString& resource);
 		void StoreResourceDependency(YumeResource* resource,const YumeString& dep);
+		SharedPtr<YumeResource> GetTempResource(YumeHash type,const YumeString& name);
+		void GetResources(YumeVector<YumeResource*>::type& result,YumeHash type) const;
+		const SharedPtr<YumeResource>& FindResource(YumeHash type, YumeHash nameHash);
 
+		bool ReloadResource(YumeResource* resource);
+		void ResetDependencies(YumeResource*);
 		bool Exists(const YumeString& name);
 
-		template< class T >
-		SharedPtr<T> PrepareResource(const YumeString& resource);
+		void UpdateResourceGroup(YumeHash type);
+
+		template <class T> T* PrepareResource(const YumeString& resource);
+		template <class T> T* RetrieveResource(const YumeString& name);
+		template <class T> SharedPtr<T> GetTempResource(const YumeString& name);
+		template <class T> void GetResources(std::vector<T*>& result) const;
+
 
 	private:
-		boost::mutex resourceMutex_;
+		Mutex resourceMutex_;
 		ResourceGroupHashMap resourceGroups_;
 		YumeVector<FsPath>::type resourcePaths_;
-		boost::shared_ptr<YumeBackgroundWorker> backgroundWorker_;
+		SharedPtr<YumeBackgroundWorker> backgroundWorker_;
 
-		YumeMap<YumeHash, YumeVector<YumeHash>::type >::type dependentResources_;
+		YumeMap<YumeHash,YumeVector<YumeHash>::type >::type dependentResources_;
 
 
 	};
 
-	template< class T > SharedPtr<T> YumeResourceManager::PrepareResource(const YumeString& resource)
-	{
-		YumeHash type = T::GetType();
 
-		return boost::static_pointer_cast<T>(PrepareResource(type,resource));
+	template <class T> void YumeResourceManager::GetResources(std::vector<T*>& result) const
+	{
+		YumeVector<YumeResource*>::type& resources = reinterpret_cast<std::vector<YumeResource*>&>(result);
+		YumeHash type = T::GetTypeStatic();
+		GetResources(resources,type);
+
+		// Perform conversion of the returned pointers
+		for(unsigned i = 0; i < result.size(); ++i)
+		{
+			YumeResource* resource = resources[i];
+			result[i] = static_cast<T*>(resource);
+		}
+	}
+
+	template <class T> T* YumeResourceManager::RetrieveResource(const YumeString& name)
+	{
+		YumeHash type = T::GetTypeStatic();
+		return static_cast<T*>(RetrieveResource(type,name));
+	}
+
+	template< class T > T* YumeResourceManager::PrepareResource(const YumeString& resource)
+	{
+		YumeHash type = T::GetTypeStatic();
+
+		return static_cast<T*>(PrepareResource(type,resource));
+	}
+
+	template <class T> SharedPtr<T> YumeResourceManager::GetTempResource(const YumeString& name)
+	{
+		YumeHash type = T::GetTypeStatic();
+		return StaticCast<T>(GetTempResource(type,name));
 	}
 
 }

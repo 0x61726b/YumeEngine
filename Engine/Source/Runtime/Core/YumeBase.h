@@ -30,13 +30,16 @@ namespace YumeEngine
 {
 	class YumeShader;
 
-	class YumeAPIExport YumeBase
+	class YumeAPIExport YumeBase : public RefCounted
 	{
 	public:
-		YumeBase(){};
+		YumeBase():baseType_("Base") {};
 		virtual ~YumeBase() {};
+
+		virtual YumeHash GetType() { return baseType_; };
+		YumeHash baseType_;
 	};
-	class YumeAPIExport YumeObjectFactory
+	class YumeAPIExport YumeObjectFactory : public RefCounted
 	{
 	public:
 		YumeObjectFactory();

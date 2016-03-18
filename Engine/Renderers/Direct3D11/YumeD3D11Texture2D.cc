@@ -30,10 +30,9 @@
 #include "YumeD3D11Renderable.h"
 
 #include "Renderer/YumeImage.h"
-
 #include "Renderer/YumeRenderer.h"
-
 #include "Renderer/YumeRenderable.h"
+#include "Engine/YumeEngine.h"
 
 #include "Logging/logging.h"
 
@@ -80,8 +79,7 @@ namespace YumeEngine
 		D3D11_TEXTURE_ADDRESS_BORDER
 	};
 
-	YumeD3D11Texture2D::YumeD3D11Texture2D(YumeRHI* rhi)
-		: YumeD3D11Resource(static_cast<YumeD3D11Renderer*>(rhi))
+	YumeD3D11Texture2D::YumeD3D11Texture2D()
 	{
 		format_ = (DXGI_FORMAT_UNKNOWN);
 	}
@@ -93,12 +91,12 @@ namespace YumeEngine
 
 	void YumeD3D11Texture2D::Release()
 	{
-		if(rhi_ && object_)
+		if(!gYume->pRHI && object_)
 		{
 			for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
 			{
-				if(rhi_->GetTexture(i) == this)
-					rhi_->SetTexture(i,0);
+				if(gYume->pRHI->GetTexture(i) == this)
+					gYume->pRHI->SetTexture(i,0);
 			}
 		}
 
@@ -120,7 +118,7 @@ namespace YumeEngine
 		}
 
 		// Delete the old rendersurface if any
-		renderSurface_.reset();
+		renderSurface_.Reset();
 		usage_ = usage;
 
 		if(usage_ == TEXTURE_RENDERTARGET || usage_ == TEXTURE_DEPTHSTENCIL)
@@ -136,10 +134,10 @@ namespace YumeEngine
 		else if(usage_ == TEXTURE_DYNAMIC)
 			requestedLevels_ = 1;
 
-		//if(usage_ == TEXTURE_RENDERTARGET)
-		//	SubscribeToEvent(E_RENDERSURFACEUPDATE,URHO3D_HANDLER(Texture2D,HandleRenderSurfaceUpdate));
-		//else
-		//	UnsubscribeFromEvent(E_RENDERSURFACEUPDATE);
+		if(usage_ == TEXTURE_RENDERTARGET)
+			gYume->pRenderer->AddListener(this);
+		else
+			gYume->pRenderer->RemoveListener(this);
 
 		width_ = width;
 		height_ = height;
@@ -203,7 +201,7 @@ namespace YumeEngine
 			D3D11_MAPPED_SUBRESOURCE mappedData;
 			mappedData.pData = 0;
 
-			HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->Map((ID3D11Resource*)object_,subResource,D3D11_MAP_WRITE_DISCARD,0,
+			HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->Map((ID3D11Resource*)object_,subResource,D3D11_MAP_WRITE_DISCARD,0,
 				&mappedData);
 			if(FAILED(hr) || !mappedData.pData)
 			{
@@ -214,7 +212,7 @@ namespace YumeEngine
 			{
 				for(int row = 0; row < height; ++row)
 					memcpy((unsigned char*)mappedData.pData + (row + y) * mappedData.RowPitch + rowStart,src + row * rowSize,rowSize);
-				static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->Unmap((ID3D11Resource*)object_,subResource);
+				static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->Unmap((ID3D11Resource*)object_,subResource);
 			}
 		}
 		else
@@ -227,7 +225,7 @@ namespace YumeEngine
 			destBox.front = 0;
 			destBox.back = 1;
 
-			static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Resource*)object_,subResource,&destBox,data,
+			static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Resource*)object_,subResource,&destBox,data,
 				rowSize,0);
 		}
 
@@ -312,7 +310,7 @@ namespace YumeEngine
 			int width = image->GetWidth();
 			int height = image->GetHeight();
 			unsigned levels = image->GetNumCompressedLevels();
-			unsigned format = rhi_->GetFormat(image->GetCompressedFormat());
+			unsigned format = gYume->pRHI->GetFormat(image->GetCompressedFormat());
 			bool needDecompress = false;
 
 			if(!format)
@@ -391,7 +389,7 @@ namespace YumeEngine
 		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 
 		ID3D11Texture2D* stagingTexture = 0;
-		HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateTexture2D(&textureDesc,0,&stagingTexture);
+		HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateTexture2D(&textureDesc,0,&stagingTexture);
 		if(FAILED(hr))
 		{
 			D3D_SAFE_RELEASE(stagingTexture);
@@ -407,7 +405,7 @@ namespace YumeEngine
 		srcBox.bottom = (UINT)levelHeight;
 		srcBox.front = 0;
 		srcBox.back = 1;
-		static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->CopySubresourceRegion(stagingTexture,0,0,0,0,(ID3D11Resource*)object_,
+		static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->CopySubresourceRegion(stagingTexture,0,0,0,0,(ID3D11Resource*)object_,
 			srcSubResource,&srcBox);
 
 		D3D11_MAPPED_SUBRESOURCE mappedData;
@@ -415,7 +413,7 @@ namespace YumeEngine
 		unsigned rowSize = GetRowDataSize(levelWidth);
 		unsigned numRows = (unsigned)(IsCompressed() ? (levelHeight + 3) >> 2 : levelHeight);
 
-		hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->Map((ID3D11Resource*)stagingTexture,0,D3D11_MAP_READ,0,&mappedData);
+		hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->Map((ID3D11Resource*)stagingTexture,0,D3D11_MAP_READ,0,&mappedData);
 		if(FAILED(hr) || !mappedData.pData)
 		{
 			YUMELOG_ERROR("Failed to map staging texture for GetData",hr);
@@ -426,7 +424,7 @@ namespace YumeEngine
 		{
 			for(unsigned row = 0; row < numRows; ++row)
 				memcpy((unsigned char*)dest + row * rowSize,(unsigned char*)mappedData.pData + row * mappedData.RowPitch,rowSize);
-			static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->Unmap((ID3D11Resource*)stagingTexture,0);
+			static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->Unmap((ID3D11Resource*)stagingTexture,0);
 			stagingTexture->Release();
 			return true;
 		}
@@ -436,7 +434,7 @@ namespace YumeEngine
 	{
 		Release();
 
-		if(!rhi_ || !width_ || !height_)
+		if(!gYume->pRHI || !width_ || !height_)
 			return false;
 
 		levels_ = CheckMaxLevels(width_,height_,requestedLevels_);
@@ -458,7 +456,7 @@ namespace YumeEngine
 			textureDesc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
 		textureDesc.CPUAccessFlags = usage_ == TEXTURE_DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
 
-		HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateTexture2D(&textureDesc,0,(ID3D11Texture2D**)&object_);
+		HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateTexture2D(&textureDesc,0,(ID3D11Texture2D**)&object_);
 		if(FAILED(hr))
 		{
 			D3D_SAFE_RELEASE(object_);
@@ -472,7 +470,7 @@ namespace YumeEngine
 		resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		resourceViewDesc.Texture2D.MipLevels = (UINT)levels_;
 
-		hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateShaderResourceView((ID3D11Resource*)object_,&resourceViewDesc,
+		hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateShaderResourceView((ID3D11Resource*)object_,&resourceViewDesc,
 			(ID3D11ShaderResourceView**)&shaderResourceView_);
 		if(FAILED(hr))
 		{
@@ -488,7 +486,7 @@ namespace YumeEngine
 			renderTargetViewDesc.Format = textureDesc.Format;
 			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 
-			hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Resource*)object_,&renderTargetViewDesc,
+			hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Resource*)object_,&renderTargetViewDesc,
 				(ID3D11RenderTargetView**)&renderSurface_->renderTargetView_);
 			if(FAILED(hr))
 			{
@@ -504,7 +502,7 @@ namespace YumeEngine
 			depthStencilViewDesc.Format = (DXGI_FORMAT)GetDSVFormat(textureDesc.Format);
 			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 
-			hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Resource*)object_,&depthStencilViewDesc,
+			hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Resource*)object_,&depthStencilViewDesc,
 				(ID3D11DepthStencilView**)&renderSurface_->renderTargetView_);
 			if(FAILED(hr))
 			{
@@ -515,7 +513,7 @@ namespace YumeEngine
 
 			// Create also a read-only version of the view for simultaneous depth testing and sampling in shader
 			depthStencilViewDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH;
-			hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Resource*)object_,&depthStencilViewDesc,
+			hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Resource*)object_,&depthStencilViewDesc,
 				(ID3D11DepthStencilView**)&renderSurface_->readOnlyView_);
 			if(FAILED(hr))
 			{
@@ -527,13 +525,13 @@ namespace YumeEngine
 		return true;
 	}
 
-	void YumeD3D11Texture2D::HandleRenderSurfaceUpdate(YumeHash eventType,VariantMap& eventData)
+	void YumeD3D11Texture2D::HandleRenderTargetUpdate()
 	{
 		if(renderSurface_ && (renderSurface_->GetUpdateMode() == SURFACE_UPDATEALWAYS || renderSurface_->IsUpdateQueued()))
 		{
 			YumeRenderer* renderer = 0;
 			if(renderer)
-				renderer->QueueRenderable(renderSurface_.get());
+				renderer->QueueRenderable(renderSurface_);
 			renderSurface_->ResetUpdateQueued();
 		}
 	}
@@ -588,20 +586,20 @@ namespace YumeEngine
 
 		D3D11_SAMPLER_DESC samplerDesc;
 		memset(&samplerDesc,0,sizeof samplerDesc);
-		unsigned filterModeIndex = filterMode_ != FILTER_DEFAULT ? filterMode_ : rhi_->GetDefaultTextureFilterMode();
+		unsigned filterModeIndex = filterMode_ != FILTER_DEFAULT ? filterMode_ : gYume->pRHI->GetDefaultTextureFilterMode();
 		if(shadowCompare_)
 			filterModeIndex += 4;
 		samplerDesc.Filter = d3dFilterMode[filterModeIndex];
 		samplerDesc.AddressU = d3dAddressMode[addressMode_[0]];
 		samplerDesc.AddressV = d3dAddressMode[addressMode_[1]];
 		samplerDesc.AddressW = d3dAddressMode[addressMode_[2]];
-		samplerDesc.MaxAnisotropy = rhi_->GetTextureAnisotropy();
+		samplerDesc.MaxAnisotropy = gYume->pRHI->GetTextureAnisotropy();
 		samplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
 		samplerDesc.MinLOD = -M_INFINITY;
 		samplerDesc.MaxLOD = M_INFINITY;
 		memcpy(&samplerDesc.BorderColor,borderColor_.Data(),4 * sizeof(float));
 
-		HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateSamplerState(&samplerDesc,(ID3D11SamplerState**)&sampler_);
+		HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateSamplerState(&samplerDesc,(ID3D11SamplerState**)&sampler_);
 		if(FAILED(hr))
 		{
 			D3D_SAFE_RELEASE(sampler_);

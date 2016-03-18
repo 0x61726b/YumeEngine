@@ -30,9 +30,12 @@ static const int MAX_TEXTURE_QUALITY_LEVELS = 3;
 #include "Math/YumeColor.h"
 #include "Renderer/YumeRendererDefs.h"
 #include "Renderer/YumeResource.h"
+#include "Core/YumeXmlParser.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	class YumeXmlFile;
+
 	class YumeAPIExport YumeTexture : public YumeResource
 	{
 	public:
@@ -40,147 +43,99 @@ namespace YumeEngine
 
 		virtual ~YumeTexture();
 
+		virtual YumeHash GetType() { return textureType_; }
+		static YumeHash GetTypeStatic() { return textureType_; };
+		static YumeHash textureType_;
 
-		
 		void SetNumLevels(unsigned levels);
-		
 		void SetFilterMode(TextureFilterMode filter);
-		
 		void SetAddressMode(TextureCoordinate coord,TextureAddressMode address);
-		
 		void SetShadowCompare(bool enable) ;
-		
 		void SetBorderColor(const YumeColor& color);
-		
 		void SetSRGB(bool enable);
-		
 		void SetBackupTexture(YumeTexture* texture) ;
-		
 		void SetMipsToSkip(int quality,int toSkip) ;
 
-		
-		unsigned GetFormat() const { return format_; }
-
-		
 		virtual bool IsCompressed() const = 0;
+		virtual unsigned GetDataSize(int width,int height) const = 0;
+		virtual unsigned GetRowDataSize(int width) const = 0;
+		virtual void UpdateParameters() = 0;
+		virtual void CheckTextureBudget(YumeHash type) = 0;
+		virtual unsigned GetSRVFormat(unsigned format) = 0;
+		virtual unsigned GetDSVFormat(unsigned format) = 0;
+		virtual unsigned GetSRGBFormat(unsigned format) = 0;
+		virtual bool IsDataLost() = 0;
+		virtual void ClearDataLost() = 0;
 
-		
+		unsigned GetFormat() const { return format_; }
 		unsigned GetLevels() const { return levels_; }
-
-		
 		int GetWidth() const { return width_; }
-
-		
 		int GetHeight() const { return height_; }
-
-		
 		int GetDepth() const { return depth_; }
 
-		
 		TextureFilterMode GetFilterMode() const { return filterMode_; }
-
-		
 		TextureAddressMode GetAddressMode(TextureCoordinate coord) const { return addressMode_[coord]; }
-
-		
 		bool GetShadowCompare() const { return shadowCompare_; }
-
-		
 		const YumeColor& GetBorderColor() const { return borderColor_; }
-
-		
 		bool GetSRGB() const { return sRGB_; }
-
-		
-		YumeTexture* GetBackupTexture() const { return backupTexture_.get(); }
-
-		
+		YumeTexture* GetBackupTexture() const { return backupTexture_; }
 		int GetMipsToSkip(int quality) const;
-		
 		int GetLevelWidth(unsigned level) const;
-		
 		int GetLevelHeight(unsigned level) const;
-		
 		int GetLevelDepth(unsigned level) const;
-
-		
 		TextureUsage GetUsage() const { return usage_; }
-
-		
-		virtual unsigned GetDataSize(int width,int height) const = 0;
-		
 		unsigned GetDataSize(int width,int height,int depth) const;
-		
-		virtual unsigned GetRowDataSize(int width) const = 0;
-		
 		unsigned GetComponents() const;
-
-		
 		bool GetParametersDirty() const { return parametersDirty_ || !sampler_; }
 
-		
-		void SetParameters();
-		
+		void SetParameters(YumeXmlFile* file);
+		void SetParameters(const XmlNode& element);
 		void SetParametersDirty();
-		
-		virtual void UpdateParameters() = 0;
-
-		
 		void* GetShaderResourceView() const { return shaderResourceView_; }
-
-		
 		void* GetSampler() const { return sampler_; }
 
-
-		
-		virtual void CheckTextureBudget(YumeHash type) = 0;
-
-		
 		static unsigned CheckMaxLevels(int width,int height,unsigned requestedLevels);
-		
+
 		static unsigned CheckMaxLevels(int width,int height,int depth,unsigned requestedLevels);
-		
-		virtual unsigned GetSRVFormat(unsigned format) = 0;
-		
-		virtual unsigned GetDSVFormat(unsigned format) = 0;
-		
-		virtual unsigned GetSRGBFormat(unsigned format) = 0;
+
+		//OpenGL only
+		const unsigned GetTarget() { return target_; }
 	protected:
-		
+
 		void* shaderResourceView_;
 		//OpenGL target
 		unsigned target_;
-		
+
 		void* sampler_;
-		
+
 		unsigned format_;
-		
+
 		TextureUsage usage_;
-		
+
 		unsigned levels_;
-		
+
 		unsigned requestedLevels_;
-		
+
 		int width_;
-		
+
 		int height_;
-		
+
 		int depth_;
-		
+
 		bool shadowCompare_;
-		
+
 		TextureFilterMode filterMode_;
-		
+
 		TextureAddressMode addressMode_[MAX_COORDS];
-		
+
 		unsigned mipsToSkip_[MAX_TEXTURE_QUALITY_LEVELS];
-		
+
 		YumeColor borderColor_;
-		
+
 		bool sRGB_;
-		
+
 		bool parametersDirty_;
-		
+
 		SharedPtr<YumeTexture> backupTexture_;
 
 	};

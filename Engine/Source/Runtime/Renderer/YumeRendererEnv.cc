@@ -42,6 +42,8 @@ namespace YumeEngine
 
 	extern const char* SCENE_CATEGORY;
 
+	YumeHash YumeRendererEnvironment::type_ = "RendererEnvironment";
+
 	YumeRendererEnvironment::YumeRendererEnvironment():
 		YumeDrawable(DRAWABLE_ZONE),
 		inverseWorldDirty_(true),
@@ -301,14 +303,14 @@ namespace YumeEngine
 				else if(drawableFlags & DRAWABLE_ZONE)
 				{
 					YumeRendererEnvironment* zone = static_cast<YumeRendererEnvironment*>(drawable);
-					zone->lastAmbientStartZone_.reset();
-					zone->lastAmbientEndZone_.reset();
+					zone->lastAmbientStartZone_.Reset();
+					zone->lastAmbientEndZone_.Reset();
 				}
 			}
 		}
 
 		lastWorldBoundingBox_ = GetWorldBoundingBox();
-		lastAmbientStartZone_.reset();
-		lastAmbientEndZone_.reset();
+		lastAmbientStartZone_.Reset();
+		lastAmbientEndZone_.Reset();
 	}
 }

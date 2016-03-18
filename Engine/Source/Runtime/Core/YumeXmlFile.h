@@ -37,8 +37,9 @@ namespace YumeEngine
 		const YumeString& GetXml() const { return wholeXmlString; }
 		YumeString wholeXmlString;
 
+		static YumeHash GetTypeStatic() { return type_; };
+		virtual YumeHash GetType() { return type_; };
 		static YumeHash type_;
-		static YumeHash GetType() { return type_; }
 	};
 }
 

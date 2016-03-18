@@ -69,7 +69,7 @@ namespace YumeEngine
 
 	bool YumeGLShader::BeginLoad(YumeFile& source)
 	{
-		YumeRHI* graphics_ = YumeEngine3D::Get()->GetRenderer();
+		YumeRHI* graphics_ = gYume->pRHI;
 
 		if(!graphics_)
 			return false;

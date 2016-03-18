@@ -62,12 +62,14 @@ namespace YumeEngine
 	{
 		name_ = element.attribute("name").as_string();
 		tag_ = element.attribute("tag").as_string();
-		enabled_ = element.attribute("enabled").as_bool();
+		if(!element.attribute("enabled").empty())
+			enabled_ = element.attribute("enabled").as_bool();
+		if(!element.attribute("cubemap").empty())
 		cubemap_ = element.attribute("cubemap").as_bool();
 
 		YumeString formatName = element.attribute("format").as_string();
 
-		YumeRHI* rhi_ = YumeEngine3D::Get()->GetRenderer();
+		YumeRHI* rhi_ = gYume->pRHI;
 		format_ = rhi_->GetFormatNs(formatName);
 
 		filtered_ = element.attribute("filter").as_bool();
@@ -180,7 +182,7 @@ namespace YumeEngine
 		if(!element.attribute("depthstencil").empty())
 			depthStencilName_ = element.attribute("depthstencil").as_string();
 		// Check for defining multiple outputs
-		XmlNode outputElem = element.child("output");
+		XmlNode outputElem = element.child("Outputs");
 		for(XmlNode oChild = outputElem.first_child(); oChild; oChild = oChild.next_sibling())
 		{
 			unsigned index = (unsigned)oChild.attribute("index").as_int();
@@ -195,15 +197,17 @@ namespace YumeEngine
 
 		XmlNode textureElem = element.child("texture");
 		if(!textureElem.empty())
-		for(XmlNode tChild = element.first_child(); tChild; tChild = tChild.next_sibling())
 		{
-			TextureUnit unit = TU_DIFFUSE;
-			if(!tChild.attribute("unit").empty())
-				unit = ParseTextureUnitName(tChild.attribute("unit").as_string());
-			if(unit < MAX_TEXTURE_UNITS)
+			for(XmlNode tChild = element.first_child(); tChild; tChild = tChild.next_sibling())
 			{
-				YumeString name = tChild.attribute("name").as_string();
-				textureNames_[unit] = name;
+				TextureUnit unit = TU_DIFFUSE;
+				if(!tChild.attribute("unit").empty())
+					unit = ParseTextureUnitName(tChild.attribute("unit").as_string());
+				if(unit < MAX_TEXTURE_UNITS)
+				{
+					YumeString name = tChild.attribute("name").as_string();
+					textureNames_[unit] = name;
+				}
 			}
 		}
 	}
@@ -319,12 +323,12 @@ namespace YumeEngine
 		if(!rootElem)
 			return false;
 
-		XmlNode rt = rootElem.child("rendertarget");
+		XmlNode rt = rootElem.child("RenderTargets");
 		for(XmlNode rtChild = rt.first_child(); rtChild; rtChild = rtChild.next_sibling())
 		{
 			RenderTargetInfo info;
 			info.Load(rtChild);
-			
+
 			boost::trim(info.name_);
 			if(!info.name_.empty())
 				renderTargets_.push_back(info);

@@ -304,7 +304,6 @@ namespace YumeEngine
 		}
 	}
 
-	YumeHash Octree::GetType() { return type_; }
 	YumeHash Octree::type_ = "Octree";
 
 
@@ -351,7 +350,7 @@ namespace YumeEngine
 			// Perform updates in worker threads. Notify the scene that a threaded update is going on and components
 			// (for example physics objects) should not perform non-threadsafe work when marked dirty
 			YumeScene* scene = GetScene();
-			YumeWorkQueue* queue = YumeEngine3D::Get()->GetWorkQueue().get();
+			YumeWorkQueue* queue = gYume->pWorkSystem;
 			scene->BeginThreadedUpdate();
 
 			int numWorkItems = queue->GetNumThreads() + 1; // Worker threads + main thread
@@ -367,11 +366,12 @@ namespace YumeEngine
 				item->aux_ = const_cast<FrameInfo*>(&frame);
 
 				YumeVector<YumeDrawable*>::iterator end = drawableUpdates_.end();
-				if(i < numWorkItems - 1 && end - start > drawablesPerItem)
+				int r = end - start;
+				if(i < numWorkItems - 1 && r > drawablesPerItem)
 					end = start + drawablesPerItem;
 
-				item->start_ = &(*start);
-				item->end_ = &(*end);
+				item->start_ = &(*start._Ptr);
+				item->end_ = &(*end._Ptr);
 				queue->AddWorkItem(item);
 
 				start = end;
@@ -392,7 +392,7 @@ namespace YumeEngine
 		// the proper octant yet
 		if(!drawableUpdates_.empty())
 		{
-			for(YumeVector<YumeDrawable*>::iterator i = drawableUpdates_.begin(); i != drawableUpdates_.end(); ++i)
+			for(YumeVector<YumeDrawable*>::iterator i = drawableUpdates_.begin(); i != drawableUpdates_.end() ; ++i)
 			{
 				YumeDrawable* drawable = *i;
 				drawable->updateQueued_ = false;
@@ -497,7 +497,7 @@ namespace YumeEngine
 		YumeScene* scene = GetScene();
 		if(scene && scene->IsThreadedUpdate())
 		{
-			boost::mutex::scoped_lock lock(octreeMutex_);
+			MutexLock lock(octreeMutex_);
 			drawableUpdates_.push_back(drawable);
 		}
 		else
@@ -514,7 +514,7 @@ namespace YumeEngine
 
 	void Octree::DrawDebugGeometry(bool depthTest)
 	{
-		YumeDebugRenderer* debug = YumeEngine3D::Get()->GetDebugRenderer().get();
+		YumeDebugRenderer* debug = GetComponent<YumeDebugRenderer>();
 		DrawDebugGeometry(debug,depthTest);
 	}
 
@@ -526,7 +526,7 @@ namespace YumeEngine
 			return;
 
 		FrameInfo frame;
-		frame.frameNumber_ = YumeEngine3D::Get()->GetTimer()->GetFrameNumber();
+		frame.frameNumber_ = gYume->pTimer->GetFrameNumber();
 		frame.timeStep_ = dt;
 		frame.camera_ = 0;
 

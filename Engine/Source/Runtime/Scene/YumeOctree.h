@@ -28,7 +28,7 @@
 #include "Core/YumeVariant.h"
 #include "Core/YumeEventHub.h"
 
-#include <boost/thread/mutex.hpp>
+#include "Core/YumeMutex.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -70,6 +70,7 @@ namespace YumeEngine
 			YumeVector<YumeDrawable*>::iterator i = std::find(drawables_.begin(),drawables_.end(),drawable);
 			if(i != drawables_.end())
 			{
+				drawables_.erase(i);
 				if(resetOctant)
 					drawable->SetOctant(0);
 				DecDrawableCount();
@@ -165,14 +166,12 @@ namespace YumeEngine
 	{
 		friend void RaycastDrawablesWork(const WorkItem* item,unsigned threadIndex);
 	public:
-		
 		Octree();
-		
 		~Octree();
 
+		static YumeHash GetTypeStatic() { return type_; };
+		virtual YumeHash GetType() { return type_; };
 		static YumeHash type_;
-		static YumeHash GetType();
-
 		
 		virtual void DrawDebugGeometry(YumeDebugRenderer* debug,bool depthTest);
 
@@ -211,7 +210,7 @@ namespace YumeEngine
 		
 		YumeVector<YumeDrawable*>::type drawableReinsertions_;
 		
-		boost::mutex octreeMutex_;
+		Mutex octreeMutex_;
 		
 		mutable YumeVector<YumeDrawable*>::type rayQueryDrawables_;
 		

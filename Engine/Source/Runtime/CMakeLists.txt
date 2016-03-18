@@ -81,6 +81,20 @@ set(SRC_RENDERER
 	Renderer/YumeBatch.cc
 	Renderer/YumeRenderView.h
 	Renderer/YumeRenderView.cc
+	Renderer/YumeTexture3D.h
+	Renderer/YumeTexture3D.cc
+	Renderer/YumeTextureCube.h
+	Renderer/YumeTextureCube.cc
+	Renderer/YumeOcclusion.h
+	Renderer/YumeOcclusion.cc
+	Renderer/YumeSkybox.h
+	Renderer/YumeSkybox.cc
+	Renderer/YumeModel.h
+	Renderer/YumeModel.cc
+	Renderer/YumeStaticModel.h
+	Renderer/YumeStaticModel.cc
+	Renderer/YumeSkeleton.h
+	Renderer/YumeSkeleton.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h
@@ -142,6 +156,7 @@ set( SRC_CORE
 	Core/YumeCommon.cc
 	Core/YumeHeaders.h
   Core/YumeRequired.h
+	Core/YumeRequired.cc
   Core/Yume.h
   Core/YumeCommon.h
   Core/YumeStdHeaders.h
@@ -195,6 +210,7 @@ set( SRC_CORE_UTILS
 	Core/YumeDecompresser.h
 	Core/YumeDecompresser.cc
 	Core/YumeEventHub.h
+	Core/YumeSortAlgorithms.h
 )
 set( SRC_CORE_MEMORY
 	Core/YumeMemoryAllocatorSTL.h
@@ -209,6 +225,11 @@ set( SRC_CORE_MEMORY
 	Core/YumeAlignedAllocator.h
 	Core/YumeAlignedAllocator.cc
 	Core/YumeBitPattern.h
+	Core/RefCounter.h
+	Core/RefCounter.cc
+	Core/SharedPtr.h
+	Core/YumeMutex.h
+	Core/YumeMutex.cc
 )
 
 set( SRC_ENGINE

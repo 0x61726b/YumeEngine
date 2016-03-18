@@ -30,8 +30,14 @@
 #include "Math/YumeVector4.h"
 #include "Math/YumeMatrix3x4.h"
 #include "Core/YumeVariant.h"
+#include "Math/YumePlane.h"
 #include "Renderer/YumeImage.h"
+
 #include "Core/YumeEventHub.h"
+#include "Core/YumeMutex.h"
+#include "Renderer/YumeShaderVariation.h"
+#include "Renderer/YumeInputLayout.h"
+#include "Renderer/YumeConstantBuffer.h"
 
 
 #include <SDL.h>
@@ -41,15 +47,14 @@ namespace YumeEngine
 	class YumeGpuResource;
 	class YumeRendererImpl;
 	class YumeImage;
-	class YumeShaderVariation;
 	class YumeShader;
 	class YumeVertexBuffer;
-	class YumeConstantBuffer;
 	class YumeRenderable;
 	class YumeTexture2D;
+	class YumeTexture3D;
 	class YumeTexture;
 	class YumeIndexBuffer;
-	class YumeInputLayout;
+	class YumeTextureCube;
 
 	struct ScratchBuffer
 	{
@@ -59,11 +64,11 @@ namespace YumeEngine
 		{
 		}
 
-		
+
 		boost::shared_array<unsigned char> data_;
-		
+
 		unsigned size_;
-		
+
 		bool reserved_;
 	};
 
@@ -109,7 +114,9 @@ namespace YumeEngine
 		virtual bool							IsDeviceLost() const = 0;
 
 
-
+		virtual YumeTexture2D*					CreateTexture2D() = 0;
+		virtual YumeTexture3D*					CreateTexture3D() = 0;
+		virtual YumeTextureCube*				CreateTextureCube() = 0;
 		virtual YumeVertexBuffer*				CreateVertexBuffer() = 0;
 		virtual YumeIndexBuffer* 				CreateIndexBuffer() = 0;
 		virtual YumeInputLayout* 				CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks) = 0;
@@ -162,7 +169,7 @@ namespace YumeEngine
 		virtual void  							SetStencilTest(bool enable,CompareMode mode = CMP_ALWAYS,StencilOp pass = OP_KEEP,StencilOp fail = OP_KEEP,StencilOp zFail = OP_KEEP,unsigned stencilRef = 0,unsigned compareMask = M_MAX_UNSIGNED,unsigned writeMask = M_MAX_UNSIGNED) = 0;
 
 
-		virtual void  							SetClipPlane(bool enable,const Plane& clipPlane,const Matrix3x4& view,const Matrix4& projection) = 0;
+		virtual void  							SetClipPlane(bool enable,const Plane& clipPlane = Plane::UP,const Matrix3x4& view =  Matrix3x4::IDENTITY,const Matrix4& projection =  Matrix4::IDENTITY) = 0;
 		virtual void  							SetTexture(unsigned index,YumeTexture* texture) = 0;
 
 		virtual void 							SetRenderTarget(unsigned index,YumeRenderable* renderTarget) = 0;
@@ -175,28 +182,34 @@ namespace YumeEngine
 		virtual void 							Draw(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount) = 0;
 		virtual void 							DrawInstanced(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount,unsigned instanceCount) = 0;
 
+		virtual bool							ResolveToTexture(YumeTexture2D* destination, const IntRect& viewport) = 0;
 		virtual void							ClearParameterSource(ShaderParameterGroup group) = 0;
 		virtual void							ClearParameterSources() = 0;
 		virtual void							ClearTransformSources() = 0;
 		virtual void 							CleanupShaderPrograms(YumeShaderVariation* variation) = 0;
 
-		
-		virtual unsigned							GetAlphaFormatNs() = 0;
-		virtual unsigned							GetLuminanceFormatNs() = 0;
-		virtual unsigned							GetLuminanceAlphaFormatNs() = 0;
-		virtual unsigned							GetRGBFormatNs() = 0;
-		virtual unsigned							GetRGBAFormatNs() = 0;
-		virtual unsigned							GetRGBA16FormatNs() = 0;
-		virtual unsigned							GetRGBAFloat16FormatNs() = 0;
-		virtual unsigned							GetRGBAFloat32FormatNs() = 0;
-		virtual unsigned							GetRG16FormatNs() = 0;
-		virtual unsigned							GetRGFloat16FormatNs() = 0;
-		virtual unsigned							GetRGFloat32FormatNs() = 0;
-		virtual unsigned							GetFloat16FormatNs() = 0;
-		virtual unsigned							GetFloat32FormatNs() = 0;
-		virtual unsigned							GetLinearDepthFormatNs() = 0;
-		virtual unsigned							GetDepthStencilFormatNs() = 0;
-		virtual unsigned							GetReadableDepthFormatNs() = 0;
+
+		virtual unsigned						GetAlphaFormatNs() = 0;
+		virtual unsigned						GetLuminanceFormatNs() = 0;
+		virtual unsigned						GetLuminanceAlphaFormatNs() = 0;
+		virtual unsigned						GetRGBFormatNs() = 0;
+		virtual unsigned						GetRGBAFormatNs() = 0;
+		virtual unsigned						GetRGBA16FormatNs() = 0;
+		virtual unsigned						GetRGBAFloat16FormatNs() = 0;
+		virtual unsigned						GetRGBAFloat32FormatNs() = 0;
+		virtual unsigned						GetRG16FormatNs() = 0;
+		virtual unsigned						GetRGFloat16FormatNs() = 0;
+		virtual unsigned						GetRGFloat32FormatNs() = 0;
+		virtual unsigned						GetFloat16FormatNs() = 0;
+		virtual unsigned						GetFloat32FormatNs() = 0;
+		virtual unsigned						GetLinearDepthFormatNs() = 0;
+		virtual unsigned						GetDepthStencilFormatNs() = 0;
+		virtual unsigned						GetReadableDepthFormatNs() = 0;
+		virtual unsigned						GetOpenGLOnlyTextureDataType(unsigned format) = 0;
+		virtual bool							GetGL3SupportNs() = 0;
+		virtual const Vector2&					GetPixelUVOffset() = 0;
+
+		virtual bool							HasShaderParameter(YumeHash param) = 0;
 
 		bool									ToggleFullscreen();
 
@@ -206,6 +219,7 @@ namespace YumeEngine
 
 		void 									SetRenderTarget(unsigned index,YumeTexture2D* texture);
 		void 									SetTextureAnisotropy(unsigned level);
+		void									SetDefaultTextureFilterMode(TextureFilterMode mode);
 		void 									SetTextureParametersDirty();
 
 		void 									ResetRenderTargets();
@@ -219,6 +233,7 @@ namespace YumeEngine
 		YumeRenderable*							GetRenderTarget(unsigned index) const;
 		YumeRenderable*							GetDepthStencil() const { return depthStencil_; }
 		IntRect									GetViewport() const { return viewport_; }
+		BlendMode								GetBlendMode() const { return blendMode_; }
 
 		SDL_Window*								GetWindow() const { return window_; }
 		bool									GetFullscreen() const { return fullscreen_; }
@@ -232,6 +247,29 @@ namespace YumeEngine
 		unsigned								GetNumBatches() const { return numBatches_; }
 		int										GetWidth() const { return windowWidth_; }
 		int										GetHeight() const { return windowHeight_; }
+		unsigned								GetHiresShadowMapFormat() const { return hiresShadowMapFormat_; }
+		bool									GetInstancingSupport() const { return instancingSupport_; }
+		bool									GetLightPrepassSupport() const { return lightPrepassSupport_; }
+		bool									GetDeferredSupport() const { return deferredSupport_; }
+		bool									GetHardwareShadowSupport() const { return hardwareShadowSupport_; }
+		bool									GetSRGBSupport() const { return sRGBSupport_; }
+		bool									GetSRGBWriteSupport() const { return sRGBWriteSupport_; }
+		const bool								GetAnisotropySupport() const { return anisotropySupport_; }
+		float									GetDepthConstantBias() const { return constantDepthBias_; }
+		float									GetDepthSlopeScaledBias() const { return slopeScaledDepthBias_; }
+		CompareMode								GetDepthTest() const { return depthTestMode_; }
+		bool									GetDepthWrite() const { return depthWrite_; }
+		FillMode								GetFillMode() const { return fillMode_; }
+		bool									GetStencilTest() const { return stencilTest_; }
+		bool									GetScissorTest() const { return scissorTest_; }
+		CompareMode								GetStencilTestMode() const { return stencilTestMode_; }
+		StencilOp								GetStencilPass() const { return stencilPass_; }
+		StencilOp								GetStencilFail() const { return stencilFail_; }
+		StencilOp								GetStencilZFail() const { return stencilZFail_; }
+		int										GetMultiSample() const { return multiSample_; }
+		unsigned								GetShadowMapFormat() const { return shadowMapFormat_; }
+		unsigned								GetDummyColorFormat() const { return dummyColorFormat_; }
+
 	protected:
 		void CreateWindowIcon();
 	protected:
@@ -261,7 +299,7 @@ namespace YumeEngine
 		int										numBatches_;
 
 	protected:
-		boost::mutex							gpuResourceMutex_;
+		Mutex							gpuResourceMutex_;
 		GpuResourceVector						gpuResources_;
 
 
@@ -272,6 +310,7 @@ namespace YumeEngine
 		bool instancingSupport_;
 		bool sRGBSupport_;
 		bool sRGBWriteSupport_;
+		bool anisotropySupport_;
 		unsigned maxScratchBufferRequest_;
 		YumeVector<ScratchBuffer>::type scratchBuffers_;
 		unsigned dummyColorFormat_;
@@ -338,7 +377,7 @@ namespace YumeEngine
 		YumeString orientations_;
 		YumeString apiName_;
 
-		static const Vector2 pixelUVOffset;
+		const Vector2 pixelUVOffset;
 	};
 }
 

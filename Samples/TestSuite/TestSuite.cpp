@@ -54,7 +54,7 @@ namespace YumeEngine
 
 		void Initialize()
 		{
-			engine_ = boost::shared_ptr<YumeEngine3D>(new YumeEngine3D);
+			engine_ = SharedPtr<YumeEngine3D>(new YumeEngine3D);
 			engineVariants_["turnOffLogging"] = true;
 			engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
 		}
@@ -69,7 +69,7 @@ namespace YumeEngine
 
 
 		VariantMap engineVariants_;
-		boost::shared_ptr<YumeEngine::YumeEngine3D> engine_;
+		SharedPtr<YumeEngine::YumeEngine3D> engine_;
 	};
 	BOOST_FIXTURE_TEST_SUITE(YumeTestSuite,YumePerTestSuiteFixture);
 

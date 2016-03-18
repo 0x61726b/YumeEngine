@@ -28,8 +28,7 @@
 
 namespace YumeEngine
 {
-	YumeD3D11IndexBuffer::YumeD3D11IndexBuffer(YumeRHI* rhi)
-		: YumeD3D11Resource(static_cast<YumeD3D11Renderer*>(rhi))
+	YumeD3D11IndexBuffer::YumeD3D11IndexBuffer()
 	{
 
 	}
@@ -43,8 +42,8 @@ namespace YumeEngine
 	{
 		Unlock();
 
-		if(rhi_ && rhi_->GetIndexBuffer() == this)
-			rhi_->SetIndexBuffer(0);
+		if(!gYume->pRHI && gYume->pRHI->GetIndexBuffer() == this)
+			gYume->pRHI->SetIndexBuffer(0);
 
 		D3D_SAFE_RELEASE(object_);
 	}
@@ -118,7 +117,7 @@ namespace YumeEngine
 				destBox.front = 0;
 				destBox.back = 1;
 
-				static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,&destBox,data,0,0);
+				static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,&destBox,data,0,0);
 			}
 		}
 
@@ -177,7 +176,7 @@ namespace YumeEngine
 				destBox.front = 0;
 				destBox.back = 1;
 
-				static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,&destBox,data,0,0);
+				static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,&destBox,data,0,0);
 			}
 		}
 
@@ -218,10 +217,10 @@ namespace YumeEngine
 			lockState_ = LOCK_SHADOW;
 			return shadowData_.get() + start * indexSize_;
 		}
-		else if(rhi_)
+		else if(gYume->pRHI)
 		{
 			lockState_ = LOCK_SCRATCH;
-			lockScratchData_ = rhi_->ReserveScratchBuffer(count * indexSize_);
+			lockScratchData_ = gYume->pRHI->ReserveScratchBuffer(count * indexSize_);
 			return lockScratchData_;
 		}
 		else
@@ -243,8 +242,8 @@ namespace YumeEngine
 
 		case LOCK_SCRATCH:
 			SetDataRange(lockScratchData_,lockStart_,lockCount_);
-			if(rhi_)
-				rhi_->FreeScratchBuffer(lockScratchData_);
+			if(gYume->pRHI)
+				gYume->pRHI->FreeScratchBuffer(lockScratchData_);
 			lockScratchData_ = 0;
 			lockState_ = LOCK_NONE;
 			break;
@@ -306,7 +305,7 @@ namespace YumeEngine
 		if(!indexCount_)
 			return true;
 
-		if(rhi_)
+		if(gYume->pRHI)
 		{
 			D3D11_BUFFER_DESC bufferDesc;
 			memset(&bufferDesc,0,sizeof bufferDesc);
@@ -315,7 +314,7 @@ namespace YumeEngine
 			bufferDesc.Usage = dynamic_ ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 			bufferDesc.ByteWidth = (UINT)(indexCount_ * indexSize_);
 
-			HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateBuffer(&bufferDesc,0,(ID3D11Buffer**)&object_);
+			HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateBuffer(&bufferDesc,0,(ID3D11Buffer**)&object_);
 			if(FAILED(hr))
 			{
 				D3D_SAFE_RELEASE(object_);
@@ -344,7 +343,7 @@ namespace YumeEngine
 			D3D11_MAPPED_SUBRESOURCE mappedData;
 			mappedData.pData = 0;
 
-			HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)object_,0,discard ? D3D11_MAP_WRITE_DISCARD :
+			HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)object_,0,discard ? D3D11_MAP_WRITE_DISCARD :
 				D3D11_MAP_WRITE,0,&mappedData);
 			if(FAILED(hr) || !mappedData.pData)
 				YUMELOG_ERROR("Failed to map index buffer",hr);
@@ -362,7 +361,7 @@ namespace YumeEngine
 	{
 		if(object_ && lockState_ == LOCK_HARDWARE)
 		{
-			static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)object_,0);
+			static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)object_,0);
 			lockState_ = LOCK_NONE;
 		}
 	}

@@ -28,8 +28,7 @@
 
 namespace YumeEngine
 {
-	YumeGLIndexBuffer::YumeGLIndexBuffer(YumeRHI* rhi)
-		: YumeGLResource(rhi)
+	YumeGLIndexBuffer::YumeGLIndexBuffer()
 	{
 
 	}
@@ -58,13 +57,13 @@ namespace YumeEngine
 
 		if(object_)
 		{
-			if(!rhi_)
+			if(!gYume->pRHI)
 				return;
 
-			if(!rhi_->IsDeviceLost())
+			if(!gYume->pRHI->IsDeviceLost())
 			{
-				if(rhi_->GetIndexBuffer() == this)
-					rhi_->SetIndexBuffer(0);
+				if(gYume->pRHI->GetIndexBuffer() == this)
+					gYume->pRHI->SetIndexBuffer(0);
 
 				glDeleteBuffers(1,&object_);
 			}
@@ -120,9 +119,9 @@ namespace YumeEngine
 
 		if(object_)
 		{
-			if(!rhi_->IsDeviceLost())
+			if(!gYume->pRHI->IsDeviceLost())
 			{
-				rhi_->SetIndexBuffer(this);
+				gYume->pRHI->SetIndexBuffer(this);
 				glBufferData(GL_ELEMENT_ARRAY_BUFFER,indexCount_ * indexSize_,data,dynamic_ ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 			}
 			else
@@ -167,9 +166,9 @@ namespace YumeEngine
 
 		if(object_)
 		{
-			if(!rhi_->IsDeviceLost())
+			if(!gYume->pRHI->IsDeviceLost())
 			{
-				rhi_->SetIndexBuffer(this);
+				gYume->pRHI->SetIndexBuffer(this);
 				if(!discard || start != 0)
 					glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,start * indexSize_,count * indexSize_,data);
 				else
@@ -215,10 +214,10 @@ namespace YumeEngine
 			lockState_ = LOCK_SHADOW;
 			return shadowData_.get() + start * indexSize_;
 		}
-		else if(rhi_)
+		else if(gYume->pRHI)
 		{
 			lockState_ = LOCK_SCRATCH;
-			lockScratchData_ = rhi_->ReserveScratchBuffer(count * indexSize_);
+			lockScratchData_ = gYume->pRHI->ReserveScratchBuffer(count * indexSize_);
 			return lockScratchData_;
 		}
 		else
@@ -236,8 +235,8 @@ namespace YumeEngine
 
 		case LOCK_SCRATCH:
 			SetDataRange(lockScratchData_,lockStart_,lockCount_);
-			if(rhi_)
-				rhi_->FreeScratchBuffer(lockScratchData_);
+			if(gYume->pRHI)
+				gYume->pRHI->FreeScratchBuffer(lockScratchData_);
 			lockScratchData_ = 0;
 			lockState_ = LOCK_NONE;
 			break;
@@ -300,9 +299,9 @@ namespace YumeEngine
 			return true;
 		}
 
-		if(rhi_)
+		if(gYume->pRHI)
 		{
-			if(rhi_->IsDeviceLost())
+			if(gYume->pRHI->IsDeviceLost())
 			{
 				YUMELOG_WARN("Index buffer creation while device is lost");
 				return true;
@@ -318,7 +317,7 @@ namespace YumeEngine
 				return false;
 			}
 
-			rhi_->SetIndexBuffer(this);
+			gYume->pRHI->SetIndexBuffer(this);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER,indexCount_ * indexSize_,0,dynamic_ ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 		}
 

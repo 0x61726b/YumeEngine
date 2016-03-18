@@ -39,47 +39,31 @@ namespace YumeEngine
 	{
 	public:
 		YumeShader();
-
 		virtual ~YumeShader();
 
 		virtual bool BeginLoad(YumeFile& source) = 0;
-
 		virtual bool EndLoad() = 0;
 
-		
 		virtual YumeShaderVariation* GetVariation(ShaderType type,const YumeString& defines) = 0;
-		
 		virtual YumeShaderVariation* GetVariation(ShaderType type,const char* defines) = 0;
-
 		virtual void RefreshMemoryUse() = 0;
 
-		
-		const YumeString& GetSourceCode(ShaderType type) const { return type == VS ? vsSourceCode_ : psSourceCode_; }
-
-		
+		const YumeString& GetSourceCode(ShaderType type) const { return type == VS ? vsSourceCode_ : psSourceCode_; }		
 		unsigned GetTimeStamp() const { return timeStamp_; }
 
 	protected:
-		
 		bool ProcessSource(YumeString& code,YumeFile& file);
-		
-		YumeString NormalizeDefines(const YumeString& defines);
-		
-		
-	protected:
-		
-		YumeString vsSourceCode_;
-		
+		YumeString NormalizeDefines(const YumeString& defines);	
+	protected:	
+		YumeString vsSourceCode_;	
 		YumeString psSourceCode_;
-		
-		
-		unsigned timeStamp_;
-		
+		unsigned timeStamp_;	
 		unsigned numVariations_;
 
 	public:
-		static YumeHash GetType();
-		static YumeHash shaderHash_;
+		static YumeHash type_;
+		static YumeHash GetTypeStatic() { return type_; }
+		virtual YumeHash GetType() { return type_; }
 	};
 }
 

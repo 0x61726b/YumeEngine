@@ -32,28 +32,17 @@ namespace YumeEngine
 	class YumeGLExport YumeGLResource : public YumeGpuResource
 	{
 	public:
-		YumeGLResource(YumeRHI* renderer);
-		/// Destruct. Remove from the graphics subsystem.
+		YumeGLResource();
 		virtual ~YumeGLResource();
 
-		/// Mark the GPU resource destroyed on context destruction.
 		virtual void OnDeviceLost();
-
-		/// Recreate the GPU resource and restore data if applicable.
 		virtual void OnDeviceReset() { }
-		/// Unconditionally release the GPU resource.
 		virtual void Release() { }
 
-		/// Clear the data lost flag. No-op on D3D11.
 		void ClearDataLost();
 
-		/// Return Direct3D object.
 		unsigned int GetGPUObject() const { return object_; }
-
-		/// Return whether data is lost due to device loss. Always false on D3D11.
 		bool IsDataLost() const { return dataLost_; }
-
-		/// Return whether has pending data assigned while device was lost. Always false on D3D11.
 		bool HasPendingData() const { return dataPending_; }
 
 

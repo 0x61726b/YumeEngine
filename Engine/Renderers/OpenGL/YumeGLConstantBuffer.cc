@@ -30,8 +30,7 @@
 namespace YumeEngine
 {
 
-	YumeGLConstantBuffer::YumeGLConstantBuffer(YumeRHI* impl)
-		: YumeGLResource(impl)
+	YumeGLConstantBuffer::YumeGLConstantBuffer()
 	{
 	}
 
@@ -44,11 +43,11 @@ namespace YumeEngine
 	{
 		if(object_)
 		{
-			if(!rhi_)
+			if(!gYume->pRHI)
 				return;
 
 #ifndef GL_ES_VERSION_2_0
-			static_cast<YumeGLRenderer*>(rhi_)->SetUBO(0);
+			static_cast<YumeGLRenderer*>(gYume->pRHI)->SetUBO(0);
 			glDeleteBuffers(1,(GLuint*)&object_);
 #endif
 			object_ = 0;
@@ -83,14 +82,14 @@ namespace YumeEngine
 		shadowData_ = boost::shared_array<unsigned char>(new unsigned char[size_]);
 		memset(shadowData_.get(),0,size_);
 
-		if(rhi_)
+		if(gYume->pRHI)
 		{
 #ifndef GL_ES_VERSION_2_0
 			if(!object_)
 			{
 				glGenBuffers(1,(GLuint*)object_);
 			}
-			static_cast<YumeGLRenderer*>(rhi_)->SetUBO(object_);
+			static_cast<YumeGLRenderer*>(gYume->pRHI)->SetUBO(object_);
 			glBufferData(GL_UNIFORM_BUFFER,size_,shadowData_.get(),GL_DYNAMIC_DRAW);
 #endif
 		}
@@ -103,7 +102,7 @@ namespace YumeEngine
 		if(dirty_ && object_)
 		{
 #ifndef GL_ES_VERSION_2_0
-			static_cast<YumeGLRenderer*>(rhi_)->SetUBO(object_);
+			static_cast<YumeGLRenderer*>(gYume->pRHI)->SetUBO(object_);
 			glBufferData(GL_UNIFORM_BUFFER,size_,shadowData_.get(),GL_DYNAMIC_DRAW);
 #endif
 			dirty_ = false;

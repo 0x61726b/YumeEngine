@@ -30,8 +30,7 @@
 namespace YumeEngine
 {
 
-	YumeD3D11ConstantBuffer::YumeD3D11ConstantBuffer(YumeRHI* impl)
-		: YumeD3D11Resource(static_cast<YumeD3D11Renderer*>(impl))
+	YumeD3D11ConstantBuffer::YumeD3D11ConstantBuffer()
 	{
 	}
 
@@ -67,7 +66,7 @@ namespace YumeEngine
 		shadowData_ = boost::shared_array<unsigned char>(new unsigned char[size_]);
 		memset(shadowData_.get(),0,size_);
 
-		if(rhi_)
+		if(gYume->pRHI)
 		{
 			D3D11_BUFFER_DESC bufferDesc;
 			memset(&bufferDesc,0,sizeof bufferDesc);
@@ -78,7 +77,7 @@ namespace YumeEngine
 			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
 			
-			HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateBuffer(&bufferDesc,0,(ID3D11Buffer**)&object_);
+			HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateBuffer(&bufferDesc,0,(ID3D11Buffer**)&object_);
 			if(FAILED(hr))
 			{
 				D3D_SAFE_RELEASE(object_);
@@ -94,7 +93,7 @@ namespace YumeEngine
 	{
 		if(dirty_ && object_)
 		{
-			static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,0,shadowData_.get(),0,0);
+			static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,0,shadowData_.get(),0,0);
 			dirty_ = false;
 		}
 	}

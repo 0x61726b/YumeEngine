@@ -182,6 +182,27 @@ namespace YumeEngine
 		return size;
 	}
 
+	BoundingBox YumeFile::ReadBoundingBox()
+	{
+		float data[6];
+		Read(data,sizeof data);
+		return BoundingBox(Vector3(&data[0]),Vector3(&data[3]));
+	}
+
+	Vector3 YumeFile::ReadVector3()
+	{
+		float data[3];
+		Read(data,sizeof data);
+		return Vector3(data);
+	}
+
+	Quaternion YumeFile::ReadQuaternion()
+	{
+		float data[4];
+		Read(data,sizeof data);
+		return Quaternion(data);
+	}
+
 	YumeString YumeFile::ReadLine()
 	{
 		YumeString ret;

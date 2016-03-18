@@ -28,17 +28,14 @@
 
 #include "Math/YumeRect.h"
 #include "YumeResource.h"
-
-#include <boost/shared_array.hpp>
+#include "Core/SharedPtr.h"
 
 struct SDL_Surface;
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-
 	static const int COLOR_LUT_SIZE = 16;
 
-	
 	enum CompressedFormat
 	{
 		CF_NONE = 0,
@@ -52,8 +49,6 @@ namespace YumeEngine
 		CF_PVRTC_RGB_4BPP,
 		CF_PVRTC_RGBA_4BPP,
 	};
-
-	
 	struct YumeAPIExport CompressedLevel
 	{
 		
@@ -68,27 +63,16 @@ namespace YumeEngine
 			rows_(0)
 		{
 		}
-
-		
+	
 		bool Decompress(unsigned char* dest);
-
-		
 		unsigned char* data_;
-		
 		CompressedFormat format_;
-		
 		int width_;
-		
 		int height_;
-		
 		int depth_;
-		
 		unsigned blockSize_;
-		
 		unsigned dataSize_;
-		
 		unsigned rowSize_;
-		
 		unsigned rows_;
 	};
 
@@ -149,9 +133,9 @@ namespace YumeEngine
 		
 		bool IsSRGB() const { return sRGB_; }
 
-		static YumeHash GetType();
-		static YumeHash imageHash_;
-
+		static YumeHash GetTypeStatic() { return type_; };
+		virtual YumeHash GetType() { return type_; };
+		static YumeHash type_;
 		
 		YumeColor GetPixel(int x,int y) const;
 		
@@ -190,11 +174,11 @@ namespace YumeEngine
 		unsigned GetNumCompressedLevels() const { return numCompressedLevels_; }
 
 		
-		boost::shared_ptr<YumeImage> GetNextLevel() const;
+		SharedPtr<YumeImage> GetNextLevel() const;
 		
-		boost::shared_ptr<YumeImage> GetNextSibling() const { return nextSibling_; }
+		SharedPtr<YumeImage> GetNextSibling() const { return nextSibling_; }
 		
-		boost::shared_ptr<YumeImage> ConvertToRGBA() const;
+		SharedPtr<YumeImage> ConvertToRGBA() const;
 		
 		CompressedLevel GetCompressedLevel(unsigned index) const;
 		
@@ -231,9 +215,9 @@ namespace YumeEngine
 		
 		boost::shared_array<unsigned char> data_;
 		
-		boost::shared_ptr<YumeImage> nextLevel_;
+		SharedPtr<YumeImage> nextLevel_;
 		
-		boost::shared_ptr<YumeImage> nextSibling_;
+		SharedPtr<YumeImage> nextSibling_;
 	};
 }
 

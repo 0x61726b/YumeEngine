@@ -23,16 +23,17 @@
 #define __YumeWorkQuery_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "Core/YumeVariant.h"
-
-#include <boost/thread/mutex.hpp>
+#include "YumeVariant.h"
+#include "YumeMutex.h"
+#include "YumeEventHub.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class WorkerThread;
+	class YumeDrawable;
 
 	
-	struct WorkItem
+	struct WorkItem : public RefCounted
 	{
 		friend class YumeWorkQueue;
 
@@ -47,107 +48,60 @@ namespace YumeEngine
 		}
 
 		
-		void(*workFunction_)(const WorkItem*,unsigned);
-		
-		void* start_;
-		
-		void* end_;
-		
-		void* aux_;
-		
-		unsigned priority_;
-		
-		bool sendEvent_;
-		
+		void(*workFunction_)(const WorkItem*,unsigned);		
+		void* start_;		
+		void* end_;		
+		void* aux_;		
+		unsigned priority_;		
+		bool sendEvent_;		
 		volatile bool completed_;
-
 	private:
 		bool pooled_;
 	};
 
 	
-	class YumeAPIExport YumeWorkQueue
+	class YumeAPIExport YumeWorkQueue : public RefCounted,public YumeTimerEventListener
 	{
 		friend class WorkerThread;
 
 	public:
 		
-		YumeWorkQueue();
-		
-		~YumeWorkQueue();
-
-		
-		void CreateThreads(unsigned numThreads);
-		
-		SharedPtr<WorkItem> GetFreeItem();
-		
-		void AddWorkItem(SharedPtr<WorkItem> item);
-		
-		bool RemoveWorkItem(SharedPtr<WorkItem> item);
-		
-		unsigned RemoveWorkItems(const YumeVector<SharedPtr<WorkItem> >::type& items);
-		
-		void Pause();
-		
-		void Resume();
-		
-		void Complete(unsigned priority);
-
-		
-		void SetTolerance(int tolerance) { tolerance_ = tolerance; }
-
-		
-		void SetNonThreadedWorkMs(int ms) { maxNonThreadedWorkMs_ = std::max(ms,1); }
-
-		
-		unsigned GetNumThreads() const { return threads_.size(); }
-
-		
-		bool IsCompleted(unsigned priority) const;
-		
-		bool IsCompleting() const { return completing_; }
-
-		
-		int GetTolerance() const { return tolerance_; }
-
-		
+		YumeWorkQueue();		
+		~YumeWorkQueue();		
+		void CreateThreads(unsigned numThreads);		
+		SharedPtr<WorkItem> GetFreeItem();		
+		void AddWorkItem(SharedPtr<WorkItem> item);		
+		bool RemoveWorkItem(SharedPtr<WorkItem> item);		
+		unsigned RemoveWorkItems(const YumeVector<SharedPtr<WorkItem> >::type& items);		
+		void Pause();		
+		void Resume();		
+		void Complete(unsigned priority);		
+		void SetTolerance(int tolerance) { tolerance_ = tolerance; }		
+		void SetNonThreadedWorkMs(int ms) { maxNonThreadedWorkMs_ = std::max(ms,1); }		
+		unsigned GetNumThreads() const { return threads_.size(); }		
+		bool IsCompleted(unsigned priority) const;		
+		bool IsCompleting() const { return completing_; }		
+		int GetTolerance() const { return tolerance_; }		
 		int GetNonThreadedWorkMs() const { return maxNonThreadedWorkMs_; }
 
+		virtual void HandleBeginFrame(int frameNumber);
 	private:
 		
-		void ProcessItems(unsigned threadIndex);
-		
-		void PurgeCompleted(unsigned priority);
-		
-		void PurgePool();
-		
-		void ReturnToPool(SharedPtr<WorkItem>& item);
-		
-		void HandleBeginFrame(YumeHash eventType,VariantMap& eventData);
-
-		
-		YumeVector<SharedPtr<WorkerThread> >::type threads_;
-		
-		YumeVector<SharedPtr<WorkItem> >::type poolItems_;
-		
-		YumeVector<SharedPtr<WorkItem> >::type workItems_;
-		
-		YumeVector<WorkItem*>::type queue_;
-		
-		boost::mutex queueMutex_;
-		
-		volatile bool shutDown_;
-		
-		volatile bool pausing_;
-		
-		bool paused_;
-		
-		bool completing_;
-		
-		int tolerance_;
-		
-		unsigned lastSize_;
-		
+		void ProcessItems(unsigned threadIndex);		
+		void PurgeCompleted(unsigned priority);		
+		void PurgePool();		
+		void ReturnToPool(SharedPtr<WorkItem>& item);		
+		YumeVector<SharedPtr<WorkerThread> >::type threads_;		
+		YumeVector<SharedPtr<WorkItem> >::type poolItems_;		
+		YumeVector<SharedPtr<WorkItem> >::type workItems_;		
+		YumeVector<WorkItem*>::type queue_;		
+		Mutex queueMutex_;		
+		volatile bool shutDown_;		
+		volatile bool pausing_;		
+		bool paused_;		
+		bool completing_;		
+		int tolerance_;		
+		unsigned lastSize_;		
 		int maxNonThreadedWorkMs_;
 	};
 

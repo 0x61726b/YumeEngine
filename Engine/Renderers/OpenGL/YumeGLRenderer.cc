@@ -30,7 +30,8 @@
 #include "YumeGLVertexBuffer.h"
 #include "YumeGLIndexBuffer.h"
 #include "YumeGLTexture2D.h"
-#include "Renderer/YumeRenderable.h"
+#include "YumeGLTexture3D.h"
+#include "YumeGLTextureCube.h"
 #include "YumeGLRenderable.h"
 
 #include "Core/YumeDefaults.h"
@@ -44,6 +45,7 @@
 #include "Math/YumePlane.h"
 
 #include "Renderer/YumeResourceManager.h"
+#include "Renderer/YumeRenderable.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -59,7 +61,7 @@ namespace YumeEngine
 	//---------------------------------------------------------------------	
 	extern "C" void YumeGLExport UnloadModule(YumeEngine3D* engine) throw()
 	{
-		YumeRHI* graphics_ = engine->GetRenderer();
+		YumeRHI* graphics_ = gYume->pRHI;
 		delete graphics_;
 	}
 	//---------------------------------------------------------------------
@@ -191,11 +193,16 @@ namespace YumeEngine
 	}
 
 	bool YumeGLRenderer::gl3Support = false;
+
 	bool YumeGLRenderer::GetGL3Support()
 	{
 		return gl3Support;
 	}
 
+	bool YumeGLRenderer::GetGL3SupportNs()
+	{
+		return gl3Support;
+	}
 
 	unsigned YumeGLRenderer::GetMaxBones()
 	{
@@ -243,21 +250,6 @@ namespace YumeEngine
 	YumeGLRenderer::~YumeGLRenderer()
 	{
 		Close();
-
-		delete impl_;
-		impl_ = 0;
-
-		UnregisterFactories();
-		// Shut down SDL now. Graphics should be the last SDL-using subsystem to be destroyed
-		SDL_Quit();
-
-		for(ShaderProgramMap::iterator i=shaderPrograms_.begin(); i != shaderPrograms_.end(); ++i)
-		{
-			i->second.reset();
-		}
-		shaderPrograms_.clear();
-
-		lastShader_.reset();
 	}
 
 	bool YumeGLRenderer::IsInitialized()
@@ -267,7 +259,7 @@ namespace YumeEngine
 
 	bool YumeGLRenderer::IsDeviceLost() const
 	{
-		return impl_->context_ == 0;
+		return impl_ && impl_->context_ == 0;
 	}
 
 	bool YumeGLRenderer::BeginFrame()
@@ -367,7 +359,6 @@ namespace YumeEngine
 		lightPrepassSupport_ = false;
 		deferredSupport_ = false;
 
-#ifndef GL_ES_VERSION_2_0
 		int numSupportedRTs = 1;
 		if(gl3Support)
 		{
@@ -408,42 +399,38 @@ namespace YumeEngine
 			lightPrepassSupport_ = true;
 		if(numSupportedRTs >= 4)
 			deferredSupport_ = true;
-
-#else
-		dxtTextureSupport_ = CheckExtension("EXT_texture_compression_dxt1");
-		etcTextureSupport_ = CheckExtension("OES_compressed_ETC1_RGB8_texture");
-		pvrtcTextureSupport_ = CheckExtension("IMG_texture_compression_pvrtc");
-
-		// Check for best supported depth renderbuffer format for GLES2
-		if(CheckExtension("GL_OES_depth24"))
-			glesDepthStencilFormat = GL_DEPTH_COMPONENT24_OES;
-		if(CheckExtension("GL_OES_packed_depth_stencil"))
-			glesDepthStencilFormat = GL_DEPTH24_STENCIL8_OES;
-		if(!CheckExtension("GL_OES_depth_texture"))
-		{
-			shadowMapFormat_ = 0;
-			hiresShadowMapFormat_ = 0;
-			glesReadableDepthFormat = 0;
-		}
-		else
-		{
-			shadowMapFormat_ = GL_DEPTH_COMPONENT;
-			hiresShadowMapFormat_ = 0;
-		}
-#endif
 	}
 
 
 	YumeVertexBuffer* YumeGLRenderer::CreateVertexBuffer()
 	{
-		return YumeAPINew YumeGLVertexBuffer(this);
+		return YumeAPINew YumeGLVertexBuffer();
 	}
 
 	YumeIndexBuffer* YumeGLRenderer::CreateIndexBuffer()
 	{
-		return YumeAPINew YumeGLIndexBuffer(this);
+		return YumeAPINew YumeGLIndexBuffer();
 	}
 
+	YumeTexture2D* YumeGLRenderer::CreateTexture2D()
+	{
+		return YumeAPINew YumeGLTexture2D();
+	}
+
+	YumeTexture3D* YumeGLRenderer::CreateTexture3D()
+	{
+		return YumeAPINew YumeGLTexture3D();
+	}
+
+	YumeTextureCube* YumeGLRenderer::CreateTextureCube()
+	{
+		return YumeAPINew YumeGLTextureCube();
+	}
+
+	unsigned YumeGLRenderer::GetOpenGLOnlyTextureDataType(unsigned format)
+	{
+		return YumeGLTexture2D::GetDataType(format);
+	}
 	void YumeGLRenderer::ResetCache()
 	{
 		for(unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
@@ -577,10 +564,9 @@ namespace YumeEngine
 	}
 
 
-	void YumeGLRenderer::SetFlushGPU(bool flushGpu_)
+	void YumeGLRenderer::SetFlushGPU(bool flushGpu)
 	{
-		flushGpu_ = flushGpu_;
-
+		flushGpu_ = flushGpu;
 	}
 
 	void YumeGLRenderer::SetWindowPos(const Vector2& pos)
@@ -618,6 +604,22 @@ namespace YumeEngine
 
 		// Actually close the window
 		Release(true,true);
+
+
+		delete impl_;
+		impl_ = 0;
+
+		UnregisterFactories();
+		// Shut down SDL now. Graphics should be the last SDL-using subsystem to be destroyed
+		SDL_Quit();
+
+		for(ShaderProgramMap::iterator i=shaderPrograms_.begin(); i != shaderPrograms_.end(); ++i)
+		{
+			i->second.reset();
+		}
+		shaderPrograms_.clear();
+
+		lastShader_.reset();
 	}
 
 	void YumeGLRenderer::Release(bool clearGPUObjects,bool closeWindow)
@@ -630,8 +632,8 @@ namespace YumeEngine
 
 			if(clearGPUObjects)
 			{
-
-				for(YumeVector<YumeGpuResource*>::iterator i = gpuResources_.begin(); i != gpuResources_.end(); ++i)
+				int index = 0;
+				for(YumeVector<YumeGpuResource*>::iterator i = gpuResources_.begin(); i != gpuResources_.end(); ++i,++index)
 					(*i)->Release();
 				gpuResources_.clear();
 			}
@@ -720,7 +722,7 @@ namespace YumeEngine
 				width = 1024;
 				height = 768;
 			}
-			}
+		}
 
 		if(fullscreen)
 		{
@@ -880,7 +882,7 @@ namespace YumeEngine
 
 		initialized_ = true;
 		return true;
-		}
+	}
 
 	void YumeGLRenderer::Restore()
 	{
@@ -998,6 +1000,32 @@ namespace YumeEngine
 		return ret;
 	}
 
+	bool YumeGLRenderer::ResolveToTexture(YumeTexture2D* destination,const IntRect& viewport)
+	{
+		if(!destination || !destination->GetRenderSurface())
+			return false;
+
+		IntRect vpCopy = viewport;
+		if(vpCopy.right_ <= vpCopy.left_)
+			vpCopy.right_ = vpCopy.left_ + 1;
+		if(vpCopy.bottom_ <= vpCopy.top_)
+			vpCopy.bottom_ = vpCopy.top_ + 1;
+		vpCopy.left_ = Clamp(vpCopy.left_,0,windowWidth_);
+		vpCopy.top_ = Clamp(vpCopy.top_,0,windowHeight_);
+		vpCopy.right_ = Clamp(vpCopy.right_,0,windowWidth_);
+		vpCopy.bottom_ = Clamp(vpCopy.bottom_,0,windowHeight_);
+
+		// Make sure the FBO is not in use
+		ResetRenderTargets();
+
+		// Use Direct3D convention with the vertical coordinates ie. 0 is top
+		SetTextureForUpdate(destination);
+		glCopyTexSubImage2D(GL_TEXTURE_2D,0,0,0,vpCopy.left_,windowHeight_ - vpCopy.bottom_,vpCopy.Width(),vpCopy.Height());
+		SetTexture(0,0);
+
+		return true;
+	}
+
 	void YumeGLRenderer::SetRenderTarget(unsigned index,YumeRenderable* renderTarget)
 	{
 		if(index >= MAX_RENDERTARGETS)
@@ -1039,13 +1067,13 @@ namespace YumeEngine
 				int searchKey = (width << 16) | height;
 				YumeMap<int,SharedPtr<YumeTexture2D> >::iterator i = depthTextures_.find(searchKey);
 				if(i != depthTextures_.end())
-					depthStencil = i->second->GetRenderSurface();
+					depthStencil = i->second->GetRenderSurface().get();
 				else
 				{
-					SharedPtr<YumeTexture2D> newDepthTexture = SharedPtr<YumeGLTexture2D>(new YumeGLTexture2D(this));
-					newDepthTexture->SetSize(width,height,GetDepthStencilFormat(),TEXTURE_DEPTHSTENCIL);
+					SharedPtr<YumeTexture2D> newDepthTexture = SharedPtr<YumeGLTexture2D>(new YumeGLTexture2D);
+					newDepthTexture->SetSize(width,height,GetDepthStencilFormatNs(),TEXTURE_DEPTHSTENCIL);
 					depthTextures_[searchKey] = newDepthTexture;
-					depthStencil = newDepthTexture->GetRenderSurface();
+					depthStencil = newDepthTexture->GetRenderSurface().get();
 				}
 			}
 		}
@@ -1061,7 +1089,7 @@ namespace YumeEngine
 	{
 		YumeRenderable* depthStencil = 0;
 		if(texture)
-			depthStencil = texture->GetRenderSurface();
+			depthStencil = texture->GetRenderSurface().get();
 
 		SetDepthStencil(depthStencil);
 	}
@@ -1357,7 +1385,7 @@ namespace YumeEngine
 	{
 		if(lastShaderName_ != name || !lastShader_)
 		{
-			YumeResourceManager* resource_ = YumeEngine3D::Get()->GetResourceManager();
+			YumeResourceManager* resource_ = gYume->pResourceManager;
 			YumeString fullShaderName = shaderPath_ + name + shaderExtension_;
 			// Try to reduce repeated error log prints because of missing shaders
 			if(lastShaderName_ == name && !resource_->Exists(fullShaderName))
@@ -1394,7 +1422,7 @@ namespace YumeEngine
 		std::pair<YumeMap<unsigned,SharedPtr<YumeConstantBuffer> >::iterator,bool> ret;
 		if(i == constantBuffers_.end())
 		{
-			ret = constantBuffers_.insert(std::make_pair(key,SharedPtr<YumeConstantBuffer>(new YumeGLConstantBuffer(this))));
+			ret = constantBuffers_.insert(std::make_pair(key,SharedPtr<YumeConstantBuffer>(new YumeGLConstantBuffer())));
 			ret.first->second->SetSize(size);
 		}
 		return ret.first->second.get();
@@ -1409,6 +1437,104 @@ namespace YumeEngine
 		vertexBuffers[0] = buffer;
 		elementMasks[0] = MASK_DEFAULT;
 		SetVertexBuffers(vertexBuffers,elementMasks);
+	}
+
+	bool YumeGLRenderer::SetVertexBuffers(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,
+		unsigned instanceOffset)
+	{
+		if(buffers.size() > MAX_VERTEX_STREAMS)
+		{
+			YUMELOG_ERROR("Too many vertex buffers");
+			return false;
+		}
+		if(buffers.size() != elementMasks.size())
+		{
+			YUMELOG_ERROR("Amount of element masks and vertex buffers does not match");
+			return false;
+		}
+
+		bool changed = false;
+		unsigned newAttributes = 0;
+
+		for(unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
+		{
+			YumeGLVertexBuffer* buffer = 0;
+			unsigned elementMask = 0;
+
+			if(i < buffers.size() && buffers[i])
+			{
+				buffer = static_cast<YumeGLVertexBuffer*>(buffers[i].get());
+				if(elementMasks[i] == MASK_DEFAULT)
+					elementMask = buffer->GetElementMask();
+				else
+					elementMask = buffer->GetElementMask() & elementMasks[i];
+			}
+
+			// If buffer and element mask have stayed the same, skip to the next buffer
+			if(buffer == vertexBuffers_[i] && elementMask == elementMasks_[i] && instanceOffset == lastInstanceOffset_ && !changed)
+			{
+				newAttributes |= elementMask;
+				continue;
+			}
+
+			vertexBuffers_[i] = buffer;
+			elementMasks_[i] = elementMask;
+			changed = true;
+
+			// Beware buffers with missing OpenGL objects, as binding a zero buffer object means accessing CPU memory for vertex data,
+			// in which case the pointer will be invalid and cause a crash
+			if(!buffer || !buffer->GetGPUObject())
+				continue;
+
+			SetVBO(buffer->GetGPUObject());
+			unsigned vertexSize = buffer->GetVertexSize();
+
+			for(unsigned j = 0; j < MAX_VERTEX_ELEMENTS; ++j)
+			{
+				unsigned attrIndex = glVertexAttrIndex[j];
+				unsigned elementBit = (unsigned)(1 << j);
+
+				if(elementMask & elementBit)
+				{
+					newAttributes |= elementBit;
+
+					// Enable attribute if not enabled yet
+					if((impl_->enabledAttributes_ & elementBit) == 0)
+					{
+						glEnableVertexAttribArray(attrIndex);
+						impl_->enabledAttributes_ |= elementBit;
+					}
+
+					// Set the attribute pointer. Add instance offset for the instance matrix pointers
+					unsigned offset = (j >= ELEMENT_INSTANCEMATRIX1 && j < ELEMENT_OBJECTINDEX) ? instanceOffset * vertexSize : 0;
+					glVertexAttribPointer(attrIndex,YumeGLVertexBuffer::elementComponents[j],YumeGLVertexBuffer::elementType[j],
+						(GLboolean)YumeGLVertexBuffer::elementNormalize[j],vertexSize,
+						reinterpret_cast<const GLvoid*>(buffer->GetElementOffset((VertexElement)j) + offset));
+				}
+			}
+		}
+
+		if(!changed)
+			return true;
+
+		lastInstanceOffset_ = instanceOffset;
+
+		// Now check which vertex attributes should be disabled
+		unsigned disableAttributes = impl_->enabledAttributes_ & (~newAttributes);
+		unsigned disableIndex = 0;
+
+		while(disableAttributes)
+		{
+			if(disableAttributes & 1)
+			{
+				glDisableVertexAttribArray(glVertexAttrIndex[disableIndex]);
+				impl_->enabledAttributes_ &= ~(1 << disableIndex);
+			}
+			disableAttributes >>= 1;
+			++disableIndex;
+		}
+
+		return true;
 	}
 
 	bool YumeGLRenderer::SetVertexBuffers(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,
@@ -1509,11 +1635,7 @@ namespace YumeEngine
 		return true;
 	}
 
-	bool YumeGLRenderer::SetVertexBuffers(const YumeVector<SharedPtr<YumeVertexBuffer> >::type& buffers,const YumeVector<unsigned>::type& elementMasks,
-		unsigned instanceOffset)
-	{
-		return SetVertexBuffers(reinterpret_cast<const YumeVector<YumeVertexBuffer*>::type&>(buffers),elementMasks,instanceOffset);
-	}
+
 
 	void YumeGLRenderer::SetIndexBuffer(YumeIndexBuffer* buffer)
 	{
@@ -1602,7 +1724,7 @@ namespace YumeEngine
 			}
 			else
 			{
-				SharedPtr<YumeGLShaderProgram> newProgram(new YumeGLShaderProgram(this,vs,ps));
+				SharedPtr<YumeGLShaderProgram> newProgram(new YumeGLShaderProgram(vs,ps));
 				if(newProgram->Link())
 				{
 					YUMELOG_DEBUG("Linked vertex shader " + vs->GetFullName() + " and pixel shader " + ps->GetFullName());
@@ -1648,6 +1770,11 @@ namespace YumeEngine
 		// Store shader combination if shader dumping in progress
 		//if(shaderPrecache_)
 		//	shaderPrecache_->StoreShaders(vertexShader_,pixelShader_);
+	}
+
+	bool YumeGLRenderer::HasShaderParameter(YumeHash param)
+	{
+		return shaderProgram_ && shaderProgram_->HasParameter(param);
 	}
 
 	void YumeGLRenderer::SetShaderParameter(YumeHash param,const float* data,unsigned count)
@@ -1915,7 +2042,56 @@ namespace YumeEngine
 
 	void YumeGLRenderer::SetShaderParameter(YumeHash param,const Variant& value)
 	{
+		switch(value.GetType())
+		{
+		case VAR_BOOL:
+			SetShaderParameter(param,value.GetBool());
+			break;
 
+		case VAR_FLOAT:
+			SetShaderParameter(param,value.GetFloat());
+			break;
+
+		case VAR_VECTOR2:
+			SetShaderParameter(param,value.GetVector2());
+			break;
+
+		case VAR_VECTOR3:
+			SetShaderParameter(param,value.GetVector3());
+			break;
+
+		case VAR_VECTOR4:
+			SetShaderParameter(param,value.GetVector4());
+			break;
+
+		case VAR_COLOR:
+			SetShaderParameter(param,value.GetColor());
+			break;
+
+		case VAR_MATRIX3:
+			SetShaderParameter(param,value.GetMatrix3());
+			break;
+
+		case VAR_MATRIX3X4:
+			SetShaderParameter(param,value.GetMatrix3x4());
+			break;
+
+		case VAR_MATRIX4:
+			SetShaderParameter(param,value.GetMatrix4());
+			break;
+
+		case VAR_BUFFER:
+		{
+			const YumeVector<unsigned char>::type& buffer = value.GetBuffer();
+			if(buffer.size() >= sizeof(float))
+				SetShaderParameter(param,reinterpret_cast<const float*>(&buffer[0]),buffer.size() / sizeof(float));
+		}
+		break;
+
+		default:
+			// Unsupported parameter type, do nothing
+			break;
+		}
 	}
 
 
@@ -2129,10 +2305,10 @@ namespace YumeEngine
 						}
 					}
 					glDrawBuffers(drawBufferCount,(const GLenum*)drawBufferIds);
-			}
+				}
 
 				i->second.drawBuffers_ = newDrawBuffers;
-		}
+			}
 #endif
 
 			for(unsigned j = 0; j < MAX_RENDERTARGETS; ++j)
@@ -2227,13 +2403,13 @@ namespace YumeEngine
 				}
 			}
 #endif
-	}
+		}
 	}
 
 
 	void YumeGLRenderer::CleanupRenderable(YumeRenderable* surface)
 	{
-		if(!surface)
+		if(!impl_ || !surface)
 			return;
 
 		// Flush pending FBO changes first if any
@@ -2428,55 +2604,67 @@ namespace YumeEngine
 		if(index >= MAX_TEXTURE_UNITS)
 			return;
 
-		//// Check if texture is currently bound as a rendertarget. In that case, use its backup texture, or blank if not defined
-		//if(texture)
-		//{
-		//	if(renderTargets_[0] && renderTargets_[0]->GetParentTexture() == texture)
-		//		texture = texture->GetBackupTexture();
-		//}
+		// Check if texture is currently bound as a rendertarget. In that case, use its backup texture, or blank if not defined
+		if(texture)
+		{
+			if(renderTargets_[0] && renderTargets_[0]->GetParentTexture() == texture)
+				texture = texture->GetBackupTexture();
+		}
 
-		//if(textures_[index] != texture)
-		//{
-		//	if(impl_->activeTexture_ != index)
-		//	{
-		//		glActiveTexture(GL_TEXTURE0 + index);
-		//		impl_->activeTexture_ = index;
-		//	}
+		if(textures_[index] != texture)
+		{
+			if(impl_->activeTexture_ != index)
+			{
+				glActiveTexture(GL_TEXTURE0 + index);
+				impl_->activeTexture_ = index;
+			}
 
-		//	if(texture)
-		//	{
-		//		unsigned glType = texture->GetTarget();
-		//		// Unbind old texture type if necessary
-		//		if(textureTypes_[index] && textureTypes_[index] != glType)
-		//			glBindTexture(textureTypes_[index],0);
-		//		glBindTexture(glType,texture->GetGPUObject());
-		//		textureTypes_[index] = glType;
+			if(texture)
+			{
+				unsigned glType = (texture)->GetTarget();
+				// Unbind old texture type if necessary
+				if(textureTypes_[index] && textureTypes_[index] != glType)
+					glBindTexture(textureTypes_[index],0);
 
-		//		if(texture->GetParametersDirty())
-		//			texture->UpdateParameters();
-		//	}
-		//	else if(textureTypes_[index])
-		//	{
-		//		glBindTexture(textureTypes_[index],0);
-		//		textureTypes_[index] = 0;
-		//	}
+				if(texture->GetType() == YumeTexture2D::GetTypeStatic())
+					glBindTexture(glType,static_cast<YumeGLTexture2D*>(texture)->GetGPUObject());
+				else if(texture->GetType() == YumeTexture3D::GetTypeStatic())
+					glBindTexture(glType,static_cast<YumeGLTexture3D*>(texture)->GetGPUObject());
+				else if(texture->GetType() == YumeTextureCube::GetTypeStatic())
+					glBindTexture(glType,static_cast<YumeGLTextureCube*>(texture)->GetGPUObject());
 
-		//	textures_[index] = texture;
-		//}
-		//else
-		//{
-		//	if(texture && texture->GetParametersDirty())
-		//	{
-		//		if(impl_->activeTexture_ != index)
-		//		{
-		//			glActiveTexture(GL_TEXTURE0 + index);
-		//			impl_->activeTexture_ = index;
-		//		}
+				textureTypes_[index] = glType;
 
-		//		glBindTexture(texture->GetTarget(),texture->GetGPUObject());
-		//		texture->UpdateParameters();
-		//	}
-		//}
+				if(texture->GetParametersDirty())
+					texture->UpdateParameters();
+			}
+			else if(textureTypes_[index])
+			{
+				glBindTexture(textureTypes_[index],0);
+				textureTypes_[index] = 0;
+			}
+
+			textures_[index] = texture;
+		}
+		else
+		{
+			if(texture && texture->GetParametersDirty())
+			{
+				if(impl_->activeTexture_ != index)
+				{
+					glActiveTexture(GL_TEXTURE0 + index);
+					impl_->activeTexture_ = index;
+				}
+
+				if(texture->GetType() == YumeTexture2D::GetTypeStatic())
+					glBindTexture(texture->GetTarget(),static_cast<YumeGLTexture2D*>(texture)->GetGPUObject());
+				else if(texture->GetType() == YumeTexture3D::GetTypeStatic())
+					glBindTexture(texture->GetTarget(),static_cast<YumeGLTexture3D*>(texture)->GetGPUObject());
+				else if(texture->GetType() == YumeTextureCube::GetTypeStatic())
+					glBindTexture(texture->GetTarget(),static_cast<YumeGLTextureCube*>(texture)->GetGPUObject());
+				texture->UpdateParameters();
+			}
+		}
 	}
 
 
@@ -2506,6 +2694,148 @@ namespace YumeEngine
 		}
 #endif
 		}
+
+	unsigned YumeGLRenderer::GetAlphaFormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		// Alpha format is deprecated on OpenGL 3+
+		if(gl3Support)
+			return GL_R8;
+#endif
+		return GL_ALPHA;
+	}
+
+	unsigned YumeGLRenderer::GetLuminanceFormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		// Luminance format is deprecated on OpenGL 3+
+		if(gl3Support)
+			return GL_R8;
+#endif
+		return GL_LUMINANCE;
+	}
+
+	unsigned YumeGLRenderer::GetLuminanceAlphaFormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		// Luminance alpha format is deprecated on OpenGL 3+
+		if(gl3Support)
+			return GL_RG8;
+#endif
+		return GL_LUMINANCE_ALPHA;
+	}
+
+	unsigned YumeGLRenderer::GetRGBFormatNs()
+	{
+		return GL_RGB;
+	}
+
+	unsigned YumeGLRenderer::GetRGBAFormatNs()
+	{
+		return GL_RGBA;
+	}
+
+	unsigned YumeGLRenderer::GetRGBA16FormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		return GL_RGBA16;
+#else
+		return GL_RGBA;
+#endif
+}
+
+	unsigned YumeGLRenderer::GetRGBAFloat16FormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		return GL_RGBA16F_ARB;
+#else
+		return GL_RGBA;
+#endif
+	}
+
+	unsigned YumeGLRenderer::GetRGBAFloat32FormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		return GL_RGBA32F_ARB;
+#else
+		return GL_RGBA;
+#endif
+	}
+
+	unsigned YumeGLRenderer::GetRG16FormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		return GL_RG16;
+#else
+		return GL_RGBA;
+#endif
+	}
+
+	unsigned YumeGLRenderer::GetRGFloat16FormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		return GL_RG16F;
+#else
+		return GL_RGBA;
+#endif
+	}
+
+	unsigned YumeGLRenderer::GetRGFloat32FormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		return GL_RG32F;
+#else
+		return GL_RGBA;
+#endif
+	}
+
+	unsigned YumeGLRenderer::GetFloat16FormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		return GL_R16F;
+#else
+		return GL_LUMINANCE;
+#endif
+	}
+
+	unsigned YumeGLRenderer::GetFloat32FormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		return GL_R32F;
+#else
+		return GL_LUMINANCE;
+#endif
+	}
+
+	unsigned YumeGLRenderer::GetLinearDepthFormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		// OpenGL 3 can use different color attachment formats
+		if(gl3Support)
+			return GL_R32F;
+#endif
+		// OpenGL 2 requires color attachments to have the same format, therefore encode deferred depth to RGBA manually
+		// if not using a readable hardware depth texture
+		return GL_RGBA;
+	}
+
+	unsigned YumeGLRenderer::GetDepthStencilFormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		return GL_DEPTH24_STENCIL8_EXT;
+#else
+		return glesDepthStencilFormat;
+#endif
+	}
+
+	unsigned YumeGLRenderer::GetReadableDepthFormatNs()
+	{
+#ifndef GL_ES_VERSION_2_0
+		return GL_DEPTH_COMPONENT24;
+#else
+		return glesReadableDepthFormat;
+#endif
+	}
 
 	unsigned YumeGLRenderer::GetAlphaFormat()
 	{
@@ -2629,7 +2959,7 @@ namespace YumeEngine
 		// OpenGL 2 requires color attachments to have the same format, therefore encode deferred depth to RGBA manually
 		// if not using a readable hardware depth texture
 		return GL_RGBA;
-}
+	}
 
 	unsigned YumeGLRenderer::GetDepthStencilFormat()
 	{
@@ -2709,16 +3039,20 @@ namespace YumeEngine
 
 	void YumeGLRenderer::RegisterFactories()
 	{
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("Shader"),[](void) -> YumeBase * { return new YumeGLShader();});
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("Texture2D"),[this](void) -> YumeBase * { return new YumeGLTexture2D(this);});
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("IndexBuffer"),[this](void) -> YumeBase * { return new YumeGLIndexBuffer(this);});
-		YumeEngine3D::Get()->GetObjFactory()->RegisterFactoryFunction(("VertexBuffer"),[this](void) -> YumeBase * { return new YumeGLVertexBuffer(this);});
+		gYume->pObjFactory->RegisterFactoryFunction(("Shader"),[](void) -> YumeBase * { return new YumeGLShader();});
+		gYume->pObjFactory->RegisterFactoryFunction(("Texture2D"),[this](void) -> YumeBase * { return new YumeGLTexture2D();});
+		gYume->pObjFactory->RegisterFactoryFunction(("Texture3D"),[this](void) -> YumeBase * { return new YumeGLTexture2D();});
+		gYume->pObjFactory->RegisterFactoryFunction(("TextureCube"),[this](void) -> YumeBase * { return new YumeGLTextureCube();});
+		gYume->pObjFactory->RegisterFactoryFunction(("IndexBuffer"),[this](void) -> YumeBase * { return new YumeGLIndexBuffer();});
+		gYume->pObjFactory->RegisterFactoryFunction(("VertexBuffer"),[this](void) -> YumeBase * { return new YumeGLVertexBuffer();});
 	}
 	void YumeGLRenderer::UnregisterFactories()
 	{
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("Shader"));
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("Texture2D"));
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("IndexBuffer"));
-		YumeEngine3D::Get()->GetObjFactory()->UnRegisterFactoryFunction(("VertexBuffer"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("Shader"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("Texture2D"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("Texture3D"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("TextureCube"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("IndexBuffer"));
+		gYume->pObjFactory->UnRegisterFactoryFunction(("VertexBuffer"));
 	}
 	}

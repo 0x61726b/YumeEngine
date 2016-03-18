@@ -45,8 +45,7 @@ namespace YumeEngine
 	const void* YumeGLShaderProgram::globalParameterSources[MAX_SHADER_PARAMETER_GROUPS];
 
 
-	YumeGLShaderProgram::YumeGLShaderProgram(YumeRHI* graphics,YumeShaderVariation* vertexShader,YumeShaderVariation* pixelShader):
-		YumeGLResource(graphics),
+	YumeGLShaderProgram::YumeGLShaderProgram(YumeShaderVariation* vertexShader,YumeShaderVariation* pixelShader):
 		vertexShader_(vertexShader),
 		pixelShader_(pixelShader),
 		frameNumber_(0)
@@ -66,8 +65,8 @@ namespace YumeEngine
 	{
 		YumeGLResource::OnDeviceLost();
 
-		if(rhi_ && static_cast<YumeGLRenderer*>(rhi_)->GetShaderProgram() == this)
-			rhi_->SetShaders(0,0);
+		if(gYume->pRHI && static_cast<YumeGLRenderer*>(gYume->pRHI)->GetShaderProgram() == this)
+			gYume->pRHI->SetShaders(0,0);
 
 		linkerOutput_.clear();
 	}
@@ -76,13 +75,13 @@ namespace YumeEngine
 	{
 		if(object_)
 		{
-			if(!rhi_)
+			if(!gYume->pRHI)
 				return;
 
-			if(!rhi_->IsDeviceLost())
+			if(!gYume->pRHI->IsDeviceLost())
 			{
-				if(static_cast<YumeGLRenderer*>(rhi_)->GetShaderProgram() == this)
-					rhi_->SetShaders(0,0);
+				if(static_cast<YumeGLRenderer*>(gYume->pRHI)->GetShaderProgram() == this)
+					gYume->pRHI->SetShaders(0,0);
 
 				glDeleteProgram(object_);
 			}
@@ -224,7 +223,7 @@ namespace YumeEngine
 				glUniformBlockBinding(object_,blockIndex,bindingIndex);
 				blockToBinding[blockIndex] = bindingIndex;
 
-				constantBuffers_[bindingIndex] = SharedPtr<YumeConstantBuffer>(rhi_->GetOrCreateConstantBuffer(bindingIndex,(unsigned)dataSize));
+				constantBuffers_[bindingIndex] = SharedPtr<YumeConstantBuffer>(gYume->pRHI->GetOrCreateConstantBuffer(bindingIndex,(unsigned)dataSize));
 			}
 		}
 #endif
@@ -279,7 +278,7 @@ namespace YumeEngine
 			else if(location >= 0 && name[0] == 's')
 			{
 				// Set the samplers here so that they do not have to be set later
-				int unit = rhi_->GetTextureUnit(name.substr(1));
+				int unit = gYume->pRHI->GetTextureUnit(name.substr(1));
 				if(unit >= MAX_TEXTURE_UNITS)
 				{
 					// If texture unit name is not recognized, search for a digit in the name and use that as the unit index

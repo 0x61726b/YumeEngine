@@ -29,10 +29,10 @@
 namespace YumeEngine
 {
 
-	class YumeAPIExport YumeRenderable
+	class YumeAPIExport YumeRenderable : public YumeBase
 	{
-		friend class Texture2D;
-		friend class TextureCube;
+		friend class YumeTexture2D;
+		friend class YumeTextureCube;
 
 	public:
 		YumeRenderable(YumeTexture* parentTexture);
@@ -62,8 +62,8 @@ namespace YumeEngine
 		RenderSurfaceUpdateMode GetUpdateMode() const { return updateMode_; }
 
 		YumeRenderable* GetLinkedRenderTarget() const { return linkedRenderTarget_; }
-
 		YumeRenderable* GetLinkedDepthStencil() const { return linkedDepthStencil_; }
+
 		bool IsUpdateQueued() const { return updateQueued_; }
 		void ResetUpdateQueued();
 
@@ -72,8 +72,8 @@ namespace YumeEngine
 		void* renderTargetView_;
 		void* readOnlyView_;
 		YumeVector<SharedPtr<YumeViewport> >::type viewports_;
-		YumeRenderable* linkedRenderTarget_;
-		YumeRenderable* linkedDepthStencil_;
+		WeakPtr<YumeRenderable> linkedRenderTarget_;
+		WeakPtr<YumeRenderable> linkedDepthStencil_;
 		RenderSurfaceUpdateMode updateMode_;
 		bool updateQueued_;
 	};

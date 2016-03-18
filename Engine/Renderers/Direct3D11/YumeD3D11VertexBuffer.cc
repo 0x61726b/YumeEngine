@@ -88,8 +88,7 @@ namespace YumeEngine
 	};
 
 
-	YumeD3D11VertexBuffer::YumeD3D11VertexBuffer(YumeRHI* rhi)
-		: YumeD3D11Resource(static_cast<YumeD3D11Renderer*>(rhi))
+	YumeD3D11VertexBuffer::YumeD3D11VertexBuffer()
 	{
 		UpdateOffsets();
 	}
@@ -105,8 +104,8 @@ namespace YumeEngine
 
 		for(unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
 		{
-			if(rhi_->GetVertexBuffer(i) == this)
-				rhi_->SetVertexBuffer(0);
+			if(gYume->pRHI->GetVertexBuffer(i) == this)
+				gYume->pRHI->SetVertexBuffer(0);
 		}
 
 
@@ -184,7 +183,7 @@ namespace YumeEngine
 				destBox.front = 0;
 				destBox.back = 1;
 
-				static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,&destBox,data,0,0);
+				static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,&destBox,data,0,0);
 			}
 		}
 
@@ -243,7 +242,7 @@ namespace YumeEngine
 				destBox.front = 0;
 				destBox.back = 1;
 
-				static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,&destBox,data,0,0);
+				static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->UpdateSubresource((ID3D11Buffer*)object_,0,&destBox,data,0,0);
 			}
 		}
 
@@ -284,10 +283,10 @@ namespace YumeEngine
 			lockState_ = LOCK_SHADOW;
 			return shadowData_.get() + start * vertexSize_;
 		}
-		else if(rhi_)
+		else if(gYume->pRHI)
 		{
 			lockState_ = LOCK_SCRATCH;
-			lockScratchData_ = rhi_->ReserveScratchBuffer(count * vertexSize_);
+			lockScratchData_ = gYume->pRHI->ReserveScratchBuffer(count * vertexSize_);
 			return lockScratchData_;
 		}
 		else
@@ -309,8 +308,8 @@ namespace YumeEngine
 
 		case LOCK_SCRATCH:
 			SetDataRange(lockScratchData_,lockStart_,lockCount_);
-			if(rhi_)
-				rhi_->FreeScratchBuffer(lockScratchData_);
+			if(gYume->pRHI)
+				gYume->pRHI->FreeScratchBuffer(lockScratchData_);
 			lockScratchData_ = 0;
 			lockState_ = LOCK_NONE;
 			break;
@@ -386,7 +385,7 @@ namespace YumeEngine
 		if(!vertexCount_ || !elementMask_)
 			return true;
 
-		if(rhi_)
+		if(gYume->pRHI)
 		{
 			D3D11_BUFFER_DESC bufferDesc;
 			memset(&bufferDesc,0,sizeof bufferDesc);
@@ -395,7 +394,7 @@ namespace YumeEngine
 			bufferDesc.Usage = dynamic_ ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 			bufferDesc.ByteWidth = (UINT)(vertexCount_ * vertexSize_);
 
-			HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDevice()->CreateBuffer(&bufferDesc,0,(ID3D11Buffer**)&object_);
+			HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateBuffer(&bufferDesc,0,(ID3D11Buffer**)&object_);
 			if(FAILED(hr))
 			{
 				D3D_SAFE_RELEASE(object_);
@@ -424,7 +423,7 @@ namespace YumeEngine
 			D3D11_MAPPED_SUBRESOURCE mappedData;
 			mappedData.pData = 0;
 
-			HRESULT hr = static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)object_,0,discard ? D3D11_MAP_WRITE_DISCARD :
+			HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->Map((ID3D11Buffer*)object_,0,discard ? D3D11_MAP_WRITE_DISCARD :
 				D3D11_MAP_WRITE,0,&mappedData);
 			if(FAILED(hr) || !mappedData.pData)
 				YUMELOG_ERROR("Failed to map vertex buffer" << hr);
@@ -442,7 +441,7 @@ namespace YumeEngine
 	{
 		if(object_ && lockState_ == LOCK_HARDWARE)
 		{
-			static_cast<YumeD3D11Renderer*>(rhi_)->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)object_,0);
+			static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDeviceContext()->Unmap((ID3D11Buffer*)object_,0);
 			lockState_ = LOCK_NONE;
 		}
 	}

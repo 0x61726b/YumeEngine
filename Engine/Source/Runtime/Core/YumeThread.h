@@ -62,7 +62,7 @@ namespace YumeEngine
 
 	protected:
 		
-		boost::thread* threadHandle;
+		void* threadHandle;
 		
 		volatile bool shouldRun_;
 

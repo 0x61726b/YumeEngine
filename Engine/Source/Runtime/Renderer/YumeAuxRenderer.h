@@ -27,6 +27,7 @@
 #include "Math/YumeFrustum.h"
 #include "Scene/YumeSceneComponent.h"
 #include "Core/YumeVariant.h"
+#include "Core/YumeEventHub.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -85,7 +86,7 @@ namespace YumeEngine
 	};
 
 	
-	class YumeAPIExport YumeDebugRenderer : public YumeSceneComponent
+	class YumeAPIExport YumeDebugRenderer : public YumeSceneComponent,public YumeTimerEventListener
 	{
 	public:
 		YumeDebugRenderer();
@@ -129,7 +130,9 @@ namespace YumeEngine
 		
 		void Render();
 
-		
+		static YumeHash GetTypeStatic() { return type_; };
+		virtual YumeHash GetType() { return type_; };
+		static YumeHash type_;
 		const Matrix3x4& GetView() const { return view_; }
 
 		
@@ -145,7 +148,7 @@ namespace YumeEngine
 
 	private:
 		
-		void HandleEndFrame(YumeHash eventType,VariantMap& eventData);
+		void HandleEndFrame(int frameNumber);
 
 		
 		YumeVector<DebugLine>::type lines_;

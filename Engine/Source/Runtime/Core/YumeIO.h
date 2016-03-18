@@ -30,7 +30,7 @@ namespace YumeEngine
 {
 	typedef boost::filesystem::path FsPath;
 
-	class YumeAPIExport YumeIO : public GeneralObjAlloc
+	class YumeAPIExport YumeIO : public RefCounted
 	{
 	public:
 		YumeIO();

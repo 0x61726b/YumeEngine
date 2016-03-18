@@ -89,11 +89,9 @@ namespace YumeEngine
 		return glWrapModes[mode];
 #endif
 	}
-	YumeGLTexture2D::YumeGLTexture2D(YumeRHI* rhi)
-		: YumeGLResource((rhi))
+	YumeGLTexture2D::YumeGLTexture2D()
 	{
 		target_ = GL_TEXTURE_2D;
-
 	}
 
 	YumeGLTexture2D::~YumeGLTexture2D()
@@ -114,7 +112,7 @@ namespace YumeEngine
 		if(!object_ || dataPending_)
 		{
 			// If has a resource file, reload through the resource cache. Otherwise just recreate.
-			YumeResourceManager* rm_ = YumeEngine3D::Get()->GetResourceManager();
+			YumeResourceManager* rm_ = gYume->pResourceManager;
 			//if(rm_ ->Exists(GetName()))
 				//dataLost_ = !rm_ ->ReloadResource(this);
 
@@ -128,19 +126,28 @@ namespace YumeEngine
 		dataPending_ = false;
 	}
 
+	bool YumeGLTexture2D::IsDataLost()
+	{
+		return YumeGLResource::IsDataLost();
+	}
+	void YumeGLTexture2D::ClearDataLost()
+	{
+		YumeGLResource::ClearDataLost();
+	}
+
 	void YumeGLTexture2D::Release()
 	{
 		if(object_)
 		{
-			if(!rhi_)
+			if(!gYume->pRHI)
 				return;
 
-			if(!rhi_->IsDeviceLost())
+			if(!gYume->pRHI->IsDeviceLost())
 			{
 				for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
 				{
-					if(rhi_->GetTexture(i) == this)
-						rhi_->SetTexture(i,0);
+					if(gYume->pRHI->GetTexture(i) == this)
+						gYume->pRHI->SetTexture(i,0);
 				}
 
 				glDeleteTextures(1,(GLuint*)&object_);
@@ -184,10 +191,10 @@ namespace YumeEngine
 		else if(usage_ == TEXTURE_DYNAMIC)
 			requestedLevels_ = 1;
 
-		//if(usage_ == TEXTURE_RENDERTARGET)
-		//	SubscribeToEvent(E_RENDERSURFACEUPDATE,URHO3D_HANDLER(Texture2D,HandleRenderSurfaceUpdate));
-		//else
-		//	UnsubscribeFromEvent(E_RENDERSURFACEUPDATE);
+		if(usage_ == TEXTURE_RENDERTARGET)
+			gYume->pRenderer->AddListener(this);
+		else
+			gYume->pRenderer->RemoveListener(this);
 
 		width_ = width;
 		height_ = height;
@@ -243,7 +250,7 @@ namespace YumeEngine
 		}
 
 
-		if(rhi_->IsDeviceLost())
+		if(gYume->pRHI->IsDeviceLost())
 		{
 			YUMELOG_WARN("Texture data assignment while device is lost");
 			dataPending_ = true;
@@ -264,7 +271,7 @@ namespace YumeEngine
 			return false;
 		}
 
-		static_cast<YumeGLRenderer*>(rhi_)->SetTextureForUpdate(this);
+		static_cast<YumeGLRenderer*>(gYume->pRHI)->SetTextureForUpdate(this);
 
 		bool wholeLevel = x == 0 && y == 0 && width == levelWidth && height == levelHeight;
 		unsigned format = GetSRGB() ? GetSRGBFormat(format_) : format_;
@@ -284,7 +291,7 @@ namespace YumeEngine
 				glCompressedTexSubImage2D(target_,level,x,y,width,height,format,GetDataSize(width,height),data);
 		}
 
-		rhi_->SetTexture(0,0);
+		gYume->pRHI->SetTexture(0,0);
 		return true;
 	}
 
@@ -378,7 +385,7 @@ namespace YumeEngine
 			int width = image->GetWidth();
 			int height = image->GetHeight();
 			unsigned levels = image->GetNumCompressedLevels();
-			unsigned format = rhi_->GetFormat(image->GetCompressedFormat());
+			unsigned format = gYume->pRHI->GetFormat(image->GetCompressedFormat());
 			bool needDecompress = false;
 
 			if(!format)
@@ -441,20 +448,20 @@ namespace YumeEngine
 			YUMELOG_ERROR("Illegal mip level for getting data");
 			return false;
 		}
-		if(rhi_->IsDeviceLost())
+		if(gYume->pRHI->IsDeviceLost())
 		{
 			YUMELOG_WARN("Getting texture data while device is lost");
 			return false;
 	}
 
-		static_cast<YumeGLRenderer*>(rhi_)->SetTextureForUpdate(const_cast<YumeGLTexture2D*>(this));
+		static_cast<YumeGLRenderer*>(gYume->pRHI)->SetTextureForUpdate(const_cast<YumeGLTexture2D*>(this));
 
 		if(!IsCompressed())
 			glGetTexImage(target_,level,GetExternalFormat(format_),GetDataType(format_),dest);
 		else
 			glGetCompressedTexImage(target_,level,dest);
 
-		rhi_->SetTexture(0,0);
+		gYume->pRHI->SetTexture(0,0);
 		return true;
 #else
 		YUMELOG_ERROR("Getting texture data not supported");
@@ -466,10 +473,10 @@ namespace YumeEngine
 	{
 		Release();
 
-		if(!rhi_ || !width_ || !height_)
+		if(!gYume->pRHI || !width_ || !height_)
 			return false;
 
-		if(rhi_->IsDeviceLost())
+		if(gYume->pRHI->IsDeviceLost())
 		{
 			YUMELOG_WARN("Texture creation while device is lost");
 			return true;
@@ -500,7 +507,7 @@ namespace YumeEngine
 		glGenTextures(1,(GLuint*)&object_);
 
 		// Ensure that our texture is bound to OpenGL texture unit 0
-		static_cast<YumeGLRenderer*>(rhi_)->SetTextureForUpdate(this);
+		static_cast<YumeGLRenderer*>(gYume->pRHI)->SetTextureForUpdate(this);
 
 		// If not compressed, create the initial level 0 texture with null data
 		bool success = true;
@@ -535,12 +542,12 @@ namespace YumeEngine
 
 		// Set initial parameters, then unbind the texture
 		UpdateParameters();
-		rhi_->SetTexture(0,0);
+		gYume->pRHI->SetTexture(0,0);
 
 		return success;
 	}
 
-	void YumeGLTexture2D::HandleRenderSurfaceUpdate(YumeHash eventType,VariantMap& eventData)
+	void YumeGLTexture2D::HandleRenderTargetUpdate()
 	{
 		if(renderSurface_ && (renderSurface_->GetUpdateMode() == SURFACE_UPDATEALWAYS || renderSurface_->IsUpdateQueued()))
 		{
@@ -630,7 +637,7 @@ namespace YumeEngine
 	}
 	void YumeGLTexture2D::UpdateParameters()
 	{
-		if(!object_ || !rhi_)
+		if(!object_ || !gYume->pRHI)
 			return;
 
 		// Wrapping
@@ -642,7 +649,7 @@ namespace YumeEngine
 
 		TextureFilterMode filterMode = filterMode_;
 		if(filterMode == FILTER_DEFAULT)
-			filterMode = rhi_->GetDefaultTextureFilterMode();
+			filterMode = gYume->pRHI->GetDefaultTextureFilterMode();
 
 		// Filtering
 		switch(filterMode)
@@ -675,10 +682,10 @@ namespace YumeEngine
 
 #ifndef GL_ES_VERSION_2_0
 		// Anisotropy
-		if(static_cast<YumeGLRenderer*>(rhi_)->GetAnisotropySupport())
+		if(static_cast<YumeGLRenderer*>(gYume->pRHI)->GetAnisotropySupport())
 		{
 			glTexParameterf(target_,GL_TEXTURE_MAX_ANISOTROPY_EXT,
-				filterMode == FILTER_ANISOTROPIC ? (float)rhi_->GetTextureAnisotropy() : 1.0f);
+				filterMode == FILTER_ANISOTROPIC ? (float)gYume->pRHI->GetTextureAnisotropy() : 1.0f);
 		}
 
 		// Shadow compare

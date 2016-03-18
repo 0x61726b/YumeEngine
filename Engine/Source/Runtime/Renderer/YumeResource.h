@@ -53,33 +53,25 @@ namespace YumeEngine
 		virtual ~YumeResource();
 
 		virtual bool Load(YumeFile& source);
-
 		virtual bool BeginLoad(YumeFile& source);
-
 		virtual bool EndLoad();
-
 		virtual bool Save(YumeFile& source) const;
 
 		void SetName(const YumeString& name);
-
 		void SetMemoryUsage(unsigned size);
-
 		void SetAsyncLoadingState(AsyncLoadState state);
-
 		void ResetUseTimer();
-
 		const YumeString& GetName() const { return name_; }
+
+		static YumeHash type_;
+		static YumeHash GetTypeStatic() { return type_; }
+		virtual YumeHash GetType() { return type_; }
 
 		
 		std::size_t GetNameHash() const { return nameHash_; }
-
-		
-		unsigned GetMemoryUse() const { return memoryUse_; }
-
-		
+		unsigned GetMemoryUse() const { return memoryUse_; }	
 		unsigned GetUseTimer();
 
-		
 		AsyncLoadState GetAsyncLoadState() const { return asyncLoadState_; }
 
 	private:

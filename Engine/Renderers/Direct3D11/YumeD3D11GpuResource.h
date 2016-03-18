@@ -33,22 +33,14 @@ namespace YumeEngine
 	class YumeD3DExport YumeD3D11Resource : public YumeGpuResource
 	{
 	public:
-		YumeD3D11Resource(YumeD3D11Renderer*);
-		/// Destruct. Remove from the graphics subsystem.
+		YumeD3D11Resource();
 		virtual ~YumeD3D11Resource();
 
-		/// Unconditionally release the GPU resource.
 		virtual void Release() { }
-
-		/// Clear the data lost flag. No-op on D3D11.
 		void ClearDataLost() { }
 
-		/// Return whether data is lost due to device loss. Always false on D3D11.
 		bool IsDataLost() const { return false; }
-
-		/// Return whether has pending data assigned while device was lost. Always false on D3D11.
 		bool HasPendingData() const { return false; }
-
 		void* GetGPUObject() const { return object_; }
 
 	protected:

@@ -128,7 +128,7 @@ namespace YumeEngine
 
 	BoundingBox BoundingBox::Transformed(const Matrix3x4& transform) const
 	{
-#ifdef URHO3D_SSE
+#ifdef YUME_SSE
 		const __m128 one = _mm_set_ss(1.f);
 		__m128 minPt = _mm_movelh_ps(_mm_loadl_pi(_mm_setzero_ps(),(const __m64*)&min_.x_),_mm_unpacklo_ps(_mm_set_ss(min_.z_),one));
 		__m128 maxPt = _mm_movelh_ps(_mm_loadl_pi(_mm_setzero_ps(),(const __m64*)&max_.x_),_mm_unpacklo_ps(_mm_set_ss(max_.z_),one));

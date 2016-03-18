@@ -24,6 +24,7 @@
 #include "YumeVertexBuffer.h"
 #include "YumeIndexBuffer.h"
 #include "Math/YumeRay.h"
+#include "Engine/YumeEngine.h"
 
 #include "YumeRHI.h"
 
@@ -33,7 +34,7 @@
 
 namespace YumeEngine
 {
-
+	YumeHash YumeGeometry::type_ = "Geometry";
 	YumeGeometry::YumeGeometry():
 		primitiveType_(TRIANGLE_LIST),
 		indexStart_(0),
@@ -72,7 +73,7 @@ namespace YumeEngine
 		return true;
 	}
 
-	bool YumeGeometry::SetVertexBuffer(unsigned index,YumeVertexBuffer* buffer,unsigned elementMask)
+	bool YumeGeometry::SetVertexBuffer(unsigned index,SharedPtr<YumeVertexBuffer> buffer,unsigned elementMask)
 	{
 		if(index >= vertexBuffers_.size())
 		{
@@ -80,7 +81,8 @@ namespace YumeEngine
 			return false;
 		}
 
-		vertexBuffers_[index] = SharedPtr<YumeVertexBuffer>(buffer);
+		YumeRHI* rhi_ = gYume->pRHI;
+		vertexBuffers_[index] = buffer;
 
 		if(buffer)
 		{
@@ -94,9 +96,9 @@ namespace YumeEngine
 		return true;
 	}
 
-	void YumeGeometry::SetIndexBuffer(YumeIndexBuffer* buffer)
+	void YumeGeometry::SetIndexBuffer(SharedPtr<YumeIndexBuffer> buffer)
 	{
-		indexBuffer_ = SharedPtr<YumeIndexBuffer>(buffer);
+		indexBuffer_ = buffer;
 	}
 
 	bool YumeGeometry::SetDrawRange(PrimitiveType type,unsigned indexStart,unsigned indexCount,bool getUsedVertexRange)
@@ -188,7 +190,7 @@ namespace YumeEngine
 	{
 		if(indexBuffer_ && indexCount_ > 0)
 		{
-			graphics->SetIndexBuffer(indexBuffer_.get());
+			graphics->SetIndexBuffer(indexBuffer_);
 			graphics->SetVertexBuffers(vertexBuffers_,elementMasks_);
 			graphics->Draw(primitiveType_,indexStart_,indexCount_,vertexStart_,vertexCount_);
 		}
@@ -201,7 +203,7 @@ namespace YumeEngine
 
 	YumeVertexBuffer* YumeGeometry::GetVertexBuffer(unsigned index) const
 	{
-		return index < vertexBuffers_.size() ? vertexBuffers_[index].get() : (YumeVertexBuffer*)0;
+		return index < vertexBuffers_.size() ? vertexBuffers_[index] : (YumeVertexBuffer*)0;
 	}
 
 	unsigned YumeGeometry::GetVertexElementMask(unsigned index) const
@@ -215,11 +217,11 @@ namespace YumeEngine
 
 		for(unsigned i = 0; i < vertexBuffers_.size(); ++i)
 		{
-			YumeVertexBuffer* vBuf = vertexBuffers_[i].get();
+			YumeVertexBuffer* vBuf = vertexBuffers_[i];
 			hash += *((unsigned short*)&vBuf);
 		}
 
-		YumeIndexBuffer* iBuf = indexBuffer_.get();
+		YumeIndexBuffer* iBuf = indexBuffer_;
 		hash += *((unsigned short*)&iBuf);
 
 		return hash;

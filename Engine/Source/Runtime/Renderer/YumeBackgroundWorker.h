@@ -32,7 +32,7 @@ namespace YumeEngine
 	class YumeResource;
 	class YumeResourceManager;
 
-	class YumeAPIExport YumeBackgroundWorker : public YumeThreadWrapper
+	class YumeAPIExport YumeBackgroundWorker : public YumeThreadWrapper,public RefCounted
 	{
 	public:
 		YumeBackgroundWorker(YumeResourceManager* cache);
@@ -59,7 +59,7 @@ namespace YumeEngine
 		
 		YumeResourceManager* owner_;
 		
-		mutable boost::mutex backgroundLoadMutex_;
+		mutable Mutex backgroundLoadMutex_;
 		
 		YumeMap<std::pair<YumeHash,YumeHash>,WorkItem>::type backgroundLoadQueue_;
 	};

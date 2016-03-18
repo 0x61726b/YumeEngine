@@ -26,6 +26,7 @@
 
 namespace YumeEngine
 {
+	YumeHash YumeResource::type_ = "Resource";
 	YumeResource::YumeResource():
 		memoryUse_(0),
 		asyncLoadState_(ASYNC_DONE)
@@ -54,7 +55,7 @@ namespace YumeEngine
 
 	bool YumeResource::EndLoad()
 	{
-		return false;
+		return true;
 	}
 
 

@@ -37,7 +37,7 @@ namespace YumeEngine
 
 	YumeBackgroundWorker::~YumeBackgroundWorker()
 	{
-		boost::mutex::scoped_lock lock(backgroundLoadMutex_);
+		MutexLock lock(backgroundLoadMutex_);
 
 		backgroundLoadQueue_.clear();
 	}

@@ -48,8 +48,7 @@
 
 namespace YumeEngine
 {
-	YumeGLShaderVariation::YumeGLShaderVariation(YumeShader* owner,ShaderType type):
-		YumeGLResource(static_cast<YumeGLRenderer*>(YumeEngine3D::Get()->GetRenderer()))
+	YumeGLShaderVariation::YumeGLShaderVariation(YumeShader* owner,ShaderType type)
 	{
 		owner_ = owner;
 		type_ = type;
@@ -71,27 +70,27 @@ namespace YumeEngine
 	{
 		if(object_)
 		{
-			if(!rhi_)
+			if(!gYume->pRHI)
 				return;
 
-			if(!rhi_->IsDeviceLost())
+			if(!gYume->pRHI->IsDeviceLost())
 			{
 				if(type_ == VS)
 				{
-					if(rhi_->GetVertexShader() == this)
-						rhi_->SetShaders(0,0);
+					if(gYume->pRHI->GetVertexShader() == this)
+						gYume->pRHI->SetShaders(0,0);
 				}
 				else
 				{
-					if(rhi_->GetPixelShader() == this)
-						rhi_->SetShaders(0,0);
+					if(gYume->pRHI->GetPixelShader() == this)
+						gYume->pRHI->SetShaders(0,0);
 				}
 
 				glDeleteShader(object_);
 			}
 
 			object_ = 0;
-			rhi_->CleanupShaderPrograms(this);
+			gYume->pRHI->CleanupShaderPrograms(this);
 		}
 
 		compilerOutput_.clear();

@@ -35,7 +35,7 @@ namespace YumeEngine
 	class YumeD3DExport YumeD3D11ConstantBuffer : public YumeConstantBuffer,public YumeD3D11Resource
 	{
 	public:
-		YumeD3D11ConstantBuffer(YumeRHI* renderer);
+		YumeD3D11ConstantBuffer();
 
 		virtual ~YumeD3D11ConstantBuffer();
 

@@ -65,6 +65,7 @@ namespace YumeEngine
 		instancingSupport_(false),
 		sRGBSupport_(false),
 		sRGBWriteSupport_(false),
+		anisotropySupport_(false),
 		orientations_("LandscapeLeft")
 	{
 		firstDirtyVB_ = lastDirtyVB_ = M_MAX_UNSIGNED;
@@ -131,10 +132,17 @@ namespace YumeEngine
 		}
 	}
 
+	void YumeRHI::SetDefaultTextureFilterMode(TextureFilterMode mode)
+	{
+		if(mode != defaultTextureFilterMode_)
+		{
+			defaultTextureFilterMode_ = mode;
+			SetTextureParametersDirty();
+		}
+	}
+
 	void YumeRHI::SetTextureParametersDirty()
 	{
-		boost::mutex::scoped_lock lock(gpuResourceMutex_);
-
 		for(YumeVector<YumeGpuResource*>::iterator i = gpuResources_.begin(); i != gpuResources_.end(); ++i)
 		{
 			YumeTexture* texture = dynamic_cast<YumeTexture*>(*i);

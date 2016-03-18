@@ -31,7 +31,7 @@ namespace YumeEngine
 {
 	class YumeEngine3D;
 
-	class YumeAPIExport YumeApplication
+	class YumeAPIExport YumeApplication : public YumeBase
 	{
 	public:
 		YumeApplication();
@@ -46,7 +46,7 @@ namespace YumeEngine
 		int Run();
 
 	protected:
-		boost::shared_ptr<YumeEngine3D> engine_;
+		SharedPtr<YumeEngine3D> engine_;
 		VariantMap engineVariants_;
 		int exitCode_;
 	};
@@ -54,7 +54,7 @@ namespace YumeEngine
 #define YUME_DEFINE_ENTRY_POINT(className) \
 int RunApplication() \
 	{ \
-    boost::shared_ptr<className> application(new className); \
+    YumeEngine::SharedPtr<className> application(new className); \
     return application->Run(); \
 	} \
 YUME_MAIN(RunApplication());
@@ -62,7 +62,7 @@ YUME_MAIN(RunApplication());
 #define YUME_TEST_SUITE_ENTRY(className) \
 int RunTestSuite() \
 	{ \
-    boost::shared_ptr<className> application(new className); \
+    YumeEngine::SharedPtr<className> application(new className); \
     application->Run(); \
 	application->Stop(); \
 	return 0 \

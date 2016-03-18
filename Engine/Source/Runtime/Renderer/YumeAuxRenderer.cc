@@ -28,6 +28,8 @@
 #include "Renderer/YumeCamera.h"
 #include "Scene/YumeSceneNode.h"
 
+#include "Core/YumeTimer.h"
+
 #include "YumeRHI.h"
 #include "Engine/YumeEngine.h"
 
@@ -41,13 +43,18 @@ namespace YumeEngine
 	// Cap the amount of triangles to prevent crash.
 	static const unsigned MAX_TRIANGLES = 100000;
 
+	YumeHash YumeDebugRenderer::type_ = "DebugRenderer";
+
 	YumeDebugRenderer::YumeDebugRenderer()
 	{
-		vertexBuffer_ = SharedPtr<YumeVertexBuffer>(YumeEngine3D::Get()->GetRenderer()->CreateVertexBuffer());
+		vertexBuffer_ = SharedPtr<YumeVertexBuffer>(gYume->pRHI->CreateVertexBuffer());
+
+		gYume->pTimer->AddTimeEventListener(this);
 	}
 
 	YumeDebugRenderer::~YumeDebugRenderer()
 	{
+		gYume->pTimer->RemoveTimeEventListener(this);
 	}
 
 
@@ -347,7 +354,7 @@ namespace YumeEngine
 		if(!HasContent())
 			return;
 
-		YumeRHI* graphics = YumeEngine3D::Get()->GetRenderer();
+		YumeRHI* graphics = gYume->pRHI;
 		// Engine does not render when window is closed or device is lost
 		assert(graphics && graphics->IsInitialized() && !graphics->IsDeviceLost());
 
@@ -454,7 +461,7 @@ namespace YumeEngine
 		graphics->SetShaderParameter(VSP_VIEWINV,view_.Inverse());
 		graphics->SetShaderParameter(VSP_VIEWPROJ,projection_ * view_);
 		graphics->SetShaderParameter(PSP_MATDIFFCOLOR,YumeColor(1.0f,1.0f,1.0f,1.0f));
-		graphics->SetVertexBuffer(vertexBuffer_.get());
+		graphics->SetVertexBuffer(vertexBuffer_);
 
 		unsigned start = 0;
 		unsigned count = 0;
@@ -500,7 +507,7 @@ namespace YumeEngine
 		return !(lines_.empty() && noDepthLines_.empty() && triangles_.empty() && noDepthTriangles_.empty());
 	}
 
-	void YumeDebugRenderer::HandleEndFrame(YumeHash eventType,VariantMap& eventData)
+	void YumeDebugRenderer::HandleEndFrame(int frameNumber)
 	{
 		// When the amount of debug geometry is reduced, release memory
 		unsigned linesSize = lines_.size();

@@ -201,7 +201,7 @@ namespace YumeEngine
 	};
 
 	
-	class YumeAPIExport YumeRenderPipeline
+	class YumeAPIExport YumeRenderPipeline : public YumeBase
 	{
 	public:
 		

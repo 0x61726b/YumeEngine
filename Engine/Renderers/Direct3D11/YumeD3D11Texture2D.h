@@ -26,46 +26,38 @@
 #include "Renderer/YumeTexture2D.h"
 
 #include "YumeD3D11GpuResource.h"
+#include "Core/YumeEventHub.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeD3DExport YumeD3D11Texture2D : public YumeTexture2D,public YumeD3D11Resource
+	class YumeD3DExport YumeD3D11Texture2D : public YumeTexture2D,public YumeD3D11Resource,public RendererEventListener
 	{
 	public:
-		YumeD3D11Texture2D(YumeRHI* rhi);
+		YumeD3D11Texture2D();
 		virtual ~YumeD3D11Texture2D();
 
 		virtual void Release();
-
-		/// Set size, format and usage. Zero size will follow application window size. Return true if successful.
 		virtual bool SetSize(int width,int height,unsigned format,TextureUsage usage = TEXTURE_STATIC);
-		/// Set data either partially or fully on a mip level. Return true if successful.
 		virtual bool SetData(unsigned level,int x,int y,int width,int height,const void* data);
-		/// Set data from an image. Return true if successful. Optionally make a single channel image alpha-only.
 		virtual bool SetData(SharedPtr<YumeImage> image,bool useAlpha = false);
 
 		virtual bool GetData(unsigned level,void* dest) const;
 
-		/// Create texture.
+		virtual void HandleRenderTargetUpdate();
+
 		virtual bool Create();
-		/// Handle render surface update event.
-		virtual void HandleRenderSurfaceUpdate(YumeHash eventType,VariantMap& eventData);
 
 		virtual unsigned GetRowDataSize(int width) const;
-
 		virtual void UpdateParameters();
-
 		virtual void CheckTextureBudget(YumeHash type);
-
 		virtual unsigned GetDataSize(int width,int height) const { return 0; }
-
 		virtual unsigned GetSRVFormat(unsigned format);
-		/// Return the depth-stencil view format corresponding to a texture format. Handles conversion of typeless depth texture formats.
 		virtual unsigned GetDSVFormat(unsigned format);
-		/// Convert format to sRGB.
 		virtual unsigned GetSRGBFormat(unsigned format);
-
 		virtual bool IsCompressed() const;
+
+		virtual bool IsDataLost() { return false; };
+		virtual void ClearDataLost() {}
 	};
 }
 

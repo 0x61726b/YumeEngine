@@ -22,6 +22,10 @@
 #include "YumeHeaders.h"
 #include "YumeRequired.h"
 
+
+
+extern YumeAPIExport GlobalSystems* gYume = 0;
+
 namespace YumeEngine
 {
 	
