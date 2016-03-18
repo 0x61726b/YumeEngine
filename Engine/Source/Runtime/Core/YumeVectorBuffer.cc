@@ -41,7 +41,7 @@ namespace YumeEngine
 		SetData(data,size);
 	}
 
-	VectorBuffer::VectorBuffer(YumeFile& source,unsigned size)
+	VectorBuffer::VectorBuffer(StreamReader& source,unsigned size)
 	{
 		SetData(source,size);
 	}
@@ -141,7 +141,7 @@ namespace YumeEngine
 		size_ = size;
 	}
 
-	void VectorBuffer::SetData(YumeFile& source,unsigned size)
+	void VectorBuffer::SetData(StreamReader& source,unsigned size)
 	{
 		buffer_.resize(size);
 		unsigned actualSize = source.Read(&buffer_[0],size);

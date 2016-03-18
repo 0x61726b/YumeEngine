@@ -370,8 +370,8 @@ namespace YumeEngine
 				if(i < numWorkItems - 1 && r > drawablesPerItem)
 					end = start + drawablesPerItem;
 
-				item->start_ = &(*start._Ptr);
-				item->end_ = &(*end._Ptr);
+				item->start_ = &(*start);
+				item->end_ = &(*end);
 				queue->AddWorkItem(item);
 
 				start = end;

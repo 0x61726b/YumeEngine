@@ -72,7 +72,7 @@ namespace YumeEngine
 		bool reserved_;
 	};
 
-	typedef std::vector<YumeGpuResource*> GpuResourceVector;
+	typedef eastl::vector<YumeGpuResource*> GpuResourceVector;
 
 	class YumeAPIExport YumeRHI
 	{

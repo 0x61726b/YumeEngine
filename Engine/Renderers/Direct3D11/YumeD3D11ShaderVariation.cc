@@ -235,7 +235,7 @@ namespace YumeEngine
 	bool YumeD3D11ShaderVariation::Compile()
 	{
 		const YumeString& sourceCode = owner_->GetSourceCode(type_);
-		YumeVector<YumeString>::type defines;
+		std::vector<YumeString> defines;
 
 		boost::split(defines,defines_,boost::is_any_of(" "));
 
@@ -401,8 +401,8 @@ namespace YumeEngine
 				YumeString varName(varDesc.Name);
 				if(varName[0] == 'c')
 				{
-					varName = varName.substr(1); // Strip the c to follow Urho3D constant naming convention
-					parameters_[(varName)] = ShaderParameter(type_,varName,cbRegister,varDesc.StartOffset,varDesc.Size);
+					varName = varName.substr(1);
+					parameters_[YumeHash(varName)] = ShaderParameter(type_,varName,cbRegister,varDesc.StartOffset,varDesc.Size);
 				}
 			}
 		}
@@ -438,7 +438,7 @@ namespace YumeEngine
 		file_->WriteUInt(elementMask_);
 
 		file_->WriteUInt(parameters_.size());
-		for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
+		for(EastlHashMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
 		{
 			file_->WriteString(i->second.name_);
 			file_->WriteUByte((unsigned char)i->second.buffer_);
@@ -473,7 +473,7 @@ namespace YumeEngine
 		for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
 			constantBufferSizes_[i] = 0;
 
-		for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
+		for(EastlHashMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
 		{
 			if(i->second.buffer_ < MAX_SHADER_PARAMETER_GROUPS)
 			{

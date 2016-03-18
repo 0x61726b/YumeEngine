@@ -920,7 +920,7 @@ namespace YumeEngine
 
 			
 			item->start_ = &(*start);
-			item->end_ = &(*end._Ptr);
+			item->end_ = &(*end);
 			queue->AddWorkItem(item);
 
 			start = end;

@@ -37,7 +37,33 @@
 
 #include "Renderer/YumeShader.h"
 #include "YumeD3D11ShaderProgram.h"
+#include "Renderer/YumeShaderVariation.h"
+
+#include <EASTL/hash_map.h>
+#include <unordered_map>
 //----------------------------------------------------------------------------
+namespace std
+{
+	template <>
+	struct hash<std::pair<YumeEngine::YumeShaderVariation*,YumeEngine::YumeShaderVariation*> >
+	{
+		size_t operator()(const std::pair<YumeEngine::YumeShaderVariation*,YumeEngine::YumeShaderVariation*>& x) const
+		{
+			return (unsigned)(size_t)x.first | 0xffff && ((unsigned)(size_t)x.second << 16);
+		}
+	};
+}
+namespace eastl
+{
+	template <>
+	struct hash<std::pair<YumeEngine::YumeShaderVariation*,YumeEngine::YumeShaderVariation*> >
+	{
+		size_t operator()(const std::pair<YumeEngine::YumeShaderVariation*,YumeEngine::YumeShaderVariation*>& x) const
+		{
+			return (unsigned)(size_t)x.first | 0xffff && ((unsigned)(size_t)x.second << 16);
+		}
+	};
+}
 namespace YumeEngine
 {
 	class YumeGpuResource;
@@ -48,7 +74,7 @@ namespace YumeEngine
 	class YumeTexture3D;
 	class YumeTextureCube;
 
-	typedef YumeMap<std::pair<YumeShaderVariation*,YumeShaderVariation*>,SharedPtr<YumeD3D11ShaderProgram> >::type ShaderProgramMap;
+	typedef std::unordered_map<std::pair<YumeShaderVariation*,YumeShaderVariation*>,SharedPtr<YumeD3D11ShaderProgram> > ShaderProgramMap;
 
 	class YumeD3DExport YumeD3D11Renderer : public YumeRHI,std::enable_shared_from_this<YumeD3D11Renderer>
 	{

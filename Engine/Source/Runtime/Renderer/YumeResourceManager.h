@@ -87,7 +87,7 @@ namespace YumeEngine
 		template <class T> T* PrepareResource(const YumeString& resource);
 		template <class T> T* RetrieveResource(const YumeString& name);
 		template <class T> SharedPtr<T> GetTempResource(const YumeString& name);
-		template <class T> void GetResources(std::vector<T*>& result) const;
+		template <class T> void GetResources(eastl::vector<T*>& result) const;
 
 
 	private:
@@ -102,9 +102,9 @@ namespace YumeEngine
 	};
 
 
-	template <class T> void YumeResourceManager::GetResources(std::vector<T*>& result) const
+	template <class T> void YumeResourceManager::GetResources(eastl::vector<T*>& result) const
 	{
-		YumeVector<YumeResource*>::type& resources = reinterpret_cast<std::vector<YumeResource*>&>(result);
+		YumeVector<YumeResource*>::type& resources = reinterpret_cast<eastl::vector<YumeResource*>&>(result);
 		YumeHash type = T::GetTypeStatic();
 		GetResources(resources,type);
 

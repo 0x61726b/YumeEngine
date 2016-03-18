@@ -102,7 +102,7 @@ namespace YumeEngine
 		YumeString copy = defines;
 		boost::to_upper(copy);
 		
-		YumeVector<YumeString>::type defs;
+		std::vector<YumeString> defs;
 		boost::split(defs,copy,boost::is_any_of(" "));
 		
 		std::sort(defs.begin(),defs.end());

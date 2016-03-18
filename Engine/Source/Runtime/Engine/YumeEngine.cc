@@ -80,7 +80,7 @@ namespace YumeEngine
 		: exiting_(false),
 		initialized_(false),
 		inactiveFps_(60),
-		maxFps_(344),
+		maxFps_(600),
 		minFps_(10),
 		timeStepSmoothing_(2),
 		timeStep_(0)
@@ -134,7 +134,7 @@ namespace YumeEngine
 			YumeEngine::Log::ToggleLogging(false);
 		}
 
-		unsigned NumThreads = 5;
+		unsigned NumThreads = 12;
 		gYume->pWorkSystem->CreateThreads(NumThreads);
 
 		YUMELOG_INFO("Initialized environment...Current system time " << gYume->pTimer->GetTimeStamp());
@@ -359,8 +359,7 @@ namespace YumeEngine
 		{
 			// If the smoothing configuration was changed, ensure correct amount of samples
 
-
-			lastTimeSteps_.erase(lastTimeSteps_.begin() + lastTimeSteps_.size() - timeStepSmoothing_,lastTimeSteps_.end());
+			lastTimeSteps_.erase(lastTimeSteps_.begin(),lastTimeSteps_.begin() + lastTimeSteps_.size() - (int)timeStepSmoothing_);
 			for(unsigned i = 0; i < lastTimeSteps_.size(); ++i)
 				timeStep_ += lastTimeSteps_[i];
 			timeStep_ /= lastTimeSteps_.size();

@@ -193,7 +193,7 @@ namespace YumeEngine
 		}
 
 
-		
+
 		return true;
 	}
 
@@ -333,52 +333,52 @@ namespace YumeEngine
 			SetCullMode((CullMode)GetStringListIndex(cullElem.attribute("value").as_string(),cullModeNames,CULL_CCW));
 
 
-	/*	XMLElement parameterAnimationElem = source.GetChild("parameteranimation");
-		while(parameterAnimationElem)
-		{
+		/*	XMLElement parameterAnimationElem = source.GetChild("parameteranimation");
+			while(parameterAnimationElem)
+			{
 			String name = parameterAnimationElem.GetAttribute("name");
 			SharedPtr<ValueAnimation> animation(new ValueAnimation(context_));
 			if(!animation->LoadXML(parameterAnimationElem))
 			{
-				URHO3D_LOGERROR("Could not load parameter animation");
-				return false;
+			URHO3D_LOGERROR("Could not load parameter animation");
+			return false;
 			}
 
 			String wrapModeString = parameterAnimationElem.GetAttribute("wrapmode");
 			WrapMode wrapMode = WM_LOOP;
 			for(int i = 0; i <= WM_CLAMP; ++i)
 			{
-				if(wrapModeString == wrapModeNames[i])
-				{
-					wrapMode = (WrapMode)i;
-					break;
-				}
+			if(wrapModeString == wrapModeNames[i])
+			{
+			wrapMode = (WrapMode)i;
+			break;
+			}
 			}
 
 			float speed = parameterAnimationElem.GetFloat("speed");
 			SetShaderParameterAnimation(name,animation,wrapMode,speed);
 
 			parameterAnimationElem = parameterAnimationElem.GetNext("parameteranimation");
-		}
+			}
 
-		XMLElement cullElem = source.GetChild("cull");
-		if(cullElem)
+			XMLElement cullElem = source.GetChild("cull");
+			if(cullElem)
 			SetCullMode((CullMode)GetStringListIndex(cullElem.GetAttribute("value").CString(),cullModeNames,CULL_CCW));
 
-		XMLElement shadowCullElem = source.GetChild("shadowcull");
-		if(shadowCullElem)
+			XMLElement shadowCullElem = source.GetChild("shadowcull");
+			if(shadowCullElem)
 			SetShadowCullMode((CullMode)GetStringListIndex(shadowCullElem.GetAttribute("value").CString(),cullModeNames,CULL_CCW));
 
-		XMLElement fillElem = source.GetChild("fill");
-		if(fillElem)
+			XMLElement fillElem = source.GetChild("fill");
+			if(fillElem)
 			SetFillMode((FillMode)GetStringListIndex(fillElem.GetAttribute("value").CString(),fillModeNames,FILL_SOLID));
 
-		XMLElement depthBiasElem = source.GetChild("depthbias");
-		if(depthBiasElem)
+			XMLElement depthBiasElem = source.GetChild("depthbias");
+			if(depthBiasElem)
 			SetDepthBias(BiasParameters(depthBiasElem.GetFloat("constant"),depthBiasElem.GetFloat("slopescaled")));
 
-		XMLElement renderOrderElem = source.GetChild("renderorder");
-		if(renderOrderElem)
+			XMLElement renderOrderElem = source.GetChild("renderorder");
+			if(renderOrderElem)
 			SetRenderOrder((unsigned char)renderOrderElem.GetUInt("value"));*/
 
 		RefreshShaderParameterHash();
@@ -732,19 +732,19 @@ namespace YumeEngine
 
 	void YumeMaterial::RefreshShaderParameterHash()
 	{
-		/*VectorBuffer temp;
+		VectorBuffer temp;
 		for(YumeMap<YumeHash,MaterialShaderParameter>::const_iterator i = shaderParameters_.begin();
-		i != shaderParameters_.end(); ++i)
+			i != shaderParameters_.end(); ++i)
 		{
-		temp.WriteYumeHash(i->first);
-		temp.WriteVariant(i->second.value_);
+			temp.WriteStringHash(i->first);
+			temp.WriteVariant(i->second.value_);
 		}
 
 		shaderParameterHash_ = 0;
 		const unsigned char* data = temp.GetData();
 		unsigned dataSize = temp.GetSize();
 		for(unsigned i = 0; i < dataSize; ++i)
-		shaderParameterHash_ = SDBMHash(shaderParameterHash_,data[i]);*/
+			shaderParameterHash_ = SDBMHash(shaderParameterHash_,data[i]);
 	}
 
 	void YumeMaterial::RefreshMemoryUse()

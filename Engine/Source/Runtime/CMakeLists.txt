@@ -211,6 +211,10 @@ set( SRC_CORE_UTILS
 	Core/YumeDecompresser.cc
 	Core/YumeEventHub.h
 	Core/YumeSortAlgorithms.h
+	Core/YumeStreamReader.h
+	Core/YumeStreamReader.cc
+	Core/YumeStreamWriter.h
+	Core/YumeStreamWriter.cc
 )
 set( SRC_CORE_MEMORY
 	Core/YumeMemoryAllocatorSTL.h
@@ -230,6 +234,8 @@ set( SRC_CORE_MEMORY
 	Core/SharedPtr.h
 	Core/YumeMutex.h
 	Core/YumeMutex.cc
+	Core/YumeAlloc.h
+	Core/YumeAlloc.cc
 )
 
 set( SRC_ENGINE
@@ -317,6 +323,7 @@ target_link_libraries(${YUME} SDL2)
 target_link_libraries(${YUME} pugixml)
 target_link_libraries(${YUME} STB)
 target_link_libraries(${YUME} JO)
+target_link_libraries(${YUME} EASTL)
 
 set(YUME_LIBRARIES ${YUME_LIBRARIES} boost_filesystem boost_thread boost_system boost_date_time log4cplus)
 

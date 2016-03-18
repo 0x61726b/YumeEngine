@@ -27,41 +27,41 @@
 namespace YumeEngine
 {
 
-	
+
 	class YumeAPIExport YumeHash
 	{
 	public:
-		
+
 		YumeHash():
 			value_(0)
 		{
 		}
 
-		
+
 		YumeHash(const YumeHash& rhs):
 			value_(rhs.value_)
 		{
 		}
 
-		
+
 		explicit YumeHash(unsigned value):
 			value_(value)
 		{
 		}
 
-		
+
 		YumeHash(const char* str);
-		
+
 		YumeHash(const YumeString& str);
 
-		
+
 		YumeHash& operator =(const YumeHash& rhs)
 		{
 			value_ = rhs.value_;
 			return *this;
 		}
 
-		
+
 		YumeHash operator +(const YumeHash& rhs) const
 		{
 			YumeHash ret;
@@ -69,7 +69,7 @@ namespace YumeEngine
 			return ret;
 		}
 
-		
+
 		YumeHash& operator +=(const YumeHash& rhs)
 		{
 			value_ += rhs.value_;
@@ -78,40 +78,42 @@ namespace YumeEngine
 
 		// Test for equality with another hash.
 		bool operator ==(const YumeHash& rhs) const { return value_ == rhs.value_; }
-
-		
 		bool operator !=(const YumeHash& rhs) const { return value_ != rhs.value_; }
-
-		
 		bool operator <(const YumeHash& rhs) const { return value_ < rhs.value_; }
-
-		
 		bool operator >(const YumeHash& rhs) const { return value_ > rhs.value_; }
 
-		
 		operator bool() const { return value_ != 0; }
-
-		
 		unsigned Value() const { return value_; }
 
-		
 		YumeString ToString() const;
 
-		
 		unsigned ToHash() const { return value_; }
-
-		
 		static unsigned Calculate(const char* str);
-
-		
 		static const YumeHash ZERO;
-
 	private:
-		
+
 		unsigned value_;
 	};
 }
 
+namespace std
+{
+	template <> 
+	struct hash<YumeEngine::YumeHash>
+	{
+		size_t operator()(const YumeEngine::YumeHash& h) const 
+			{ return  h.ToHash(); }
+	};
+}
+namespace eastl
+{
+	template <> 
+	struct hash<YumeEngine::YumeHash>
+	{
+		size_t operator()(const YumeEngine::YumeHash& h) const 
+			{ return  h.ToHash(); }
+	};
+}
 
 //----------------------------------------------------------------------------
 #endif

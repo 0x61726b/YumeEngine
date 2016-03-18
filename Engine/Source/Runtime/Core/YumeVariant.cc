@@ -173,8 +173,10 @@ namespace YumeEngine
 			return *(reinterpret_cast<const VariantVector*>(&value_)) == *(reinterpret_cast<const VariantVector*>(&rhs.value_));
 
 		case VAR_STRINGVECTOR:
-			return *(reinterpret_cast<const StringVector*>(&value_)) == *(reinterpret_cast<const StringVector*>(&rhs.value_));
-
+		{
+			/*return *(reinterpret_cast<const StringVector*>(&value_)) == *(reinterpret_cast<const StringVector*>(&rhs.value_));*/
+			return 0;
+		}
 		case VAR_VARIANTMAP:
 			return *(reinterpret_cast<const VariantMap*>(&value_)) == *(reinterpret_cast<const VariantMap*>(&rhs.value_));
 
@@ -288,7 +290,7 @@ namespace YumeEngine
 
 		case VAR_RESOURCEREF:
 		{
-			StringVector values;
+			std::vector<YumeString> values;
 			boost::split(values,value,boost::is_any_of(";"));
 			if(values.size() == 2)
 			{
@@ -302,7 +304,7 @@ namespace YumeEngine
 
 		case VAR_RESOURCEREFLIST:
 		{
-			StringVector values;
+			std::vector<YumeString> values;
 			boost::split(values,value,boost::is_any_of(";"));
 			if(values.size() >= 1)
 			{
@@ -356,6 +358,11 @@ namespace YumeEngine
 			memcpy(&buffer[0],data,size);
 	}
 
+	VectorBuffer Variant::GetVectorBuffer() const
+	{
+		return VectorBuffer(type_ == VAR_BUFFER ? *reinterpret_cast<const YumeVector<unsigned char>::type*>(&value_) : emptyBuffer);
+	}
+
 
 	YumeString Variant::GetTypeName() const
 	{
@@ -395,9 +402,9 @@ namespace YumeEngine
 
 		case VAR_BUFFER:
 		{
-			const YumeVector<unsigned char>& buffer = *(reinterpret_cast<const YumeVector<unsigned char>*>(&value_));
+			const YumeVector<unsigned char>::type& buffer = *(reinterpret_cast<const YumeVector<unsigned char>::type*>(&value_));
 			YumeString ret;
-			//BufferToString(ret,buffer.Begin().ptr_,buffer.size());
+			BufferToString(ret,buffer.begin(),buffer.size());
 			return ret;
 		}
 

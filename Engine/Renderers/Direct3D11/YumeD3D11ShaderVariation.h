@@ -103,7 +103,7 @@ namespace YumeEngine
 		}
 
 		/// Return all parameter definitions.
-		const YumeMap<YumeHash,ShaderParameter>::type& GetParameters() const { return parameters_; }
+		const EastlHashMap<YumeHash,ShaderParameter>::type& GetParameters() const { return parameters_; }
 
 		/// Return constant buffer data sizes.
 		const unsigned* GetConstantBufferSizes() const { return &constantBufferSizes_[0]; }
@@ -120,7 +120,7 @@ namespace YumeEngine
 		/// Calculate constant buffer sizes from parameters.
 		void CalculateConstantBufferSizes();
 
-		YumeMap<YumeHash,ShaderParameter>::type parameters_;
+		EastlHashMap<YumeHash,ShaderParameter>::type parameters_;
 		/// Constant buffer sizes. 0 if a constant buffer slot is not in use.
 		unsigned constantBufferSizes_[MAX_SHADER_PARAMETER_GROUPS];
 

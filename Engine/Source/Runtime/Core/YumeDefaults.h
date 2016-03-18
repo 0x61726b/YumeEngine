@@ -83,6 +83,7 @@ namespace YumeEngine
 	YumeAPIExport YumeString ToStringHex(unsigned value);
 	YumeAPIExport void StringToBuffer(YumeVector<unsigned char>::type& dest,const YumeString& source);
 	YumeAPIExport void StringToBuffer(YumeVector<unsigned char>::type& dest,const char* source);
+	YumeAPIExport void BufferToString(YumeString& dest, const void* data, unsigned size);
 
 	YumeAPIExport bool IsDigit(unsigned ch);
 	YumeAPIExport bool IsAlpha(unsigned ch);

@@ -744,6 +744,53 @@ namespace YumeEngine
 	}
 
 
+	void BufferToString(YumeString& dest,const void* data,unsigned size)
+	{
+		// Precalculate needed string size
+		const unsigned char* bytes = (const unsigned char*)data;
+		unsigned length = 0;
+		for(unsigned i = 0; i < size; ++i)
+		{
+			// Room for separator
+			if(i)
+				++length;
+
+			// Room for the value
+			if(bytes[i] < 10)
+				++length;
+			else if(bytes[i] < 100)
+				length += 2;
+			else
+				length += 3;
+		}
+
+		dest.resize(length);
+		unsigned index = 0;
+
+		// Convert values
+		for(unsigned i = 0; i < size; ++i)
+		{
+			if(i)
+				dest[index++] = ' ';
+
+			if(bytes[i] < 10)
+			{
+				dest[index++] = '0' + bytes[i];
+			}
+			else if(bytes[i] < 100)
+			{
+				dest[index++] = (char)('0' + bytes[i] / 10);
+				dest[index++] = (char)('0' + bytes[i] % 10);
+			}
+			else
+			{
+				dest[index++] = (char)('0' + bytes[i] / 100);
+				dest[index++] = (char)('0' + bytes[i] % 100 / 10);
+				dest[index++] = (char)('0' + bytes[i] % 10);
+			}
+		}
+	}
+
 	const YumeVector<YumeString>::type& GetArguments()
 	{
 		return arguments;

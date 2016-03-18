@@ -30,7 +30,6 @@
 #include "Math/YumeRect.h"
 
 #include <boost/unordered_map.hpp>
-#include <boost/container/vector.hpp>
 //----------------------------------------------------------------------------
 #include <xhash>
 
@@ -259,7 +258,7 @@ namespace YumeEngine
 
 		void SortFrontToBack();
 
-		void SortFrontToBack2Pass(boost::container::vector<Batch*>& batches);
+		void SortFrontToBack2Pass(YumeVector<Batch*>::type& batches);
 
 		void SetTransforms(void* lockedData,unsigned& freeIndex);
 
@@ -277,9 +276,9 @@ namespace YumeEngine
 		boost::unordered_map<unsigned short,unsigned short> geometryRemapping_;
 
 
-		boost::container::vector<Batch> batches_;
-		boost::container::vector<Batch*> sortedBatches_;
-		boost::container::vector<BatchGroup*> sortedBatchGroups_;
+		YumeVector<Batch>::type batches_;
+		YumeVector<Batch*>::type sortedBatches_;
+		YumeVector<BatchGroup*>::type sortedBatchGroups_;
 
 		unsigned maxSortedInstances_;
 	};

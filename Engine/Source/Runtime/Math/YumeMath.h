@@ -54,7 +54,6 @@ namespace YumeEngine
 
 	static const int CONVERSION_BUFFER_LENGTH = 128;
 	static const int MATRIX_CONVERSION_BUFFER_LENGTH = 256;
-
 	
 	enum Intersection
 	{
@@ -189,23 +188,11 @@ namespace YumeEngine
 	
 	inline unsigned SDBMHash(unsigned hash,unsigned char c) { return c + (hash << 6) + (hash << 16) - hash; }
 
-	/*
-	inline float Random() { return Rand() / 32768.0f; }
-
-	
-	inline float Random(float range) { return Rand() * range / 32767.0f; }
-
-	
-	inline float Random(float min,float max) { return Rand() * (max - min) / 32767.0f + min; }
-
-	
+	inline float Random() { return rand() / 32768.0f; }
+	inline float Random(float range) { return rand() * range / 32767.0f; }
+	inline float Random(float min,float max) { return rand() * (max - min) / 32767.0f + min; }
 	inline int Random(int range) { return (int)(Random() * range); }
-
-	
 	inline int Random(int min,int max) { float range = (float)(max - min); return (int)(Random() * range) + min; }
-
-	
-	inline float RandomNormal(float meanValue,float variance) { return RandStandardNormal() * sqrtf(variance) + meanValue; }*/
 
 	
 	inline unsigned short FloatToHalf(float value)

@@ -72,28 +72,19 @@ namespace YumeEngine
 
 		bool HasTextureUnit(TextureUnit unit) const { return useTextureUnit_[unit]; }
 
-		virtual const YumeMap<YumeHash,ShaderParameter>::type& GetParameters() const = 0;
-
 		virtual const unsigned* GetConstantBufferSizes() const = 0;
 
 		const YumeVector<unsigned char>::type& GetByteCode() const { return byteCode_; }
 
 	protected:
-		
 		YumeShader* owner_;
-		
 		ShaderType type_;
-		
 		YumeString name_;
-		
 		YumeString defines_;
-		
 		YumeString compilerOutput_;
 
 		unsigned elementMask_;
-
 		bool useTextureUnit_[MAX_TEXTURE_UNITS];
-
 		YumeVector<unsigned char>::type byteCode_;
 	};
 }

@@ -19,47 +19,18 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeVectorBuffer_h__
-#define __YumeVectorBuffer_h__
+#ifndef __YumeAlloc_h__
+#define __YumeAlloc_h__
 //----------------------------------------------------------------------------
+#include <EABase/eabase.h>
+#include <new>
 #include "YumeRequired.h"
-#include "YumeStreamReader.h"
-#include "YumeStreamWriter.h"
-//----------------------------------------------------------------------------
-namespace YumeEngine
-{
-	class YumeFile;
 
-	
-	class YumeAPIExport VectorBuffer : public StreamReader,public StreamWriter
-	{
-	public:		
-		VectorBuffer();	
-		VectorBuffer(const YumeVector<unsigned char>::type& data);	
-		VectorBuffer(const void* data,unsigned size);	
-		VectorBuffer(StreamReader& source,unsigned size);
-
-		virtual unsigned Read(void* dest,unsigned size);
-		virtual unsigned Seek(unsigned position);
-		virtual unsigned Write(const void* data,unsigned size);	
-
-		void SetData(const YumeVector<unsigned char>::type& data);
-		void SetData(const void* data,unsigned size);
-		void SetData(StreamReader& source,unsigned size);
-
-		void Clear();
-		void Resize(unsigned size);
-		const unsigned char* GetData() const { return size_ ? &buffer_[0] : 0; }
-		unsigned char* GetModifiableData() { return size_ ? &buffer_[0] : 0; }
-		const YumeVector<unsigned char>::type& GetBuffer() const { return buffer_; }
-		unsigned GetSize() const { return size_; }
-
-	private:
-
-		YumeVector<unsigned char>::type buffer_;
-	};
-}
-
+    void* operator new[](size_t size, const char* /*name*/, int /*flags*/, unsigned /*debugFlags*/, const char* /*file*/, int /*line*/);
+    void* operator new[](size_t size, size_t alignment, size_t /*alignmentOffset*/, const char* /*name*/, int /*flags*/, unsigned /*debugFlags*/, const char* /*file*/, int /*line*/);
+    void* operator new[](size_t size, size_t alignment);
+    void* operator new[](size_t size, size_t alignment, const std::nothrow_t&)EA_THROW_SPEC_NEW_NONE();
+  
 
 //----------------------------------------------------------------------------
 #endif

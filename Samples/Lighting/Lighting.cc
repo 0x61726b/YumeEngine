@@ -46,7 +46,7 @@ namespace YumeEngine
 	LightingDemo::LightingDemo()
 		: drawDebug(false)
 	{
-		
+
 	}
 
 	LightingDemo::~LightingDemo()
@@ -83,9 +83,9 @@ namespace YumeEngine
 		//light->SetShadowCascade(CascadeParameters(10.0f,50.0f,200.0f,0.0f,0.8f));
 
 
-		CreateLight(Vector3(-3,2.8f,0),YumeColor::RED);
-		CreateLight(Vector3(0,2.8f,0),YumeColor::BLUE);
-		CreateLight(Vector3(3.0f,2.8f,0),YumeColor::GREEN);
+		for(int i=0; i < 10; ++i)
+			for(int j=0; j < 10; ++j)
+				CreateLight(Vector3(-25,0,-25) + Vector3(i*7.0f,2.8f,j*7),YumeColor(Random(0.0f,1.0f),Random(0.0f,1.0f),Random(0.0f,1.0f),1));
 
 		YumeSceneNode* plane = scene_->CreateChild("Plane");
 		plane->SetPosition(Vector3(0,0,0));
@@ -96,32 +96,48 @@ namespace YumeEngine
 		planeModel->SetModel(rm_->PrepareResource<YumeModel>("Models/Plane.mdl"));
 		planeModel->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/StoneTiled.xml"));
 
+		const unsigned NUM_OBJECTS = 15;
+		for(unsigned i = 0; i < NUM_OBJECTS; ++i)
+		{
+			for(int j=0; j < NUM_OBJECTS;++j)
+			{
+				YumeSceneNode* test = scene_->CreateChild("Test");
+				test->SetPosition(Vector3(-25,0,-40) + Vector3(i*3.5f + Random(0.0f,3.0f),0.5f,j*7));
+				test->SetRotation(Quaternion(0.0f,Random(0.0f,360.0f),0.0f));
+				test->SetScale(0.5f + Random(0.4f,2.0f));
+				YumeStaticModel* drawable = test->CreateComponent<YumeStaticModel>();
+				drawable->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
+				drawable->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
+				drawable->SetCastShadows(true);
+			}
+		}
 
-		YumeSceneNode* test = scene_->CreateChild("Test");
-		test->SetPosition(Vector3(1.5f,0.5f,0));
-		test->SetRotation(Quaternion::IDENTITY);
-		YumeStaticModel* drawable = test->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		drawable->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
-		drawable->SetCastShadows(true);
 
-		YumeSceneNode* test2 = scene_->CreateChild("Test");
-		test2->SetPosition(Vector3(-2.0f,0.5f,0));
-		test2->SetRotation(Quaternion(45,Vector3(0,1,0)));
-		YumeStaticModel* drawable2 = test2->CreateComponent<YumeStaticModel>();
-		drawable2->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		drawable2->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
-		drawable2->SetCastShadows(true);
+		//YumeSceneNode* test = scene_->CreateChild("Test");
+		//test->SetPosition(Vector3(1.5f,0.5f,0));
+		//test->SetRotation(Quaternion::IDENTITY);
+		//YumeStaticModel* drawable = test->CreateComponent<YumeStaticModel>();
+		//drawable->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
+		//drawable->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
+		//drawable->SetCastShadows(true);
+
+		//YumeSceneNode* test2 = scene_->CreateChild("Test");
+		//test2->SetPosition(Vector3(-2.0f,0.5f,0));
+		//test2->SetRotation(Quaternion(45,Vector3(0,1,0)));
+		//YumeStaticModel* drawable2 = test2->CreateComponent<YumeStaticModel>();
+		//drawable2->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
+		//drawable2->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
+		//drawable2->SetCastShadows(true);
 
 
-		YumeSceneNode* test3 = scene_->CreateChild("Test");
-		test3->SetPosition(Vector3(0,5,7));
-		test3->SetRotation(Quaternion::IDENTITY);
-		test3->SetScale(10);
-		YumeStaticModel* large = test3->CreateComponent<YumeStaticModel>();
-		large->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		large->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
-		large->SetCastShadows(true);
+		//YumeSceneNode* test3 = scene_->CreateChild("Test");
+		//test3->SetPosition(Vector3(0,5,7));
+		//test3->SetRotation(Quaternion::IDENTITY);
+		//test3->SetScale(10);
+		//YumeStaticModel* large = test3->CreateComponent<YumeStaticModel>();
+		//large->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
+		//large->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
+		//large->SetCastShadows(true);
 
 		//YumeSceneNode* skyNode = scene_->CreateChild("Sky");
 		//skyNode->SetScale(500.0f); // The scale actually does not matter
@@ -199,6 +215,7 @@ namespace YumeEngine
 	{
 		BaseApplication::Setup();
 
-		engineVariants_["WindowWidth"] = 1600;
+		engineVariants_["WindowWidth"] = 1366;
+		engineVariants_["WindowHeight"] = 768;
 	}
 }

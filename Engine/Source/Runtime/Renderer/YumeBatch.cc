@@ -582,10 +582,12 @@ namespace YumeEngine
 		// Set material-specific shader parameters and textures
 		if(material_)
 		{
-			const YumeMap<YumeHash,MaterialShaderParameter>::type& parameters = material_->GetShaderParameters();
-			for(YumeMap<YumeHash,MaterialShaderParameter>::const_iterator i = parameters.begin(); i != parameters.end(); ++i)
-				graphics->SetShaderParameter(i->first,i->second.value_);
-
+			if(graphics->NeedParameterUpdate(SP_MATERIAL,reinterpret_cast<const void*>(material_->GetShaderParameterHash())))
+			{
+				const YumeMap<YumeHash,MaterialShaderParameter>::type& parameters = material_->GetShaderParameters();
+				for(YumeMap<YumeHash,MaterialShaderParameter>::const_iterator i = parameters.begin(); i != parameters.end(); ++i)
+					graphics->SetShaderParameter(i->first,i->second.value_);
+			}
 
 			const YumeMap<TextureUnit,SharedPtr<YumeTexture> >::type& textures = material_->GetTextures();
 			for(YumeMap<TextureUnit,SharedPtr<YumeTexture> >::const_iterator i = textures.begin(); i != textures.end(); ++i)
@@ -758,10 +760,10 @@ namespace YumeEngine
 		for(boost::unordered_map<BatchGroupKey,BatchGroup>::iterator i = batchGroups_.begin(); i != batchGroups_.end(); ++i)
 			sortedBatchGroups_[index++] = &i->second;
 
-		SortFrontToBack2Pass(reinterpret_cast<boost::container::vector<Batch*>&>(sortedBatchGroups_));
+		SortFrontToBack2Pass(reinterpret_cast<YumeVector<Batch*>::type&>(sortedBatchGroups_));
 	}
 
-	void BatchQueue::SortFrontToBack2Pass(boost::container::vector<Batch*>& batches)
+	void BatchQueue::SortFrontToBack2Pass(YumeVector<Batch*>::type& batches)
 	{
 		// For desktop, first sort by distance and remap shader/material/geometry IDs in the sort key
 		std::sort(batches.begin(),batches.end(),CompareBatchesFrontToBack);
@@ -770,7 +772,7 @@ namespace YumeEngine
 		unsigned short freeMaterialID = 0;
 		unsigned short freeGeometryID = 0;
 
-		for(boost::container::vector<Batch*>::iterator i = batches.begin(); i != batches.end(); ++i)
+		for(YumeVector<Batch*>::iterator i = batches.begin(); i != batches.end(); ++i)
 		{
 			Batch* batch = *i;
 
@@ -841,7 +843,7 @@ namespace YumeEngine
 		}
 
 		// Instanced
-		for(boost::container::vector<BatchGroup*>::const_iterator i = sortedBatchGroups_.begin(); i != sortedBatchGroups_.end(); ++i)
+		for(YumeVector<BatchGroup*>::const_iterator i = sortedBatchGroups_.begin(); i != sortedBatchGroups_.end(); ++i)
 		{
 			BatchGroup* group = *i;
 			if(markToStencil)
@@ -850,7 +852,7 @@ namespace YumeEngine
 			group->Draw(view,camera,allowDepthWrite);
 		}
 		// Non-instanced
-		for(boost::container::vector<Batch*>::const_iterator i = sortedBatches_.begin(); i != sortedBatches_.end(); ++i)
+		for(YumeVector<Batch*>::const_iterator i = sortedBatches_.begin(); i != sortedBatches_.end(); ++i)
 		{
 			Batch* batch = *i;
 			if(markToStencil)

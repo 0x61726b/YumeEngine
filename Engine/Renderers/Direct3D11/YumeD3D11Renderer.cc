@@ -65,6 +65,49 @@
 
 #include <boost/algorithm/string.hpp>
 
+#ifdef _DEBUG
+void* operator new[](size_t size,const char* name,int flags,unsigned debugFlags,const char* file,int line)
+#else
+void* operator new[](size_t size,const char* /*name*/,int flags,unsigned /*debugFlags*/,const char* /*file*/,int /*line*/)
+#endif
+{
+	return std::malloc(size);
+}
+
+
+_Ret_notnull_ _Post_writable_byte_size_(size) void* operator new[](size_t size) EA_THROW_SPEC_NEW(std::bad_alloc)
+{
+	void *mem;
+	mem = malloc(size);
+
+
+#if !defined(EA_COMPILER_NO_EXCEPTIONS)
+	if(mem == NULL)
+	{
+		throw std::bad_alloc();
+	}
+#endif
+
+	return mem;
+}
+
+
+_Ret_maybenull_ _Post_writable_byte_size_(size) void* operator new[](size_t size,const std::nothrow_t&) throw()
+{
+	void* const p = std::malloc(size);
+	return p;
+}
+
+#ifdef _DEBUG
+void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* name, int flags, unsigned debugFlags, const char* file, int line)
+#else
+void* operator new[](size_t size,size_t alignment,size_t alignmentOffset,const char* /*name*/,int flags,unsigned /*debugFlags*/,const char* /*file*/,int /*line*/)
+#endif
+{
+	return _aligned_malloc(size,alignment);
+}
+
+
 namespace YumeEngine
 {
 
@@ -1116,7 +1159,7 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const float* data,unsigned count)
 	{
-		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1128,7 +1171,7 @@ namespace YumeEngine
 	/// Set shader float constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,float value)
 	{
-		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1140,7 +1183,7 @@ namespace YumeEngine
 	/// Set shader boolean constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,bool value)
 	{
-		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1152,7 +1195,7 @@ namespace YumeEngine
 	/// Set shader color constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const YumeColor& color)
 	{
-		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1164,7 +1207,7 @@ namespace YumeEngine
 	/// Set shader 2D vector constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Vector2& vector)
 	{
-		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1176,7 +1219,7 @@ namespace YumeEngine
 	/// Set shader 3x3 matrix constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Matrix3& matrix)
 	{
-		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1188,7 +1231,7 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const Matrix3x4& matrix)
 	{
-		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1201,7 +1244,7 @@ namespace YumeEngine
 	/// Set shader 3D vector constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Vector3& vector)
 	{
-		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1213,7 +1256,7 @@ namespace YumeEngine
 	/// Set shader 4x4 matrix constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Matrix4& matrix)
 	{
-		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1225,7 +1268,7 @@ namespace YumeEngine
 	/// Set shader 4D vector constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const Vector4& vector)
 	{
-		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 

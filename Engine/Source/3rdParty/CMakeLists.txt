@@ -39,6 +39,8 @@ if(YUME_BUILD_OPENGL)
   ADD_SUBDIRECTORY(GLEW)
 endif()
 
+ADD_SUBDIRECTORY(EASTL)
+
 #Boost
 add_boost_library(system)
 add_boost_library(filesystem)
@@ -61,6 +63,7 @@ set_target_properties(JO PROPERTIES FOLDER "3rdParty" )
 setup_lib("pugixml")
 setup_lib("STB")
 setup_lib("boost_test")
+setup_lib("EASTL")
 
 if(OS_LINUX)
   target_compile_options(boost_system PUBLIC "-fPIC")

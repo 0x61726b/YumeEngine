@@ -39,7 +39,7 @@
 namespace YumeEngine
 {
 
-	
+
 	enum VariantType
 	{
 		VAR_EMPTY = 0,
@@ -69,7 +69,7 @@ namespace YumeEngine
 		MAX_VAR_TYPES
 	};
 
-	
+
 	struct VariantValue
 	{
 		union
@@ -105,28 +105,28 @@ namespace YumeEngine
 	class Variant;
 	class VectorBuffer;
 
-	
+
 	typedef YumeVector<Variant>::type VariantVector;
 
 
-	
-	typedef YumeMap<YumeHash,Variant>::type VariantMap;
 
-	
+	typedef std::unordered_map<YumeHash,Variant> VariantMap;
+
+
 	struct YumeAPIExport ResourceRef
 	{
-		
+
 		ResourceRef()
 		{
 		}
 
-		
+
 		ResourceRef(YumeHash type):
 			type_(type)
 		{
 		}
 
-		
+
 		ResourceRef(YumeHash type,const YumeString& name):
 			type_(type),
 			name_(name)
@@ -140,181 +140,178 @@ namespace YumeEngine
 		{
 		}
 
-		
+
 		YumeHash type_;
-		
+
 		YumeString name_;
 
-		
+
 		bool operator ==(const ResourceRef& rhs) const { return type_ == rhs.type_ && name_ == rhs.name_; }
 
-		
+
 		bool operator !=(const ResourceRef& rhs) const { return type_ != rhs.type_ || name_ != rhs.name_; }
 	};
 
-	
+
 	struct YumeAPIExport ResourceRefList
 	{
-		
 		ResourceRefList()
 		{
 		}
-
-		
 		ResourceRefList(YumeHash type):
 			type_(type)
 		{
 		}
-
-		
 		ResourceRefList(YumeHash type,const StringVector& names):
 			type_(type),
 			names_(names)
 		{
 		}
 
-		
 		YumeHash type_;
-		
 		StringVector names_;
+		bool operator ==(const ResourceRefList& rhs) const { return type_ == rhs.type_; }
 
-		
-		bool operator ==(const ResourceRefList& rhs) const { return type_ == rhs.type_ && names_ == rhs.names_; }
 
-		
-		bool operator !=(const ResourceRefList& rhs) const { return type_ != rhs.type_ || names_ != rhs.names_; }
+		bool operator !=(const ResourceRefList& rhs) const { return type_ != rhs.type_; }
 	};
 
-	
+
 	class YumeAPIExport Variant
 	{
 	public:
-		
+
 		Variant():
 			type_(VAR_EMPTY)
 		{
 		}
 
-		
+
 		Variant(int value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(unsigned value):
 			type_(VAR_EMPTY)
 		{
 			*this = (int)value;
 		}
 
-		
+
 		Variant(const YumeHash& value):
 			type_(VAR_EMPTY)
 		{
 			*this = (int)value;
 		}
 
-		
+		Variant(const YumeVector<unsigned char>::type& value):
+			type_(VAR_EMPTY)
+		{
+			*this = value;
+		}
+
+
 		Variant(bool value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(float value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(double value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const Vector2& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const Vector3& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const Vector4& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const Quaternion& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const YumeColor& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const YumeString& value):
 			type_(VAR_EMPTY)
 		{
 			stringHack_ = value;
 		}
 
-		
+
 		Variant(const char* value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const std::vector<unsigned char>& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const VectorBuffer& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(void* value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const ResourceRef& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const ResourceRefList& value):
 			type_(VAR_EMPTY)
 		{
@@ -328,114 +325,114 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant(const VariantVector& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const VariantMap& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const StringVector& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const IntRect& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const IntVector2& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const Matrix3& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const Matrix3x4& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const Matrix4& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		Variant(const YumeString& type,const YumeString& value):
 			type_(VAR_EMPTY)
 		{
 			FromString(type,value);
 		}
 
-		
+
 		Variant(VariantType type,const YumeString& value):
 			type_(VAR_EMPTY)
 		{
 			FromString(type,value);
 		}
 
-		
+
 		Variant(const char* type,const char* value):
 			type_(VAR_EMPTY)
 		{
 			FromString(type,value);
 		}
 
-		
+
 		Variant(VariantType type,const char* value):
 			type_(VAR_EMPTY)
 		{
 			FromString(type,value);
 		}
 
-		
+
 		Variant(const Variant& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
-		
+
 		~Variant()
 		{
 			if(type_ != VAR_STRING)
 				SetType(VAR_EMPTY);
 		}
 
-		
+
 		void Clear()
 		{
 			SetType(VAR_EMPTY);
 		}
 
-		
+
 		Variant& operator =(const Variant& rhs);
 
-		
+
 		Variant& operator =(int rhs)
 		{
 			SetType(VAR_INT);
@@ -443,7 +440,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(unsigned rhs)
 		{
 			SetType(VAR_INT);
@@ -451,7 +448,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const YumeHash& rhs)
 		{
 			SetType(VAR_INT);
@@ -459,7 +456,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(bool rhs)
 		{
 			SetType(VAR_BOOL);
@@ -474,7 +471,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(float rhs)
 		{
 			SetType(VAR_FLOAT);
@@ -482,7 +479,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator = (double rhs)
 		{
 			SetType(VAR_DOUBLE);
@@ -490,7 +487,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const Vector2& rhs)
 		{
 			SetType(VAR_VECTOR2);
@@ -498,7 +495,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const Vector3& rhs)
 		{
 			SetType(VAR_VECTOR3);
@@ -506,7 +503,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const Vector4& rhs)
 		{
 			SetType(VAR_VECTOR4);
@@ -514,7 +511,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const Quaternion& rhs)
 		{
 			SetType(VAR_QUATERNION);
@@ -522,7 +519,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const YumeColor& rhs)
 		{
 			SetType(VAR_COLOR);
@@ -530,7 +527,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const YumeString& rhs)
 		{
 			SetType(VAR_STRING);
@@ -538,7 +535,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const char* rhs)
 		{
 			SetType(VAR_STRING);
@@ -546,7 +543,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const YumeVector<unsigned char>::type& rhs)
 		{
 			SetType(VAR_BUFFER);
@@ -556,7 +553,7 @@ namespace YumeEngine
 
 		Variant& operator =(const VectorBuffer& rhs);
 
-		
+
 		Variant& operator =(void* rhs)
 		{
 			SetType(VAR_VOIDPTR);
@@ -564,7 +561,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const VariantVector& rhs)
 		{
 			SetType(VAR_VARIANTVECTOR);
@@ -580,7 +577,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const VariantMap& rhs)
 		{
 			SetType(VAR_VARIANTMAP);
@@ -588,7 +585,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const IntRect& rhs)
 		{
 			SetType(VAR_INTRECT);
@@ -596,7 +593,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const IntVector2& rhs)
 		{
 			SetType(VAR_INTVECTOR2);
@@ -604,7 +601,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const Matrix3& rhs)
 		{
 			SetType(VAR_MATRIX3);
@@ -612,7 +609,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const Matrix3x4& rhs)
 		{
 			SetType(VAR_MATRIX3X4);
@@ -620,7 +617,7 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		Variant& operator =(const Matrix4& rhs)
 		{
 			SetType(VAR_MATRIX4);
@@ -628,217 +625,218 @@ namespace YumeEngine
 			return *this;
 		}
 
-		
+
 		bool operator ==(const Variant& rhs) const;
 
-		
+
 		bool operator ==(int rhs) const { return type_ == VAR_INT ? value_.int_ == rhs : false; }
 
-		
+
 		bool operator ==(unsigned rhs) const { return type_ == VAR_INT ? value_.int_ == (int)rhs : false; }
 
-		
+
 		bool operator ==(bool rhs) const { return type_ == VAR_BOOL ? value_.bool_ == rhs : false; }
 
-		
+
 		bool operator ==(float rhs) const { return type_ == VAR_FLOAT ? value_.float_ == rhs : false; }
 
-		
+
 		bool operator ==(double rhs) const { return type_ == VAR_DOUBLE ? *(reinterpret_cast<const double*>(&value_)) == rhs : false; }
 
-		
+
 		bool operator ==(const Vector2& rhs) const
 		{
 			return type_ == VAR_VECTOR2 ? *(reinterpret_cast<const Vector2*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const Vector3& rhs) const
 		{
 			return type_ == VAR_VECTOR3 ? *(reinterpret_cast<const Vector3*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const Vector4& rhs) const
 		{
 			return type_ == VAR_VECTOR4 ? *(reinterpret_cast<const Vector4*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const Quaternion& rhs) const
 		{
 			return type_ == VAR_QUATERNION ? *(reinterpret_cast<const Quaternion*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const YumeColor& rhs) const
 		{
 			return type_ == VAR_COLOR ? *(reinterpret_cast<const YumeColor*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const YumeString& rhs) const
 		{
 			return type_ == VAR_STRING ? *(reinterpret_cast<const YumeString*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const YumeVector<unsigned char>::type& rhs) const;
-		
+
 		bool operator ==(const VectorBuffer& rhs) const;
 
 
-		
+
 		bool operator ==(const ResourceRef& rhs) const
 		{
 			return type_ == VAR_RESOURCEREF ? *(reinterpret_cast<const ResourceRef*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const ResourceRefList& rhs) const
 		{
 			return type_ == VAR_RESOURCEREFLIST ? *(reinterpret_cast<const ResourceRefList*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const VariantVector& rhs) const
 		{
 			return type_ == VAR_VARIANTVECTOR ? *(reinterpret_cast<const VariantVector*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const StringVector& rhs) const
 		{
-			return type_ == VAR_STRINGVECTOR ? *(reinterpret_cast<const StringVector*>(&value_)) == rhs : false;
+			/*return type_ == VAR_STRINGVECTOR ? *(reinterpret_cast<const StringVector*>(&value_)) == rhs : false;*/
+			return false;
 		}
 
-		
+
 		bool operator ==(const VariantMap& rhs) const
 		{
 			return type_ == VAR_VARIANTMAP ? *(reinterpret_cast<const VariantMap*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const IntRect& rhs) const
 		{
 			return type_ == VAR_INTRECT ? *(reinterpret_cast<const IntRect*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const IntVector2& rhs) const
 		{
 			return type_ == VAR_INTVECTOR2 ? *(reinterpret_cast<const IntVector2*>(&value_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const YumeHash& rhs) const { return type_ == VAR_INT ? (unsigned)value_.int_ == rhs : false; }
 
 
-		
+
 		bool operator ==(const Matrix3& rhs) const
 		{
 			return type_ == VAR_MATRIX3 ? *(reinterpret_cast<const Matrix3*>(value_.ptr_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const Matrix3x4& rhs) const
 		{
 			return type_ == VAR_MATRIX3X4 ? *(reinterpret_cast<const Matrix3x4*>(value_.ptr_)) == rhs : false;
 		}
 
-		
+
 		bool operator ==(const Matrix4& rhs) const
 		{
 			return type_ == VAR_MATRIX4 ? *(reinterpret_cast<const Matrix4*>(value_.ptr_)) == rhs : false;
 		}
 
-		
+
 		bool operator !=(const Variant& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(int rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(unsigned rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(bool rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(float rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(double rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const Vector2& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const Vector3& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const Vector4& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const Quaternion& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const YumeString& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const YumeVector<unsigned char>::type& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const VectorBuffer& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(void* rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const ResourceRef& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const ResourceRefList& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const VariantVector& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const StringVector& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const VariantMap& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const IntRect& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const IntVector2& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const YumeHash& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const Matrix3& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const Matrix3x4& rhs) const { return !(*this == rhs); }
 
-		
+
 		bool operator !=(const Matrix4& rhs) const { return !(*this == rhs); }
 
-		
+
 		void FromString(const YumeString& type,const YumeString& value);
-		
+
 		void FromString(const char* type,const char* value);
-		
+
 		void FromString(VariantType type,const YumeString& value);
-		
+
 		void FromString(VariantType type,const char* value);
-		
+
 		void SetBuffer(const void* data,unsigned size);
 
-		
+
 		int GetInt() const
 		{
 			if(type_ == VAR_INT)
@@ -851,7 +849,7 @@ namespace YumeEngine
 				return 0;
 		}
 
-		
+
 		unsigned GetUInt() const
 		{
 			if(type_ == VAR_INT)
@@ -864,13 +862,13 @@ namespace YumeEngine
 				return 0;
 		}
 
-		
+
 		YumeHash GetYumeHash() const { return YumeHash(GetUInt()); }
 
-		
+
 		bool GetBool() const { return type_ == VAR_BOOL ? value_.bool_ : false; }
 
-		
+
 		float GetFloat() const
 		{
 			if(type_ == VAR_FLOAT)
@@ -892,7 +890,7 @@ namespace YumeEngine
 		}
 
 
-		
+
 		double GetDouble() const
 		{
 			if(type_ == VAR_DOUBLE)
@@ -905,158 +903,158 @@ namespace YumeEngine
 				return 0.0;
 		}
 
-		
+
 		const Vector2& GetVector2() const { return type_ == VAR_VECTOR2 ? *reinterpret_cast<const Vector2*>(&value_) : Vector2::ZERO; }
 
-		
+
 		const Vector3& GetVector3() const { return type_ == VAR_VECTOR3 ? *reinterpret_cast<const Vector3*>(&value_) : Vector3::ZERO; }
 
-		
+
 		const Vector4& GetVector4() const { return type_ == VAR_VECTOR4 ? *reinterpret_cast<const Vector4*>(&value_) : Vector4::ZERO; }
 
-		
+
 		const Quaternion& GetQuaternion() const
 		{
 			return type_ == VAR_QUATERNION ? *reinterpret_cast<const Quaternion*>(&value_) : Quaternion::IDENTITY;
 		}
 
-		
+
 		const YumeColor& GetColor() const { return type_ == VAR_COLOR ? *reinterpret_cast<const YumeColor*>(&value_) : YumeColor::WHITE; }
 
-		
+
 		const YumeString& GetString() const { return type_ == VAR_STRING ? stringHack_ : EmptyString; }
 
-		
+
 		const YumeVector<unsigned char>::type& GetBuffer() const
 		{
 			return type_ == VAR_BUFFER ? *reinterpret_cast<const YumeVector<unsigned char>::type*>(&value_) : emptyBuffer;
 		}
 
-		
-		const VectorBuffer GetVectorBuffer() const;
 
-		
+		VectorBuffer GetVectorBuffer() const;
+
+
 		const ResourceRef& GetResourceRef() const
 		{
 			return type_ == VAR_RESOURCEREF ? *reinterpret_cast<const ResourceRef*>(&value_) : emptyResourceRef;
 		}
 
-		
+
 		const ResourceRefList& GetResourceRefList() const
 		{
 			return type_ == VAR_RESOURCEREFLIST ? *reinterpret_cast<const ResourceRefList*>(&value_) : emptyResourceRefList;
 		}
 
-		
+
 		const VariantVector& GetVariantVector() const
 		{
 			return type_ == VAR_VARIANTVECTOR ? *reinterpret_cast<const VariantVector*>(&value_) : emptyVariantVector;
 		}
 
-		
+
 		const StringVector& GetStringVector() const
 		{
 			return type_ == VAR_STRINGVECTOR ? *reinterpret_cast<const StringVector*>(&value_) : emptyStringVector;
 		}
 
-		
+
 		const VariantMap& GetVariantMap() const
 		{
 			return type_ == VAR_VARIANTMAP ? *reinterpret_cast<const VariantMap*>(&value_) : emptyVariantMap;
 		}
 
-		
+
 		const IntRect& GetIntRect() const { return type_ == VAR_INTRECT ? *reinterpret_cast<const IntRect*>(&value_) : IntRect::ZERO; }
 
-		
+
 		const IntVector2& GetIntVector2() const
 		{
 			return type_ == VAR_INTVECTOR2 ? *reinterpret_cast<const IntVector2*>(&value_) : IntVector2::ZERO;
 		}
-		
+
 		const Matrix3& GetMatrix3() const
 		{
 			return type_ == VAR_MATRIX3 ? *(reinterpret_cast<const Matrix3*>(value_.ptr_)) : Matrix3::IDENTITY;
 		}
 
-		
+
 		const Matrix3x4& GetMatrix3x4() const
 		{
 			return type_ == VAR_MATRIX3X4 ? *(reinterpret_cast<const Matrix3x4*>(value_.ptr_)) : Matrix3x4::IDENTITY;
 		}
 
-		
+
 		const Matrix4& GetMatrix4() const
 		{
 			return type_ == VAR_MATRIX4 ? *(reinterpret_cast<const Matrix4*>(value_.ptr_)) : Matrix4::IDENTITY;
 		}
 
-		
+
 		VariantType GetType() const { return type_; }
 
-		
+
 		YumeString GetTypeName() const;
-		
+
 		YumeString ToString() const;
-		
+
 		bool IsZero() const;
 
-		
+
 		bool IsEmpty() const { return type_ == VAR_EMPTY; }
 
-		
+
 		template <class T> T Get() const;
 
-		
+
 		YumeVector<unsigned char>::type* GetBufferPtr()
 		{
 			return type_ == VAR_BUFFER ? reinterpret_cast<YumeVector<unsigned char>::type*>(&value_) : 0;
 		}
 
-		
+
 		VariantVector* GetVariantVectorPtr() { return type_ == VAR_VARIANTVECTOR ? reinterpret_cast<VariantVector*>(&value_) : 0; }
 
-		
+
 		StringVector* GetStringVectorPtr() { return type_ == VAR_STRINGVECTOR ? reinterpret_cast<StringVector*>(&value_) : 0; }
 
-		
+
 		VariantMap* GetVariantMapPtr() { return type_ == VAR_VARIANTMAP ? reinterpret_cast<VariantMap*>(&value_) : 0; }
 
-		
 		static YumeString GetTypeName(VariantType type);
-		
+
 		static VariantType GetTypeFromName(const YumeString& typeName);
-		
+
 		static VariantType GetTypeFromName(const char* typeName);
 
-		
+
+
 		static const Variant EMPTY;
-		
+
 		static const YumeVector<unsigned char>::type emptyBuffer;
-		
+
 		static const ResourceRef emptyResourceRef;
-		
+
 		static const ResourceRefList emptyResourceRefList;
-		
+
 		static const VariantMap emptyVariantMap;
-		
+
 		static const VariantVector emptyVariantVector;
-		
+
 		static const StringVector emptyStringVector;
 
 	private:
-		
+
 		void SetType(VariantType newType);
 
-		
+
 		VariantType type_;
-		
+
 		VariantValue value_;
 
 		YumeString stringHack_;
 	};
 
-	
+
 	template <typename T> VariantType GetVariantType();
 
 	// Return variant type from concrete types

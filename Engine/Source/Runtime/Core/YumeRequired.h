@@ -40,6 +40,7 @@ namespace YumeEngine
 #include "YumeStdHeaders.h"
 #include "YumeMemoryAllocatorConfig.h"
 #include "Core/SharedPtr.h"
+
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -94,18 +95,12 @@ namespace YumeEngine
 #endif
 	};
 
-	template <typename T,typename A = YumeSTLAllocator<T,YumeGeneralAllocPolicy> >
+	template <typename T>
 	struct YumeVector
 	{
-#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
-		typedef typename std::vector<T,A> type;
-		typedef typename std::vector<T,A>::iterator iterator;
-		typedef typename std::vector<T,A>::const_iterator const_iterator;
-#else
-		typedef typename std::vector<T> type;
-		typedef typename std::vector<T>::iterator iterator;
-		typedef typename std::vector<T>::const_iterator const_iterator;
-#endif
+		typedef typename eastl::vector<T> type;
+		typedef typename eastl::vector<T>::iterator iterator;
+		typedef typename eastl::vector<T>::const_iterator const_iterator;
 	};
 
 	template <typename T,typename A = YumeSTLAllocator<T,YumeGeneralAllocPolicy> >
@@ -135,18 +130,12 @@ namespace YumeEngine
 		typedef typename std::set<T, P>::const_iterator const_iterator;
 #endif
 	};
-	template <typename K,typename V,typename P = std::less<K>,typename A = YumeSTLAllocator<std::pair<const K,V>,YumeGeneralAllocPolicy> >
+	template <typename K,typename V >
 	struct YumeMap
 	{
-#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
-		typedef typename std::map<K,V,P,A> type;
-		typedef typename std::map<K,V,P,A>::iterator iterator;
-		typedef typename std::map<K,V,P,A>::const_iterator const_iterator;
-#else
-		typedef typename std::map<K, V, P> type;
-		typedef typename std::map<K, V, P>::iterator iterator;
-		typedef typename std::map<K, V, P>::const_iterator const_iterator;
-#endif
+		typedef typename std::map<K, V> type;
+		typedef typename std::map<K, V>::iterator iterator;
+		typedef typename std::map<K, V>::const_iterator const_iterator;
 	};
 	template <typename K,typename V,typename P = std::less<K>,typename A = YumeSTLAllocator<std::pair<const K,V>,YumeGeneralAllocPolicy> >
 	struct YumeMultiMap
@@ -160,6 +149,14 @@ namespace YumeEngine
 		typedef typename std::multimap<K, V, P>::iterator iterator;
 		typedef typename std::multimap<K, V, P>::const_iterator const_iterator;
 #endif
+	};
+
+	template <typename K,typename V,typename H = std::hash<K> >
+	struct EastlHashMap
+	{
+		typedef typename std::unordered_map<K,V,H> type;
+		typedef typename std::unordered_map<K,V,H>::iterator iterator;
+		typedef typename std::unordered_map<K,V,H>::const_iterator const_iterator;
 	};
 
 	typedef YumeVector<YumeString>::type StringVector;
