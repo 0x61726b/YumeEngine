@@ -55,7 +55,7 @@ namespace YumeEngine
 		YumeEngine3D();
 
 		virtual ~YumeEngine3D();
-		bool Initialize(const VariantMap& variants);
+		bool Initialize(const VariantMap::type& variants);
 
 		void Run();
 

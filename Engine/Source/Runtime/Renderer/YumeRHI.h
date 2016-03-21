@@ -72,7 +72,7 @@ namespace YumeEngine
 		bool reserved_;
 	};
 
-	typedef eastl::vector<YumeGpuResource*> GpuResourceVector;
+	typedef YumeVector<YumeGpuResource*> GpuResourceVector;
 
 	class YumeAPIExport YumeRHI
 	{
@@ -86,6 +86,7 @@ namespace YumeEngine
 		virtual bool							BeginFrame() = 0;
 		virtual void							EndFrame() = 0;
 		virtual void							Clear(unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) = 0;
+		virtual void							ClearRenderTarget(unsigned index,unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) = 0;
 
 		virtual bool							IsInitialized() = 0;
 
@@ -300,7 +301,7 @@ namespace YumeEngine
 
 	protected:
 		Mutex							gpuResourceMutex_;
-		GpuResourceVector						gpuResources_;
+		GpuResourceVector::type			gpuResources_;
 
 
 		bool sRGB_;

@@ -65,49 +65,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#ifdef _DEBUG
-void* operator new[](size_t size,const char* name,int flags,unsigned debugFlags,const char* file,int line)
-#else
-void* operator new[](size_t size,const char* /*name*/,int flags,unsigned /*debugFlags*/,const char* /*file*/,int /*line*/)
-#endif
-{
-	return std::malloc(size);
-}
-
-
-_Ret_notnull_ _Post_writable_byte_size_(size) void* operator new[](size_t size) EA_THROW_SPEC_NEW(std::bad_alloc)
-{
-	void *mem;
-	mem = malloc(size);
-
-
-#if !defined(EA_COMPILER_NO_EXCEPTIONS)
-	if(mem == NULL)
-	{
-		throw std::bad_alloc();
-	}
-#endif
-
-	return mem;
-}
-
-
-_Ret_maybenull_ _Post_writable_byte_size_(size) void* operator new[](size_t size,const std::nothrow_t&) throw()
-{
-	void* const p = std::malloc(size);
-	return p;
-}
-
-#ifdef _DEBUG
-void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, const char* name, int flags, unsigned debugFlags, const char* file, int line)
-#else
-void* operator new[](size_t size,size_t alignment,size_t alignmentOffset,const char* /*name*/,int flags,unsigned /*debugFlags*/,const char* /*file*/,int /*line*/)
-#endif
-{
-	return _aligned_malloc(size,alignment);
-}
-
-
 namespace YumeEngine
 {
 
@@ -374,8 +331,6 @@ namespace YumeEngine
 		else
 		{
 			YumeRenderer* renderer = gYume->pRenderer;
-			if(!renderer)
-				return;
 
 			YumeGeometry* geometry = renderer->GetQuadGeometry();
 
@@ -405,6 +360,17 @@ namespace YumeEngine
 		// Restore color & depth write state now
 		SetColorWrite(oldColorWrite);
 		SetDepthWrite(oldDepthWrite);
+	}
+
+	void YumeD3D11Renderer::ClearRenderTarget(unsigned index,unsigned flags,const YumeColor& color,float depth,unsigned stencil)
+	{
+		if(flags & CLEAR_COLOR)
+		{
+			if(!renderTargets_[index])
+				return;
+
+			impl_->deviceContext_->ClearRenderTargetView((ID3D11RenderTargetView*)renderTargets_[index]->GetRenderTargetView(),color.Data());
+		}
 	}
 
 	void YumeD3D11Renderer::CreateRendererCapabilities()
@@ -814,7 +780,7 @@ namespace YumeEngine
 				0,
 				D3D_DRIVER_TYPE_HARDWARE,
 				0,
-				0,
+				D3D10_CREATE_DEVICE_DEBUG,
 				0,
 				0,
 				D3D11_SDK_VERSION,
@@ -840,7 +806,7 @@ namespace YumeEngine
 
 		YumeVector<int>::type multisamples = GetMultiSampleLevels();
 
-		if(std::find(multisamples.begin(),multisamples.end(),multisample) != multisamples.end())
+		if(!multisamples.Contains(multisample))
 		{
 			multisample = 1;
 		}
@@ -879,31 +845,31 @@ namespace YumeEngine
 		dxgiAdapter->Release();
 		dxgiDevice->Release();
 
-//
-//
-//#ifdef _DEBUG
-//		impl_->GetDevice()->QueryInterface(__uuidof(ID3D11Debug),reinterpret_cast<void**>(&impl_->debug_));
-//		ID3D11InfoQueue *d3dInfoQueue = nullptr;
-//		impl_->GetDevice()->QueryInterface( __uuidof(ID3D11InfoQueue), (void**)&d3dInfoQueue );
-//
-//		
-//
-//		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION,true);
-//		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR,true);
-//
-//		D3D11_MESSAGE_ID hide[] =
-//		{
-//			D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS,
-//			(D3D11_MESSAGE_ID)3146081
-//		};
-//
-//		D3D11_INFO_QUEUE_FILTER filter;
-//		memset(&filter,0,sizeof(filter));
-//		filter.DenyList.NumIDs = _countof(hide);
-//		filter.DenyList.pIDList = hide;
-//		d3dInfoQueue->AddStorageFilterEntries(&filter);
-//		d3dInfoQueue->Release();
-//#endif
+
+
+#ifdef _DEBUG
+		hr = impl_->device_->QueryInterface(IID_ID3D11Debug,(void**)(&impl_->debug_));
+		ID3D11InfoQueue *d3dInfoQueue = nullptr;
+		impl_->device_->QueryInterface(__uuidof(ID3D11InfoQueue),(void**)&d3dInfoQueue);
+
+
+
+		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION,true);
+		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR,true);
+
+		D3D11_MESSAGE_ID hide[] =
+		{
+			D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS,
+			(D3D11_MESSAGE_ID)3146081
+		};
+
+		D3D11_INFO_QUEUE_FILTER filter;
+		memset(&filter,0,sizeof(filter));
+		filter.DenyList.NumIDs = _countof(hide);
+		filter.DenyList.pIDList = hide;
+		d3dInfoQueue->AddStorageFilterEntries(&filter);
+		d3dInfoQueue->Release();
+#endif
 
 		if(FAILED(hr))
 		{
@@ -1068,7 +1034,7 @@ namespace YumeEngine
 					bool success = vs->Create();
 					if(!success)
 					{
-						YUMELOG_ERROR("Failed to compile vertex shader " + vs->GetFullName() + ":\n" + vs->GetCompilerOutput());
+						YUMELOG_ERROR("Failed to compile vertex shader " << vs->GetFullName().c_str() << ":\n" << vs->GetCompilerOutput().c_str());
 						vs = 0;
 					}
 				}
@@ -1091,14 +1057,14 @@ namespace YumeEngine
 					bool success = ps->Create();
 					if(!success)
 					{
-						YUMELOG_ERROR("Failed to compile pixel shader " + ps->GetFullName() + ":\n" + ps->GetCompilerOutput());
+						YUMELOG_ERROR("Failed to compile pixel shader " << ps->GetFullName().c_str() << ":\n" << ps->GetCompilerOutput().c_str());
 						ps = 0;
 					}
 				}
 				else
 					ps = 0;
 			}
-
+			/*ID3D11PixelShader* kappa = (ID3D11PixelShader*)psVar_->GetGPUObject();*/
 			impl_->deviceContext_->PSSetShader((ID3D11PixelShader*)(psVar_ ? psVar_->GetGPUObject() : 0),0,0);
 			pixelShader_ = ps;
 		}
@@ -1106,7 +1072,7 @@ namespace YumeEngine
 		// Update current shader parameters & constant buffers
 		if(vertexShader_ && pixelShader_)
 		{
-			std::pair<YumeShaderVariation*,YumeShaderVariation*> key = std::make_pair(vertexShader_,pixelShader_);
+			Pair<YumeShaderVariation*,YumeShaderVariation*> key = MakePair(vertexShader_,pixelShader_);
 			ShaderProgramMap::iterator i = shaderPrograms_.find(key);
 			if(i != shaderPrograms_.end())
 				shaderProgram_ = i->second;
@@ -1159,7 +1125,7 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const float* data,unsigned count)
 	{
-		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1171,7 +1137,7 @@ namespace YumeEngine
 	/// Set shader float constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,float value)
 	{
-		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1183,7 +1149,7 @@ namespace YumeEngine
 	/// Set shader boolean constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,bool value)
 	{
-		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1195,7 +1161,7 @@ namespace YumeEngine
 	/// Set shader color constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const YumeColor& color)
 	{
-		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1207,7 +1173,7 @@ namespace YumeEngine
 	/// Set shader 2D vector constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Vector2& vector)
 	{
-		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1219,7 +1185,7 @@ namespace YumeEngine
 	/// Set shader 3x3 matrix constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Matrix3& matrix)
 	{
-		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1231,7 +1197,7 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const Matrix3x4& matrix)
 	{
-		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1244,7 +1210,7 @@ namespace YumeEngine
 	/// Set shader 3D vector constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Vector3& vector)
 	{
-		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1256,7 +1222,7 @@ namespace YumeEngine
 	/// Set shader 4x4 matrix constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Matrix4& matrix)
 	{
-		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1268,7 +1234,7 @@ namespace YumeEngine
 	/// Set shader 4D vector constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const Vector4& vector)
 	{
-		EastlHashMap<YumeHash,ShaderParameter>::iterator i;
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
 		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
 			return;
 
@@ -1916,17 +1882,14 @@ namespace YumeEngine
 				{
 					YumeMap<unsigned long long,SharedPtr<YumeInputLayout>>::iterator
 						i = vertexDeclarations_.find(newVertexDeclarationHash);
-					std::pair<YumeMap<unsigned long long,SharedPtr<YumeInputLayout>>::iterator,bool> ret;
 					if(i == vertexDeclarations_.end())
 					{
 						SharedPtr<YumeInputLayout> newVertexDeclaration(new YumeD3D11InputLayout(vertexShader_,vertexBuffers_,
 							elementMasks_));
-						ret = vertexDeclarations_.insert(std::make_pair(newVertexDeclarationHash,newVertexDeclaration));
+						i= vertexDeclarations_.insert(MakePair(newVertexDeclarationHash,newVertexDeclaration));
 					}
-					else
-						ret.first = i;
 
-					impl_->deviceContext_->IASetInputLayout((ID3D11InputLayout*)ret.first->second->GetInputLayout());
+					impl_->deviceContext_->IASetInputLayout((ID3D11InputLayout*)i->second->GetInputLayout());
 					vertexDeclarationHash_ = newVertexDeclarationHash;
 				}
 			}
@@ -1940,7 +1903,6 @@ namespace YumeEngine
 			if(newBlendStateHash != blendStateHash_)
 			{
 				YumeMap<unsigned,ID3D11BlendState*>::iterator i = impl_->blendStates_.find(newBlendStateHash);
-				std::pair<YumeMap<unsigned,ID3D11BlendState*>::iterator,bool> ret;
 				if(i == impl_->blendStates_.end())
 				{
 					D3D11_BLEND_DESC stateDesc;
@@ -1965,12 +1927,10 @@ namespace YumeEngine
 					}
 
 
-					ret = impl_->blendStates_.insert(std::make_pair(newBlendStateHash,newBlendState));
+					i = impl_->blendStates_.insert(MakePair(newBlendStateHash,newBlendState));
 				}
-				else
-					ret.first = i;
 
-				impl_->deviceContext_->OMSetBlendState(ret.first->second,0,M_MAX_UNSIGNED);
+				impl_->deviceContext_->OMSetBlendState(i->second,0,M_MAX_UNSIGNED);
 				blendStateHash_ = newBlendStateHash;
 			}
 
@@ -1986,7 +1946,6 @@ namespace YumeEngine
 			if(newDepthStateHash != depthStateHash_ || stencilRefDirty_)
 			{
 				YumeMap<unsigned,ID3D11DepthStencilState*>::iterator i = impl_->depthStates_.find(newDepthStateHash);
-				std::pair<YumeMap<unsigned,ID3D11DepthStencilState*>::iterator,bool> ret;
 				if(i == impl_->depthStates_.end())
 				{
 					D3D11_DEPTH_STENCIL_DESC stateDesc;
@@ -2014,11 +1973,9 @@ namespace YumeEngine
 						YUMELOG_ERROR("Failed to create depth state",hr);
 					}
 
-					ret = impl_->depthStates_.insert(std::make_pair(newDepthStateHash,newDepthState));
+					i = impl_->depthStates_.insert(MakePair(newDepthStateHash,newDepthState));
 				}
-				else
-					ret.first = i;
-				impl_->deviceContext_->OMSetDepthStencilState(ret.first->second,stencilRef_);
+				impl_->deviceContext_->OMSetDepthStencilState(i->second,stencilRef_);
 				depthStateHash_ = newDepthStateHash;
 			}
 
@@ -2039,7 +1996,6 @@ namespace YumeEngine
 			if(newRasterizerStateHash != rasterizerStateHash_)
 			{
 				YumeMap<unsigned,ID3D11RasterizerState*>::iterator i = impl_->rasterizerStates_.find(newRasterizerStateHash);
-				std::pair<YumeMap<unsigned,ID3D11RasterizerState*>::iterator,bool> ret;
 				if(i == impl_->rasterizerStates_.end())
 				{
 					D3D11_RASTERIZER_DESC stateDesc;
@@ -2063,12 +2019,10 @@ namespace YumeEngine
 						YUMELOG_ERROR("Failed to create rasterizer state" << hr);
 					}
 
-					ret = impl_->rasterizerStates_.insert(std::make_pair(newRasterizerStateHash,newRasterizerState));
+					i = impl_->rasterizerStates_.insert(MakePair(newRasterizerStateHash,newRasterizerState));
 				}
-				else
-					ret.first = i;
 
-				impl_->deviceContext_->RSSetState(ret.first->second);
+				impl_->deviceContext_->RSSetState(i->second);
 				rasterizerStateHash_ = newRasterizerStateHash;
 			}
 
@@ -2294,7 +2248,7 @@ namespace YumeEngine
 		MutexLock lock(gpuResourceMutex_);
 
 		//Check if valid
-		GpuResourceVector::iterator It = std::find(gpuResources_.begin(),gpuResources_.end(),gpuRes);
+		GpuResourceVector::iterator It = gpuResources_.find(gpuRes);
 
 		if(It != gpuResources_.end())
 			gpuResources_.erase(It);
@@ -2512,9 +2466,7 @@ namespace YumeEngine
 	unsigned YumeD3D11Renderer::GetFormat(const YumeString& formatName)
 	{
 
-		YumeString nameLower = formatName;
-		boost::to_lower(nameLower);
-		boost::trim(nameLower);
+		YumeString nameLower = formatName.ToLower().Trimmed();
 
 		if(nameLower == "a")
 			return GetAlphaFormat();

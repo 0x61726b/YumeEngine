@@ -32,7 +32,6 @@
 #define __YumeHeaders_h__
 
 #include "Core/YumePlatform.h"
-
 #include "Core/YumeCommon.h"
 
 #endif

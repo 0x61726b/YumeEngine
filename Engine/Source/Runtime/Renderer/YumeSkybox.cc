@@ -60,11 +60,11 @@ namespace YumeEngine
 		// Add camera position to fix the skybox in space. Use effective world transform to take reflection into account
 		Matrix3x4 customWorldTransform = node_->GetWorldTransform();
 		customWorldTransform.SetTranslation(node_->GetWorldPosition() + frame.camera_->GetEffectiveWorldTransform().Translation());
-		std::pair<YumeMap<YumeCamera*,Matrix3x4>::iterator,bool> ret = customWorldTransforms_.insert(std::make_pair(frame.camera_,customWorldTransform));
+		YumeMap<YumeCamera*,Matrix3x4>::iterator ret = customWorldTransforms_.insert(MakePair(frame.camera_,customWorldTransform));
 
 		for(unsigned i = 0; i < batches_.size(); ++i)
 		{
-			batches_[i].worldTransform_ = &ret.first->second;
+			batches_[i].worldTransform_ = &ret->second;
 			batches_[i].distance_ = 0.0f;
 		}
 	}

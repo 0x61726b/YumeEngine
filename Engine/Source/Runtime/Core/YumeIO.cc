@@ -23,6 +23,27 @@
 #include "YumeIO.h"
 
 
+#include <sys/stat.h>
+
+#ifdef _WIN32
+#include <cstdio>
+#ifndef _MSC_VER
+#define _WIN32_IE 0x501
+#endif
+#include <windows.h>
+#include <shellapi.h>
+#include <direct.h>
+#include <shlobj.h>
+#include <sys/types.h>
+#include <sys/utime.h>
+#else
+#include <dirent.h>
+#include <errno.h>
+#include <unistd.h>
+#include <utime.h>
+#include <sys/wait.h>
+#define MAX_PATH 256
+#endif
 
 namespace YumeEngine
 {
@@ -90,13 +111,13 @@ namespace YumeEngine
 		size_t extensionPos = copy.find_last_of(".");
 		size_t pathPos = copy.find_last_of("/");
 
-		size_t size = copy.size();
+		size_t size = copy.length();
 
 		extension = copy.substr(extensionPos,size - extensionPos);
 
 		copy = copy.substr(0,extensionPos);
 
-		size = copy.size();
+		size = copy.length();
 
 		fileName = copy.substr(pathPos+1,size - pathPos +1);
 

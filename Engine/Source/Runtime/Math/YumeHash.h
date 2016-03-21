@@ -105,15 +105,5 @@ namespace std
 			{ return  h.ToHash(); }
 	};
 }
-namespace eastl
-{
-	template <> 
-	struct hash<YumeEngine::YumeHash>
-	{
-		size_t operator()(const YumeEngine::YumeHash& h) const 
-			{ return  h.ToHash(); }
-	};
-}
-
 //----------------------------------------------------------------------------
 #endif

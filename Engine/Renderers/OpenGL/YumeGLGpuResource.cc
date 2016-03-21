@@ -21,8 +21,7 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 #include "YumeGLGpuResource.h"
-#include "YumeGLRenderer.h"
-
+#include "Renderer/YumeRHI.h"
 
 namespace YumeEngine
 {

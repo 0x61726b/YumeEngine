@@ -36,8 +36,8 @@ namespace YumeEngine
 
 	class YumeImage;
 
-	typedef YumeMap<YumeHash,ResourceGroup>::type ResourceGroupHashMap;
-	typedef YumeMap<YumeHash,SharedPtr<YumeResource> >::type ResourceHashMap;
+	typedef YumeMap<YumeHash,ResourceGroup> ResourceGroupHashMap;
+	typedef YumeMap<YumeHash,SharedPtr<YumeResource> > ResourceHashMap;
 
 
 	static const unsigned PRIORITY_LAST = 0xffffffff;
@@ -87,12 +87,12 @@ namespace YumeEngine
 		template <class T> T* PrepareResource(const YumeString& resource);
 		template <class T> T* RetrieveResource(const YumeString& name);
 		template <class T> SharedPtr<T> GetTempResource(const YumeString& name);
-		template <class T> void GetResources(eastl::vector<T*>& result) const;
+		template <class T> void GetResources(Vector<T*>& result) const;
 
 
 	private:
 		Mutex resourceMutex_;
-		ResourceGroupHashMap resourceGroups_;
+		ResourceGroupHashMap::type resourceGroups_;
 		YumeVector<FsPath>::type resourcePaths_;
 		SharedPtr<YumeBackgroundWorker> backgroundWorker_;
 
@@ -102,9 +102,9 @@ namespace YumeEngine
 	};
 
 
-	template <class T> void YumeResourceManager::GetResources(eastl::vector<T*>& result) const
+	template <class T> void YumeResourceManager::GetResources(Vector<T*>& result) const
 	{
-		YumeVector<YumeResource*>::type& resources = reinterpret_cast<eastl::vector<YumeResource*>&>(result);
+		YumeVector<YumeResource*>::type& resources = reinterpret_cast<Vector<YumeResource*>&>(result);
 		YumeHash type = T::GetTypeStatic();
 		GetResources(resources,type);
 

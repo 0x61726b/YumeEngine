@@ -42,7 +42,7 @@ namespace YumeEngine
 		if(startPos == std::string::npos)
 			return;
 
-		code.insert(startPos,"/*");
+		code.Insert(startPos,"/*");
 
 		for(unsigned i = startPos + 2 + signature.length(); i < code.length(); ++i)
 		{
@@ -53,7 +53,7 @@ namespace YumeEngine
 				--braceLevel;
 				if(braceLevel == 0)
 				{
-					code.insert(i + 1,"*/");
+					code.Insert(i + 1,"*/");
 					return;
 				}
 			}
@@ -84,8 +84,8 @@ namespace YumeEngine
 		CommentOutFunction(vsSourceCode_,"void PS(");
 		CommentOutFunction(psSourceCode_,"void VS(");
 
-		boost::replace_all(vsSourceCode_,"void VS(","void main(");
-		boost::replace_all(psSourceCode_,"void PS(","void main(");
+		vsSourceCode_.Replace("void VS(","void main(");
+		psSourceCode_.Replace("void PS(","void main(");
 
 
 
@@ -125,27 +125,25 @@ namespace YumeEngine
 
 			i = variations.find(normalizedHash);
 			if(i != variations.end())
-				variations.insert(std::make_pair(definesHash,i->second));
+				variations.insert(MakePair(definesHash,i->second));
 			else
 			{
-				std::pair<YumeMap<YumeHash,SharedPtr<YumeGLShaderVariation> >::iterator,bool> ret;
-				// No shader variation found. Create new
 				YumeGLShaderVariation* shr_ = YumeAPINew YumeGLShaderVariation(this,type);
-				ret = variations.insert(ShaderMap::type::value_type(normalizedHash,SharedPtr<YumeGLShaderVariation>(shr_)));
+				i = variations.insert(MakePair(normalizedHash,SharedPtr<YumeGLShaderVariation>(shr_)));
 				if(definesHash != normalizedHash)
-					variations.insert(std::make_pair(definesHash,ret.first->second));
+					variations.insert(MakePair(definesHash,i->second));
 
 
 
-				ret.first->second->SetName(GetFileName(GetName()));
-				ret.first->second->SetDefines(normalizedDefines);
+				i->second->SetName(GetFileName(GetName()));
+				i->second->SetDefines(normalizedDefines);
 				++numVariations_;
 				RefreshMemoryUse();
 
-				return boost::static_pointer_cast<YumeShaderVariation>(ret.first->second).get();
+				return (i->second).Get();
 			}
 		}
-		return (YumeShaderVariation*)i->second.get();
+		return i->second.Get();
 	}
 
 	void YumeGLShader::RefreshMemoryUse()

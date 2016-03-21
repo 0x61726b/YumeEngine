@@ -41,12 +41,12 @@ namespace YumeEngine
 	class YumeAPIExport YumeFile : public YumeBase
 	{
 	public:
-		YumeFile(const std::string& file,FileMode = FILEMODE_READ);
+		YumeFile(const YumeString& file,FileMode = FILEMODE_READ);
 		YumeFile(const boost::filesystem::path& file,FileMode = FILEMODE_READ);
 
 		virtual ~YumeFile();
 
-		bool Open(const std::string& file,FileMode filemode = FILEMODE_READ);
+		bool Open(const YumeString& file,FileMode filemode = FILEMODE_READ);
 		unsigned Read(void* dest,int size);
 		YumeString ReadLine();
 

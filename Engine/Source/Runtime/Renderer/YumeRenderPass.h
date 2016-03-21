@@ -159,9 +159,7 @@ namespace YumeEngine
 		friend class YumeRenderer;
 
 	public:
-
 		YumeRenderTechnique();
-
 		~YumeRenderTechnique();
 
 		static YumeHash GetTypeStatic() { return type_; };

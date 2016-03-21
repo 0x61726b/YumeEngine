@@ -30,7 +30,7 @@ namespace YumeEngine
 	template <typename T>
 	T CastToType(const YumeString& str)
 	{
-		return boost::lexical_cast<T>(str);
+		return boost::lexical_cast<T>(str.c_str());
 	}
 
 
@@ -40,9 +40,9 @@ namespace YumeEngine
 	}
 
 
-	VariantMap Parsers::ParseConfig(const YumeString& content)
+	VariantMap::type Parsers::ParseConfig(const YumeString& content)
 	{
-		VariantMap vm;
+		VariantMap::type vm;
 
 		pugi::xml_document doc;
 		doc.load(content.c_str());

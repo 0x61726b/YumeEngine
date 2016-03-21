@@ -116,7 +116,7 @@ namespace YumeEngine
 		for(unsigned i = 0; i < MAX_CUBEMAP_FACES; ++i)
 		{
 			if(renderSurfaces_[i])
-				static_cast<YumeGLRenderable*>(renderSurfaces_[i].get())->OnDeviceLost();
+				StaticCast<YumeGLRenderable>(renderSurfaces_[i])->OnDeviceLost();
 		}
 	}
 
@@ -192,7 +192,7 @@ namespace YumeEngine
 		// Delete the old rendersurfaces if any
 		for(unsigned i = 0; i < MAX_CUBEMAP_FACES; ++i)
 		{
-			renderSurfaces_[i].reset();
+			renderSurfaces_[i].Reset();
 			faceMemoryUse_[i] = 0;
 		}
 
@@ -203,7 +203,7 @@ namespace YumeEngine
 			for(unsigned i = 0; i < MAX_CUBEMAP_FACES; ++i)
 			{
 				renderSurfaces_[i] = SharedPtr<YumeGLRenderable>(new YumeGLRenderable(this));
-				static_cast<YumeGLRenderable*>(renderSurfaces_[i].get())->SetTarget(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+				StaticCast<YumeGLRenderable>(renderSurfaces_[i])->SetTarget(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 			}
 
 			// Nearest filtering and mipmaps disabled by default
@@ -312,7 +312,7 @@ namespace YumeEngine
 		unsigned memoryUse = 0;
 
 		int quality = QUALITY_HIGH;
-		YumeRenderer* renderer = gYume->pRenderer.get();
+		YumeRenderer* renderer = gYume->pRenderer;
 		if(renderer)
 			quality = renderer->GetTextureQuality();
 
@@ -647,14 +647,14 @@ namespace YumeEngine
 
 	void YumeGLTextureCube::HandleRenderTargetUpdate()
 	{
-		YumeRenderer* renderer = gYume->pRenderer.get();
+		YumeRenderer* renderer = gYume->pRenderer;
 
 		for(unsigned i = 0; i < MAX_CUBEMAP_FACES; ++i)
 		{
 			if(renderSurfaces_[i] && (renderSurfaces_[i]->GetUpdateMode() == SURFACE_UPDATEALWAYS || renderSurfaces_[i]->IsUpdateQueued()))
 			{
 				if(renderer)
-					renderer->QueueRenderable(renderSurfaces_[i].get());
+					renderer->QueueRenderable(renderSurfaces_[i]);
 				renderSurfaces_[i]->ResetUpdateQueued();
 			}
 		}

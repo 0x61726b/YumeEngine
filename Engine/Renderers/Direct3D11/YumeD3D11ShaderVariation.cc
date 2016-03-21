@@ -89,7 +89,7 @@ namespace YumeEngine
 			D3D_SAFE_RELEASE(object_);
 		}
 
-		compilerOutput_.clear();
+		compilerOutput_.Clear();
 
 		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
 			useTextureUnit_[i] = false;
@@ -140,7 +140,7 @@ namespace YumeEngine
 				if(FAILED(hr))
 				{
 					D3D_SAFE_RELEASE(object_);
-					compilerOutput_ = "Could not create vertex shader (HRESULT " + std::to_string(hr) + ")";
+					compilerOutput_ = "Could not create vertex shader (HRESULT " + String(hr) + ")";
 				}
 			}
 			else
@@ -154,7 +154,7 @@ namespace YumeEngine
 				if(FAILED(hr))
 				{
 					D3D_SAFE_RELEASE(object_);
-					compilerOutput_ = "Could not create pixel shader (HRESULT " + std::to_string(hr) + ")";
+					compilerOutput_ = "Could not create pixel shader (HRESULT " + String(hr) + ")";
 				}
 			}
 			else
@@ -180,7 +180,7 @@ namespace YumeEngine
 
 		if(!file_ || file_->GetFileExtension() != "USHD")
 		{
-			YUMELOG_ERROR(binaryShaderName + " is not a valid shader bytecode file");
+			YUMELOG_ERROR(binaryShaderName.c_str() << " is not a valid shader bytecode file");
 			return false;
 		}
 		file_->ReadUShort();
@@ -216,16 +216,16 @@ namespace YumeEngine
 			file_->Read(&byteCode_[0],byteCodeSize);
 
 			if(type_ == VS)
-				YUMELOG_DEBUG("Loaded cached vertex shader " + GetFullName());
+				YUMELOG_DEBUG("Loaded cached vertex shader " << GetFullName().c_str());
 			else
-				YUMELOG_DEBUG("Loaded cached pixel shader " + GetFullName());
+				YUMELOG_DEBUG("Loaded cached pixel shader " << GetFullName().c_str());
 
 			CalculateConstantBufferSizes();
 			return true;
 		}
 		else
 		{
-			YUMELOG_DEBUG(binaryShaderName + " has zero length bytecode");
+			YUMELOG_DEBUG(binaryShaderName.c_str() << " has zero length bytecode");
 			return false;
 		}
 
@@ -235,9 +235,7 @@ namespace YumeEngine
 	bool YumeD3D11ShaderVariation::Compile()
 	{
 		const YumeString& sourceCode = owner_->GetSourceCode(type_);
-		std::vector<YumeString> defines;
-
-		boost::split(defines,defines_,boost::is_any_of(" "));
+		YumeVector<YumeString>::type defines = defines_.Split(' ');
 
 		const char* entryPoint = 0;
 		const char* profile = 0;
@@ -260,7 +258,7 @@ namespace YumeEngine
 		}
 
 		flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-		YUMELOG_INFO("Compiling shader " << GetFullName());
+		YUMELOG_INFO("Compiling shader " << GetFullName().c_str());
 
 		YumeVector<YumeString>::type defineValues;
 		YumeVector<D3D_SHADER_MACRO>::type macros;
@@ -287,7 +285,7 @@ namespace YumeEngine
 			// In debug mode, check that all defines are referenced by the shader code
 #ifdef _DEBUG
 			if(sourceCode.find(defines[i]) == 0xffffffff)
-				YUMELOG_WARN("Shader " + GetFullName() + " does not use the define " + defines[i]);
+				YUMELOG_WARN("Shader " << GetFullName().c_str() << " does not use the define " << defines[i].c_str());
 #endif
 		}
 
@@ -312,9 +310,9 @@ namespace YumeEngine
 		else
 		{
 			if(type_ == VS)
-				YUMELOG_DEBUG("Compiled vertex shader " + GetFullName());
+				YUMELOG_DEBUG("Compiled vertex shader " << GetFullName().c_str());
 			else
-				YUMELOG_DEBUG("Compiled pixel shader " + GetFullName());
+				YUMELOG_DEBUG("Compiled pixel shader " << GetFullName().c_str());
 
 			unsigned char* bufData = (unsigned char*)shaderCode->GetBufferPointer();
 			unsigned bufSize = (unsigned)shaderCode->GetBufferSize();
@@ -417,8 +415,8 @@ namespace YumeEngine
 
 		YumeString path = GetPath(rm_->GetFullPath(owner_->GetName())) + "Cache/";
 
-		if(!io_->IsDirectoryExist(path))
-			io_->CreateDir(path);
+		if(!io_->IsDirectoryExist(FsPath(path.c_str())))
+			io_->CreateDir(FsPath(path.c_str()));
 
 		YumeString p,file,extension;
 		SplitPath(binaryShaderName,p,file,extension);
@@ -438,7 +436,7 @@ namespace YumeEngine
 		file_->WriteUInt(elementMask_);
 
 		file_->WriteUInt(parameters_.size());
-		for(EastlHashMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
+		for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
 		{
 			file_->WriteString(i->second.name_);
 			file_->WriteUByte((unsigned char)i->second.buffer_);
@@ -473,7 +471,7 @@ namespace YumeEngine
 		for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
 			constantBufferSizes_[i] = 0;
 
-		for(EastlHashMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
+		for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
 		{
 			if(i->second.buffer_ < MAX_SHADER_PARAMETER_GROUPS)
 			{

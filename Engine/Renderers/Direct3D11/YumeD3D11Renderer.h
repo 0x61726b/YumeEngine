@@ -38,32 +38,7 @@
 #include "Renderer/YumeShader.h"
 #include "YumeD3D11ShaderProgram.h"
 #include "Renderer/YumeShaderVariation.h"
-
-#include <EASTL/hash_map.h>
-#include <unordered_map>
 //----------------------------------------------------------------------------
-namespace std
-{
-	template <>
-	struct hash<std::pair<YumeEngine::YumeShaderVariation*,YumeEngine::YumeShaderVariation*> >
-	{
-		size_t operator()(const std::pair<YumeEngine::YumeShaderVariation*,YumeEngine::YumeShaderVariation*>& x) const
-		{
-			return (unsigned)(size_t)x.first | 0xffff && ((unsigned)(size_t)x.second << 16);
-		}
-	};
-}
-namespace eastl
-{
-	template <>
-	struct hash<std::pair<YumeEngine::YumeShaderVariation*,YumeEngine::YumeShaderVariation*> >
-	{
-		size_t operator()(const std::pair<YumeEngine::YumeShaderVariation*,YumeEngine::YumeShaderVariation*>& x) const
-		{
-			return (unsigned)(size_t)x.first | 0xffff && ((unsigned)(size_t)x.second << 16);
-		}
-	};
-}
 namespace YumeEngine
 {
 	class YumeGpuResource;
@@ -74,7 +49,7 @@ namespace YumeEngine
 	class YumeTexture3D;
 	class YumeTextureCube;
 
-	typedef std::unordered_map<std::pair<YumeShaderVariation*,YumeShaderVariation*>,SharedPtr<YumeD3D11ShaderProgram> > ShaderProgramMap;
+	typedef YumeMap<Pair<YumeShaderVariation*,YumeShaderVariation*>,SharedPtr<YumeD3D11ShaderProgram> > ShaderProgramMap;
 
 	class YumeD3DExport YumeD3D11Renderer : public YumeRHI,std::enable_shared_from_this<YumeD3D11Renderer>
 	{
@@ -88,7 +63,7 @@ namespace YumeEngine
 		virtual bool							BeginFrame();
 		virtual void							EndFrame();
 		virtual void							Clear(unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0);
-
+		virtual void							ClearRenderTarget(unsigned index,unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0);
 		virtual bool							IsInitialized() { return initialized_; }
 
 
@@ -240,7 +215,7 @@ namespace YumeEngine
 
 
 		YumeD3D11RendererImpl*					impl_;
-		ShaderProgramMap						shaderPrograms_;
+		ShaderProgramMap::type					shaderPrograms_;
 		YumeD3D11ShaderProgram*					shaderProgram_;
 	};
 }

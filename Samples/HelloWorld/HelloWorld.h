@@ -27,6 +27,8 @@ namespace YumeEngine
 		void MoveCamera(float timeStep);
 
 		virtual void HandleUpdate(float timeStep);
+
+		
 	};
 }
 

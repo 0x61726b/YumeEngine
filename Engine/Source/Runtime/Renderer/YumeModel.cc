@@ -70,7 +70,7 @@ namespace YumeEngine
 		// Check ID
 		if(source.GetFileExtension() != "UMDL")
 		{
-			YUMELOG_ERROR(source.GetName() + " is not a valid model file");
+			YUMELOG_ERROR(source.GetName().c_str() << " is not a valid model file");
 			return false;
 		}
 

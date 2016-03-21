@@ -357,25 +357,25 @@ namespace YumeEngine
 		}
 	}
 
-	VariantVector StreamReader::ReadVariantVector()
+	VariantVector::type StreamReader::ReadVariantVector()
 	{
-		VariantVector ret(ReadVLE());
+		VariantVector::type ret(ReadVLE());
 		for(unsigned i = 0; i < ret.size(); ++i)
 			ret[i] = ReadVariant();
 		return ret;
 	}
 
-	StringVector StreamReader::ReadStringVector()
+	StringVector::type StreamReader::ReadStringVector()
 	{
-		StringVector ret(ReadVLE());
+		StringVector::type ret(ReadVLE());
 		for(unsigned i = 0; i < ret.size(); ++i)
 			ret[i] = ReadString();
 		return ret;
 	}
 
-	VariantMap StreamReader::ReadVariantMap()
+	VariantMap::type StreamReader::ReadVariantMap()
 	{
-		VariantMap ret;
+		VariantMap::type ret;
 		unsigned num = ReadVLE();
 
 		for(unsigned i = 0; i < num; ++i)

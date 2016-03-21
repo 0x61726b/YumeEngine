@@ -21,7 +21,7 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 #include "YumeOctreeQuery.h"
-
+#include "Renderer/YumeDrawable.h"
 
 
 namespace YumeEngine

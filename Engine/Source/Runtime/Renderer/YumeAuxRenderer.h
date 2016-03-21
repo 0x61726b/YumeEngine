@@ -36,12 +36,10 @@ namespace YumeEngine
 	
 	
 	struct DebugLine
-	{
-		
+	{		
 		DebugLine()
 		{
 		}
-
 		
 		DebugLine(const Vector3& start,const Vector3& end,unsigned color):
 			start_(start),
@@ -49,12 +47,9 @@ namespace YumeEngine
 			color_(color)
 		{
 		}
-
 		
-		Vector3 start_;
-		
-		Vector3 end_;
-		
+		Vector3 start_;		
+		Vector3 end_;		
 		unsigned color_;
 	};
 
@@ -74,14 +69,10 @@ namespace YumeEngine
 			color_(color)
 		{
 		}
-
 		
-		Vector3 v1_;
-		
-		Vector3 v2_;
-		
-		Vector3 v3_;
-		
+		Vector3 v1_;		
+		Vector3 v2_;		
+		Vector3 v3_;		
 		unsigned color_;
 	};
 
@@ -90,45 +81,28 @@ namespace YumeEngine
 	{
 	public:
 		YumeDebugRenderer();
-		virtual ~YumeDebugRenderer();
+		virtual ~YumeDebugRenderer();		
 		
-		
-		void SetView(YumeCamera* camera);
-		
-		void AddLine(const Vector3& start,const Vector3& end,const YumeColor& color,bool depthTest = true);
-		
-		void AddLine(const Vector3& start,const Vector3& end,unsigned color,bool depthTest = true);
-		
-		void AddTriangle(const Vector3& v1,const Vector3& v2,const Vector3& v3,const YumeColor& color,bool depthTest = true);
-		
-		void AddTriangle(const Vector3& v1,const Vector3& v2,const Vector3& v3,unsigned color,bool depthTest = true);
-		
-		void AddNode(YumeSceneNode* node,float scale = 1.0f,bool depthTest = true);
-		
-		void AddBoundingBox(const BoundingBox& box,const YumeColor& color,bool depthTest = true);
-		
-		void AddBoundingBox(const BoundingBox& box,const Matrix3x4& transform,const YumeColor& color,bool depthTest = true);
-		
-		void AddFrustum(const Frustum& frustum,const YumeColor& color,bool depthTest = true);
-		
-		void AddPolyhedron(const Polyhedron& poly,const YumeColor& color,bool depthTest = true);
-		
-		void AddSphere(const Sphere& sphere,const YumeColor& color,bool depthTest = true);
-		
-		void AddCylinder(const Vector3& position,float radius,float height,const YumeColor& color,bool depthTest = true);
-		
-		void AddTriangleMesh
-			(const void* vertexData,unsigned vertexSize,const void* indexData,unsigned indexSize,unsigned indexStart,
-			unsigned indexCount,const Matrix3x4& transform,const YumeColor& color,bool depthTest = true);
-		
-		void AddCircle(const Vector3& center,const Vector3& normal,float radius,const YumeColor& color,int steps = 64,bool depthTest = true);
-		
-		void AddCross(const Vector3& center,float size,const YumeColor& color,bool depthTest = true);
-		
+		void SetView(YumeCamera* camera);		
+		void AddLine(const Vector3& start,const Vector3& end,const YumeColor& color,bool depthTest = true);		
+		void AddLine(const Vector3& start,const Vector3& end,unsigned color,bool depthTest = true);		
+		void AddTriangle(const Vector3& v1,const Vector3& v2,const Vector3& v3,const YumeColor& color,bool depthTest = true);		
+		void AddTriangle(const Vector3& v1,const Vector3& v2,const Vector3& v3,unsigned color,bool depthTest = true);		
+		void AddNode(YumeSceneNode* node,float scale = 1.0f,bool depthTest = true);		
+		void AddBoundingBox(const BoundingBox& box,const YumeColor& color,bool depthTest = true);		
+		void AddBoundingBox(const BoundingBox& box,const Matrix3x4& transform,const YumeColor& color,bool depthTest = true);		
+		void AddFrustum(const Frustum& frustum,const YumeColor& color,bool depthTest = true);		
+		void AddPolyhedron(const Polyhedron& poly,const YumeColor& color,bool depthTest = true);		
+		void AddSphere(const Sphere& sphere,const YumeColor& color,bool depthTest = true);		
+		void AddCylinder(const Vector3& position,float radius,float height,const YumeColor& color,bool depthTest = true);		
+		void AddTriangleMesh			(const void* vertexData,unsigned vertexSize,const void* indexData,unsigned indexSize,unsigned indexStart,			unsigned indexCount,const Matrix3x4& transform,const YumeColor& color,bool depthTest = true);		
+		void AddCircle(const Vector3& center,const Vector3& normal,float radius,const YumeColor& color,int steps = 64,bool depthTest = true);		
+		void AddCross(const Vector3& center,float size,const YumeColor& color,bool depthTest = true);		
 		void AddQuad(const Vector3& center,float width,float height,const YumeColor& color,bool depthTest = true);
 
 		
 		void Render();
+		void RenderInternalTexture(const IntVector2& screenPos,YumeTexture* texture);
 
 		static YumeHash GetTypeStatic() { return type_; };
 		virtual YumeHash GetType() { return type_; };
@@ -136,35 +110,21 @@ namespace YumeEngine
 		const Matrix3x4& GetView() const { return view_; }
 
 		
-		const Matrix4& GetProjection() const { return projection_; }
-
-		
-		const Frustum& GetFrustum() const { return frustum_; }
-
-		
-		bool IsInside(const BoundingBox& box) const;
-		
+		const Matrix4& GetProjection() const { return projection_; }		
+		const Frustum& GetFrustum() const { return frustum_; }		
+		bool IsInside(const BoundingBox& box) const;		
 		bool HasContent() const;
 
 	private:
 		
-		void HandleEndFrame(int frameNumber);
-
-		
-		YumeVector<DebugLine>::type lines_;
-		
-		YumeVector<DebugLine>::type noDepthLines_;
-		
-		YumeVector<DebugTriangle>::type triangles_;
-		
-		YumeVector<DebugTriangle>::type noDepthTriangles_;
-		
-		Matrix3x4 view_;
-		
-		Matrix4 projection_;
-		
-		Frustum frustum_;
-		
+		void HandleEndFrame(int frameNumber);		
+		YumeVector<DebugLine>::type lines_;		
+		YumeVector<DebugLine>::type noDepthLines_;		
+		YumeVector<DebugTriangle>::type triangles_;		
+		YumeVector<DebugTriangle>::type noDepthTriangles_;		
+		Matrix3x4 view_;		
+		Matrix4 projection_;		
+		Frustum frustum_;		
 		SharedPtr<YumeVertexBuffer> vertexBuffer_;
 	};
 }

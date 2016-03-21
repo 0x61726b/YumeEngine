@@ -40,7 +40,7 @@ namespace YumeEngine
 	{
 	public:
 		
-		OctreeQuery(YumeVector<YumeDrawable*>::type& result,unsigned char drawableFlags,unsigned viewMask):
+		OctreeQuery(YumePodVector<YumeDrawable*>::type& result,unsigned char drawableFlags,unsigned viewMask):
 			result_(result),
 			drawableFlags_(drawableFlags),
 			viewMask_(viewMask)
@@ -58,7 +58,7 @@ namespace YumeEngine
 		virtual void TestDrawables(YumeDrawable** start,YumeDrawable** end,bool inside) = 0;
 
 		
-		YumeVector<YumeDrawable*>::type& result_;
+		YumePodVector<YumeDrawable*>::type& result_;
 		
 		unsigned char drawableFlags_;
 		
@@ -76,7 +76,7 @@ namespace YumeEngine
 	{
 	public:
 		
-		PointOctreeQuery(YumeVector<YumeDrawable*>::type& result,const Vector3& point,unsigned char drawableFlags = DRAWABLE_ANY,
+		PointOctreeQuery(YumePodVector<YumeDrawable*>::type& result,const Vector3& point,unsigned char drawableFlags = DRAWABLE_ANY,
 			unsigned viewMask = DEFAULT_VIEWMASK):
 			OctreeQuery(result,drawableFlags,viewMask),
 			point_(point)
@@ -97,7 +97,7 @@ namespace YumeEngine
 	{
 	public:
 		
-		SphereOctreeQuery(YumeVector<YumeDrawable*>::type& result,const Sphere& sphere,unsigned char drawableFlags = DRAWABLE_ANY,
+		SphereOctreeQuery(YumePodVector<YumeDrawable*>::type& result,const Sphere& sphere,unsigned char drawableFlags = DRAWABLE_ANY,
 			unsigned viewMask = DEFAULT_VIEWMASK):
 			OctreeQuery(result,drawableFlags,viewMask),
 			sphere_(sphere)
@@ -118,7 +118,7 @@ namespace YumeEngine
 	{
 	public:
 		
-		BoxOctreeQuery(YumeVector<YumeDrawable*>::type& result,const BoundingBox& box,unsigned char drawableFlags = DRAWABLE_ANY,
+		BoxOctreeQuery(YumePodVector<YumeDrawable*>::type& result,const BoundingBox& box,unsigned char drawableFlags = DRAWABLE_ANY,
 			unsigned viewMask = DEFAULT_VIEWMASK):
 			OctreeQuery(result,drawableFlags,viewMask),
 			box_(box)
@@ -139,7 +139,7 @@ namespace YumeEngine
 	{
 	public:
 		
-		FrustumOctreeQuery(YumeVector<YumeDrawable*>::type& result,const Frustum& frustum,unsigned char drawableFlags = DRAWABLE_ANY,
+		FrustumOctreeQuery(YumePodVector<YumeDrawable*>::type& result,const Frustum& frustum,unsigned char drawableFlags = DRAWABLE_ANY,
 			unsigned viewMask = DEFAULT_VIEWMASK):
 			OctreeQuery(result,drawableFlags,viewMask),
 			frustum_(frustum)
@@ -226,7 +226,7 @@ namespace YumeEngine
 	{
 	public:
 		
-		RayOctreeQuery(YumeVector<RayQueryResult>::type& result,const Ray& ray,RayQueryLevel level = RAY_TRIANGLE,
+		RayOctreeQuery(YumePodVector<RayQueryResult>::type& result,const Ray& ray,RayQueryLevel level = RAY_TRIANGLE,
 			float maxDistance = M_INFINITY,unsigned char drawableFlags = DRAWABLE_ANY,unsigned viewMask = DEFAULT_VIEWMASK):
 			result_(result),
 			ray_(ray),
@@ -238,7 +238,7 @@ namespace YumeEngine
 		}
 
 		
-		YumeVector<RayQueryResult>::type& result_;
+		YumePodVector<RayQueryResult>::type& result_;
 		
 		Ray ray_;
 		
@@ -261,7 +261,7 @@ namespace YumeEngine
 	{
 	public:
 		
-		AllContentOctreeQuery(YumeVector<YumeDrawable*>::type& result,unsigned char drawableFlags,unsigned viewMask):
+		AllContentOctreeQuery(YumePodVector<YumeDrawable*>::type& result,unsigned char drawableFlags,unsigned viewMask):
 			OctreeQuery(result,drawableFlags,viewMask)
 		{
 		}

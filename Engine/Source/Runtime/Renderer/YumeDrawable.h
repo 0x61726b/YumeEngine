@@ -119,7 +119,7 @@ namespace YumeEngine
 		
 		virtual void OnSetEnabled();
 		
-		virtual void ProcessRayQuery(const RayOctreeQuery& query,YumeVector<RayQueryResult>::type& results);
+		virtual void ProcessRayQuery(const RayOctreeQuery& query,YumePodVector<RayQueryResult>::type& results);
 		
 		virtual void Update(const FrameInfo& frame);
 		
@@ -265,10 +265,10 @@ namespace YumeEngine
 		bool HasBasePass(unsigned batchIndex) const { return (basePassFlags_ & (1 << batchIndex)) != 0; }
 
 		
-		const YumeVector<YumeLight*>::type& GetLights() const { return lights_; }
+		const YumePodVector<YumeLight*>::type& GetLights() const { return lights_; }
 
 		
-		const YumeVector<YumeLight*>::type& GetVertexLights() const { return vertexLights_; }
+		const YumePodVector<YumeLight*>::type& GetVertexLights() const { return vertexLights_; }
 
 		
 		YumeLight* GetFirstLight() const { return firstLight_; }
@@ -373,13 +373,13 @@ namespace YumeEngine
 		
 		unsigned maxLights_;
 		
-		YumeVector<YumeCamera*>::type viewCameras_;
+		YumePodVector<YumeCamera*>::type viewCameras_;
 		
 		YumeLight* firstLight_;
 		
-		YumeVector<YumeLight*>::type lights_;
+		YumePodVector<YumeLight*>::type lights_;
 		
-		YumeVector<YumeLight*>::type vertexLights_;
+		YumePodVector<YumeLight*>::type vertexLights_;
 	};
 
 	inline bool CompareDrawables(YumeDrawable* lhs,YumeDrawable* rhs)

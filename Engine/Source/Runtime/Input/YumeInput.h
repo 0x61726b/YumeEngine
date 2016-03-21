@@ -490,8 +490,8 @@ namespace YumeEngine
 		typedef YumeVector<InputEventListener*>::type InputEventListeners;
 		InputEventListeners listeners_;
 
-		YumeVector<int>::type keyDown_;
-		YumeVector<int>::type keyPress_;
+		YumeHashSet<int>::type keyDown_;
+		YumeHashSet<int>::type keyPress_;
 
 		YumeRHI* graphics_;
 

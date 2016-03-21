@@ -61,7 +61,7 @@ namespace YumeEngine
 		
 		mutable Mutex backgroundLoadMutex_;
 		
-		YumeMap<std::pair<YumeHash,YumeHash>,WorkItem>::type backgroundLoadQueue_;
+		YumeMap<Pair<YumeHash,YumeHash>,WorkItem>::type backgroundLoadQueue_;
 	};
 }
 

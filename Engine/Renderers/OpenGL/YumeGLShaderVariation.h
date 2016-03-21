@@ -25,7 +25,6 @@
 #include "YumeGLRequired.h"
 
 #include "Renderer/YumeRendererDefs.h"
-#include "Renderer/YumeGpuResource.h"
 #include "Renderer/YumeShaderVariation.h"
 #include "YumeGLGpuResource.h"
 //----------------------------------------------------------------------------

@@ -82,17 +82,27 @@ namespace YumeEngine
 		SDL_Window* window = graphics_->GetWindow();
 		unsigned flags = window ? SDL_GetWindowFlags(window) & (SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS) : 0;
 
+		if(window)
+		{
+			if(!inputFocus_ && ((mouseVisible_ || mouseMode_ == MM_FREE) || graphics_->GetFullscreen() || screenModeChanged_) && (flags & SDL_WINDOW_INPUT_FOCUS))
+			{
+				screenModeChanged_ = false;
+				focusedThisFrame_ = true;
+			}
+
+			if(focusedThisFrame_)
+				GainFocus();
+
+			// Check for losing focus. The window flags are not reliable when using an external window, so prevent losing focus in that case
+			if(inputFocus_ && (flags & SDL_WINDOW_INPUT_FOCUS) == 0)
+				LoseFocus();
+		}
+
 		if(!inputFocus_ && (flags & SDL_WINDOW_INPUT_FOCUS))
 		{
 			screenModeChanged_ = false;
 			focusedThisFrame_ = true;
 		}
-
-		if(focusedThisFrame_)
-			GainFocus();
-
-		if(inputFocus_ && flags & (SDL_WINDOW_INPUT_FOCUS) == 0)
-			LoseFocus();
 
 		if(mouseVisible_ && mouseMode_ == MM_WRAP)
 		{
@@ -264,57 +274,6 @@ namespace YumeEngine
 		toggleFullscreen_ = enable;
 	}
 
-
-	static void PopulateKeyBindingMap(YumeMap<YumeString,int>::type& keyBindingMap)
-	{
-		if(keyBindingMap.empty())
-		{
-			keyBindingMap.insert(std::make_pair("SPACE",KEY_SPACE));
-			keyBindingMap.insert(std::make_pair("LCTRL",KEY_LCTRL));
-			keyBindingMap.insert(std::make_pair("RCTRL",KEY_RCTRL));
-			keyBindingMap.insert(std::make_pair("LSHIFT",KEY_LSHIFT));
-			keyBindingMap.insert(std::make_pair("RSHIFT",KEY_RSHIFT));
-			keyBindingMap.insert(std::make_pair("LALT",KEY_LALT));
-			keyBindingMap.insert(std::make_pair("RALT",KEY_RALT));
-			keyBindingMap.insert(std::make_pair("LGUI",KEY_LGUI));
-			keyBindingMap.insert(std::make_pair("RGUI",KEY_RGUI));
-			keyBindingMap.insert(std::make_pair("TAB",KEY_TAB));
-			keyBindingMap.insert(std::make_pair("RETURN",KEY_RETURN));
-			keyBindingMap.insert(std::make_pair("RETURN2",KEY_RETURN2));
-			keyBindingMap.insert(std::make_pair("ENTER",KEY_KP_ENTER));
-			keyBindingMap.insert(std::make_pair("SELECT",KEY_SELECT));
-			keyBindingMap.insert(std::make_pair("LEFT",KEY_LEFT));
-			keyBindingMap.insert(std::make_pair("RIGHT",KEY_RIGHT));
-			keyBindingMap.insert(std::make_pair("UP",KEY_UP));
-			keyBindingMap.insert(std::make_pair("DOWN",KEY_DOWN));
-			keyBindingMap.insert(std::make_pair("PAGEUP",KEY_PAGEUP));
-			keyBindingMap.insert(std::make_pair("PAGEDOWN",KEY_PAGEDOWN));
-			keyBindingMap.insert(std::make_pair("F1",KEY_F1));
-			keyBindingMap.insert(std::make_pair("F2",KEY_F2));
-			keyBindingMap.insert(std::make_pair("F3",KEY_F3));
-			keyBindingMap.insert(std::make_pair("F4",KEY_F4));
-			keyBindingMap.insert(std::make_pair("F5",KEY_F5));
-			keyBindingMap.insert(std::make_pair("F6",KEY_F6));
-			keyBindingMap.insert(std::make_pair("F7",KEY_F7));
-			keyBindingMap.insert(std::make_pair("F8",KEY_F8));
-			keyBindingMap.insert(std::make_pair("F9",KEY_F9));
-			keyBindingMap.insert(std::make_pair("F10",KEY_F10));
-			keyBindingMap.insert(std::make_pair("F11",KEY_F11));
-			keyBindingMap.insert(std::make_pair("F12",KEY_F12));
-		}
-	}
-	static void PopulateMouseButtonBindingMap(YumeMap<YumeString,int>::type& mouseButtonBindingMap)
-	{
-		if(mouseButtonBindingMap.empty())
-		{
-			mouseButtonBindingMap.insert(std::make_pair("LEFT",SDL_BUTTON_LEFT));
-			mouseButtonBindingMap.insert(std::make_pair("MIDDLE",SDL_BUTTON_MIDDLE));
-			mouseButtonBindingMap.insert(std::make_pair("RIGHT",SDL_BUTTON_RIGHT));
-			mouseButtonBindingMap.insert(std::make_pair("X1",SDL_BUTTON_X1));
-			mouseButtonBindingMap.insert(std::make_pair("X2",SDL_BUTTON_X2));
-		}
-	}
-
 	int YumeInput::GetKeyFromName(const YumeString& name) const
 	{
 		return SDL_GetKeyFromName(name.c_str());
@@ -329,12 +288,12 @@ namespace YumeEngine
 
 	bool YumeInput::GetKeyDown(int key) const
 	{
-		return std::find(keyDown_.begin(),keyDown_.end(),SDL_toupper(key)) != keyDown_.end();
+		return keyDown_.Contains(SDL_toupper(key));
 	}
 
 	bool YumeInput::GetKeyPress(int key) const
 	{
-		return std::find(keyPress_.begin(),keyPress_.end(),SDL_toupper(key)) != keyPress_.end();
+		return keyPress_.Contains(SDL_toupper(key));
 	}
 
 
@@ -482,17 +441,18 @@ namespace YumeEngine
 
 		if(newState)
 		{
-			if(std::find(keyDown_.begin(),keyDown_.end(),key) == keyDown_.end())
+			if(!keyDown_.Contains((key)))
 			{
-				keyDown_.push_back(key);
-				keyPress_.push_back(key);
+				keyDown_.insert(key);
+				keyPress_.insert(key);
 			}
 			else
 				repeat = true;
 		}
 		else
 		{
-			keyDown_.erase(std::find(keyDown_.begin(),keyDown_.end(),key));
+			if(!keyDown_.erase(key))
+				return;
 		}
 
 		//ToDo Key Up down event
@@ -523,38 +483,58 @@ namespace YumeEngine
 
 	void YumeInput::AddListener(InputEventListener* listener)
 	{
-		if(std::find(listeners_.begin(),listeners_.end(),listener) != listeners_.end())
+		if(listeners_.Contains(listener))
 			return;
 		listeners_.push_back(listener);
 	}
 
 	void YumeInput::RemoveListener(InputEventListener* listener)
 	{
-		InputEventListeners::iterator i = std::find(listeners_.begin(),listeners_.end(),listener);
+		InputEventListeners::Iterator i = listeners_.find(listener);
 		if(i != listeners_.end())
 			listeners_.erase(i);
 	}
 	void YumeInput::FireMouseButtonDown(bool state,int button,unsigned buttons)
 	{
 		if(state)
-			for(InputEventListeners::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
+			for(InputEventListeners::Iterator i = listeners_.begin(); i != listeners_.end(); ++i)
 				(*i)->HandleMouseButtonDown(button,buttons);
 		else
-			for(InputEventListeners::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
+			for(InputEventListeners::Iterator i = listeners_.begin(); i != listeners_.end(); ++i)
 				(*i)->HandleMouseButtonUp(button,buttons);
 	}
 	void YumeInput::FireKeyDown(bool state,int key,unsigned buttons,int repeat)
 	{
 		if(state)
-			for(InputEventListeners::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
+			for(InputEventListeners::Iterator i = listeners_.begin(); i != listeners_.end(); ++i)
 				(*i)->HandleKeyDown(key,buttons,repeat);
 		else
-			for(InputEventListeners::iterator i = listeners_.begin(); i != listeners_.end(); ++i)
+			for(InputEventListeners::Iterator i = listeners_.begin(); i != listeners_.end(); ++i)
 				(*i)->HandleKeyUp(key,buttons,repeat);
 	}
 	void YumeInput::HandleSDLEvent(void* sdlEvent)
 	{
 		SDL_Event& evt = *static_cast<SDL_Event*>(sdlEvent);
+
+		if(!inputFocus_ && evt.type >= SDL_KEYDOWN && evt.type <= SDL_MULTIGESTURE)
+		{
+			// Require the click to be at least 1 pixel inside the window to disregard clicks in the title bar
+			if(evt.type == SDL_MOUSEBUTTONDOWN && evt.button.x > 0 && evt.button.y > 0 && evt.button.x < graphics_->GetWidth() - 1 &&
+				evt.button.y < graphics_->GetHeight() - 1)
+			{
+				focusedThisFrame_ = true;
+				// Do not cause the click to actually go throughfin
+				return;
+			}
+			else if(evt.type == SDL_FINGERDOWN)
+			{
+				// When focusing by touch, call GainFocus() immediately as it resets the state; a touch has sustained state
+				// which should be kept
+				GainFocus();
+			}
+			else
+				return;
+		}
 
 		switch(evt.type)
 		{
@@ -643,7 +623,7 @@ namespace YumeEngine
 		{
 			gYume->pEngine->Exit();
 		}
-			break;
+		break;
 
 		default: break;
 		}

@@ -67,9 +67,8 @@ namespace YumeEngine
 
 	void YumeResource::SetName(const YumeString& name)
 	{
-		boost::hash<YumeString> nameHash;
 		name_ = name;
-		nameHash_ = nameHash(name);
+		nameHash_ = YumeHash(name);
 	}
 
 	void YumeResource::SetMemoryUsage(unsigned size)

@@ -41,92 +41,93 @@
 
 namespace YumeEngine
 {
-	 //-----------------------------------------------------------------------
-    YumeDynamicLibrary::YumeDynamicLibrary( const YumeString& name )
-    {
-        mName = name;
-        mInst = NULL;
-    }
+	//-----------------------------------------------------------------------
+	YumeDynamicLibrary::YumeDynamicLibrary(const YumeString& name)
+	{
+		mName = name;
+		mInst = NULL;
+	}
 
-    //-----------------------------------------------------------------------
-    YumeDynamicLibrary::~YumeDynamicLibrary()
-    {
-    }
+	//-----------------------------------------------------------------------
+	YumeDynamicLibrary::~YumeDynamicLibrary()
+	{
+	}
 
-    //-----------------------------------------------------------------------
-    bool YumeDynamicLibrary::Load()
-    {
-        // Log library load
-        YUMELOG_INFO("Loading dynamic library " << mName << "....");
+	//-----------------------------------------------------------------------
+	bool YumeDynamicLibrary::Load()
+	{
+		// Log library load
+		YUMELOG_INFO("Loading dynamic library " << mName.c_str() << "....");
+
 
 		YumeString name = mName;
 #if YUME_PLATFORM == YUME_PLATFORM_LINUX
-        // dlopen() does not add .so to the filename, like windows does for .dll
-	if (name.find(".so") == std::string::npos)
-           name += ".so";
+		// dlopen() does not add .so to the filename, like windows does for .dll
+		if (name.find(".so") == String::NPOS)
+			name += ".so";
 #elif YUME_PLATFORM == YUME_PLATFORM_APPLE
-        // dlopen() does not add .dylib to the filename, like windows does for .dll
-        if (name.substr(name.length() - 6, 6) != ".dylib")
+		// dlopen() does not add .dylib to the filename, like windows does for .dll
+		if(name.substr(name.length() - 6,6) != ".dylib")
 			name += ".dylib";
 #elif YUME_PLATFORM == YUME_PLATFORM_WIN32
 		// Although LoadLibraryEx will add .dll itself when you only specify the library name,
 		// if you include a relative path then it does not. So, add it to be sure.
-		if (name.substr(name.length() - 4, 4) != ".dll")
+		if(name.substr(name.length() - 4,4) != ".dll")
 			name += ".dll";
 #endif
-        mInst = (DYNLIB_HANDLE)DYNLIB_LOAD( (name.c_str()) );
+		mInst = (DYNLIB_HANDLE)DYNLIB_LOAD((name.c_str()));
 
-        if( !mInst )
+		if(!mInst)
 		{
-            YUMELOG_FATAL(
-                "Could not load dynamic library " + name +
-                ".  System Error: " + dynlibError());
+			YUMELOG_FATAL(
+				"Could not load dynamic library " << name.c_str() <<
+				".  System Error: " << dynlibError().c_str());
 			return false;
 		}
 		return true;
-    }
+	}
 
-    //-----------------------------------------------------------------------
-    void YumeDynamicLibrary::Unload()
-    {
-        // Log library unload
-        YUMELOG_INFO("Unloading dynamic library " << mName << "....");
+	//-----------------------------------------------------------------------
+	void YumeDynamicLibrary::Unload()
+	{
+		// Log library unload
+		YUMELOG_INFO("Unloading dynamic library " << mName.c_str() << "....");
 
-        if( DYNLIB_UNLOAD( mInst ) )
+		if(DYNLIB_UNLOAD(mInst))
 		{
 			YUMELOG_FATAL(
-                "Could not unload dynamic library " + mName +
-                ".  System Error: " + dynlibError());
+				"Could not unload dynamic library " << mName.c_str() <<
+				".  System Error: " << dynlibError().c_str());
 		}
-    }
+	}
 
-    //-----------------------------------------------------------------------
-    void* YumeDynamicLibrary::GetSymbol( const YumeString& strName ) const throw()
-    {
-        return (void*)DYNLIB_GETSYM( mInst, strName.c_str() );
-    }
-    //-----------------------------------------------------------------------
-    YumeString YumeDynamicLibrary::dynlibError( void )
-    {
+	//-----------------------------------------------------------------------
+	void* YumeDynamicLibrary::GetSymbol(const YumeString& strName) const throw()
+	{
+		return (void*)DYNLIB_GETSYM(mInst,strName.c_str());
+	}
+	//-----------------------------------------------------------------------
+	YumeString YumeDynamicLibrary::dynlibError(void)
+	{
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
-        LPVOID lpMsgBuf;
-        FormatMessage(
-            FORMAT_MESSAGE_ALLOCATE_BUFFER |
-            FORMAT_MESSAGE_FROM_SYSTEM |
-            FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL,
-            GetLastError(),
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            (LPTSTR) &lpMsgBuf,
-            0,
-            NULL
-            );
-        YumeString ret = (char*)lpMsgBuf;
-        // Free the buffer.
-        LocalFree( lpMsgBuf );
-        return ret;
+		LPVOID lpMsgBuf;
+		FormatMessage(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER |
+			FORMAT_MESSAGE_FROM_SYSTEM |
+			FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,
+			GetLastError(),
+			MAKELANGID(LANG_NEUTRAL,SUBLANG_DEFAULT),
+			(LPTSTR)&lpMsgBuf,
+			0,
+			NULL
+			);
+		YumeString ret = (char*)lpMsgBuf;
+		// Free the buffer.
+		LocalFree(lpMsgBuf);
+		return ret;
 #elif YUME_PLATFORM == YUME_PLATFORM_LINUX || YUME_PLATFORM == YUME_PLATFORM_APPLE
-        return YumeString(dlerror());
+		return YumeString(dlerror());
 #endif
-    }
+	}
 }

@@ -27,14 +27,14 @@
 #include "Math/YumeRay.h"
 #include "Math/YumeRect.h"
 #include "Math/YumeVector2.h"
-#include "YumeRenderPipeline.h"
-#include "YumeRenderView.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class YumeCamera;
 	class YumeScene;
 	class YumeXmlFile;
+	class YumeRenderPipeline;
+	class YumeRenderView;
 
 
 	
@@ -43,7 +43,7 @@ namespace YumeEngine
 	public:
 		YumeViewport();
 		YumeViewport(YumeScene* scene, YumeCamera* camera, YumeRenderPipeline* renderPath = 0);
-		YumeViewport(YumeCamera* camera,const IntRect& rect,YumeRenderPipeline* renderPath = 0);
+		YumeViewport(YumeScene* scene, YumeCamera* camera, const IntRect& rect, YumeRenderPipeline* renderPath = 0);
 		~YumeViewport();
 
 		void SetCamera(YumeCamera* camera);
@@ -68,9 +68,9 @@ namespace YumeEngine
 		void AllocateView();
 
 	private:
-		YumeCamera* camera_;
-		YumeCamera* cullCamera_;
-		YumeScene* scene_;
+		WeakPtr<YumeCamera> camera_;
+		WeakPtr<YumeCamera> cullCamera_;
+		WeakPtr<YumeScene> scene_;
 		IntRect rect_;
 		SharedPtr<YumeRenderPipeline> renderPath_;
 		SharedPtr<YumeRenderView> view_;

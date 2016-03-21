@@ -110,7 +110,7 @@ namespace YumeEngine
 			return true;
 		}
 
-		YUMELOG_ERROR("Texture3D XML data for " + GetName() + " did not contain either volume or colorlut element");
+		YUMELOG_ERROR("Texture3D XML data for " << GetName().c_str() << " did not contain either volume or colorlut element");
 	}
 
 	bool YumeTexture3D::EndLoad()

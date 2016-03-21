@@ -47,7 +47,7 @@ namespace YumeEngine
 
 	protected:
 		SharedPtr<YumeEngine3D> engine_;
-		VariantMap engineVariants_;
+		VariantMap::type engineVariants_;
 		int exitCode_;
 	};
 

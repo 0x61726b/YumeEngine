@@ -531,7 +531,7 @@ namespace YumeEngine
 				graphics->NeedParameterUpdate(SP_LIGHT,lightQueue_))
 			{
 				Vector4 vertexLights[MAX_VERTEX_LIGHTS * 3];
-				const YumeVector<YumeLight*>::type& lights = lightQueue_->vertexLights_;
+				const YumePodVector<YumeLight*>::type& lights = lightQueue_->vertexLights_;
 
 				for(unsigned i = 0; i < lights.size(); ++i)
 				{
@@ -586,7 +586,10 @@ namespace YumeEngine
 			{
 				const YumeMap<YumeHash,MaterialShaderParameter>::type& parameters = material_->GetShaderParameters();
 				for(YumeMap<YumeHash,MaterialShaderParameter>::const_iterator i = parameters.begin(); i != parameters.end(); ++i)
+				{
+					YumeString n = i->second.name_;
 					graphics->SetShaderParameter(i->first,i->second.value_);
+				}
 			}
 
 			const YumeMap<TextureUnit,SharedPtr<YumeTexture> >::type& textures = material_->GetTextures();
@@ -689,8 +692,8 @@ namespace YumeEngine
 					geometry_->GetVertexStart(),geometry_->GetVertexCount(),instances_.size());
 
 				// Remove the instancing buffer & element mask now
-				vertexBuffers.pop_back();
-				elementMasks.pop_back();
+				vertexBuffers.Pop();
+				elementMasks.Pop();
 			}
 		}
 	}
@@ -716,15 +719,15 @@ namespace YumeEngine
 		for(unsigned i = 0; i < batches_.size(); ++i)
 			sortedBatches_[i] = &batches_[i];
 
-		std::sort(sortedBatches_.begin(),sortedBatches_.end(),CompareBatchesBackToFront);
+		Sort(sortedBatches_.begin(),sortedBatches_.end(),CompareBatchesBackToFront);
 
 		sortedBatchGroups_.resize(batchGroups_.size());
 
 		unsigned index = 0;
-		for(boost::unordered_map<BatchGroupKey,BatchGroup>::iterator i = batchGroups_.begin(); i != batchGroups_.end(); ++i)
+		for(YumeMap<BatchGroupKey,BatchGroup>::iterator i = batchGroups_.begin(); i != batchGroups_.end(); ++i)
 			sortedBatchGroups_[index++] = &i->second;
 
-		std::sort(sortedBatchGroups_.begin(),sortedBatchGroups_.end(),CompareBatchGroupOrder);
+		Sort(sortedBatchGroups_.begin(),sortedBatchGroups_.end(),CompareBatchGroupOrder);
 	}
 
 	void BatchQueue::SortFrontToBack()
@@ -737,11 +740,11 @@ namespace YumeEngine
 		SortFrontToBack2Pass(sortedBatches_);
 
 		// Sort each group front to back
-		for(boost::unordered_map<BatchGroupKey,BatchGroup>::iterator i = batchGroups_.begin(); i != batchGroups_.end(); ++i)
+		for(YumeMap<BatchGroupKey,BatchGroup>::iterator i = batchGroups_.begin(); i != batchGroups_.end(); ++i)
 		{
 			if(i->second.instances_.size() <= maxSortedInstances_)
 			{
-				std::sort(i->second.instances_.begin(),i->second.instances_.end(),CompareInstancesFrontToBack);
+				Sort(i->second.instances_.begin(),i->second.instances_.end(),CompareInstancesFrontToBack);
 				if(i->second.instances_.size())
 					i->second.distance_ = i->second.instances_[0].distance_;
 			}
@@ -757,16 +760,16 @@ namespace YumeEngine
 		sortedBatchGroups_.resize(batchGroups_.size());
 
 		unsigned index = 0;
-		for(boost::unordered_map<BatchGroupKey,BatchGroup>::iterator i = batchGroups_.begin(); i != batchGroups_.end(); ++i)
+		for(YumeMap<BatchGroupKey,BatchGroup>::iterator i = batchGroups_.begin(); i != batchGroups_.end(); ++i)
 			sortedBatchGroups_[index++] = &i->second;
 
-		SortFrontToBack2Pass(reinterpret_cast<YumeVector<Batch*>::type&>(sortedBatchGroups_));
+		SortFrontToBack2Pass(reinterpret_cast<YumePodVector<Batch*>::type&>(sortedBatchGroups_));
 	}
 
-	void BatchQueue::SortFrontToBack2Pass(YumeVector<Batch*>::type& batches)
+	void BatchQueue::SortFrontToBack2Pass(YumePodVector<Batch*>::type& batches)
 	{
 		// For desktop, first sort by distance and remap shader/material/geometry IDs in the sort key
-		std::sort(batches.begin(),batches.end(),CompareBatchesFrontToBack);
+		Sort(batches.begin(),batches.end(),CompareBatchesFrontToBack);
 
 		unsigned freeShaderID = 0;
 		unsigned short freeMaterialID = 0;
@@ -777,36 +780,32 @@ namespace YumeEngine
 			Batch* batch = *i;
 
 			unsigned shaderID = (unsigned)(batch->sortKey_ >> 32);
-			boost::unordered_map<unsigned,unsigned>::const_iterator j = shaderRemapping_.find(shaderID);
+			YumeMap<unsigned,unsigned>::const_iterator j = shaderRemapping_.find(shaderID);
 			if(j != shaderRemapping_.end())
 				shaderID = j->second;
 			else
 			{
-				unsigned hash = freeShaderID | (shaderID & 0xc0000000);
-				shaderRemapping_.insert(std::make_pair(shaderID,hash));
-				shaderID =  hash;
+				shaderID = shaderRemapping_[shaderID] = freeShaderID | (shaderID & 0xc0000000);
 				++freeShaderID;
 			}
 
 			unsigned short materialID = (unsigned short)(batch->sortKey_ & 0xffff0000);
-			boost::unordered_map<unsigned short,unsigned short>::const_iterator k = materialRemapping_.find(materialID);
+			YumeMap<unsigned short,unsigned short>::const_iterator k = materialRemapping_.find(materialID);
 			if(k != materialRemapping_.end())
 				materialID = k->second;
 			else
 			{
-				materialRemapping_.insert(std::make_pair(materialID,freeMaterialID));
-				materialID = freeMaterialID;
+				materialID = materialRemapping_[materialID] = freeMaterialID;
 				++freeMaterialID;
 			}
 
 			unsigned short geometryID = (unsigned short)(batch->sortKey_ & 0xffff);
-			boost::unordered_map<unsigned short,unsigned short>::const_iterator l = geometryRemapping_.find(geometryID);
+			YumeMap<unsigned short,unsigned short>::const_iterator l = geometryRemapping_.find(geometryID);
 			if(l != geometryRemapping_.end())
 				geometryID = l->second;
 			else
 			{
-				geometryRemapping_.insert(std::make_pair(geometryID,freeGeometryID));
-				geometryID = freeGeometryID;
+				geometryID = geometryRemapping_[geometryID] = freeGeometryID;
 				++freeGeometryID;
 			}
 
@@ -818,12 +817,12 @@ namespace YumeEngine
 		geometryRemapping_.clear();
 
 		// Finally sort again with the rewritten ID's
-		std::sort(batches.begin(),batches.end(),CompareBatchesState);
+		Sort(batches.begin(),batches.end(),CompareBatchesState);
 	}
 
 	void BatchQueue::SetTransforms(void* lockedData,unsigned& freeIndex)
 	{
-		for(boost::unordered_map<BatchGroupKey,BatchGroup>::iterator i = batchGroups_.begin(); i != batchGroups_.end(); ++i)
+		for(YumeMap<BatchGroupKey,BatchGroup>::iterator i = batchGroups_.begin(); i != batchGroups_.end(); ++i)
 			i->second.SetTransforms(lockedData,freeIndex);
 	}
 
@@ -874,7 +873,7 @@ namespace YumeEngine
 	{
 		unsigned total = 0;
 
-		for(boost::unordered_map<BatchGroupKey,BatchGroup>::const_iterator i = batchGroups_.begin(); i != batchGroups_.end(); ++i)
+		for(YumeMap<BatchGroupKey,BatchGroup>::const_iterator i = batchGroups_.begin(); i != batchGroups_.end(); ++i)
 		{
 			if(i->second.geometryType_ == GEOM_INSTANCED)
 				total += i->second.instances_.size();

@@ -86,9 +86,7 @@ namespace YumeEngine
 
 	TextureUnit ParseTextureUnitName(YumeString name)
 	{
-		boost::to_lower(name);
-		boost::trim(name);
-
+		name = name.ToLower().Trimmed();
 		TextureUnit unit = (TextureUnit)GetStringListIndex(name.c_str(),textureUnitNames,MAX_TEXTURE_UNITS);
 		if(unit == MAX_TEXTURE_UNITS)
 		{
@@ -109,7 +107,7 @@ namespace YumeEngine
 		}
 
 		if(unit == MAX_TEXTURE_UNITS)
-			YUMELOG_ERROR("Unknown texture unit name " + name);
+			YUMELOG_ERROR("Unknown texture unit name " << name.c_str());
 
 		return unit;
 	}
@@ -455,7 +453,7 @@ namespace YumeEngine
 
 			if(shaderParameters_.find(name) == shaderParameters_.end())
 			{
-				YUMELOG_ERROR(GetName() + " has no shader parameter: " + name);
+				YUMELOG_ERROR(GetName().c_str() << " has no shader parameter: " << name.c_str());
 				return;
 			}
 
@@ -493,7 +491,7 @@ namespace YumeEngine
 		if(unit < MAX_TEXTURE_UNITS)
 		{
 			if(texture)
-				textures_[unit] = SharedPtr<YumeTexture>(texture);
+				textures_[unit] = (texture);
 			else
 				textures_.erase(unit);
 		}
@@ -609,7 +607,7 @@ namespace YumeEngine
 
 	void YumeMaterial::SortTechniques()
 	{
-		std::sort(techniques_.begin(),techniques_.end(),CompareTechniqueEntries);
+		Sort(techniques_.begin(),techniques_.end(),CompareTechniqueEntries);
 	}
 
 	void YumeMaterial::MarkForAuxView(unsigned frameNumber)
@@ -675,8 +673,7 @@ namespace YumeEngine
 
 	Variant YumeMaterial::ParseShaderParameterValue(const YumeString& value)
 	{
-		YumeString valueTrimmed = value;
-		boost::trim(valueTrimmed);
+		YumeString valueTrimmed = value.Trimmed();
 		if(valueTrimmed.length() && IsAlpha((unsigned)valueTrimmed[0]))
 			return Variant(ToBool(valueTrimmed));
 		else

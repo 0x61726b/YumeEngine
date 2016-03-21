@@ -114,7 +114,7 @@ namespace YumeEngine
 			YUMELOG_ERROR("Null work item submitted to the work queue");
 			return;
 		}
-		assert(std::find(workItems_.begin(),workItems_.end(),item) == workItems_.end());
+		assert(!workItems_.Contains(item));
 			
 
 		// Push to the main thread list to keep item alive
@@ -156,10 +156,10 @@ namespace YumeEngine
 		MutexLock lock(queueMutex_);
 
 		// Can only remove successfully if the item was not yet taken by threads for execution
-		YumeVector<WorkItem*>::iterator i = std::find(queue_.begin(),queue_.end(),item);
+		YumeVector<WorkItem*>::iterator i = queue_.find(item.Get());
 		if(i != queue_.end())
 		{
-			YumeVector<SharedPtr<WorkItem> >::iterator j = std::find(workItems_.begin(),workItems_.end(),item);
+			YumeVector<SharedPtr<WorkItem> >::iterator j = workItems_.find(item);
 			if(j != workItems_.end())
 			{
 				queue_.erase(i);
@@ -179,10 +179,10 @@ namespace YumeEngine
 
 		for(YumeVector<SharedPtr<WorkItem> >::const_iterator i = items.begin(); i != items.end(); ++i)
 		{
-			YumeVector<WorkItem*>::iterator j = std::find(queue_.begin(),queue_.end(),i->Get());
+			YumeVector<WorkItem*>::iterator j = queue_.find(i->Get());
 			if(j != queue_.end())
 			{
-				YumeVector<SharedPtr<WorkItem> >::iterator k = std::find(workItems_.begin(),workItems_.end(),*i);
+				YumeVector<SharedPtr<WorkItem> >::iterator k = workItems_.find(*i);
 				if(k != workItems_.end())
 				{
 					queue_.erase(j);

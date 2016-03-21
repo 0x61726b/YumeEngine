@@ -17,6 +17,3 @@
 [submodule "Engine/Source/3rdParty/pugixml"]
 	path = Engine/Source/3rdParty/pugixml
 	url = https://github.com/zeux/pugixml
-[submodule "Engine/Source/3rdParty/EASTL"]
-	path = Engine/Source/3rdParty/EASTL
-	url = https://github.com/electronicarts/EASTL

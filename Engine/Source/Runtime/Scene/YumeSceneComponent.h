@@ -52,7 +52,7 @@ namespace YumeEngine
 		YumeSceneComponent* GetComponent(YumeHash type) const;
 		void GetComponents(YumeVector<YumeSceneComponent*>::type& dest,YumeHash type) const;
 		template <class T> T* GetComponent() const;
-		template <class T> void GetComponents(std::vector<T*>& dest) const;
+		template <class T> void GetComponents(Vector<T*>& dest) const;
 
 		void SetID(unsigned id);
 		void SetNode(YumeSceneNode* node);
@@ -81,7 +81,7 @@ namespace YumeEngine
 
 	template <class T> T* YumeSceneComponent::GetComponent() const { return static_cast<T*>(GetComponent(T::GetTypeStatic())); }
 
-	template <class T> void YumeSceneComponent::GetComponents(std::vector<T*>& dest) const
+	template <class T> void YumeSceneComponent::GetComponents(Vector<T*>& dest) const
 	{
 		GetComponents(reinterpret_cast<YumeVector<YumeSceneComponent*>::type&>(dest),T::GetType());
 	}

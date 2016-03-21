@@ -23,9 +23,10 @@
 #include "YumeViewport.h"
 #include "YumeCamera.h"
 #include "Core/YumeXmlFile.h"
-#include "Renderer/YumeRenderPipeline.h"
+#include "YumeRenderPipeline.h"
 #include "Renderer/YumeRenderer.h"
 #include "YumeRenderView.h"
+#include "Scene/YumeScene.h"
 
 #include "YumeRHI.h"
 #include "Engine/YumeEngine.h"
@@ -53,16 +54,15 @@ namespace YumeEngine
 	{
 		SetRenderPath(renderPath);
 	}
-
-	YumeViewport::YumeViewport(YumeCamera* camera,const IntRect& rect,YumeRenderPipeline* renderPath):
+	YumeViewport::YumeViewport(YumeScene* scene,YumeCamera* camera,const IntRect& rect,YumeRenderPipeline* renderPath):
+		scene_(scene),
 		camera_(camera),
 		rect_(rect),
-		drawDebug_(true),
-		view_(0),
-		cullCamera_(0)
+		drawDebug_(true)
 	{
 		SetRenderPath(renderPath);
 	}
+
 	YumeViewport::~YumeViewport()
 	{
 	}
@@ -204,6 +204,6 @@ namespace YumeEngine
 
 	void YumeViewport::AllocateView()
 	{
-		view_ = SharedPtr<YumeRenderView>(new YumeRenderView);
+		view_ = (new YumeRenderView);
 	}
 }

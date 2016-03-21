@@ -28,8 +28,9 @@
 
 
 #include "YumeHeaders.h"
-#include "Core/YumeRequired.h"
+#include "Renderer/YumeRenderer.h"
 #include "Core/YumeCommon.h"
+
 
 
 

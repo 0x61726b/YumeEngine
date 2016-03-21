@@ -51,9 +51,6 @@ namespace YumeEngine
 	static const float M_DEGTORAD = M_PI / 180.0f;
 	static const float M_DEGTORAD_2 = M_PI / 360.0f;    // M_DEGTORAD / 2.f
 	static const float M_RADTODEG = 1.0f / M_DEGTORAD;
-
-	static const int CONVERSION_BUFFER_LENGTH = 128;
-	static const int MATRIX_CONVERSION_BUFFER_LENGTH = 256;
 	
 	enum Intersection
 	{

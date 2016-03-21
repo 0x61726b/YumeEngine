@@ -104,7 +104,7 @@ namespace YumeEngine
 		YumeGLResource::OnDeviceLost();
 
 		if(renderSurface_)
-			boost::static_pointer_cast<YumeGLRenderable>(renderSurface_)->OnDeviceLost();
+			StaticCast<YumeGLRenderable>(renderSurface_)->OnDeviceLost();
 	}
 
 	void YumeGLTexture2D::OnDeviceReset()
@@ -175,7 +175,7 @@ namespace YumeEngine
 		}
 
 		// Delete the old rendersurface if any
-		renderSurface_.reset();
+		renderSurface_.Reset();
 		usage_ = usage;
 
 		if(usage_ == TEXTURE_RENDERTARGET || usage_ == TEXTURE_DEPTHSTENCIL)
@@ -497,7 +497,7 @@ namespace YumeEngine
 		{
 			if(renderSurface_)
 			{
-				boost::static_pointer_cast<YumeGLRenderable>(renderSurface_)->CreateRenderBuffer(width_,height_,format);
+				StaticCast<YumeGLRenderable>(renderSurface_)->CreateRenderBuffer(width_,height_,format);
 				return true;
 			}
 			else
@@ -553,7 +553,7 @@ namespace YumeEngine
 		{
 			YumeRenderer* renderer = 0;
 			if(renderer)
-				renderer->QueueRenderable(renderSurface_.get());
+				renderer->QueueRenderable(renderSurface_.Get());
 			renderSurface_->ResetUpdateQueued();
 		}
 	}

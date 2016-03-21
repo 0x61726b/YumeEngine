@@ -23,7 +23,7 @@
 #include "YumeVariant.h"
 #include "YumeDefaults.h"
 #include "YumeVectorBuffer.h"
-
+#include "Container/Vector.h"
 #include <boost/algorithm/string.hpp>
 
 namespace YumeEngine
@@ -33,9 +33,9 @@ namespace YumeEngine
 	const YumeVector<unsigned char>::type Variant::emptyBuffer;
 	const ResourceRef Variant::emptyResourceRef;
 	const ResourceRefList Variant::emptyResourceRefList;
-	const VariantMap Variant::emptyVariantMap;
-	const VariantVector Variant::emptyVariantVector;
-	const StringVector Variant::emptyStringVector;
+	const VariantMap::type Variant::emptyVariantMap;
+	const VariantVector::type Variant::emptyVariantVector;
+	const StringVector::type Variant::emptyStringVector;
 
 	static const char* typeNames[] =
 	{
@@ -73,7 +73,7 @@ namespace YumeEngine
 		switch(type_)
 		{
 		case VAR_STRING:
-			stringHack_ = rhs.stringHack_;
+			*(reinterpret_cast<String*>(&value_)) = *(reinterpret_cast<const String*>(&rhs.value_));
 			break;
 
 		case VAR_BUFFER:
@@ -170,7 +170,7 @@ namespace YumeEngine
 			return *(reinterpret_cast<const ResourceRefList*>(&value_)) == *(reinterpret_cast<const ResourceRefList*>(&rhs.value_));
 
 		case VAR_VARIANTVECTOR:
-			return *(reinterpret_cast<const VariantVector*>(&value_)) == *(reinterpret_cast<const VariantVector*>(&rhs.value_));
+			return *(reinterpret_cast<const VariantVector::type*>(&value_)) == *(reinterpret_cast<const VariantVector::type*>(&rhs.value_));
 
 		case VAR_STRINGVECTOR:
 		{
@@ -178,7 +178,7 @@ namespace YumeEngine
 			return 0;
 		}
 		case VAR_VARIANTMAP:
-			return *(reinterpret_cast<const VariantMap*>(&value_)) == *(reinterpret_cast<const VariantMap*>(&rhs.value_));
+			return *(reinterpret_cast<const VariantMap::type*>(&value_)) == *(reinterpret_cast<const VariantMap::type*>(&rhs.value_));
 
 		case VAR_INTRECT:
 			return *(reinterpret_cast<const IntRect*>(&value_)) == *(reinterpret_cast<const IntRect*>(&rhs.value_));
@@ -290,8 +290,7 @@ namespace YumeEngine
 
 		case VAR_RESOURCEREF:
 		{
-			std::vector<YumeString> values;
-			boost::split(values,value,boost::is_any_of(";"));
+			YumeVector<YumeString>::type values = String::Split(value,';');
 			if(values.size() == 2)
 			{
 				SetType(VAR_RESOURCEREF);
@@ -304,8 +303,7 @@ namespace YumeEngine
 
 		case VAR_RESOURCEREFLIST:
 		{
-			std::vector<YumeString> values;
-			boost::split(values,value,boost::is_any_of(";"));
+			YumeVector<YumeString>::type values = String::Split(value,';');
 			if(values.size() >= 1)
 			{
 				SetType(VAR_RESOURCEREFLIST);
@@ -374,13 +372,13 @@ namespace YumeEngine
 		switch(type_)
 		{
 		case VAR_INT:
-			return std::to_string(value_.int_);
+			return String(value_.int_);
 
 		case VAR_BOOL:
-			return std::to_string(value_.bool_);
+			return String(value_.bool_);
 
 		case VAR_FLOAT:
-			return std::to_string(value_.float_);
+			return String(value_.float_);
 
 		case VAR_VECTOR2:
 			return (reinterpret_cast<const Vector2*>(&value_))->ToString();
@@ -404,7 +402,7 @@ namespace YumeEngine
 		{
 			const YumeVector<unsigned char>::type& buffer = *(reinterpret_cast<const YumeVector<unsigned char>::type*>(&value_));
 			YumeString ret;
-			BufferToString(ret,buffer.begin(),buffer.size());
+			BufferToString(ret,buffer.begin().ptr_,buffer.size());
 			return ret;
 		}
 
@@ -428,13 +426,11 @@ namespace YumeEngine
 		case VAR_MATRIX4:
 			return (reinterpret_cast<const Matrix4*>(value_.ptr_))->ToString();
 
+
 		case VAR_DOUBLE:
-			return std::to_string(*reinterpret_cast<const double*>(&value_));
+			return String(*reinterpret_cast<const double*>(&value_));
 
 		default:
-			// VAR_RESOURCEREF, VAR_RESOURCEREFLIST, VAR_VARIANTVECTOR, VAR_STRINGVECTOR, VAR_VARIANTMAP
-			// Reference string serialization requires typehash-to-name mapping from the context. Can not support here
-			// Also variant map or vector string serialization is not supported. XML or binary save should be used instead
 			return YumeString();
 		}
 	}
@@ -482,7 +478,7 @@ namespace YumeEngine
 
 		case VAR_RESOURCEREFLIST:
 		{
-			const StringVector& names = reinterpret_cast<const ResourceRefList*>(&value_)->names_;
+			const StringVector::type& names = reinterpret_cast<const ResourceRefList*>(&value_)->names_;
 			for(StringVector::const_iterator i = names.begin(); i != names.end(); ++i)
 			{
 				if(!i->empty())
@@ -492,13 +488,13 @@ namespace YumeEngine
 		}
 
 		case VAR_VARIANTVECTOR:
-			return reinterpret_cast<const VariantVector*>(&value_)->empty();
+			return reinterpret_cast<const VariantVector::type*>(&value_)->empty();
 
 		case VAR_STRINGVECTOR:
-			return reinterpret_cast<const StringVector*>(&value_)->empty();
+			return reinterpret_cast<const StringVector::type*>(&value_)->empty();
 
 		case VAR_VARIANTMAP:
-			return reinterpret_cast<const VariantMap*>(&value_)->empty();
+			return reinterpret_cast<const VariantMap::type*>(&value_)->empty();
 
 		case VAR_INTRECT:
 			return *reinterpret_cast<const IntRect*>(&value_) == IntRect::ZERO;
@@ -579,7 +575,7 @@ namespace YumeEngine
 		switch(type_)
 		{
 		case VAR_STRING:
-			//new(reinterpret_cast<YumeString*>(&value_)) YumeString();
+			new(reinterpret_cast<YumeString*>(&value_)) YumeString();
 			break;
 
 		case VAR_BUFFER:
@@ -729,17 +725,17 @@ namespace YumeEngine
 		return GetResourceRefList();
 	}
 
-	template <> VariantVector Variant::Get<VariantVector>() const
+	template <> VariantVector::type Variant::Get<VariantVector::type>() const
 	{
 		return GetVariantVector();
 	}
 
-	template <> StringVector Variant::Get<StringVector >() const
+	template <> StringVector::type Variant::Get<StringVector::type>() const
 	{
 		return GetStringVector();
 	}
 
-	template <> VariantMap Variant::Get<VariantMap>() const
+	template <> VariantMap::type Variant::Get<VariantMap::type>() const
 	{
 		return GetVariantMap();
 	}

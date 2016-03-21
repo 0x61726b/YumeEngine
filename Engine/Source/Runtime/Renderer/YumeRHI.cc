@@ -88,7 +88,7 @@ namespace YumeEngine
 
 	void YumeRHI::AddListener(RHIEventListener* listener)
 	{
-		RHIEventListeners::iterator i = std::find(listeners_.begin(),listeners_.end(),listener);
+		RHIEventListeners::Iterator i = listeners_.find(listener);
 
 		if(i == listeners_.end())
 			listeners_.push_back(listener);
@@ -96,7 +96,7 @@ namespace YumeEngine
 
 	void YumeRHI::RemoveListener(RHIEventListener* listener)
 	{
-		RHIEventListeners::iterator i = std::find(listeners_.begin(),listeners_.end(),listener);
+		RHIEventListeners::Iterator i = listeners_.find(listener);
 
 		if(i != listeners_.end())
 			listeners_.erase(i);
@@ -308,9 +308,7 @@ namespace YumeEngine
 
 	unsigned YumeRHI::GetFormatNs(const YumeString& formatName)
 	{
-		YumeString nameLower = formatName;
-		boost::to_lower(nameLower);
-		boost::trim(nameLower);
+		YumeString nameLower = formatName.ToLower().Trimmed();
 
 		if(nameLower == "a")
 			return GetAlphaFormatNs();

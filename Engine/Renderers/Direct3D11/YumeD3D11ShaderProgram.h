@@ -58,20 +58,20 @@ namespace YumeEngine
 			}
 
 			// Copy parameters. Add direct links to constant buffers.
-			const EastlHashMap<YumeHash,ShaderParameter>::type& vsParams = static_cast<YumeD3D11ShaderVariation*>(vertexShader)->GetParameters();
-			for(EastlHashMap<YumeHash,ShaderParameter>::const_iterator i = vsParams.begin(); i != vsParams.end(); ++i)
+			const YumeMap<YumeHash,ShaderParameter>::type& vsParams = static_cast<YumeD3D11ShaderVariation*>(vertexShader)->GetParameters();
+			for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = vsParams.begin(); i != vsParams.end(); ++i)
 			{
 				parameters_[i->first] = i->second;
 				parameters_[i->first].bufferPtr_ = vsConstantBuffers_[i->second.buffer_];
 			}
 
-			const EastlHashMap<YumeHash,ShaderParameter>::type& psParams = static_cast<YumeD3D11ShaderVariation*>(pixelShader)->GetParameters();
-			for(EastlHashMap<YumeHash,ShaderParameter>::const_iterator i = psParams.begin(); i != psParams.end(); ++i)
+			const YumeMap<YumeHash,ShaderParameter>::type& psParams = static_cast<YumeD3D11ShaderVariation*>(pixelShader)->GetParameters();
+			for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = psParams.begin(); i != psParams.end(); ++i)
 			{
 				parameters_[i->first] = i->second;
 				parameters_[i->first].bufferPtr_ = psConstantBuffers_[i->second.buffer_];
 			}
-
+			parameters_.Rehash(NextPowerOfTwo(parameters_.size()));
 		}
 
 		/// Destruct.
@@ -80,7 +80,7 @@ namespace YumeEngine
 		}
 
 		/// Combined parameters from the vertex and pixel shader.
-		EastlHashMap<YumeHash,ShaderParameter>::type parameters_;
+		YumeMap<YumeHash,ShaderParameter>::type parameters_;
 		/// Vertex shader constant buffers.
 		YumeConstantBuffer* vsConstantBuffers_[MAX_SHADER_PARAMETER_GROUPS];
 		/// Pixel shader constant buffers.

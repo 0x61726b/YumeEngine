@@ -27,8 +27,6 @@
 #include "YumeLight.h"
 #include "YumeRendererEnv.h"
 #include "Math/YumePolyhedron.h"
-
-#include <boost/unordered_map.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -57,8 +55,8 @@ namespace YumeEngine
 	struct LightQueryResult
 	{
 		YumeLight* light_;
-		YumeVector<YumeDrawable*>::type litGeometries_;
-		YumeVector<YumeDrawable*>::type shadowCasters_;
+		YumePodVector<YumeDrawable*>::type litGeometries_;
+		YumePodVector<YumeDrawable*>::type shadowCasters_;
 		
 		YumeCamera* shadowCameras_[MAX_LIGHT_SPLITS];	
 		unsigned shadowCasterBegin_[MAX_LIGHT_SPLITS];
@@ -82,8 +80,8 @@ namespace YumeEngine
 	
 	struct PerThreadSceneResult
 	{
-		YumeVector<YumeDrawable*>::type geometries_;
-		YumeVector<YumeLight*>::type lights_;	
+		YumePodVector<YumeDrawable*>::type geometries_;
+		YumePodVector<YumeLight*>::type lights_;	
 		float minZ_;
 		float maxZ_;
 	};
@@ -114,9 +112,9 @@ namespace YumeEngine
 		YumeRenderable* GetRenderTarget() const { return renderTarget_; }
 		bool GetDrawDebug() const { return drawDebug_; }
 
-		const YumeVector<YumeDrawable*>::type& GetGeometries() const { return geometries_; }
-		const YumeVector<YumeDrawable*>::type& GetOccluders() const { return occluders_; }
-		const YumeVector<YumeLight*>::type& GetLights() const { return lights_; }
+		const YumePodVector<YumeDrawable*>::type& GetGeometries() const { return geometries_; }
+		const YumePodVector<YumeDrawable*>::type& GetOccluders() const { return occluders_; }
+		const YumePodVector<YumeLight*>::type& GetLights() const { return lights_; }
 		const YumeVector<LightBatchQueue>::type& GetLightQueues() const { return lightQueues_; }
 		OcclusionBuffer* GetOcclusionBuffer() const { return occlusionBuffer_; }	
 		unsigned GetNumActiveOccluders() const { return activeOccluders_; }
@@ -127,7 +125,7 @@ namespace YumeEngine
 		void SetCameraShaderParameters(YumeCamera* camera,bool setProjectionMatrix);
 		void SetGBufferShaderParameters(const IntVector2& texSize,const IntRect& viewRect);	
 		void DrawFullscreenQuad(bool nearQuad);
-
+		YumeTexture* FindNamedTexture(const YumeString& name,bool isRenderTarget,bool isVolumeMap = false);
 	private:
 		void GetDrawables();
 		void GetBatches();	
@@ -146,10 +144,10 @@ namespace YumeEngine
 		bool CheckPingpong(unsigned index);
 		void AllocateScreenBuffers();	
 		void BlitFramebuffer(YumeTexture* source,YumeRenderable* destination,bool depthWrite);
-		void UpdateOccluders(YumeVector<YumeDrawable*>::type& occluders,YumeCamera* camera);
-		void DrawOccluders(OcclusionBuffer* buffer,const YumeVector<YumeDrawable*>::type& occluders);
+		void UpdateOccluders(YumePodVector<YumeDrawable*>::type& occluders,YumeCamera* camera);
+		void DrawOccluders(OcclusionBuffer* buffer,const YumePodVector<YumeDrawable*>::type& occluders);
 		void ProcessLight(LightQueryResult& query,unsigned threadIndex);
-		void ProcessShadowCasters(LightQueryResult& query,const YumeVector<YumeDrawable*>::type& drawables,unsigned splitIndex);
+		void ProcessShadowCasters(LightQueryResult& query,const YumePodVector<YumeDrawable*>::type& drawables,unsigned splitIndex);
 		void SetupShadowCameras(LightQueryResult& query);
 		void SetupDirLightShadowCamera(YumeCamera* shadowCamera,YumeLight* light,float nearSplit,float farSplit);
 		void FinalizeShadowCamera(YumeCamera* shadowCamera,YumeLight* light,const IntRect& shadowViewport,const BoundingBox& shadowCasterBox);
@@ -166,7 +164,7 @@ namespace YumeEngine
 		void RenderShadowMap(const LightBatchQueue& queue);
 		YumeRenderable* GetDepthStencil(YumeRenderable* renderTarget);
 		YumeRenderable* GetRenderSurfaceFromTexture(YumeTexture* texture,CubeMapFace face = FACE_POSITIVE_X);
-		YumeTexture* FindNamedTexture(const YumeString& name,bool isRenderTarget,bool isVolumeMap = false);
+		
 
 		YumeRendererEnvironment* GetZone(YumeDrawable* drawable)
 		{
@@ -186,10 +184,10 @@ namespace YumeEngine
 			return drawable->GetShadowMask() & GetZone(drawable)->GetShadowMask();
 		}
 
-		unsigned long long GetVertexLightQueueHash(const YumeVector<YumeLight*>::type& vertexLights)
+		unsigned long long GetVertexLightQueueHash(const YumePodVector<YumeLight*>::type& vertexLights)
 		{
 			unsigned long long hash = 0;
-			for(YumeVector<YumeLight*>::const_iterator i = vertexLights.begin(); i != vertexLights.end(); ++i)
+			for(YumePodVector<YumeLight*>::const_iterator i = vertexLights.begin(); i != vertexLights.end(); ++i)
 				hash += (unsigned long long)(*i);
 			return hash;
 		}
@@ -200,7 +198,7 @@ namespace YumeEngine
 		Octree* octree_;	
 		YumeCamera* camera_;	
 		YumeCamera* cullCamera_;	
-		YumeRenderView* sourceView_;	
+		WeakPtr<YumeRenderView> sourceView_;	
 		YumeRendererEnvironment* cameraZone_;	
 		YumeRendererEnvironment* farClipZone_;
 		OcclusionBuffer* occlusionBuffer_;
@@ -233,20 +231,20 @@ namespace YumeEngine
 
 
 		YumeRenderPipeline* renderPath_;	
-		YumeVector<YumeVector<YumeDrawable*>::type >::type tempDrawables_;
+		YumeVector<YumePodVector<YumeDrawable*>::type >::type tempDrawables_;
 		YumeVector<PerThreadSceneResult>::type sceneResults_;
-		YumeVector<YumeRendererEnvironment*>::type zones_;
-		YumeVector<YumeDrawable*>::type geometries_;
-		YumeVector<YumeDrawable*>::type nonThreadedGeometries_;
-		YumeVector<YumeDrawable*>::type threadedGeometries_;
-		YumeVector<YumeDrawable*>::type occluders_;
-		YumeVector<YumeLight*>::type lights_;
+		YumePodVector<YumeRendererEnvironment*>::type zones_;
+		YumePodVector<YumeDrawable*>::type geometries_;
+		YumePodVector<YumeDrawable*>::type nonThreadedGeometries_;
+		YumePodVector<YumeDrawable*>::type threadedGeometries_;
+		YumePodVector<YumeDrawable*>::type occluders_;
+		YumePodVector<YumeLight*>::type lights_;
 
 		unsigned activeOccluders_;
-		YumeVector<YumeDrawable*>::type maxLightsDrawables_;
+		YumeHashSet<YumeDrawable*>::type maxLightsDrawables_;
 		YumeMap<YumeHash,YumeTexture*>::type renderTargets_;
 		YumeVector<LightQueryResult>::type lightQueryResults_;
-		YumeVector<ScenePassInfo>::type scenePasses_;
+		YumePodVector<ScenePassInfo>::type scenePasses_;
 		YumeVector<LightBatchQueue>::type lightQueues_;
 		YumeMap<unsigned long long,LightBatchQueue>::type vertexLightQueues_;
 		YumeMap<unsigned,BatchQueue>::type batchQueues_;

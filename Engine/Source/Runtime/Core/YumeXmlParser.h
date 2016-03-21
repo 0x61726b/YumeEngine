@@ -38,7 +38,7 @@ namespace YumeEngine
 	YumeString GetStringValueFromXPath(const XmlNode& str);
 
 	namespace Parsers {
-		VariantMap ParseConfig(const YumeString&);
+		VariantMap::type ParseConfig(const YumeString&);
 	}
 	
 }

@@ -28,10 +28,11 @@
 #include "Renderer/YumeImage.h"
 
 #include "Core/YumeDefaults.h"
-
 #include "Core/YumeThread.h"
 
 #include "Logging/logging.h"
+
+#undef FindResource
 
 namespace YumeEngine
 {
@@ -158,7 +159,7 @@ namespace YumeEngine
 
 		for(size_t i = 0; i < resourcePaths_.size(); ++i)
 		{
-			if(!io_->IsDirectoryExist(resourcePaths_[i] / name))
+			if(!io_->IsDirectoryExist(resourcePaths_[i] / name.c_str()))
 			{
 				return false;
 			}
@@ -174,9 +175,9 @@ namespace YumeEngine
 
 		for(size_t i = 0; i < resourcePaths_.size(); ++i)
 		{
-			if(io_->IsDirectoryExist(resourcePaths_[i] / resource))
+			if(io_->IsDirectoryExist(resourcePaths_[i] / resource.c_str()))
 			{
-				return (resourcePaths_[i] / resource).generic_string();
+				return (resourcePaths_[i] / resource.c_str()).generic_string().c_str();
 			}
 		}
 		return YumeString();
@@ -206,9 +207,9 @@ namespace YumeEngine
 		for(YumeMap<YumeHash,YumeVector<YumeHash>::type >::iterator i = dependentResources_.begin(); i != dependentResources_.end();)
 		{
 			YumeVector<YumeHash>::type& dependents = i->second;
-			dependents.erase(std::find(dependents.begin(),dependents.end(),nameHash));
+			dependents.erase(nameHash);
 			if(dependents.empty())
-				i = dependentResources_.erase(i);
+				dependentResources_.erase(i);
 			else
 				++i;
 		}
@@ -289,7 +290,7 @@ namespace YumeEngine
 		if(!file_)
 			return SharedPtr<YumeResource>();
 
-		YUMELOG_DEBUG("Loading temporary resource " + resource);
+		YUMELOG_DEBUG("Loading temporary resource " << resource.c_str());
 		resource_->SetName(file_->GetName());
 
 		if(!resource_->Load(*(file_)))
@@ -307,9 +308,9 @@ namespace YumeEngine
 
 		for(size_t i = 0; i < resourcePaths_.size(); ++i)
 		{
-			if(io_->IsDirectoryExist(resourcePaths_[i] / resource))
+			if(io_->IsDirectoryExist(resourcePaths_[i] / resource.c_str()))
 			{
-				YumeFile* file = YumeAPINew YumeFile(resourcePaths_[i] / resource);
+				YumeFile* file = YumeAPINew YumeFile(resourcePaths_[i] / resource.c_str());
 				file->SetName(resource);
 				return (file);
 			}
@@ -349,8 +350,8 @@ namespace YumeEngine
 			if(i->second.memoryBudget_ && i->second.memoryUse_ > i->second.memoryBudget_ &&
 				oldestResource != i->second.resources_.end())
 			{
-				YUMELOG_DEBUG("Resource group " + oldestResource->second->GetName()+ " over memory budget, releasing resource " +
-					oldestResource->second->GetName());
+				YUMELOG_DEBUG("Resource group " << oldestResource->second->GetName().c_str() << " over memory budget, releasing resource " <<
+					oldestResource->second->GetName().c_str());
 				i->second.resources_.erase(oldestResource);
 			}
 			else

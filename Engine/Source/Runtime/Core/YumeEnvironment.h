@@ -33,7 +33,7 @@
 namespace YumeEngine
 {
 	class YumeDynamicLibrary;
-	typedef YumeMap<YumeString,YumeString>::type ConfigMap;
+	typedef YumeMap<YumeString,YumeString> ConfigMap;
 
 	class YumeFile;
 
@@ -59,8 +59,8 @@ namespace YumeEngine
 		YumeDynamicLibrary* LoadDynLib(const YumeString& name);
 		void UnloadDynLib(YumeDynamicLibrary*);
 	private:
-		ConfigMap engineConfig_;
-		VariantMap engineVariants_;
+		ConfigMap::type engineConfig_;
+		VariantMap::type engineVariants_;
 
 	private:
 		boost::filesystem::path		appDataPath_;
@@ -68,8 +68,8 @@ namespace YumeEngine
 		boost::filesystem::path		configFile_;
 		boost::filesystem::path		logFile_;
 
-		typedef YumeMap<YumeString,YumeDynamicLibrary*>::type DynLibMap;
-		DynLibMap dynLibMap_;
+		typedef YumeMap<YumeString,YumeDynamicLibrary*> DynLibMap;
+		DynLibMap::type dynLibMap_;
 	};
 }
 

@@ -83,7 +83,8 @@ namespace YumeEngine
 		height_ = height;
 
 		// Build work buffers for threading
-		unsigned numThreadBuffers = gYume->pWorkSystem->GetNumThreads();
+		
+		unsigned numThreadBuffers = threaded ? gYume->pWorkSystem->GetNumThreads() + 1 : 1;
 		buffers_.resize(numThreadBuffers);
 		for(unsigned i = 0; i < numThreadBuffers; ++i)
 		{

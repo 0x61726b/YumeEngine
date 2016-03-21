@@ -106,7 +106,7 @@ namespace YumeEngine
 	{
 	}
 
-	void YumeLight::ProcessRayQuery(const RayOctreeQuery& query,YumeVector<RayQueryResult>::type& results)
+	void YumeLight::ProcessRayQuery(const RayOctreeQuery& query,YumePodVector<RayQueryResult>::type& results)
 	{
 		// Do not record a raycast result for a directional light, as it would block all other results
 		if(lightType_ == LIGHT_DIRECTIONAL)
@@ -301,19 +301,16 @@ namespace YumeEngine
 	void YumeLight::SetShadowResolution(float resolution)
 	{
 		shadowResolution_ = Clamp(resolution,0.125f,1.0f);
-		
 	}
 
-	void YumeLight::SetRampTexture(SharedPtr<YumeTexture> texture)
+	void YumeLight::SetRampTexture(YumeTexture* texture)
 	{
 		rampTexture_ = (texture);
-		
 	}
 
-	void YumeLight::SetShapeTexture(SharedPtr<YumeTexture> texture)
+	void YumeLight::SetShapeTexture(YumeTexture* texture)
 	{
 		shapeTexture_ = (texture);
-		
 	}
 
 	Frustum YumeLight::GetFrustum() const

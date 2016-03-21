@@ -73,11 +73,9 @@ namespace YumeEngine
 			if(line.empty())
 				continue;
 
-			if(boost::starts_with(line,"#include"))
+			if(line.StartsWith("#include"))
 			{
-				YumeString includeFileName = (GetPath(file.GetName()) + line.substr(9));
-				boost::replace_all(includeFileName,"\"","");
-				boost::trim(includeFileName);
+				String includeFileName = GetPath(file.GetName()) + line.substr(9).Replaced("\"","").Trimmed();
 
 				SharedPtr<YumeFile> file_ = rm_->GetFile(includeFileName);
 
@@ -99,13 +97,8 @@ namespace YumeEngine
 
 	YumeString YumeShader::NormalizeDefines(const YumeString& defines)
 	{
-		YumeString copy = defines;
-		boost::to_upper(copy);
-		
-		std::vector<YumeString> defs;
-		boost::split(defs,copy,boost::is_any_of(" "));
-		
-		std::sort(defs.begin(),defs.end());
-		return boost::join(defs," ");;
+		Vector<String> definesVec = defines.ToUpper().Split(' ');
+		Sort(definesVec.begin(),definesVec.end());
+		return String::Joined(definesVec," ");
 	}
 }

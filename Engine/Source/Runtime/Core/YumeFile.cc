@@ -51,7 +51,7 @@ namespace YumeEngine
 	}
 
 	YumeFile::YumeFile(const boost::filesystem::path& file,FileMode filemode) :
-		file_(file.generic_string()),fileMode_(filemode),position_(0),size_(0),handle_(0)
+		file_(file.generic_string().c_str()),fileMode_(filemode),position_(0),size_(0),handle_(0)
 	{
 		Open(file_,fileMode_);
 	}
@@ -61,7 +61,7 @@ namespace YumeEngine
 		Close();
 	}
 
-	bool YumeFile::Open(const std::string& file,FileMode filemode)
+	bool YumeFile::Open(const YumeString& file,FileMode filemode)
 	{
 		Close();
 
@@ -79,11 +79,11 @@ namespace YumeEngine
 		//else
 		//	fileMode = fs::fstream::in || fs::fstream::out;
 
-		fs::path p = fs::path(file);
+		fs::path p = fs::path(file.c_str());
 
 		if(!fs::exists(p) && filemode == FILEMODE_READ)
 		{
-			YUMELOG_ERROR("Can't open non-existent file for reading." << file);
+			YUMELOG_ERROR("Can't open non-existent file for reading." << file.c_str());
 			return false;
 		}
 
@@ -173,7 +173,7 @@ namespace YumeEngine
 		{
 			// Return to the position where the read began
 			fseek((FILE*)handle_,position_ + offset_,SEEK_SET);
-			YUMELOG_ERROR("Error while reading from file " + GetName());
+			YUMELOG_ERROR("Error while reading from file " << GetName().c_str());
 			return 0;
 		}
 
@@ -280,7 +280,7 @@ namespace YumeEngine
 		{
 			// Return to the position where the write began
 			fseek((FILE*)handle_,position_ + offset_,SEEK_SET);
-			YUMELOG_ERROR("Error while writing to file " + GetName());
+			YUMELOG_ERROR("Error while writing to file " << GetName().c_str());
 			return 0;
 		}
 
@@ -599,7 +599,7 @@ namespace YumeEngine
 
 	unsigned YumeFile::GetSize()
 	{
-		return boost::filesystem::file_size(file_);
+		return boost::filesystem::file_size(file_.c_str());
 	}
 
 	YumeString YumeFile::GetFileExtension()

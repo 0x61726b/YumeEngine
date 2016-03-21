@@ -150,7 +150,7 @@ namespace YumeEngine
 		bool inCmd = false;
 		bool inQuote = false;
 
-		for(unsigned i = 0; i < cmdLine.size(); ++i)
+		for(unsigned i = 0; i < cmdLine.length(); ++i)
 		{
 			if(cmdLine[i] == '\"')
 				inQuote = !inQuote;
@@ -177,14 +177,14 @@ namespace YumeEngine
 		}
 		if(inCmd)
 		{
-			cmdEnd = cmdLine.size();
+			cmdEnd = cmdLine.length();
 			if(!skipFirst)
 				arguments.push_back(cmdLine.substr(cmdStart,cmdEnd - cmdStart));
 		}
 		for(unsigned i = 0; i < arguments.size(); ++i)
 		{
-			boost::replace_all(arguments[i],"\"","");
-			boost::replace_all(arguments[i],"--","");
+			arguments[i].Replace("\"","",false);
+			arguments[i].Replace("--","");
 		}
 
 		return arguments;
@@ -202,24 +202,24 @@ namespace YumeEngine
 		for(int i = 0; i < argc; ++i)
 		{
 			boost::format fmt = boost::format("\"%s\" ") % (const char*)argv[i];
-			cmdLine.append(fmt.str());
+			cmdLine.append(fmt.str().c_str());
 		}
 
 		return ParseArguments(cmdLine);
 	}
 
-	unsigned GetStringListIndex(const YumeString& value,const YumeString* strings,unsigned defaultIndex,bool caseSensitive)
+	unsigned GetStringListIndex(const String& value,const String* strings,unsigned defaultIndex,bool caseSensitive)
 	{
 		return GetStringListIndex(value.c_str(),strings,defaultIndex,caseSensitive);
 	}
 
-	unsigned GetStringListIndex(const char* value,const YumeString* strings,unsigned defaultIndex,bool caseSensitive)
+	unsigned GetStringListIndex(const char* value,const String* strings,unsigned defaultIndex,bool caseSensitive)
 	{
 		unsigned i = 0;
 
 		while(!strings[i].empty())
 		{
-			if(boost::iequals(strings[i],value))
+			if(!strings[i].Compare(value,caseSensitive))
 				return i;
 			++i;
 		}
@@ -233,13 +233,14 @@ namespace YumeEngine
 
 		while(strings[i])
 		{
-			if(boost::iequals(value,strings[i]))
+			if(!String::Compare(value,strings[i],caseSensitive))
 				return i;
 			++i;
 		}
 
 		return defaultIndex;
 	}
+
 
 
 	void ErrorDialog(const YumeString& title,const YumeString& message)

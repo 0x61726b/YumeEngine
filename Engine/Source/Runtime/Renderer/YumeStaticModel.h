@@ -52,7 +52,7 @@ namespace YumeEngine
 
 
 		/// Process octree raycast. May be called from a worker thread.
-		virtual void ProcessRayQuery(const RayOctreeQuery& query,YumeVector<RayQueryResult>::type& results);
+		virtual void ProcessRayQuery(const RayOctreeQuery& query,YumePodVector<RayQueryResult>::type& results);
 		/// Calculate distance and prepare batches for rendering. May be called from worker thread(s), possibly re-entrantly.
 		virtual void UpdateBatches(const FrameInfo& frame);
 		/// Return the geometry for a specific LOD level.

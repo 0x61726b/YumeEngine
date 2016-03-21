@@ -123,7 +123,7 @@ namespace YumeEngine
 
 		if(usage_ == TEXTURE_RENDERTARGET || usage_ == TEXTURE_DEPTHSTENCIL)
 		{
-			renderSurface_ = SharedPtr<YumeRenderable>(new YumeD3D11Renderable(this));
+			renderSurface_ = (new YumeD3D11Renderable(this));
 
 			// Clamp mode addressing by default, nearest filtering, and mipmaps disabled
 			addressMode_[COORD_U] = ADDRESS_CLAMP;
@@ -529,7 +529,7 @@ namespace YumeEngine
 	{
 		if(renderSurface_ && (renderSurface_->GetUpdateMode() == SURFACE_UPDATEALWAYS || renderSurface_->IsUpdateQueued()))
 		{
-			YumeRenderer* renderer = 0;
+			YumeRenderer* renderer = gYume->pRenderer;
 			if(renderer)
 				renderer->QueueRenderable(renderSurface_);
 			renderSurface_->ResetUpdateQueued();

@@ -68,7 +68,7 @@ namespace YumeEngine
 		if(gYume->pRHI && static_cast<YumeGLRenderer*>(gYume->pRHI)->GetShaderProgram() == this)
 			gYume->pRHI->SetShaders(0,0);
 
-		linkerOutput_.clear();
+		linkerOutput_.Clear();
 	}
 
 	void YumeGLShaderProgram::Release()
@@ -87,13 +87,13 @@ namespace YumeEngine
 			}
 
 			object_ = 0;
-			linkerOutput_.clear();
+			linkerOutput_.Clear();
 			shaderParameters_.clear();
 
 			for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
 				useTextureUnit_[i] = false;
 			for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
-				constantBuffers_[i].reset();
+				constantBuffers_[i].Reset();
 		}
 	}
 
@@ -147,7 +147,7 @@ namespace YumeEngine
 			object_ = 0;
 		}
 		else
-			linkerOutput_.clear();
+			linkerOutput_.Clear();
 
 		if(!object_)
 			return false;
@@ -203,8 +203,8 @@ namespace YumeEngine
 
 				if(group >= MAX_SHADER_PARAMETER_GROUPS)
 				{
-					YUMELOG_WARN("Skipping unrecognized uniform block " + name + " in shader program " + vertexShader_->GetFullName() +
-						" " + pixelShader_->GetFullName());
+					YUMELOG_WARN("Skipping unrecognized uniform block " << name.c_str() << " in shader program " << vertexShader_->GetFullName().c_str() <<
+						" " << pixelShader_->GetFullName().c_str());
 					continue;
 				}
 
@@ -243,7 +243,7 @@ namespace YumeEngine
 			if(index != 0xffffffff)
 			{
 				// If not the first index, skip
-				if(name.find_first_of("[0]",index) == 0xffffffff)
+				if(name.find("[0]",index) == M_MAX_UNSIGNED)
 					continue;
 
 				name = name.substr(0,index);
@@ -267,7 +267,7 @@ namespace YumeEngine
 					if(blockIndex >= 0)
 					{
 						newParam.location_ = blockOffset;
-						newParam.bufferPtr_ = constantBuffers_[blockToBinding[blockIndex]].get();
+						newParam.bufferPtr_ = constantBuffers_[blockToBinding[blockIndex]];
 					}
 				}
 #endif
@@ -339,8 +339,8 @@ namespace YumeEngine
 
 		// The shader program may use a mixture of constant buffers and individual uniforms even in the same group
 #ifndef GL_ES_VERSION_2_0
-		bool useBuffer = constantBuffers_[group].get() || constantBuffers_[group + MAX_SHADER_PARAMETER_GROUPS].get();
-		bool useIndividual = !constantBuffers_[group].get() || !constantBuffers_[group + MAX_SHADER_PARAMETER_GROUPS].get();
+		bool useBuffer = constantBuffers_[group] || constantBuffers_[group + MAX_SHADER_PARAMETER_GROUPS];
+		bool useIndividual = !constantBuffers_[group] || !constantBuffers_[group + MAX_SHADER_PARAMETER_GROUPS];
 		bool needUpdate = false;
 
 		if(useBuffer && globalParameterSources[group] != source)
@@ -371,8 +371,8 @@ namespace YumeEngine
 	{
 		// The shader program may use a mixture of constant buffers and individual uniforms even in the same group
 #ifndef GL_ES_VERSION_2_0
-		bool useBuffer = constantBuffers_[group].get() || constantBuffers_[group + MAX_SHADER_PARAMETER_GROUPS].get();
-		bool useIndividual = !constantBuffers_[group].get() || !constantBuffers_[group + MAX_SHADER_PARAMETER_GROUPS].get();
+		bool useBuffer = constantBuffers_[group] || constantBuffers_[group + MAX_SHADER_PARAMETER_GROUPS];
+		bool useIndividual = !constantBuffers_[group] || !constantBuffers_[group + MAX_SHADER_PARAMETER_GROUPS];
 
 		if(useBuffer)
 			globalParameterSources[group] = (const void*)M_MAX_UNSIGNED;

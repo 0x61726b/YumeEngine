@@ -63,7 +63,7 @@ namespace YumeEngine
 	{
 		YumeGLResource::OnDeviceLost();
 
-		compilerOutput_.clear();
+		compilerOutput_.Clear();
 	}
 
 	void YumeGLShaderVariation::Release()
@@ -93,7 +93,7 @@ namespace YumeEngine
 			gYume->pRHI->CleanupShaderPrograms(this);
 		}
 
-		compilerOutput_.clear();
+		compilerOutput_.Clear();
 	}
 
 	bool YumeGLShaderVariation::Create()
@@ -144,25 +144,25 @@ namespace YumeEngine
 		shaderCode += type_ == VS ? "#define COMPILEVS\n" : "#define COMPILEPS\n";
 
 		// Add define for the maximum number of supported bones
-		shaderCode += "#define MAXBONES " + std::to_string(YumeGLRenderer::GetMaxBones()) + "\n";
+		shaderCode += "#define MAXBONES " + String(YumeGLRenderer::GetMaxBones()) + "\n";
 
 		// Prepend the defines to the shader code
-		YumeVector<YumeString>::type defineVec;
-		boost::split(defineVec,defines_,boost::is_any_of(" "));
+		YumeVector<YumeString>::type defineVec = defines_.Split(' ');
+		
 
 		for(unsigned i = 0; i < defineVec.size(); ++i)
 		{
-			if(defineVec[i].size())
+			if(defineVec[i].length())
 			{
 				// Add extra space for the checking code below
-				boost::replace_all(defineVec[i],"="," ");
+				defineVec[i].Replace("="," ");
 				YumeString defineString = "#define " + defineVec[i] + " \n";
 				shaderCode += defineString;
 
 #ifdef _DEBUG
 				YumeString defineCheck = defineString.substr(8,defineString.find(' ',8) - 8);
 				if(originalShaderCode.find(defineCheck) == std::string::npos)
-					YUMELOG_WARN("Shader " + GetFullName() + " does not use the define " + defineCheck);
+					YUMELOG_WARN("Shader " << GetFullName().c_str() << " does not use the define " << defineCheck.c_str());
 #endif
 			}
 			// In debug mode, check that all defines are referenced by the shader code
@@ -194,7 +194,7 @@ namespace YumeEngine
 			object_ = 0;
 		}
 		else
-			compilerOutput_.clear();
+			compilerOutput_.Clear();
 
 		return object_ != 0;
 	}

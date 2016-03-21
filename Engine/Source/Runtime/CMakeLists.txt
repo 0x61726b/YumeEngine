@@ -244,6 +244,9 @@ set( SRC_ENGINE
 	Engine/YumeApplication.h
 	Engine/YumeApplication.cc
 )
+
+file(GLOB CONTAINER_SOURCES "Container/*.cpp" "Container/*.h")
+
 source_group(Yume\\\\Logging FILES ${SRC_LOGGING})
 source_group(Yume\\\\Math FILES ${SRC_MATH})
 source_group(Yume\\\\Renderer FILES ${SRC_RENDERER})
@@ -255,6 +258,7 @@ source_group(Yume\\\\Core\\\\Utils FILES ${SRC_CORE_UTILS})
 source_group(Yume\\\\Engine FILES ${SRC_ENGINE})
 source_group(Yume\\\\Scene FILES ${SRC_SCENE})
 source_group(Yume\\\\Input FILES ${SRC_INPUT})
+source_group(Yume\\\\Container FILES ${CONTAINER_SOURCES})
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Core)
@@ -285,6 +289,7 @@ ADD_LIBRARY(${YUME} SHARED
 						${SRC_ENGINE}
 						${SRC_SCENE}
 						${SRC_INPUT}
+						${CONTAINER_SOURCES}
 						)
 
 
@@ -323,7 +328,6 @@ target_link_libraries(${YUME} SDL2)
 target_link_libraries(${YUME} pugixml)
 target_link_libraries(${YUME} STB)
 target_link_libraries(${YUME} JO)
-target_link_libraries(${YUME} EASTL)
 
 set(YUME_LIBRARIES ${YUME_LIBRARIES} boost_filesystem boost_thread boost_system boost_date_time log4cplus)
 

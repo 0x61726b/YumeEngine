@@ -175,7 +175,7 @@ namespace YumeEngine
 		
 		YumeMap<YumeHash,Variant>::type shaderParameters_;
 		
-		YumeVector<std::pair<YumeString,CubeMapFace> >::type outputs_;
+		YumeVector<Pair<YumeString,CubeMapFace> >::type outputs_;
 		
 		YumeString depthStencilName_;
 		

@@ -270,16 +270,16 @@ namespace YumeEngine
 		
 		const Variant& GetVar(YumeHash key) const;
 
-		const VariantMap& GetVars() const { return vars_; }
+		const VariantMap::type& GetVars() const { return vars_; }
 
 
 		template <class T> T* GetDerivedComponent(bool recursive = false) const;
 		template <class T> T* GetParentDerivedComponent(bool fullTraversal = false) const;
-		template <class T> void GetDerivedComponents(eastl::vector<T*>& dest,bool recursive = false,bool clearVector = true) const;
+		template <class T> void GetDerivedComponents(Vector<T*>& dest,bool recursive = false,bool clearVector = true) const;
 		template <class T> void GetChildrenWithComponent(YumeVector<YumeSceneNode*>::type& dest,bool recursive = false) const;
 		template <class T> T* GetComponent(bool recursive = false) const;
 		template <class T> T* GetParentComponent(bool fullTraversal = false) const;
-		template <class T> void GetComponents(eastl::vector<T*>& dest,bool recursive = false) const;
+		template <class T> void GetComponents(Vector<T*>& dest,bool recursive = false) const;
 		template <class T> bool HasComponent() const;
 
 		void SetID(unsigned id);
@@ -292,7 +292,7 @@ namespace YumeEngine
 		unsigned GetNumPersistentComponents() const;
 
 	protected:
-		VariantMap vars_;
+		VariantMap::type vars_;
 
 	private:
 		
@@ -370,7 +370,7 @@ namespace YumeEngine
 
 	template <class T> void YumeSceneNode::RemoveComponents() { RemoveComponents(T::GetTypeStatic()); }
 
-	template <class T> void YumeSceneNode::GetChildrenWithComponent(eastl::vector<YumeSceneNode*>& dest,bool recursive) const
+	template <class T> void YumeSceneNode::GetChildrenWithComponent(Vector<YumeSceneNode*>& dest,bool recursive) const
 	{
 		GetChildrenWithComponent(dest,T::GetTypeStatic(),recursive);
 	}
@@ -379,7 +379,7 @@ namespace YumeEngine
 
 	template <class T> T* YumeSceneNode::GetParentComponent(bool fullTraversal) const { return static_cast<T*>(GetParentComponent(T::GetTypeStatic(),fullTraversal)); }
 
-	template <class T> void YumeSceneNode::GetComponents(eastl::vector<T*>& dest,bool recursive) const
+	template <class T> void YumeSceneNode::GetComponents(Vector<T*>& dest,bool recursive) const
 	{
 		GetComponents(reinterpret_cast<YumeVector<YumeSceneComponent*>::type&>(dest),T::GetTypeStatic(),recursive);
 	}
@@ -425,7 +425,7 @@ namespace YumeEngine
 		return 0;
 	}
 
-	template <class T> void YumeSceneNode::GetDerivedComponents(eastl::vector<T*>& dest,bool recursive,bool clearVector) const
+	template <class T> void YumeSceneNode::GetDerivedComponents(Vector<T*>& dest,bool recursive,bool clearVector) const
 	{
 		if(clearVector)
 			dest.clear();

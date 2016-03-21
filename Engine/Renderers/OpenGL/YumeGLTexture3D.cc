@@ -229,7 +229,6 @@ namespace YumeEngine
 
 		gYume->pRHI->SetTexture(0,0);
 		return true;
-		return true;
 	}
 
 	bool YumeGLTexture3D::SetData(SharedPtr<YumeImage> image,bool useAlpha)
@@ -243,7 +242,7 @@ namespace YumeEngine
 		unsigned memoryUse = sizeof(YumeGLTexture3D);
 
 		int quality = QUALITY_HIGH;
-		YumeRenderer* renderer = gYume->pRenderer.get();
+		YumeRenderer* renderer = gYume->pRenderer;
 		if(renderer)
 			quality = renderer->GetTextureQuality();
 

@@ -76,6 +76,10 @@ namespace YumeEngine
 		YumeString name_;
 	};
 
+	template <> inline unsigned MakeHash(const TextureUnit& value)
+	{
+		return (unsigned)value;
+	}
 
 	class YumeAPIExport YumeMaterial : public YumeResource
 	{
@@ -87,7 +91,7 @@ namespace YumeEngine
 		virtual bool EndLoad();
 		virtual bool Save(YumeFile& dest) const;
 
-		
+
 		static YumeHash GetTypeStatic() { return type_; };
 		virtual YumeHash GetType() { return type_; };
 		static YumeHash type_;

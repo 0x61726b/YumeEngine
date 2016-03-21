@@ -27,6 +27,7 @@
 #include "YumeGLShader.h"
 #include "YumeGLShaderProgram.h"
 #include "YumeGLConstantBuffer.h"
+#include "YumeGLShaderVariation.h"
 #include "YumeGLVertexBuffer.h"
 #include "YumeGLIndexBuffer.h"
 #include "YumeGLTexture2D.h"
@@ -300,6 +301,18 @@ namespace YumeEngine
 
 		CleanupScratchBuffers();
 	}
+
+
+	void YumeGLRenderer::ClearRenderTarget(unsigned index,unsigned flags,const YumeColor& color,float depth,unsigned stencil)
+	{
+		//unsigned glFlags = 0;
+		//if(flags & CLEAR_COLOR && renderTargets_[index])
+		//{
+		//	glClearBufferiv(GL_COLOR,0,(GLint*)renderTargets_[index]);
+		//	
+		//}
+	}
+
 
 	void YumeGLRenderer::Clear(unsigned flags,const YumeColor& color,float depth,unsigned stencil)
 	{
@@ -615,11 +628,11 @@ namespace YumeEngine
 
 		for(ShaderProgramMap::iterator i=shaderPrograms_.begin(); i != shaderPrograms_.end(); ++i)
 		{
-			i->second.reset();
+			i->second.Reset();
 		}
 		shaderPrograms_.clear();
 
-		lastShader_.reset();
+		lastShader_.Reset();
 	}
 
 	void YumeGLRenderer::Release(bool clearGPUObjects,bool closeWindow)
@@ -628,7 +641,7 @@ namespace YumeEngine
 			return;
 
 		{
-			boost::mutex::scoped_lock lock(gpuResourceMutex_);
+			MutexLock lock(gpuResourceMutex_);
 
 			if(clearGPUObjects)
 			{
@@ -1067,13 +1080,13 @@ namespace YumeEngine
 				int searchKey = (width << 16) | height;
 				YumeMap<int,SharedPtr<YumeTexture2D> >::iterator i = depthTextures_.find(searchKey);
 				if(i != depthTextures_.end())
-					depthStencil = i->second->GetRenderSurface().get();
+					depthStencil = i->second->GetRenderSurface().Get();
 				else
 				{
 					SharedPtr<YumeTexture2D> newDepthTexture = SharedPtr<YumeGLTexture2D>(new YumeGLTexture2D);
 					newDepthTexture->SetSize(width,height,GetDepthStencilFormatNs(),TEXTURE_DEPTHSTENCIL);
 					depthTextures_[searchKey] = newDepthTexture;
-					depthStencil = newDepthTexture->GetRenderSurface().get();
+					depthStencil = newDepthTexture->GetRenderSurface().Get();
 				}
 			}
 		}
@@ -1089,7 +1102,7 @@ namespace YumeEngine
 	{
 		YumeRenderable* depthStencil = 0;
 		if(texture)
-			depthStencil = texture->GetRenderSurface().get();
+			depthStencil = texture->GetRenderSurface().Get();
 
 		SetDepthStencil(depthStencil);
 	}
@@ -1404,7 +1417,7 @@ namespace YumeEngine
 		{
 			if(i->second->GetVertexShader() == variation || i->second->GetPixelShader() == variation)
 			{
-				i->second.reset();
+				i->second.Reset();
 				i = shaderPrograms_.erase(i);
 			}
 			else
@@ -1419,13 +1432,12 @@ namespace YumeEngine
 	{
 		unsigned key = (bindingIndex << 16) | size;
 		YumeMap<unsigned,SharedPtr<YumeConstantBuffer> >::iterator i = constantBuffers_.find(key);
-		std::pair<YumeMap<unsigned,SharedPtr<YumeConstantBuffer> >::iterator,bool> ret;
 		if(i == constantBuffers_.end())
 		{
-			ret = constantBuffers_.insert(std::make_pair(key,SharedPtr<YumeConstantBuffer>(new YumeGLConstantBuffer())));
-			ret.first->second->SetSize(size);
+			i = constantBuffers_.insert(MakePair(key,SharedPtr<YumeConstantBuffer>(new YumeGLConstantBuffer())));
+			i->second->SetSize(size);
 		}
-		return ret.first->second.get();
+		return i->second.Get();
 	}
 
 
@@ -1463,7 +1475,7 @@ namespace YumeEngine
 
 			if(i < buffers.size() && buffers[i])
 			{
-				buffer = static_cast<YumeGLVertexBuffer*>(buffers[i].get());
+				buffer = static_cast<YumeGLVertexBuffer*>(buffers[i].Get());
 				if(elementMasks[i] == MASK_DEFAULT)
 					elementMask = buffer->GetElementMask();
 				else
@@ -1664,10 +1676,10 @@ namespace YumeEngine
 
 				bool success = vs->Create();
 				if(success)
-					YUMELOG_DEBUG("Compiled vertex shader " + vs->GetFullName());
+					YUMELOG_DEBUG("Compiled vertex shader " << vs->GetFullName().c_str());
 				else
 				{
-					YUMELOG_ERROR("Failed to compile vertex shader " + vs->GetFullName() + ":\n" + vs->GetCompilerOutput());
+					YUMELOG_ERROR("Failed to compile vertex shader " << vs->GetFullName().c_str() << ":\n" << vs->GetCompilerOutput().c_str());
 					vs = 0;
 				}
 			}
@@ -1681,10 +1693,10 @@ namespace YumeEngine
 			{
 				bool success = ps->Create();
 				if(success)
-					YUMELOG_DEBUG("Compiled pixel shader " + ps->GetFullName());
+					YUMELOG_DEBUG("Compiled pixel shader " << ps->GetFullName().c_str());
 				else
 				{
-					YUMELOG_ERROR("Failed to compile pixel shader " + ps->GetFullName() + ":\n" + ps->GetCompilerOutput());
+					YUMELOG_ERROR("Failed to compile pixel shader " << ps->GetFullName().c_str() << ":\n" << ps->GetCompilerOutput().c_str());
 					ps = 0;
 				}
 			}
@@ -1704,17 +1716,17 @@ namespace YumeEngine
 			vertexShader_ = vs;
 			pixelShader_ = ps;
 
-			std::pair<YumeShaderVariation*,YumeShaderVariation*> combination(vs,ps);
+			Pair<YumeShaderVariation*,YumeShaderVariation*> combination(vs,ps);
 			ShaderProgramMap::iterator i = shaderPrograms_.find(combination);
 
 			if(i != shaderPrograms_.end())
 			{
-				SharedPtr<YumeGLShaderProgram> glShader = boost::static_pointer_cast<YumeGLShaderProgram>(i->second);
+				YumeGLShaderProgram* glShader = static_cast<YumeGLShaderProgram*>(i->second);
 				// Use the existing linked program
 				if(glShader->GetGPUObject())
 				{
 					glUseProgram(glShader->GetGPUObject());
-					shaderProgram_ = glShader.get();
+					shaderProgram_ = i->second;
 				}
 				else
 				{
@@ -1727,15 +1739,15 @@ namespace YumeEngine
 				SharedPtr<YumeGLShaderProgram> newProgram(new YumeGLShaderProgram(vs,ps));
 				if(newProgram->Link())
 				{
-					YUMELOG_DEBUG("Linked vertex shader " + vs->GetFullName() + " and pixel shader " + ps->GetFullName());
+					YUMELOG_DEBUG("Linked vertex shader " << vs->GetFullName().c_str() << " and pixel shader " << ps->GetFullName().c_str());
 					// Note: Link() calls glUseProgram() to set the texture sampler uniforms,
 					// so it is not necessary to call it again
-					shaderProgram_ = newProgram.get();
+					shaderProgram_ = newProgram.Get();
 				}
 				else
 				{
-					YUMELOG_ERROR("Failed to link vertex shader " + vs->GetFullName() + " and pixel shader " + ps->GetFullName() + ":\n" +
-						newProgram->GetLinkerOutput());
+					YUMELOG_ERROR("Failed to link vertex shader " << vs->GetFullName().c_str() << " and pixel shader " << ps->GetFullName().c_str() << ":\n" <<
+						newProgram->GetLinkerOutput().c_str());
 					glUseProgram(0);
 					shaderProgram_ = 0;
 				}
@@ -1751,7 +1763,7 @@ namespace YumeEngine
 			const SharedPtr<YumeConstantBuffer>* constantBuffers = shaderProgram_->GetConstantBuffers();
 			for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS * 2; ++i)
 			{
-				YumeConstantBuffer* buffer = constantBuffers[i].get();
+				YumeConstantBuffer* buffer = constantBuffers[i].Get();
 				if(buffer != currentConstantBuffers_[i])
 				{
 					unsigned object = buffer ? static_cast<YumeGLConstantBuffer*>(buffer)->GetGPUObject() : 0;
@@ -2249,17 +2261,11 @@ namespace YumeEngine
 			unsigned long long fboKey = (rtSize.x_ << 16 | rtSize.y_) | (((unsigned long long)format) << 32);
 
 			YumeMap<unsigned long long,FrameBufferObject>::iterator i = impl_->frameBuffers_.find(fboKey);
-			std::pair<YumeMap<unsigned long long,FrameBufferObject>::iterator,bool> ret;
 			if(i == impl_->frameBuffers_.end())
 			{
 				FrameBufferObject newFbo;
 				newFbo.fbo_ = CreateFramebuffer();
-				ret = impl_->frameBuffers_.insert(std::make_pair(fboKey,newFbo));
-
-				if(ret.second)
-				{
-					i = ret.first;
-				}
+				i = impl_->frameBuffers_.insert(MakePair(fboKey,newFbo));
 			}
 
 			if(impl_->boundFBO_ != i->second.fbo_)
@@ -3021,17 +3027,17 @@ namespace YumeEngine
 
 	void YumeGLRenderer::AddGpuResource(YumeGpuResource* gpuRes)
 	{
-		boost::mutex::scoped_lock lock(gpuResourceMutex_);
+		MutexLock lock(gpuResourceMutex_);
 
 		gpuResources_.push_back(gpuRes);
 	}
 
 	void YumeGLRenderer::RemoveGpuResource(YumeGpuResource* gpuRes)
 	{
-		//boost::mutex::scoped_lock lock(gpuResourceMutex_);
+		MutexLock lock(gpuResourceMutex_);
 
 		//Check if valid
-		GpuResourceVector::iterator It = std::find(gpuResources_.begin(),gpuResources_.end(),gpuRes);
+		GpuResourceVector::iterator It = gpuResources_.find(gpuRes);
 
 		if(It != gpuResources_.end())
 			gpuResources_.erase(It);

@@ -24,7 +24,6 @@
 #define __YumeRequired_h__
 //---------------------------------------------------------------------------------
 #include "YumePlatform.h"
-#include "PlatformImpl.h"
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -40,15 +39,11 @@ namespace YumeEngine
 #include "YumeStdHeaders.h"
 #include "YumeMemoryAllocatorConfig.h"
 #include "Core/SharedPtr.h"
-
+#include "Container/Str.h"
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
-	typedef std::string _YumeStringBase;
-	typedef std::basic_stringstream<char,std::char_traits<char>,std::allocator<char> > _YumeStreamBase;
-
-	typedef std::string YumeString;
-	typedef _YumeStreamBase YumeStringStream;
+	typedef String YumeString;
 
 	static YumeString EmptyString = "";
 
@@ -80,86 +75,38 @@ namespace YumeEngine
 //---------------------------------------------------------------------------------
 namespace YumeEngine
 {
-	//STL Containers
-	template <typename T,typename A = YumeSTLAllocator<T,YumeGeneralAllocPolicy> >
-	struct YumeDeque
-	{
-#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
-		typedef typename std::deque<T,A> type;
-		typedef typename std::deque<T,A>::iterator iterator;
-		typedef typename std::deque<T,A>::const_iterator const_iterator;
-#else
-		typedef typename std::deque<T> type;
-		typedef typename std::deque<T>::iterator iterator;
-		typedef typename std::deque<T>::const_iterator const_iterator;
-#endif
-	};
-
 	template <typename T>
 	struct YumeVector
 	{
-		typedef typename eastl::vector<T> type;
-		typedef typename eastl::vector<T>::iterator iterator;
-		typedef typename eastl::vector<T>::const_iterator const_iterator;
+		typedef typename Vector<T> type;
+		typedef typename Vector<T>::Iterator iterator;
+		typedef typename Vector<T>::ConstIterator const_iterator;
 	};
 
-	template <typename T,typename A = YumeSTLAllocator<T,YumeGeneralAllocPolicy> >
-	struct YumeList
+	template <typename T>
+	struct YumePodVector
 	{
-#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
-		typedef typename std::list<T,A> type;
-		typedef typename std::list<T,A>::iterator iterator;
-		typedef typename std::list<T,A>::const_iterator const_iterator;
-#else
-		typedef typename std::list<T> type;
-		typedef typename std::list<T>::iterator iterator;
-		typedef typename std::list<T>::const_iterator const_iterator;
-#endif
-	};
-
-	template <typename T,typename P = std::less<T>,typename A = YumeSTLAllocator<T,YumeGeneralAllocPolicy> >
-	struct YumeSet
-	{
-#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
-		typedef typename std::set<T,P,A> type;
-		typedef typename std::set<T,P,A>::iterator iterator;
-		typedef typename std::set<T,P,A>::const_iterator const_iterator;
-#else
-		typedef typename std::set<T, P> type;
-		typedef typename std::set<T, P>::iterator iterator;
-		typedef typename std::set<T, P>::const_iterator const_iterator;
-#endif
+		typedef typename PODVector<T> type;
+		typedef typename PODVector<T>::Iterator iterator;
+		typedef typename PODVector<T>::ConstIterator const_iterator;
 	};
 	template <typename K,typename V >
 	struct YumeMap
 	{
-		typedef typename std::map<K, V> type;
-		typedef typename std::map<K, V>::iterator iterator;
-		typedef typename std::map<K, V>::const_iterator const_iterator;
-	};
-	template <typename K,typename V,typename P = std::less<K>,typename A = YumeSTLAllocator<std::pair<const K,V>,YumeGeneralAllocPolicy> >
-	struct YumeMultiMap
-	{
-#if YUME_CONTAINERS_CUSTOM_MEMORY_ALLOCATOR
-		typedef typename std::multimap<K,V,P,A> type;
-		typedef typename std::multimap<K,V,P,A>::iterator iterator;
-		typedef typename std::multimap<K,V,P,A>::const_iterator const_iterator;
-#else
-		typedef typename std::multimap<K, V, P> type;
-		typedef typename std::multimap<K, V, P>::iterator iterator;
-		typedef typename std::multimap<K, V, P>::const_iterator const_iterator;
-#endif
+		typedef typename HashMap<K,V> type;
+		typedef typename HashMap<K,V>::Iterator iterator;
+		typedef typename HashMap<K,V>::ConstIterator const_iterator;
 	};
 
-	template <typename K,typename V,typename H = std::hash<K> >
-	struct EastlHashMap
+	template <typename T>
+	struct YumeHashSet
 	{
-		typedef typename std::unordered_map<K,V,H> type;
-		typedef typename std::unordered_map<K,V,H>::iterator iterator;
-		typedef typename std::unordered_map<K,V,H>::const_iterator const_iterator;
+		typedef typename HashSet<T> type;
+		typedef typename HashSet<T>::Iterator iterator;
+		typedef typename HashSet<T>::ConstIterator const_iterator;
 	};
 
-	typedef YumeVector<YumeString>::type StringVector;
+	typedef YumeVector<YumeString> StringVector;
 
 #define YUME_SAFE_RELEASE(p) if(p) { p->Release(); p = 0; }
 }
@@ -172,22 +119,6 @@ namespace YumeEngine
 
 #include "Core/YumeBase.h"
 
-struct YumeAPIExport GlobalSystems
-{
-	YumeEngine::YumeEngine3D*								pEngine;
-	YumeEngine::YumeRHI*									pRHI;
-	YumeEngine::YumeRenderer*								pRenderer;
-	YumeEngine::YumeResourceManager*						pResourceManager;
-	YumeEngine::YumeIO*										pIO;
-	YumeEngine::YumeTime*									pTimer;
-	YumeEngine::YumeWorkQueue*								pWorkSystem;
-	YumeEngine::YumeEnvironment*							pEnv;
-	YumeEngine::YumeDebugRenderer*							pDebugRenderer;
-	YumeEngine::YumeInput*									pInput;
-	YumeEngine::YumeObjectFactory*							pObjFactory;
-};
-
-extern YumeAPIExport GlobalSystems* gYume;
 //---------------------------------------------------------------------------------
 #endif
 //~End of YumeRequired.h

@@ -309,7 +309,7 @@ namespace YumeEngine
 		}
 	}
 
-	bool StreamWriter::WriteVariantVector(const VariantVector& value)
+	bool StreamWriter::WriteVariantVector(const VariantVector::type& value)
 	{
 		bool success = true;
 		success &= WriteVLE(value.size());
@@ -318,7 +318,7 @@ namespace YumeEngine
 		return success;
 	}
 
-	bool StreamWriter::WriteStringVector(const StringVector& value)
+	bool StreamWriter::WriteStringVector(const StringVector::type& value)
 	{
 		bool success = true;
 		success &= WriteVLE(value.size());
@@ -327,7 +327,7 @@ namespace YumeEngine
 		return success;
 	}
 
-	bool StreamWriter::WriteVariantMap(const VariantMap& value)
+	bool StreamWriter::WriteVariantMap(const VariantMap::type& value)
 	{
 		bool success = true;
 		success &= WriteVLE(value.size());

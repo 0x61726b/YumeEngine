@@ -36,22 +36,22 @@ namespace YumeEngine
 {
 	YumeEnvironment::YumeEnvironment()
 	{
-		std::string appData;
+		YumeString appData;
 
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
-		appData = std::string(std::getenv("APPDATA"));
+		appData = YumeString(std::getenv("APPDATA"));
 #elif YUME_PLATFORM == YUME_PLATFORM_LINUX
-		appData = std::string(std::getenv("HOME"));
+		appData = YumeString(std::getenv("HOME"));
 #elif YUME_PLATFORM == YUME_PLATFORM_APPLE
-		appData = std::string(std::getenv("HOME"));
+		appData = YumeString(std::getenv("HOME"));
 #endif
 
 
 
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
-		appDataPath_ = boost::filesystem::path(appData);
+		appDataPath_ = boost::filesystem::path(appData.c_str());
 #else
-		appDataPath_ = boost::filesystem::path(appData);
+		appDataPath_ = boost::filesystem::path(appData.c_str());
 #endif
 
 		//On Windows this will be C:/User/AppData/Roaming/YumeEngine
@@ -68,11 +68,11 @@ namespace YumeEngine
 		ReadAndParseConfig();
 
 		//Append command line arguments to engine config
-		StringVector commandLine = GetArguments();
+		StringVector::type commandLine = GetArguments();
 
 		for(int i=0; i < commandLine.size(); ++i)
 		{
-			engineVariants_.insert(VariantMap::value_type(commandLine[i].c_str(),Variant("1")));
+			engineVariants_.insert(MakePair(YumeHash(commandLine[i].c_str()),Variant("1")));
 		}
 	}
 
@@ -91,6 +91,7 @@ namespace YumeEngine
 
 	void YumeEnvironment::AddParameter(const YumeHash& var,const Variant& value)
 	{
+		
 		VariantMap::iterator It = engineVariants_.find(var);
 
 		//If the user wants to override the parameter,let them 
@@ -116,7 +117,7 @@ namespace YumeEngine
 			YumeDynamicLibrary* pLib = YumeAPINew YumeDynamicLibrary(name);
 			if(!pLib->Load())
 				return NULL;
-			dynLibMap_.insert(std::make_pair(name,pLib));
+			dynLibMap_.insert(MakePair(name,pLib));
 			return pLib;
 		}
 	}
@@ -152,13 +153,13 @@ namespace YumeEngine
 		YumeString configContent = file.ReadString();
 		
 
-		VariantMap configMap = Parsers::ParseConfig(configContent);
+		VariantMap::type configMap = Parsers::ParseConfig(configContent);
 
 		VariantMap::iterator It = configMap.begin();
 
 		for(It;It != configMap.end(); ++It)
 		{
-			engineVariants_.insert(*It);
+			engineVariants_.insert(It);
 		}
 
 	}

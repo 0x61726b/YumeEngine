@@ -110,11 +110,11 @@ namespace YumeEngine
 		/// Write a variant without the type information.
 		bool WriteVariantData(const Variant& value);
 		/// Write a variant vector.
-		bool WriteVariantVector(const VariantVector& value);
+		bool WriteVariantVector(const VariantVector::type& value);
 		/// Write a variant vector.
-		bool WriteStringVector(const StringVector& value);
+		bool WriteStringVector(const StringVector::type& value);
 		/// Write a variant map.
-		bool WriteVariantMap(const VariantMap& value);
+		bool WriteVariantMap(const VariantMap::type& value);
 		/// Write a variable-length encoded unsigned integer, which can use 29 bits maximum.
 		bool WriteVLE(unsigned value);
 		/// Write a 24-bit network object ID.

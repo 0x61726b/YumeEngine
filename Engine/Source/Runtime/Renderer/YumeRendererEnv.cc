@@ -230,7 +230,7 @@ namespace YumeEngine
 
 			YumeVector<YumeRendererEnvironment*>::type result;
 			{
-				PointOctreeQuery query(reinterpret_cast<YumeVector<YumeDrawable*>::type&>(result),minZPosition,DRAWABLE_ZONE);
+				PointOctreeQuery query(reinterpret_cast<YumePodVector<YumeDrawable*>::type&>(result),minZPosition,DRAWABLE_ZONE);
 				octant_->GetRoot()->GetDrawables(query);
 			}
 
@@ -256,7 +256,7 @@ namespace YumeEngine
 
 			// Do the same for gradient end position
 		{
-			PointOctreeQuery query(reinterpret_cast<YumeVector<YumeDrawable*>::type&>(result),maxZPosition,DRAWABLE_ZONE);
+			PointOctreeQuery query(reinterpret_cast<YumePodVector<YumeDrawable*>::type&>(result),maxZPosition,DRAWABLE_ZONE);
 			octant_->GetRoot()->GetDrawables(query);
 		}
 		bestPriority = M_MIN_INT;
@@ -290,7 +290,7 @@ namespace YumeEngine
 	{
 		if(octant_ && lastWorldBoundingBox_.Defined())
 		{
-			YumeVector<YumeDrawable*>::type result;
+			YumePodVector<YumeDrawable*>::type result;
 			BoxOctreeQuery query(result,lastWorldBoundingBox_,DRAWABLE_GEOMETRY | DRAWABLE_ZONE);
 			octant_->GetRoot()->GetDrawables(query);
 

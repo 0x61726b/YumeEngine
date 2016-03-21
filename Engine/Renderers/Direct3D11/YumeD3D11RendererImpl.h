@@ -32,9 +32,9 @@ namespace YumeEngine
 {
 	class YumeD3D11Renderer;
 
-	typedef YumeMap<unsigned,ID3D11BlendState*>::type BlendStatesMap;
-	typedef YumeMap<unsigned,ID3D11DepthStencilState*>::type DepthStatesMap;
-	typedef YumeMap<unsigned,ID3D11RasterizerState*>::type RasterizerStatesMap;
+	typedef YumeMap<unsigned,ID3D11BlendState*> BlendStatesMap;
+	typedef YumeMap<unsigned,ID3D11DepthStencilState*> DepthStatesMap;
+	typedef YumeMap<unsigned,ID3D11RasterizerState*> RasterizerStatesMap;
 
 	class YumeD3DExport YumeD3D11RendererImpl
 	{
@@ -52,44 +52,26 @@ namespace YumeEngine
 		/// Return swapchain.
 		IDXGISwapChain* GetSwapChain() const { return swapChain_; }
 	private:
-		
-
 		ID3D11Device* device_;
-
 		ID3D11Debug* debug_;
-
 		ID3D11DeviceContext* deviceContext_;
-
 		IDXGISwapChain* swapChain_;
-
 		ID3D11RenderTargetView* defaultRenderTargetView_;
-
 		ID3D11Texture2D* defaultDepthTexture_;
-
 		ID3D11DepthStencilView* defaultDepthStencilView_;
-
 		ID3D11RenderTargetView* renderTargetViews_[MAX_RENDERTARGETS];
-
 		ID3D11DepthStencilView* depthStencilView_;
 
-		BlendStatesMap blendStates_;
-
-		DepthStatesMap depthStates_;
-
-		RasterizerStatesMap rasterizerStates_;
+		BlendStatesMap::type blendStates_;
+		DepthStatesMap::type depthStates_;
+		RasterizerStatesMap::type rasterizerStates_;
 
 		ID3D11Texture2D* resolveTexture_;
-
 		ID3D11ShaderResourceView* shaderResourceViews_[MAX_TEXTURE_UNITS];
-
 		ID3D11SamplerState* samplers_[MAX_TEXTURE_UNITS];
-
 		ID3D11Buffer* vertexBuffers_[MAX_VERTEX_STREAMS];
-
 		ID3D11Buffer* constantBuffers_[2][MAX_SHADER_PARAMETER_GROUPS];
-
 		unsigned vertexSizes_[MAX_VERTEX_STREAMS];
-
 		unsigned vertexOffsets_[MAX_VERTEX_STREAMS];
 
 	};

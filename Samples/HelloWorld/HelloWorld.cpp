@@ -26,8 +26,11 @@
 #include "Renderer/YumeSkybox.h"
 #include "Renderer/YumeRendererEnv.h"
 #include "Renderer/YumeTexture2D.h"
+#include "Renderer/YumeRenderPass.h"
 
 #include "Renderer/YumeResourceManager.h"
+
+#include "Renderer/YumeRHI.h"
 
 #include "Renderer/YumeModel.h"
 #include "Renderer/YumeStaticModel.h"
@@ -64,6 +67,14 @@ namespace YumeEngine
 		scene_->CreateComponent<Octree>();
 		scene_->CreateComponent<YumeDebugRenderer>();
 
+		YumeSceneNode* zoneNode = scene_->CreateChild("Zone");
+		YumeRendererEnvironment* zone = zoneNode->CreateComponent<YumeRendererEnvironment>();
+		zone->SetBoundingBox(BoundingBox(-1000.0f,1000.0f));
+		zone->SetAmbientColor(YumeColor(0.15f,0.15f,0.15f));
+		zone->SetFogColor(YumeColor(0,0,0));
+		zone->SetFogStart(100.0f);
+		zone->SetFogEnd(300.0f);
+
 		YumeSceneNode* lightNode = scene_->CreateChild("DirectionalLight");
 		lightNode->SetDirection(Vector3(0.6f,-1.0f,0.8f)); // The direction vector does not need to be normalized
 		YumeLight* light = lightNode->CreateComponent<YumeLight>();
@@ -88,26 +99,33 @@ namespace YumeEngine
 		test->SetRotation(Quaternion::IDENTITY);
 		YumeStaticModel* drawable = test->CreateComponent<YumeStaticModel>();
 		drawable->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		drawable->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
+		drawable->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Stone.xml"));
 		drawable->SetCastShadows(true);
 
-		YumeSceneNode* test2 = scene_->CreateChild("Test");
-		test2->SetPosition(Vector3(-2.0f,0.5f,0));
-		test2->SetRotation(Quaternion(45,Vector3(0,1,0)));
-		YumeStaticModel* drawable2 = test2->CreateComponent<YumeStaticModel>();
-		drawable2->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		drawable2->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
-		drawable2->SetCastShadows(true);
+		//YumeSceneNode* test2 = scene_->CreateChild("Test");
+		//test2->SetPosition(Vector3(-2.0f,0.5f,0));
+		//test2->SetRotation(Quaternion(45,Vector3(0,1,0)));
+		//YumeStaticModel* drawable2 = test2->CreateComponent<YumeStaticModel>();
+		//drawable2->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
+		//drawable2->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
+		//drawable2->SetCastShadows(true);
 
 
-		YumeSceneNode* test3 = scene_->CreateChild("Test");
+	/*	YumeSceneNode* test3 = scene_->CreateChild("Test");
 		test3->SetPosition(Vector3(0,5,7));
 		test3->SetRotation(Quaternion::IDENTITY);
 		test3->SetScale(10);
 		YumeStaticModel* large = test3->CreateComponent<YumeStaticModel>();
 		large->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		large->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
+		large->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Stone.xml"));
 		large->SetCastShadows(true);
+		large->SetOccluder(true);*/
+
+		//YumeSceneNode* skyNode = scene_->CreateChild("Sky");
+		//skyNode->SetScale(500.0f); // The scale actually does not matter
+		//YumeSkybox* skybox = skyNode->CreateComponent<YumeSkybox>();
+		//skybox->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
+		//skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Skybox.xml"));
 
 		cameraNode_ = scene_->CreateChild("Camera");
 		YumeCamera* camera = cameraNode_->CreateComponent<YumeCamera>();
@@ -116,12 +134,17 @@ namespace YumeEngine
 
 
 
-		SharedPtr<YumeViewport> viewport = SharedPtr<YumeViewport>(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>()));
+		SharedPtr<YumeViewport> viewport(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>()));
 
 		YumeRenderer* renderer = gYume->pRenderer;
+		/*renderer->SetNumViewports(2);*/
 		renderer->SetViewport(0,viewport);
 
+		//SharedPtr<YumeViewport> rearViewport(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>(),
+		//	IntRect(gYume->pRHI->GetWidth() * 2 / 3,32,gYume->pRHI->GetWidth() - 32,gYume->pRHI->GetHeight() / 3)));
+		//renderer->SetViewport(1,rearViewport);
 
+		//camera->SetViewOverrideFlags(VO_DISABLE_OCCLUSION);
 	}
 
 	void HelloWorld::MoveCamera(float timeStep)
@@ -166,5 +189,6 @@ namespace YumeEngine
 		BaseApplication::Setup();
 
 		engineVariants_["WindowWidth"] = 1600;
+		engineVariants_["WindowHeight"] = 900;
 	}
 }

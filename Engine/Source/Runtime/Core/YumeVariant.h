@@ -106,11 +106,11 @@ namespace YumeEngine
 	class VectorBuffer;
 
 
-	typedef YumeVector<Variant>::type VariantVector;
+	typedef YumeVector<Variant> VariantVector;
 
 
 
-	typedef std::unordered_map<YumeHash,Variant> VariantMap;
+	typedef YumeMap<YumeHash,Variant> VariantMap;
 
 
 	struct YumeAPIExport ResourceRef
@@ -162,14 +162,14 @@ namespace YumeEngine
 			type_(type)
 		{
 		}
-		ResourceRefList(YumeHash type,const StringVector& names):
+		ResourceRefList(YumeHash type,const StringVector::type& names):
 			type_(type),
 			names_(names)
 		{
 		}
 
 		YumeHash type_;
-		StringVector names_;
+		StringVector::type names_;
 		bool operator ==(const ResourceRefList& rhs) const { return type_ == rhs.type_; }
 
 
@@ -273,18 +273,11 @@ namespace YumeEngine
 		Variant(const YumeString& value):
 			type_(VAR_EMPTY)
 		{
-			stringHack_ = value;
-		}
-
-
-		Variant(const char* value):
-			type_(VAR_EMPTY)
-		{
 			*this = value;
 		}
 
 
-		Variant(const std::vector<unsigned char>& value):
+		Variant(const char* value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
@@ -326,21 +319,21 @@ namespace YumeEngine
 		}
 
 
-		Variant(const VariantVector& value):
+		Variant(const VariantVector::type& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
 
-		Variant(const VariantMap& value):
+		Variant(const VariantMap::type& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
 
-		Variant(const StringVector& value):
+		Variant(const StringVector::type& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
@@ -531,7 +524,7 @@ namespace YumeEngine
 		Variant& operator =(const YumeString& rhs)
 		{
 			SetType(VAR_STRING);
-			stringHack_ = rhs;
+			*(reinterpret_cast<YumeString*>(&value_)) = rhs;
 			return *this;
 		}
 
@@ -539,7 +532,7 @@ namespace YumeEngine
 		Variant& operator =(const char* rhs)
 		{
 			SetType(VAR_STRING);
-			stringHack_ = YumeString(rhs);
+			*(reinterpret_cast<YumeString*>(&value_)) = rhs;
 			return *this;
 		}
 
@@ -698,9 +691,9 @@ namespace YumeEngine
 		}
 
 
-		bool operator ==(const VariantVector& rhs) const
+		bool operator ==(const VariantVector::type& rhs) const
 		{
-			return type_ == VAR_VARIANTVECTOR ? *(reinterpret_cast<const VariantVector*>(&value_)) == rhs : false;
+			return type_ == VAR_VARIANTVECTOR ? *(reinterpret_cast<const VariantVector::type*>(&value_)) == rhs : false;
 		}
 
 
@@ -711,9 +704,9 @@ namespace YumeEngine
 		}
 
 
-		bool operator ==(const VariantMap& rhs) const
+		bool operator ==(const VariantMap::type& rhs) const
 		{
-			return type_ == VAR_VARIANTMAP ? *(reinterpret_cast<const VariantMap*>(&value_)) == rhs : false;
+			return type_ == VAR_VARIANTMAP ? *(reinterpret_cast<const VariantMap::type*>(&value_)) == rhs : false;
 		}
 
 
@@ -799,13 +792,13 @@ namespace YumeEngine
 		bool operator !=(const ResourceRefList& rhs) const { return !(*this == rhs); }
 
 
-		bool operator !=(const VariantVector& rhs) const { return !(*this == rhs); }
+		bool operator !=(const VariantVector::type& rhs) const { return !(*this == rhs); }
 
 
-		bool operator !=(const StringVector& rhs) const { return !(*this == rhs); }
+		bool operator !=(const StringVector::type& rhs) const { return !(*this == rhs); }
 
 
-		bool operator !=(const VariantMap& rhs) const { return !(*this == rhs); }
+		bool operator !=(const VariantMap::type& rhs) const { return !(*this == rhs); }
 
 
 		bool operator !=(const IntRect& rhs) const { return !(*this == rhs); }
@@ -922,7 +915,7 @@ namespace YumeEngine
 		const YumeColor& GetColor() const { return type_ == VAR_COLOR ? *reinterpret_cast<const YumeColor*>(&value_) : YumeColor::WHITE; }
 
 
-		const YumeString& GetString() const { return type_ == VAR_STRING ? stringHack_ : EmptyString; }
+		const String& GetString() const { return type_ == VAR_STRING ? *reinterpret_cast<const String*>(&value_) : String::EMPTY; }
 
 
 		const YumeVector<unsigned char>::type& GetBuffer() const
@@ -946,21 +939,21 @@ namespace YumeEngine
 		}
 
 
-		const VariantVector& GetVariantVector() const
+		const VariantVector::type& GetVariantVector() const
 		{
-			return type_ == VAR_VARIANTVECTOR ? *reinterpret_cast<const VariantVector*>(&value_) : emptyVariantVector;
+			return type_ == VAR_VARIANTVECTOR ? *reinterpret_cast<const VariantVector::type*>(&value_) : emptyVariantVector;
 		}
 
 
-		const StringVector& GetStringVector() const
+		const StringVector::type& GetStringVector() const
 		{
-			return type_ == VAR_STRINGVECTOR ? *reinterpret_cast<const StringVector*>(&value_) : emptyStringVector;
+			return type_ == VAR_STRINGVECTOR ? *reinterpret_cast<const StringVector::type*>(&value_) : emptyStringVector;
 		}
 
 
-		const VariantMap& GetVariantMap() const
+		const VariantMap::type& GetVariantMap() const
 		{
-			return type_ == VAR_VARIANTMAP ? *reinterpret_cast<const VariantMap*>(&value_) : emptyVariantMap;
+			return type_ == VAR_VARIANTMAP ? *reinterpret_cast<const VariantMap::type*>(&value_) : emptyVariantMap;
 		}
 
 
@@ -1036,22 +1029,18 @@ namespace YumeEngine
 
 		static const ResourceRefList emptyResourceRefList;
 
-		static const VariantMap emptyVariantMap;
+		static const VariantMap::type emptyVariantMap;
 
-		static const VariantVector emptyVariantVector;
+		static const VariantVector::type emptyVariantVector;
 
-		static const StringVector emptyStringVector;
+		static const StringVector::type emptyStringVector;
 
 	private:
 
 		void SetType(VariantType newType);
 
-
 		VariantType type_;
-
 		VariantValue value_;
-
-		YumeString stringHack_;
 	};
 
 

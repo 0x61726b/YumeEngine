@@ -24,7 +24,7 @@
 
 
 
-extern YumeAPIExport GlobalSystems* gYume = 0;
+extern YumeAPIExport YumeEngine::SharedPtr<GlobalSystems> gYume = YumeEngine::SharedPtr<GlobalSystems>();
 
 namespace YumeEngine
 {

@@ -79,8 +79,7 @@ namespace YumeEngine
 		alphaMask_(false),
 		isDesktop_(false)
 	{
-		name_ = name;
-		boost::to_lower(name_);
+		name_ = name.ToLower();
 
 		index_ = YumeRenderTechnique::GetPassIndex(name_);
 
@@ -239,7 +238,7 @@ namespace YumeEngine
 			if(!pass.attribute("lighting").empty())
 			{
 				YumeString lighting = pass.attribute("lighting").as_string();
-				boost::to_lower(lighting);
+				lighting = lighting.ToLower();
 				newPass->SetLightingMode((PassLightingMode)GetStringListIndex(lighting.c_str(),lightingModeNames,
 					LIGHTING_UNLIT));
 			}
@@ -247,14 +246,14 @@ namespace YumeEngine
 			if(!pass.attribute("blend").empty())
 			{
 				YumeString blend = pass.attribute("blend").as_string();
-				boost::to_lower(blend);
+				blend = blend.ToLower();
 				newPass->SetBlendMode((BlendMode)GetStringListIndex(blend.c_str(),blendModeNames,BLEND_REPLACE));
 			}
 
 			if(!pass.attribute("depthtest").empty())
 			{
 				YumeString depthTest = pass.attribute("depthtest").as_string();
-				boost::to_lower(depthTest);
+				depthTest = depthTest.ToLower();
 				if(depthTest == "false")
 					newPass->SetDepthTestMode(CMP_ALWAYS);
 				else
@@ -308,8 +307,7 @@ namespace YumeEngine
 
 	void YumeRenderTechnique::RemovePass(const YumeString& name)
 	{
-		YumeString lower = name;
-		boost::to_lower(lower);
+		YumeString lower = name.ToLower();
 		YumeMap<YumeString,unsigned>::const_iterator i = passIndices.find(lower);
 		if(i == passIndices.end())
 			return;
@@ -322,24 +320,21 @@ namespace YumeEngine
 
 	bool YumeRenderTechnique::HasPass(const YumeString& name) const
 	{
-		YumeString lower = name;
-		boost::to_lower(lower);
+		YumeString lower = name.ToLower();
 		YumeMap<YumeString,unsigned>::const_iterator i = passIndices.find(lower);
 		return i != passIndices.end() ? HasPass(i->second) : false;
 	}
 
 	YumeRenderPass* YumeRenderTechnique::GetPass(const YumeString& name) const
 	{
-		YumeString lower = name;
-		boost::to_lower(lower);
+		YumeString lower = name.ToLower();
 		YumeMap<YumeString,unsigned>::const_iterator i = passIndices.find(lower);
 		return i != passIndices.end() ? GetPass(i->second) : 0;
 	}
 
 	YumeRenderPass* YumeRenderTechnique::GetSupportedPass(const YumeString& name) const
 	{
-		YumeString lower = name;
-		boost::to_lower(lower);
+		YumeString lower = name.ToLower();
 		YumeMap<YumeString,unsigned>::const_iterator i = passIndices.find(lower);
 		return i != passIndices.end() ? GetSupportedPass(i->second) : 0;
 	}
@@ -400,8 +395,7 @@ namespace YumeEngine
 			shadowPassIndex = passIndices["shadow"] = 7;
 		}
 
-		YumeString nameLower = passName;
-		boost::to_lower(nameLower);
+		YumeString nameLower = passName.ToLower();
 
 		YumeMap<YumeString,unsigned>::iterator i = passIndices.find(nameLower);
 		if(i != passIndices.end())

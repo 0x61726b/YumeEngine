@@ -21,9 +21,7 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 #include "YumeGLConstantBuffer.h"
-#include "YumeGLRendererImpl.h"
 #include "YumeGLRenderer.h"
-#include "Engine/YumeEngine.h"
 
 #include "Logging/logging.h"
 

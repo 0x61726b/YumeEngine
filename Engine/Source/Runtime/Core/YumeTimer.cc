@@ -93,7 +93,7 @@ namespace YumeEngine
 		time(&sysTime);
 		const char* dateTime = ctime(&sysTime);
 		YumeString dt(dateTime);
-		boost::replace_all(dt,"\n","");
+		dt.Replace("\n","");
 		return dt;
 	}
 
@@ -108,7 +108,7 @@ namespace YumeEngine
 
 	void YumeTime::fireFrameBegin(int frameNumber)
 	{
-		for(TimeEventListeners::iterator l = listenerList_.begin(); l != listenerList_.end(); ++l)
+		for(TimeEventListeners::Iterator l = listenerList_.begin(); l != listenerList_.end(); ++l)
 		{
 			(*l)->HandleBeginFrame(frameNumber);
 		}
@@ -116,7 +116,7 @@ namespace YumeEngine
 
 	void YumeTime::fireFrameEnd(int frameNumber)
 	{
-		for(TimeEventListeners::iterator l = listenerList_.begin(); l != listenerList_.end(); ++l)
+		for(TimeEventListeners::Iterator l = listenerList_.begin(); l != listenerList_.end(); ++l)
 		{
 			(*l)->HandleEndFrame(frameNumber);
 		}
@@ -129,7 +129,7 @@ namespace YumeEngine
 
 	void YumeTime::RemoveTimeEventListener(YumeTimerEventListener* listener)
 	{
-		for(TimeEventListeners::iterator l = listenerList_.begin(); l != listenerList_.end(); ++l)
+		for(TimeEventListeners::Iterator l = listenerList_.begin(); l != listenerList_.end(); ++l)
 		{
 			if(*l == listener)
 			{

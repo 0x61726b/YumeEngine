@@ -62,6 +62,14 @@ namespace YumeEngine
 		-1,-1,0,
 	};
 
+	static const float texturedQuadVertexData[] =
+	{
+		-1,1,0,0,0,
+		1,1,0,1,0,
+		1,-1,0,1,1,
+		-1,-1,0,0,1
+	};
+
 	static const unsigned short dirLightIndexData[] =
 	{
 		0,1,2,
@@ -239,7 +247,7 @@ namespace YumeEngine
 
 	YumeHash YumeRenderer::type_ = "Renderer";
 
-	YumeRenderer::YumeRenderer(YumeRHI* rhi,const YumeString& name):
+	YumeRenderer::YumeRenderer(const YumeString& name):
 		name_(name),
 		defaultZone_(SharedPtr<YumeRendererEnvironment>(new YumeRendererEnvironment)),
 		shadowMapFilterInstance_(0),
@@ -264,6 +272,7 @@ namespace YumeEngine
 		numShadowCameras_(0),
 		shadersChangedFrameNumber_(M_MAX_UNSIGNED),
 		hdrRendering_(false),
+		debugGBufferRendering_(false),
 		specularLighting_(true),
 		drawShadows_(true),
 		reuseShadowMaps_(true),
@@ -273,11 +282,9 @@ namespace YumeEngine
 		initialized_(false),
 		resetViews_(false)
 	{
-		graphics_= rhi;
-
 		REGISTER_ENGINE_LISTENER;
 
-		
+
 	}
 
 	YumeRenderer::~YumeRenderer()
@@ -288,14 +295,14 @@ namespace YumeEngine
 
 	void YumeRenderer::AddListener(RendererEventListener* listener)
 	{
-		if(std::find(listeners_.begin(),listeners_.end(),listener) != listeners_.end())
+		if(listeners_.Contains(listener))
 			return;
 		listeners_.push_back(listener);
 	}
 
 	void YumeRenderer::RemoveListener(RendererEventListener* listener)
 	{
-		RendererListeners::iterator i = std::find(listeners_.begin(),listeners_.end(),listener);
+		RendererListeners::iterator i = listeners_.find(listener);
 		if(i != listeners_.end())
 			listeners_.erase(i);
 	}
@@ -337,7 +344,7 @@ namespace YumeEngine
 		viewports_.resize(num);
 	}
 
-	void YumeRenderer::SetViewport(unsigned index,SharedPtr<YumeViewport> viewport)
+	void YumeRenderer::SetViewport(unsigned index,YumeViewport* viewport)
 	{
 		if(index >= viewports_.size())
 			viewports_.resize(index + 1);
@@ -357,7 +364,10 @@ namespace YumeEngine
 	{
 		hdrRendering_ = enable;
 	}
-
+	void YumeRenderer::SetGBufferDebugRendering(bool enable)
+	{
+		debugGBufferRendering_ = enable;
+	}
 	void YumeRenderer::SetSpecularLighting(bool enable)
 	{
 		specularLighting_ = enable;
@@ -399,7 +409,7 @@ namespace YumeEngine
 
 	void YumeRenderer::SetDrawShadows(bool enable)
 	{
-		if(graphics_ || !graphics_->GetShadowMapFormat())
+		if(gYume->pRHI || !gYume->pRHI->GetShadowMapFormat())
 			return;
 
 		drawShadows_ = enable;
@@ -409,7 +419,7 @@ namespace YumeEngine
 
 	void YumeRenderer::SetShadowMapSize(int size)
 	{
-		if(!graphics_)
+		if(!gYume->pRHI)
 			return;
 
 		size = NextPowerOfTwo((unsigned)Max(size,SHADOW_MIN_PIXELS));
@@ -422,11 +432,11 @@ namespace YumeEngine
 
 	void YumeRenderer::SetShadowQuality(ShadowQuality quality)
 	{
-		if(!graphics_)
+		if(!gYume->pRHI)
 			return;
 
 		// If no hardware PCF, do not allow to select one-sample quality
-		if(!graphics_->GetHardwareShadowSupport())
+		if(!gYume->pRHI->GetHardwareShadowSupport())
 		{
 			if(quality == SHADOWQUALITY_SIMPLE_16BIT)
 				quality = SHADOWQUALITY_PCF_16BIT;
@@ -435,7 +445,7 @@ namespace YumeEngine
 				quality = SHADOWQUALITY_PCF_24BIT;
 		}
 		// if high resolution is not allowed
-		if(!graphics_->GetHiresShadowMapFormat())
+		if(!gYume->pRHI->GetHiresShadowMapFormat())
 		{
 			if(quality == SHADOWQUALITY_SIMPLE_24BIT)
 				quality = SHADOWQUALITY_SIMPLE_16BIT;
@@ -644,7 +654,7 @@ namespace YumeEngine
 		views_.clear();
 		preparedViews_.clear();
 
-		if(!graphics_ || !graphics_->IsInitialized() || graphics_->IsDeviceLost())
+		if(!gYume->pRHI || !gYume->pRHI->IsInitialized() || gYume->pRHI->IsDeviceLost())
 			return;
 
 		frame_.frameNumber_ = gYume->pTimer->GetFrameNumber();
@@ -671,14 +681,14 @@ namespace YumeEngine
 			WeakPtr<YumeViewport>& viewport = queuedViewports_[i].second;
 
 			// Null pointer means backbuffer view. Differentiate between that and an expired rendersurface
-			if ((renderTarget.NotNull() && renderTarget.Expired()) || viewport.Expired())
+			if((renderTarget.NotNull() && renderTarget.Expired()) || viewport.Expired())
 				continue;
 
 			// (Re)allocate the view structure if necessary
 			if(!viewport->GetView() || resetViews_)
 				viewport->AllocateView();
 
-			SharedPtr<YumeRenderView> view = viewport->GetView();
+			YumeRenderView* view = viewport->GetView();
 			assert(view);
 			// Check if view can be defined successfully (has either valid scene, camera and octree, or no scene passes)
 			if(!view->Define(renderTarget,viewport))
@@ -695,14 +705,14 @@ namespace YumeEngine
 
 			// Update octree (perform early update for drawables which need that, and reinsert moved drawables.)
 			// However, if the same scene is viewed from multiple cameras, update the octree only once
-			if(std::find(updatedOctrees_.begin(),updatedOctrees_.end(),octree) == updatedOctrees_.end())
+			if(!updatedOctrees_.Contains(octree))
 			{
 				frame_.camera_ = viewport->GetCamera();
 				frame_.viewSize_ = viewRect.Size();
 				if(frame_.viewSize_ == IntVector2::ZERO)
-					frame_.viewSize_ = IntVector2(graphics_->GetWidth(),graphics_->GetHeight());
+					frame_.viewSize_ = IntVector2(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight());
 				octree->Update(frame_);
-				updatedOctrees_.push_back(octree);
+				updatedOctrees_.insert(octree);
 
 				// Set also the view for the debug renderer already here, so that it can use culling
 				/// \todo May result in incorrect debug geometry culling if the same scene is drawn from multiple viewports
@@ -723,25 +733,25 @@ namespace YumeEngine
 	void YumeRenderer::Render()
 	{
 		// Engine does not render when window is closed or device is lost
-		assert(graphics_ && graphics_->IsInitialized() && !graphics_->IsDeviceLost());
+		assert(gYume->pRHI && gYume->pRHI->IsInitialized() && !gYume->pRHI->IsDeviceLost());
 
 		// If the indirection textures have lost content (OpenGL mode only), restore them now
 		if(faceSelectCubeMap_ && faceSelectCubeMap_->IsDataLost())
 			SetIndirectionTextureData();
 
-		graphics_->SetDefaultTextureFilterMode(textureFilterMode_);
-		graphics_->SetTextureAnisotropy((unsigned)textureAnisotropy_);
+		gYume->pRHI->SetDefaultTextureFilterMode(textureFilterMode_);
+		gYume->pRHI->SetTextureAnisotropy((unsigned)textureAnisotropy_);
 
 		// If no views, just clear the screen
 		if(views_.empty())
 		{
-			graphics_->SetBlendMode(BLEND_REPLACE);
-			graphics_->SetColorWrite(true);
-			graphics_->SetDepthWrite(true);
-			graphics_->SetScissorTest(false);
-			graphics_->SetStencilTest(false);
-			graphics_->ResetRenderTargets();
-			graphics_->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL,defaultZone_->GetFogColor());
+			gYume->pRHI->SetBlendMode(BLEND_REPLACE);
+			gYume->pRHI->SetColorWrite(true);
+			gYume->pRHI->SetDepthWrite(true);
+			gYume->pRHI->SetScissorTest(false);
+			gYume->pRHI->SetStencilTest(false);
+			gYume->pRHI->ResetRenderTargets();
+			gYume->pRHI->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL,defaultZone_->GetFogColor());
 
 			numPrimitives_ = 0;
 			numBatches_ = 0;
@@ -765,8 +775,8 @@ namespace YumeEngine
 			}
 
 			// Copy the number of batches & primitives from Graphics so that we can account for 3D geometry only
-			numPrimitives_ = graphics_->GetNumPrimitives();
-			numBatches_ = graphics_->GetNumBatches();
+			numPrimitives_ = gYume->pRHI->GetNumPrimitives();
+			numBatches_ = gYume->pRHI->GetNumBatches();
 		}
 
 		// Remove unused occlusion buffers and renderbuffers
@@ -791,12 +801,12 @@ namespace YumeEngine
 				continue;
 
 			// Process geometries / lights only once
-			const YumeVector<YumeDrawable*>::type& geometries = view->GetGeometries();
-			const YumeVector<YumeLight*>::type& lights = view->GetLights();
+			const YumePodVector<YumeDrawable*>::type& geometries = view->GetGeometries();
+			const YumePodVector<YumeLight*>::type& lights = view->GetLights();
 
 			for(unsigned i = 0; i < geometries.size(); ++i)
 			{
-				if(std::find(processedGeometries.begin(),processedGeometries.end(),geometries[i]) == processedGeometries.end())
+				if(!processedGeometries.Contains(geometries[i]))
 				{
 					geometries[i]->DrawDebugGeometry(debug,depthTest);
 					processedGeometries.push_back(geometries[i]);
@@ -804,7 +814,7 @@ namespace YumeEngine
 			}
 			for(unsigned i = 0; i < lights.size(); ++i)
 			{
-				if(std::find(processedLights.begin(),processedLights.end(),lights[i]) == processedLights.end())
+				if(!processedLights.Contains(lights[i]))
 				{
 					lights[i]->DrawDebugGeometry(debug,depthTest);
 					processedLights.push_back(lights[i]);
@@ -820,20 +830,19 @@ namespace YumeEngine
 			unsigned numViewports = renderTarget->GetNumViewports();
 
 			for(unsigned i = 0; i < numViewports; ++i)
-				QueueViewport(renderTarget,SharedPtr<YumeViewport>(renderTarget->GetViewport(i)));
+				QueueViewport(renderTarget,renderTarget->GetViewport(i));
 		}
 	}
 
-	void YumeRenderer::QueueViewport(YumeRenderable* renderTarget,SharedPtr<YumeViewport> viewport)
+	void YumeRenderer::QueueViewport(YumeRenderable* renderTarget,YumeViewport* viewport)
 	{
 		if(viewport)
 		{
-			std::pair<WeakPtr<YumeRenderable>,WeakPtr<YumeViewport> > newView = std::make_pair(SharedPtr<YumeRenderable>(renderTarget),
-				viewport);
-			queuedViewports_.push_back(newView);
-			// Prevent double add of the same rendertarget/viewport combination
-			/*if(std::find(queuedViewports_.begin(),queuedViewports_.end(),newView) == queuedViewports_.end())
-				queuedViewports_.push_back(newView);*/
+			Pair<WeakPtr<YumeRenderable>,WeakPtr<YumeViewport> > newView = MakePair(WeakPtr<YumeRenderable>(renderTarget),
+				WeakPtr<YumeViewport>(viewport));
+
+			if(!queuedViewports_.Contains(newView))
+				queuedViewports_.push_back(newView);
 		}
 	}
 
@@ -855,6 +864,10 @@ namespace YumeEngine
 	YumeGeometry* YumeRenderer::GetQuadGeometry()
 	{
 		return dirLightGeometry_;
+	}
+	YumeGeometry* YumeRenderer::GetTexturedQuadGeometry()
+	{
+		return texturedQuadGeometry;
 	}
 
 	YumeTexture2D* YumeRenderer::GetShadowMap(YumeLight* light,YumeCamera* camera,unsigned viewWidth,unsigned viewHeight)
@@ -941,17 +954,17 @@ namespace YumeEngine
 		{
 		case SHADOWQUALITY_SIMPLE_16BIT:
 		case SHADOWQUALITY_PCF_16BIT:
-			shadowMapFormat = graphics_->GetShadowMapFormat();
+			shadowMapFormat = gYume->pRHI->GetShadowMapFormat();
 			break;
 
 		case SHADOWQUALITY_SIMPLE_24BIT:
 		case SHADOWQUALITY_PCF_24BIT:
-			shadowMapFormat = graphics_->GetHiresShadowMapFormat();
+			shadowMapFormat = gYume->pRHI->GetHiresShadowMapFormat();
 			break;
 
 		case SHADOWQUALITY_VSM:
 		case SHADOWQUALITY_BLUR_VSM:
-			shadowMapFormat = graphics_->GetRGFloat32FormatNs();
+			shadowMapFormat = gYume->pRHI->GetRGFloat32FormatNs();
 			shadowMapUsage = TEXTURE_RENDERTARGET;
 			break;
 		}
@@ -959,9 +972,9 @@ namespace YumeEngine
 		if(!shadowMapFormat)
 			return 0;
 
-		SharedPtr<YumeTexture2D> newShadowMap = SharedPtr<YumeTexture2D>(graphics_->CreateTexture2D());
+		SharedPtr<YumeTexture2D> newShadowMap = SharedPtr<YumeTexture2D>(gYume->pRHI->CreateTexture2D());
 		int retries = 3;
-		unsigned dummyColorFormat = graphics_->GetDummyColorFormat();
+		unsigned dummyColorFormat = gYume->pRHI->GetDummyColorFormat();
 
 		while(retries)
 		{
@@ -978,7 +991,7 @@ namespace YumeEngine
 				newShadowMap->SetShadowCompare(shadowMapUsage == TEXTURE_DEPTHSTENCIL);
 				if(GetName() != "OpenGL")
 				{
-					newShadowMap->SetFilterMode(graphics_->GetHardwareShadowSupport() ? FILTER_BILINEAR : FILTER_NEAREST);
+					newShadowMap->SetFilterMode(gYume->pRHI->GetHardwareShadowSupport() ? FILTER_BILINEAR : FILTER_NEAREST);
 				}
 				// Create dummy color texture for the shadow map if necessary: Direct3D9, or OpenGL when working around an OS X +
 				// Intel driver bug
@@ -987,7 +1000,7 @@ namespace YumeEngine
 					// If no dummy color rendertarget for this size exists yet, create one now
 					if(colorShadowMaps_.find(searchKey) == colorShadowMaps_.end())
 					{
-						colorShadowMaps_[searchKey] = SharedPtr<YumeTexture2D>(graphics_->CreateTexture2D());
+						colorShadowMaps_[searchKey] = SharedPtr<YumeTexture2D>(gYume->pRHI->CreateTexture2D());
 						colorShadowMaps_[searchKey]->SetSize(width,height,dummyColorFormat,TEXTURE_RENDERTARGET);
 					}
 					// Link the color rendertarget to the shadow map
@@ -1011,7 +1024,7 @@ namespace YumeEngine
 	YumeTexture* YumeRenderer::GetScreenBuffer(int width,int height,unsigned format,bool cubemap,bool filtered,bool srgb,
 		unsigned persistentKey)
 	{
-		bool depthStencil = (format == graphics_->GetDepthStencilFormatNs()) || (format == graphics_->GetReadableDepthFormatNs());
+		bool depthStencil = (format == gYume->pRHI->GetDepthStencilFormatNs()) || (format == gYume->pRHI->GetReadableDepthFormatNs());
 		if(depthStencil)
 		{
 			filtered = false;
@@ -1048,21 +1061,21 @@ namespace YumeEngine
 
 			if(!cubemap)
 			{
-				SharedPtr<YumeTexture2D> newTex2D = SharedPtr<YumeTexture2D>(graphics_->CreateTexture2D());
+				SharedPtr<YumeTexture2D> newTex2D = SharedPtr<YumeTexture2D>(gYume->pRHI->CreateTexture2D());
 				newTex2D->SetSize(width,height,format,depthStencil ? TEXTURE_DEPTHSTENCIL : TEXTURE_RENDERTARGET);
 
 				if(GetName() == "OpenGL")
 				{
 					// OpenGL hack: clear persistent floating point screen buffers to ensure the initial contents aren't illegal (NaN)?
 					// Otherwise eg. the AutoExposure post process will not work correctly
-					if(persistentKey && graphics_->GetOpenGLOnlyTextureDataType(format) == 0x1406) //GL_FLOAT
+					if(persistentKey && gYume->pRHI->GetOpenGLOnlyTextureDataType(format) == 0x1406) //GL_FLOAT
 					{
 						// Note: this loses current rendertarget assignment
-						graphics_->ResetRenderTargets();
-						graphics_->SetRenderTarget(0,newTex2D);
-						graphics_->SetDepthStencil((YumeRenderable*)0);
-						graphics_->SetViewport(IntRect(0,0,width,height));
-						graphics_->Clear(CLEAR_COLOR);
+						gYume->pRHI->ResetRenderTargets();
+						gYume->pRHI->SetRenderTarget(0,newTex2D);
+						gYume->pRHI->SetDepthStencil((YumeRenderable*)0);
+						gYume->pRHI->SetViewport(IntRect(0,0,width,height));
+						gYume->pRHI->Clear(CLEAR_COLOR);
 					}
 				}
 
@@ -1070,7 +1083,7 @@ namespace YumeEngine
 			}
 			else
 			{
-				SharedPtr<YumeTextureCube> newTexCube = SharedPtr<YumeTextureCube>(graphics_->CreateTextureCube());
+				SharedPtr<YumeTextureCube> newTexCube = SharedPtr<YumeTextureCube>(gYume->pRHI->CreateTextureCube());
 				newTexCube->SetSize(width,format,TEXTURE_RENDERTARGET);
 
 				newBuffer = newTexCube;
@@ -1096,11 +1109,11 @@ namespace YumeEngine
 	{
 		// Return the default depth-stencil surface if applicable
 		// (when using OpenGL Graphics will allocate right size surfaces on demand to emulate Direct3D9)
-		if(width == graphics_->GetWidth() && height == graphics_->GetHeight() && graphics_->GetMultiSample() <= 1)
+		if(width == gYume->pRHI->GetWidth() && height == gYume->pRHI->GetHeight() && gYume->pRHI->GetMultiSample() <= 1)
 			return 0;
 		else
 		{
-			return static_cast<YumeTexture2D*>(GetScreenBuffer(width,height,graphics_->GetDepthStencilFormatNs(),false,false,
+			return static_cast<YumeTexture2D*>(GetScreenBuffer(width,height,gYume->pRHI->GetDepthStencilFormatNs(),false,false,
 				false))->GetRenderSurface();
 		}
 	}
@@ -1266,10 +1279,10 @@ namespace YumeEngine
 		// Log error if shaders could not be assigned, but only once per technique
 		if(!batch.vertexShader_ || !batch.pixelShader_)
 		{
-			if(std::find(shaderErrorDisplayed_.begin(),shaderErrorDisplayed_.end(),tech) == shaderErrorDisplayed_.end())
+			if(!shaderErrorDisplayed_.Contains(tech))
 			{
-				shaderErrorDisplayed_.push_back(tech);
-				YUMELOG_ERROR("Technique " + tech->GetName() + " has missing shaders");
+				shaderErrorDisplayed_.insert(tech);
+				YUMELOG_ERROR("Technique has missing shaders" << tech->GetName().c_str());
 			}
 		}
 	}
@@ -1314,14 +1327,14 @@ namespace YumeEngine
 		}
 
 		if(vsDefines.length())
-			batch.vertexShader_ = graphics_->GetShader(VS,vsName,deferredLightVSVariations[vsi] + vsDefines);
+			batch.vertexShader_ = gYume->pRHI->GetShader(VS,vsName,deferredLightVSVariations[vsi] + vsDefines);
 		else
-			batch.vertexShader_ = graphics_->GetShader(VS,vsName,deferredLightVSVariations[vsi]);
+			batch.vertexShader_ = gYume->pRHI->GetShader(VS,vsName,deferredLightVSVariations[vsi]);
 
 		if(psDefines.length())
-			batch.pixelShader_ = graphics_->GetShader(PS,psName,deferredLightPSVariations_[psi] + psDefines);
+			batch.pixelShader_ = gYume->pRHI->GetShader(PS,psName,deferredLightPSVariations_[psi] + psDefines);
 		else
-			batch.pixelShader_ = graphics_->GetShader(PS,psName,deferredLightPSVariations_[psi]);
+			batch.pixelShader_ = gYume->pRHI->GetShader(PS,psName,deferredLightPSVariations_[psi]);
 	}
 
 	void YumeRenderer::SetCullMode(CullMode mode,YumeCamera* camera)
@@ -1335,7 +1348,7 @@ namespace YumeEngine
 				mode = CULL_CW;
 		}
 
-		graphics_->SetCullMode(mode);
+		gYume->pRHI->SetCullMode(mode);
 	}
 
 	bool YumeRenderer::ResizeInstancingBuffer(unsigned numInstances)
@@ -1377,9 +1390,9 @@ namespace YumeEngine
 	void YumeRenderer::OptimizeLightByScissor(YumeLight* light,YumeCamera* camera)
 	{
 		if(light && light->GetLightType() != LIGHT_DIRECTIONAL)
-			graphics_->SetScissorTest(true,GetLightScissor(light,camera));
+			gYume->pRHI->SetScissorTest(true,GetLightScissor(light,camera));
 		else
-			graphics_->SetScissorTest(false);
+			gYume->pRHI->SetScissorTest(false);
 	}
 
 	void YumeRenderer::OptimizeLightByStencil(YumeLight* light,YumeCamera* camera)
@@ -1389,7 +1402,7 @@ namespace YumeEngine
 			LightType type = light->GetLightType();
 			if(type == LIGHT_DIRECTIONAL)
 			{
-				graphics_->SetStencilTest(false);
+				gYume->pRHI->SetStencilTest(false);
 				return;
 			}
 
@@ -1407,14 +1420,14 @@ namespace YumeEngine
 			// If the camera is actually inside the light volume, do not draw to stencil as it would waste fillrate
 			if(lightDist < M_EPSILON)
 			{
-				graphics_->SetStencilTest(false);
+				gYume->pRHI->SetStencilTest(false);
 				return;
 			}
 
 			// If the stencil value has wrapped, clear the whole stencil first
 			if(!lightStencilValue_)
 			{
-				graphics_->Clear(CLEAR_STENCIL);
+				gYume->pRHI->Clear(CLEAR_STENCIL);
 				lightStencilValue_ = 1;
 			}
 
@@ -1423,41 +1436,41 @@ namespace YumeEngine
 			if(lightDist < camera->GetNearClip() * 2.0f)
 			{
 				SetCullMode(CULL_CW,camera);
-				graphics_->SetDepthTest(CMP_GREATER);
+				gYume->pRHI->SetDepthTest(CMP_GREATER);
 			}
 			else
 			{
 				SetCullMode(CULL_CCW,camera);
-				graphics_->SetDepthTest(CMP_LESSEQUAL);
+				gYume->pRHI->SetDepthTest(CMP_LESSEQUAL);
 			}
 
-			graphics_->SetColorWrite(false);
-			graphics_->SetDepthWrite(false);
-			graphics_->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,lightStencilValue_);
-			graphics_->SetShaders(graphics_->GetShader(VS,"Stencil"),graphics_->GetShader(PS,"Stencil"));
-			graphics_->SetShaderParameter(VSP_VIEW,view);
-			graphics_->SetShaderParameter(VSP_VIEWINV,camera->GetEffectiveWorldTransform());
-			graphics_->SetShaderParameter(VSP_VIEWPROJ,projection * view);
-			graphics_->SetShaderParameter(VSP_MODEL,light->GetVolumeTransform(camera));
+			gYume->pRHI->SetColorWrite(false);
+			gYume->pRHI->SetDepthWrite(false);
+			gYume->pRHI->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,lightStencilValue_);
+			gYume->pRHI->SetShaders(gYume->pRHI->GetShader(VS,"Stencil"),gYume->pRHI->GetShader(PS,"Stencil"));
+			gYume->pRHI->SetShaderParameter(VSP_VIEW,view);
+			gYume->pRHI->SetShaderParameter(VSP_VIEWINV,camera->GetEffectiveWorldTransform());
+			gYume->pRHI->SetShaderParameter(VSP_VIEWPROJ,projection * view);
+			gYume->pRHI->SetShaderParameter(VSP_MODEL,light->GetVolumeTransform(camera));
 
-			geometry->Draw(graphics_);
+			geometry->Draw(gYume->pRHI);
 
-			graphics_->ClearTransformSources();
-			graphics_->SetColorWrite(true);
-			graphics_->SetStencilTest(true,CMP_EQUAL,OP_KEEP,OP_KEEP,OP_KEEP,lightStencilValue_);
+			gYume->pRHI->ClearTransformSources();
+			gYume->pRHI->SetColorWrite(true);
+			gYume->pRHI->SetStencilTest(true,CMP_EQUAL,OP_KEEP,OP_KEEP,OP_KEEP,lightStencilValue_);
 
 			// Increase stencil value for next light
 			++lightStencilValue_;
 		}
 		else
-			graphics_->SetStencilTest(false);
+			gYume->pRHI->SetStencilTest(false);
 	}
 
 	const Rect& YumeRenderer::GetLightScissor(YumeLight* light,YumeCamera* camera)
 	{
-		std::pair<YumeLight*,YumeCamera*> combination(light,camera);
+		Pair<YumeLight*,YumeCamera*> combination(light,camera);
 
-		YumeMap<std::pair<YumeLight*,YumeCamera*>,Rect>::iterator i = lightScissorCache_.find(combination);
+		YumeMap<Pair<YumeLight*,YumeCamera*>,Rect>::iterator i = lightScissorCache_.find(combination);
 		if(i != lightScissorCache_.end())
 			return i->second;
 
@@ -1533,11 +1546,11 @@ namespace YumeEngine
 	{
 		YumeResourceManager* cache = gYume->pResourceManager;
 
-		if(!graphics_ || !graphics_->IsInitialized() || !cache)
+		if(!gYume->pRHI || !gYume->pRHI->IsInitialized() || !cache)
 			return;
 
 
-		if(!graphics_->GetShadowMapFormat())
+		if(!gYume->pRHI->GetShadowMapFormat())
 			drawShadows_ = false;
 		// Validate the shadow quality level
 		SetShadowQuality(shadowQuality_);
@@ -1547,7 +1560,7 @@ namespace YumeEngine
 		defaultMaterial_ = SharedPtr<YumeMaterial>(new YumeMaterial);
 
 		defaultPipeline_ = SharedPtr<YumeRenderPipeline>(new YumeRenderPipeline());
-		defaultPipeline_->Load(cache->PrepareResource<YumeXmlFile>("Pipelines/Deferred.xml"));
+		defaultPipeline_->Load(cache->PrepareResource<YumeXmlFile>("Pipelines/Forward.xml"));
 		CreateGeometries();
 		CreateInstancingBuffer();
 
@@ -1611,7 +1624,7 @@ namespace YumeEngine
 				unsigned g = j / MAX_LIGHT_VS_VARIATIONS;
 				unsigned l = j % MAX_LIGHT_VS_VARIATIONS;
 
-				vertexShaders[j] = SharedPtr<YumeShaderVariation>(graphics_->GetShader(VS,pass->GetVertexShader(),
+				vertexShaders[j] = SharedPtr<YumeShaderVariation>(gYume->pRHI->GetShader(VS,pass->GetVertexShader(),
 					pass->GetVertexShaderDefines() + extraShaderDefines + lightVSVariations[l] + geometryVSVariations[g]));
 			}
 			for(unsigned j = 0; j < MAX_LIGHT_PS_VARIATIONS * 2; ++j)
@@ -1621,12 +1634,12 @@ namespace YumeEngine
 
 				if(l & LPS_SHADOW)
 				{
-					pixelShaders[j] = SharedPtr<YumeShaderVariation>(graphics_->GetShader(PS,pass->GetPixelShader(),
+					pixelShaders[j] = SharedPtr<YumeShaderVariation>(gYume->pRHI->GetShader(PS,pass->GetPixelShader(),
 						pass->GetPixelShaderDefines() + extraShaderDefines + lightPSVariations[l] + GetShadowVariations() +
 						heightFogVariations[h]));
 				}
 				else
-					pixelShaders[j] = SharedPtr<YumeShaderVariation>(graphics_->GetShader(PS,pass->GetPixelShader(),
+					pixelShaders[j] = SharedPtr<YumeShaderVariation>(gYume->pRHI->GetShader(PS,pass->GetPixelShader(),
 					pass->GetPixelShaderDefines() + extraShaderDefines + lightPSVariations[l] + heightFogVariations[h]));
 			}
 		}
@@ -1640,7 +1653,7 @@ namespace YumeEngine
 				{
 					unsigned g = j / MAX_VERTEXLIGHT_VS_VARIATIONS;
 					unsigned l = j % MAX_VERTEXLIGHT_VS_VARIATIONS;
-					vertexShaders[j] = SharedPtr<YumeShaderVariation>(graphics_->GetShader(VS,pass->GetVertexShader(),
+					vertexShaders[j] = SharedPtr<YumeShaderVariation>(gYume->pRHI->GetShader(VS,pass->GetVertexShader(),
 						pass->GetVertexShaderDefines() + extraShaderDefines + vertexLightVSVariations[l] + geometryVSVariations[g]));
 				}
 			}
@@ -1649,7 +1662,7 @@ namespace YumeEngine
 				vertexShaders.resize(MAX_GEOMETRYTYPES);
 				for(unsigned j = 0; j < MAX_GEOMETRYTYPES; ++j)
 				{
-					vertexShaders[j] = SharedPtr<YumeShaderVariation>(graphics_->GetShader(VS,pass->GetVertexShader(),
+					vertexShaders[j] = SharedPtr<YumeShaderVariation>(gYume->pRHI->GetShader(VS,pass->GetVertexShader(),
 						pass->GetVertexShaderDefines() + extraShaderDefines + geometryVSVariations[j]));
 				}
 			}
@@ -1658,7 +1671,7 @@ namespace YumeEngine
 			for(unsigned j = 0; j < 2; ++j)
 			{
 				pixelShaders[j] =
-					SharedPtr<YumeShaderVariation>(graphics_->GetShader(PS,pass->GetPixelShader(),pass->GetPixelShaderDefines() + extraShaderDefines + heightFogVariations[j]));
+					SharedPtr<YumeShaderVariation>(gYume->pRHI->GetShader(PS,pass->GetPixelShader(),pass->GetPixelShaderDefines() + extraShaderDefines + heightFogVariations[j]));
 			}
 		}
 
@@ -1692,12 +1705,12 @@ namespace YumeEngine
 
 	void YumeRenderer::CreateGeometries()
 	{
-		SharedPtr<YumeVertexBuffer> dlvb = SharedPtr<YumeVertexBuffer>(graphics_->CreateVertexBuffer());
+		SharedPtr<YumeVertexBuffer> dlvb = SharedPtr<YumeVertexBuffer>(gYume->pRHI->CreateVertexBuffer());
 		dlvb->SetShadowed(true);
 		dlvb->SetSize(4,MASK_POSITION);
 		dlvb->SetData(dirLightVertexData);
 
-		SharedPtr<YumeIndexBuffer> dlib = SharedPtr<YumeIndexBuffer>(graphics_->CreateIndexBuffer());
+		SharedPtr<YumeIndexBuffer> dlib = SharedPtr<YumeIndexBuffer>(gYume->pRHI->CreateIndexBuffer());
 		dlib->SetShadowed(true);
 		dlib->SetSize(6,false);
 		dlib->SetData(dirLightIndexData);
@@ -1707,12 +1720,12 @@ namespace YumeEngine
 		dirLightGeometry_->SetIndexBuffer(dlib);
 		dirLightGeometry_->SetDrawRange(TRIANGLE_LIST,0,dlib->GetIndexCount());
 
-		SharedPtr<YumeVertexBuffer> slvb = SharedPtr<YumeVertexBuffer>(graphics_->CreateVertexBuffer());
+		SharedPtr<YumeVertexBuffer> slvb = SharedPtr<YumeVertexBuffer>(gYume->pRHI->CreateVertexBuffer());
 		slvb->SetShadowed(true);
 		slvb->SetSize(8,MASK_POSITION);
 		slvb->SetData(spotLightVertexData);
 
-		SharedPtr<YumeIndexBuffer> slib = SharedPtr<YumeIndexBuffer>(graphics_->CreateIndexBuffer());
+		SharedPtr<YumeIndexBuffer> slib = SharedPtr<YumeIndexBuffer>(gYume->pRHI->CreateIndexBuffer());
 		slib->SetShadowed(true);
 		slib->SetSize(36,false);
 		slib->SetData(spotLightIndexData);
@@ -1722,12 +1735,12 @@ namespace YumeEngine
 		spotLightGeometry_->SetIndexBuffer(slib);
 		spotLightGeometry_->SetDrawRange(TRIANGLE_LIST,0,slib->GetIndexCount());
 
-		SharedPtr<YumeVertexBuffer> plvb = SharedPtr<YumeVertexBuffer>(graphics_->CreateVertexBuffer());
+		SharedPtr<YumeVertexBuffer> plvb = SharedPtr<YumeVertexBuffer>(gYume->pRHI->CreateVertexBuffer());
 		plvb->SetShadowed(true);
 		plvb->SetSize(24,MASK_POSITION);
 		plvb->SetData(pointLightVertexData);
 
-		SharedPtr<YumeIndexBuffer> plib = SharedPtr<YumeIndexBuffer>(graphics_->CreateIndexBuffer());
+		SharedPtr<YumeIndexBuffer> plib = SharedPtr<YumeIndexBuffer>(gYume->pRHI->CreateIndexBuffer());
 		plib->SetShadowed(true);
 		plib->SetSize(132,false);
 		plib->SetData(pointLightIndexData);
@@ -1737,17 +1750,33 @@ namespace YumeEngine
 		pointLightGeometry_->SetIndexBuffer(plib);
 		pointLightGeometry_->SetDrawRange(TRIANGLE_LIST,0,plib->GetIndexCount());
 
+		SharedPtr<YumeVertexBuffer> spvb(gYume->pRHI->CreateVertexBuffer());
+		spvb->SetShadowed(true);
+		spvb->SetSize(4,MASK_POSITION | MASK_TEXCOORD1) ;
+		spvb->SetData(texturedQuadVertexData);
+
+
+		SharedPtr<YumeIndexBuffer> spib(gYume->pRHI->CreateIndexBuffer());
+		spib->SetShadowed(true);
+		spib->SetSize(6,false);
+		spib->SetData(dirLightIndexData);
+
+		texturedQuadGeometry = new YumeGeometry();
+		texturedQuadGeometry->SetVertexBuffer(0,spvb);
+		texturedQuadGeometry->SetIndexBuffer(spib);
+		texturedQuadGeometry->SetDrawRange(TRIANGLE_LIST,0,spib->GetIndexCount());
+
 		//Not opengl
-		if(graphics_->GetShadowMapFormat())
+		if(gYume->pRHI->GetShadowMapFormat())
 		{
-			faceSelectCubeMap_ = SharedPtr<YumeTextureCube>(graphics_->CreateTextureCube());
+			faceSelectCubeMap_ = SharedPtr<YumeTextureCube>(gYume->pRHI->CreateTextureCube());
 			faceSelectCubeMap_->SetNumLevels(1);
-			faceSelectCubeMap_->SetSize(1,graphics_->GetRGBAFormatNs());
+			faceSelectCubeMap_->SetSize(1,gYume->pRHI->GetRGBAFormatNs());
 			faceSelectCubeMap_->SetFilterMode(FILTER_NEAREST);
 
-			indirectionCubeMap_ =SharedPtr<YumeTextureCube>(graphics_->CreateTextureCube());
+			indirectionCubeMap_ =SharedPtr<YumeTextureCube>(gYume->pRHI->CreateTextureCube());
 			indirectionCubeMap_->SetNumLevels(1);
-			indirectionCubeMap_->SetSize(256,graphics_->GetRGBAFormatNs());
+			indirectionCubeMap_->SetSize(256,gYume->pRHI->GetRGBAFormatNs());
 			indirectionCubeMap_->SetFilterMode(FILTER_BILINEAR);
 			indirectionCubeMap_->SetAddressMode(COORD_U,ADDRESS_CLAMP);
 			indirectionCubeMap_->SetAddressMode(COORD_V,ADDRESS_CLAMP);
@@ -1796,23 +1825,23 @@ namespace YumeEngine
 			}
 
 			indirectionCubeMap_->SetData((CubeMapFace)i,0,0,0,256,256,data);
-		}
+	}
 
 		faceSelectCubeMap_->ClearDataLost();
 		indirectionCubeMap_->ClearDataLost();
-	}
+}
 
 	void YumeRenderer::CreateInstancingBuffer()
 	{
 		// Do not create buffer if instancing not supported
-		if(!graphics_->GetInstancingSupport())
+		if(!gYume->pRHI->GetInstancingSupport())
 		{
 			instancingBuffer_.Reset();
 			dynamicInstancing_ = false;
 			return;
 		}
 
-		instancingBuffer_ = SharedPtr<YumeVertexBuffer>(graphics_->CreateVertexBuffer());
+		instancingBuffer_ = SharedPtr<YumeVertexBuffer>(gYume->pRHI->CreateVertexBuffer());
 		if(!instancingBuffer_->SetSize(INSTANCING_BUFFER_DEFAULT_SIZE,INSTANCING_BUFFER_MASK,true))
 		{
 			instancingBuffer_.Reset();
@@ -1842,7 +1871,7 @@ namespace YumeEngine
 #ifdef URHO3D_OPENGL
 			return "SIMPLE_SHADOW ";
 #else
-			if(graphics_->GetHardwareShadowSupport())
+			if(gYume->pRHI->GetHardwareShadowSupport())
 				return "SIMPLE_SHADOW ";
 			else
 				return "SIMPLE_SHADOW SHADOWCMP ";
@@ -1853,7 +1882,7 @@ namespace YumeEngine
 #ifdef URHO3D_OPENGL
 			return "PCF_SHADOW ";
 #else
-			if(graphics_->GetHardwareShadowSupport())
+			if(gYume->pRHI->GetHardwareShadowSupport())
 				return "PCF_SHADOW ";
 			else
 				return "PCF_SHADOW SHADOWCMP ";
@@ -1884,40 +1913,40 @@ namespace YumeEngine
 
 	void YumeRenderer::BlurShadowMap(YumeRenderView* view,YumeTexture2D* shadowMap)
 	{
-		graphics_->SetBlendMode(BLEND_REPLACE);
-		graphics_->SetDepthTest(CMP_ALWAYS);
-		graphics_->SetClipPlane(false);
-		graphics_->SetScissorTest(false);
+		gYume->pRHI->SetBlendMode(BLEND_REPLACE);
+		gYume->pRHI->SetDepthTest(CMP_ALWAYS);
+		gYume->pRHI->SetClipPlane(false);
+		gYume->pRHI->SetScissorTest(false);
 
 		// Get a temporary render buffer
 		YumeTexture2D* tmpBuffer = static_cast<YumeTexture2D*>(GetScreenBuffer(shadowMap->GetWidth(),shadowMap->GetHeight(),shadowMap->GetFormat(),false,false,false));
-		graphics_->SetRenderTarget(0,tmpBuffer->GetRenderSurface());
-		graphics_->SetDepthStencil(GetDepthStencil(shadowMap->GetWidth(),shadowMap->GetHeight()));
-		graphics_->SetViewport(IntRect(0,0,shadowMap->GetWidth(),shadowMap->GetHeight()));
+		gYume->pRHI->SetRenderTarget(0,tmpBuffer->GetRenderSurface());
+		gYume->pRHI->SetDepthStencil(GetDepthStencil(shadowMap->GetWidth(),shadowMap->GetHeight()));
+		gYume->pRHI->SetViewport(IntRect(0,0,shadowMap->GetWidth(),shadowMap->GetHeight()));
 
 		// Get shaders
 		static const YumeString shaderName("ShadowBlur");
-		YumeShaderVariation* vs = graphics_->GetShader(VS,shaderName);
-		YumeShaderVariation* ps = graphics_->GetShader(PS,shaderName);
-		graphics_->SetShaders(vs,ps);
+		YumeShaderVariation* vs = gYume->pRHI->GetShader(VS,shaderName);
+		YumeShaderVariation* ps = gYume->pRHI->GetShader(PS,shaderName);
+		gYume->pRHI->SetShaders(vs,ps);
 
 		view->SetGBufferShaderParameters(IntVector2(shadowMap->GetWidth(),shadowMap->GetHeight()),IntRect(0,0,shadowMap->GetWidth(),shadowMap->GetHeight()));
 
 		// Horizontal blur of the shadow map
 		static const YumeString blurOffsetParam("BlurOffsets");
-		graphics_->SetShaderParameter(blurOffsetParam,Vector2(shadowSoftness_ / shadowMap->GetWidth(),0.0f));
+		gYume->pRHI->SetShaderParameter(blurOffsetParam,Vector2(shadowSoftness_ / shadowMap->GetWidth(),0.0f));
 
-		graphics_->SetTexture(TU_DIFFUSE,shadowMap);
+		gYume->pRHI->SetTexture(TU_DIFFUSE,shadowMap);
 		view->DrawFullscreenQuad(false);
 
 		// Vertical blur
-		graphics_->SetRenderTarget(0,shadowMap);
-		graphics_->SetViewport(IntRect(0,0,shadowMap->GetWidth(),shadowMap->GetHeight()));
+		gYume->pRHI->SetRenderTarget(0,shadowMap);
+		gYume->pRHI->SetViewport(IntRect(0,0,shadowMap->GetWidth(),shadowMap->GetHeight()));
 
-		graphics_->SetShaderParameter(blurOffsetParam,Vector2(0.0f,shadowSoftness_ / shadowMap->GetHeight()));
+		gYume->pRHI->SetShaderParameter(blurOffsetParam,Vector2(0.0f,shadowSoftness_ / shadowMap->GetHeight()));
 
-		graphics_->SetTexture(TU_DIFFUSE,tmpBuffer);
+		gYume->pRHI->SetTexture(TU_DIFFUSE,tmpBuffer);
 		view->DrawFullscreenQuad(false);
 	}
 
-}
+	}

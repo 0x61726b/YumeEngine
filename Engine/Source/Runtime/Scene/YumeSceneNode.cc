@@ -364,7 +364,7 @@ namespace YumeEngine
 				else
 				{
 					*i = cur->listeners_.back();
-					cur->listeners_.pop_back();
+					cur->listeners_.Pop();
 				}
 			}
 			YumeVector<SharedPtr<YumeSceneNode> >::iterator i = cur->children_.begin();
@@ -417,7 +417,7 @@ namespace YumeEngine
 					// Otherwise do not remove from the scene during reparenting, just send the necessary change event
 				}
 
-				oldParent->children_.erase(std::find(oldParent->children_.begin(),oldParent->children_.end(),nodeShared));
+				oldParent->children_.Remove(nodeShared);
 			}
 		}
 
@@ -879,7 +879,7 @@ namespace YumeEngine
 		components_.push_back(component);
 
 		if(component->GetNode())
-			YUMELOG_WARN("Component " + component->GetTypeName() + " already belongs to a node!");
+			YUMELOG_WARN("Component " << component->GetTypeName().c_str() << " already belongs to a node!");
 
 		component->SetNode(this);
 

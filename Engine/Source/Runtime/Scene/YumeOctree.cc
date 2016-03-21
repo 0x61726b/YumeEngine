@@ -413,8 +413,8 @@ namespace YumeEngine
 				octant = drawable->GetOctant();
 				if(octant != this && octant->GetCullingBox().IsInside(box) != INSIDE)
 				{
-					YUMELOG_ERROR("Drawable is not fully inside its octant's culling bounds: drawable box " + box.ToString() +
-						" octant box " + octant->GetCullingBox().ToString());
+					YUMELOG_ERROR("Drawable is not fully inside its octant's culling bounds: drawable box " << box.ToString().c_str() <<
+						" octant box " << octant->GetCullingBox().ToString().c_str());
 				}
 #endif
 			}
@@ -451,7 +451,7 @@ namespace YumeEngine
 	{
 		query.result_.clear();
 		GetDrawablesInternal(query);
-		std::sort(query.result_.begin(),query.result_.end(),CompareRayQueryResults);
+		Sort(query.result_.begin(),query.result_.end(),CompareRayQueryResults);
 	}
 
 	void Octree::RaycastSingle(RayOctreeQuery& query) const
@@ -467,7 +467,7 @@ namespace YumeEngine
 			drawable->SetSortValue(query.ray_.HitDistance(drawable->GetWorldBoundingBox()));
 		}
 
-		std::sort(rayQueryDrawables_.begin(),rayQueryDrawables_.end(),CompareDrawables);
+		Sort(rayQueryDrawables_.begin(),rayQueryDrawables_.end(),CompareDrawables);
 
 		// Then do the actual test according to the query, and early-out as possible
 		float closestHit = M_INFINITY;
@@ -487,7 +487,7 @@ namespace YumeEngine
 
 		if(query.result_.size() > 1)
 		{
-			std::sort(query.result_.begin(),query.result_.end(),CompareRayQueryResults);
+			Sort(query.result_.begin(),query.result_.end(),CompareRayQueryResults);
 			query.result_.resize(1);
 		}
 	}
@@ -508,7 +508,7 @@ namespace YumeEngine
 
 	void Octree::CancelUpdate(YumeDrawable* drawable)
 	{
-		drawableUpdates_.erase(std::find(drawableUpdates_.begin(),drawableUpdates_.end(),drawable));
+		drawableUpdates_.Remove(drawable);
 		drawable->updateQueued_ = false;
 	}
 

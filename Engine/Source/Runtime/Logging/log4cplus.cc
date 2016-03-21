@@ -55,7 +55,7 @@ void YumeEngine::Log::InitLogging(const char* loc)
 	log4cplus::Logger::getRoot().addAppender(debugAppender);
 #endif
 
-	std::string strModulePath = std::string(loc);
+	YumeString strModulePath = YumeString(loc);
 	const size_t cSize = strlen(loc);
 	std::wstring wstrModulePath(cSize, L'#');
 	mbstowcs(&wstrModulePath[0], loc, cSize);

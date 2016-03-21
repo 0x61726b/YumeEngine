@@ -27,13 +27,12 @@
 #include "Renderer/YumeRHI.h"
 #include "Renderer/YumeRendererDefs.h"
 #include "YumeGLShaderVariation.h"
-#include "YumeGLShader.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 
 	/// Combined information for specific vertex and pixel shaders.
-	class YumeGLExport YumeGLShaderProgram : public YumeGLResource
+	class YumeGLExport YumeGLShaderProgram : public YumeGLResource,public RefCounted
 	{
 	public:
 		/// Construct.

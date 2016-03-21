@@ -22,7 +22,7 @@
 #include "YumeHeaders.h"
 #include "YumeColor.h"
 
-
+#undef TRANSPARENT
 
 
 namespace YumeEngine

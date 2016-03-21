@@ -67,7 +67,7 @@ namespace YumeEngine
 		
 		void RemoveDrawable(YumeDrawable* drawable,bool resetOctant = true)
 		{
-			YumeVector<YumeDrawable*>::iterator i = std::find(drawables_.begin(),drawables_.end(),drawable);
+			YumeVector<YumeDrawable*>::iterator i = drawables_.find(drawable);
 			if(i != drawables_.end())
 			{
 				drawables_.erase(i);

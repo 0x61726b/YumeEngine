@@ -40,7 +40,7 @@ namespace YumeEngine
 		if(startPos == std::string::npos)
 			return;
 
-		code.insert(startPos,"/*");
+		code.Insert(startPos,"/*");
 
 		for(unsigned i = startPos + 2 + signature.length(); i < code.length(); ++i)
 		{
@@ -51,7 +51,7 @@ namespace YumeEngine
 				--braceLevel;
 				if(braceLevel == 0)
 				{
-					code.insert(i + 1,"*/");
+					code.Insert(i + 1,"*/");
 					return;
 				}
 			}
@@ -121,24 +121,23 @@ namespace YumeEngine
 
 			i = variations.find(normalizedHash);
 			if(i != variations.end())
-				variations.insert(std::make_pair(definesHash,i->second));
+				variations.insert(MakePair(definesHash,i->second));
 			else
 			{
-				std::pair<YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> >::iterator,bool> ret;
 				// No shader variation found. Create new
 				YumeD3D11ShaderVariation* shr_ = YumeAPINew YumeD3D11ShaderVariation(this,type);
-				ret = variations.insert(ShaderMap::type::value_type(normalizedHash,SharedPtr<YumeD3D11ShaderVariation>(shr_)));
+				i = variations.insert(MakePair(normalizedHash,SharedPtr<YumeD3D11ShaderVariation>(shr_)));
 				if(definesHash != normalizedHash)
-					variations.insert(std::make_pair(definesHash,ret.first->second));
+					variations.insert(MakePair(definesHash,i->second));
 				
 
 				
-				ret.first->second->SetName(GetFileName(GetName()));
-				ret.first->second->SetDefines(normalizedDefines);
+				i->second->SetName(GetFileName(GetName()));
+				i->second->SetDefines(normalizedDefines);
 				++numVariations_;
 				RefreshMemoryUse();
 
-				return StaticCast<YumeShaderVariation>(ret.first->second);
+				return StaticCast<YumeShaderVariation>(i->second);
 			}
 		}
 		return (YumeShaderVariation*)i->second;

@@ -25,12 +25,19 @@
 #include "YumeGLRequired.h"
 #include "Renderer/YumeRendererDefs.h"
 
+#include "Math/YumeRect.h"
+#include "Math/YumeColor.h"
 #include "Math/YumeVector2.h"
+#include "Math/YumeVector3.h"
 #include "Math/YumeVector4.h"
+
+#include "Math/YumeMatrix3x4.h"
 
 #include "Renderer/YumeRHI.h"
 
-#include "Core/YumeVariant.h"
+#include "Renderer/YumeShader.h"
+#include "YumeGLShaderProgram.h"
+#include "Renderer/YumeShaderVariation.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -41,7 +48,7 @@ namespace YumeEngine
 	class YumeTexture3D;
 	class YumeTextureCube;
 
-	typedef YumeMap<std::pair<YumeShaderVariation*,YumeShaderVariation*>,SharedPtr<YumeGLShaderProgram> >::type ShaderProgramMap;
+	typedef YumeMap<Pair<YumeShaderVariation*,YumeShaderVariation*>,SharedPtr<YumeGLShaderProgram> > ShaderProgramMap;
 
 	class YumeGLExport YumeGLRenderer : public YumeRHI
 	{
@@ -54,6 +61,7 @@ namespace YumeEngine
 		virtual bool							BeginFrame();
 		virtual void							EndFrame();
 		virtual void							Clear(unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0);
+		virtual void							ClearRenderTarget(unsigned index,unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0);
 
 		virtual bool							IsInitialized();
 
@@ -222,7 +230,7 @@ namespace YumeEngine
 		bool									initialized_;
 		YumeGLRendererImpl*						impl_;
 
-		ShaderProgramMap						shaderPrograms_;
+		ShaderProgramMap::type					shaderPrograms_;
 		YumeGLShaderProgram*					shaderProgram_;
 
 		YumeConstantBuffer*						currentConstantBuffers_[MAX_SHADER_PARAMETER_GROUPS * 2];

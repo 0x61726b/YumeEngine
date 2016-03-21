@@ -120,11 +120,11 @@ namespace YumeEngine
 		/// Read a variant whose type is already known.
 		Variant ReadVariant(VariantType type);
 		/// Read a variant vector.
-		VariantVector ReadVariantVector();
+		VariantVector::type ReadVariantVector();
 		/// Read a string vector.
-		StringVector ReadStringVector();
+		StringVector::type ReadStringVector();
 		/// Read a variant map.
-		VariantMap ReadVariantMap();
+		VariantMap::type ReadVariantMap();
 		/// Read a variable-length encoded unsigned integer, which can use 29 bits maximum.
 		unsigned ReadVLE();
 		/// Read a 24-bit network object ID.

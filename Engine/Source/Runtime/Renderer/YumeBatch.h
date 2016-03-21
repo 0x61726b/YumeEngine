@@ -258,7 +258,7 @@ namespace YumeEngine
 
 		void SortFrontToBack();
 
-		void SortFrontToBack2Pass(YumeVector<Batch*>::type& batches);
+		void SortFrontToBack2Pass(YumePodVector<Batch*>::type& batches);
 
 		void SetTransforms(void* lockedData,unsigned& freeIndex);
 
@@ -270,15 +270,15 @@ namespace YumeEngine
 		bool IsEmpty() const { return batches_.empty() && batchGroups_.empty(); }
 
 
-		boost::unordered_map<BatchGroupKey,BatchGroup,BatchGroupKeyHash> batchGroups_;
-		boost::unordered_map<unsigned,unsigned> shaderRemapping_;
-		boost::unordered_map<unsigned short,unsigned short> materialRemapping_;
-		boost::unordered_map<unsigned short,unsigned short> geometryRemapping_;
+		YumeMap<BatchGroupKey,BatchGroup>::type batchGroups_;
+		YumeMap<unsigned,unsigned>::type shaderRemapping_;
+		YumeMap<unsigned short,unsigned short>::type materialRemapping_;
+		YumeMap<unsigned short,unsigned short>::type geometryRemapping_;
 
 
-		YumeVector<Batch>::type batches_;
-		YumeVector<Batch*>::type sortedBatches_;
-		YumeVector<BatchGroup*>::type sortedBatchGroups_;
+		YumePodVector<Batch>::type batches_;
+		YumePodVector<Batch*>::type sortedBatches_;
+		YumePodVector<BatchGroup*>::type sortedBatchGroups_;
 
 		unsigned maxSortedInstances_;
 	};
@@ -314,9 +314,9 @@ namespace YumeEngine
 
 		YumeVector<ShadowBatchQueue>::type shadowSplits_;
 
-		YumeVector<YumeLight*>::type vertexLights_;
+		YumePodVector<YumeLight*>::type vertexLights_;
 
-		YumeVector<Batch>::type volumeBatches_;
+		YumePodVector<Batch>::type volumeBatches_;
 	};
 }
 

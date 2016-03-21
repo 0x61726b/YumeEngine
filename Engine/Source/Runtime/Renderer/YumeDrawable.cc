@@ -117,7 +117,7 @@ namespace YumeEngine
 			RemoveFromOctree();
 	}
 
-	void YumeDrawable::ProcessRayQuery(const RayOctreeQuery& query,YumeVector<RayQueryResult>::type& results)
+	void YumeDrawable::ProcessRayQuery(const RayOctreeQuery& query,YumePodVector<RayQueryResult>::type& results)
 	{
 		float distance = query.ray_.HitDistance(GetWorldBoundingBox());
 		if(distance < query.maxDistance_)
@@ -239,7 +239,6 @@ namespace YumeEngine
 	void YumeDrawable::SetOccluder(bool enable)
 	{
 		occluder_ = enable;
-		
 	}
 
 	void YumeDrawable::SetOccludee(bool enable)
@@ -280,12 +279,12 @@ namespace YumeEngine
 	bool YumeDrawable::IsInView(YumeCamera* camera) const
 	{
 		YumeRenderer* renderer = gYume->pRenderer;
-		return renderer && viewFrameNumber_ == renderer->GetFrameInfo().frameNumber_ && (!camera || std::find(viewCameras_.begin(),viewCameras_.end(),camera) != viewCameras_.end());
+		return renderer && viewFrameNumber_ == renderer->GetFrameInfo().frameNumber_ && (!camera || viewCameras_.Contains(camera));
 	}
 
 	bool YumeDrawable::IsInView(const FrameInfo& frame,bool anyCamera) const
 	{
-		return viewFrameNumber_ == frame.frameNumber_ && (anyCamera || std::find(viewCameras_.begin(),viewCameras_.end(),frame.camera_) != viewCameras_.end());
+		return viewFrameNumber_ == frame.frameNumber_ && (anyCamera || viewCameras_.Contains(frame.camera_));
 	}
 
 	void YumeDrawable::SetZone(YumeRendererEnvironment* zone,bool temporary)
@@ -338,7 +337,7 @@ namespace YumeEngine
 		for(unsigned i = 0; i < lights_.size(); ++i)
 			lights_[i]->SetIntensitySortValue(box);
 
-		std::sort(lights_.begin(),lights_.end(),CompareDrawables);
+		Sort(lights_.begin(),lights_.end(),CompareDrawables);
 		vertexLights_.insert(vertexLights_.end(),lights_.begin() + maxLights_,lights_.end());
 		lights_.resize(maxLights_);
 	}
@@ -361,7 +360,7 @@ namespace YumeEngine
 		for(unsigned i = 0; i < vertexLights_.size(); ++i)
 			vertexLights_[i]->SetIntensitySortValue(box);
 
-		std::sort(vertexLights_.begin(),vertexLights_.end(),CompareDrawables);
+		Sort(vertexLights_.begin(),vertexLights_.end(),CompareDrawables);
 		vertexLights_.resize(MAX_VERTEX_LIGHTS);
 	}
 
@@ -404,11 +403,6 @@ namespace YumeEngine
 				octree->InsertDrawable(this);
 			else
 				YUMELOG_ERROR("No Octree component in scene, drawable will not render");
-		}
-		else
-		{
-			// We have a mechanism for adding detached nodes to an octree manually, so do not log this error
-			//URHO3D_LOGERROR("Node is detached from scene, drawable will not render");
 		}
 	}
 

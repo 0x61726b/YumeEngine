@@ -44,7 +44,7 @@ namespace YumeEngine
 	{
 		YumeBase* instance = nullptr;
 
-		ObjRegistry::iterator It = functionRegistry.find(type);
+		ObjRegistry::Iterator It = functionRegistry.find(type);
 
 		if(It != functionRegistry.end())
 			instance = It->second();
@@ -62,12 +62,12 @@ namespace YumeEngine
 
 	void YumeObjectFactory::RegisterFactoryFunction(YumeHash type,std::function<YumeBase*(void)> classFactoryFunction)
 	{
-		functionRegistry.insert(std::make_pair(type,classFactoryFunction));
+		functionRegistry.insert(MakePair(type,classFactoryFunction));
 	}
 
 	void YumeObjectFactory::UnRegisterFactoryFunction(YumeHash type)
 	{
-		ObjRegistry::iterator It = functionRegistry.find(type);
+		ObjRegistry::Iterator It = functionRegistry.find(type);
 
 		if(It != functionRegistry.end())
 			functionRegistry.erase(It);

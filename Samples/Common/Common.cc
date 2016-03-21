@@ -74,6 +74,12 @@ namespace YumeEngine
 
 		if(input->GetKeyPress(KEY_SPACE))
 			drawDebug_ = !drawDebug_;
+
+		if(input->GetKeyPress(KEY_G))
+		{
+			YumeRenderer* renderer = gYume->pRenderer;
+			renderer->SetGBufferDebugRendering(!renderer->GetGBufferDebugRendering());
+		}
 	}
 
 	void BaseApplication::HandlePostRenderUpdate(float timeStep)
@@ -81,7 +87,7 @@ namespace YumeEngine
 		if(drawDebug_)
 		{
 			gYume->pRenderer->DrawDebugGeometry(false);
-			scene_->GetComponent<Octree>()->DrawDebugGeometry(false);
+			//scene_->GetComponent<Octree>()->DrawDebugGeometry(false);
 		}
 	}
 

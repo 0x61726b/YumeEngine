@@ -80,14 +80,14 @@ namespace YumeEngine
 		: exiting_(false),
 		initialized_(false),
 		inactiveFps_(60),
-		maxFps_(600),
+		maxFps_(200),
 		minFps_(10),
 		timeStepSmoothing_(2),
 		timeStep_(0)
 	{
 		YumeEngineGlobal = this;
 
-		gYume = new GlobalSystems;
+		gYume = (new GlobalSystems);
 		gYume->pEngine = this;
 	}
 
@@ -96,7 +96,7 @@ namespace YumeEngine
 
 	}
 
-	bool YumeEngine3D::Initialize(const VariantMap& variants)
+	bool YumeEngine3D::Initialize(const VariantMap::type& variants)
 	{
 
 		if(initialized_)
@@ -134,12 +134,12 @@ namespace YumeEngine
 			YumeEngine::Log::ToggleLogging(false);
 		}
 
-		unsigned NumThreads = 12;
+		unsigned NumThreads = 0;
 		gYume->pWorkSystem->CreateThreads(NumThreads);
 
-		YUMELOG_INFO("Initialized environment...Current system time " << gYume->pTimer->GetTimeStamp());
+		YUMELOG_INFO("Initialized environment...Current system time " << gYume->pTimer->GetTimeStamp().c_str());
 
-		std::string currentOs;
+		String currentOs;
 
 #if YUME_PLATFORM == YUME_PLATFORM_WIN32
 		currentOs = "Win32";
@@ -168,7 +168,6 @@ namespace YumeEngine
 		//This is where renderer library is getting loaded!
 		initialized_ = LoadExternalLibrary(rendererName_);
 		rendererName_ = renderer;
-		gYume->pRenderer = (YumeAPINew YumeRenderer(gYume->pRHI,renderer));
 		if(!initialized_)
 			return false;
 
@@ -178,7 +177,7 @@ namespace YumeEngine
 		gYume->pRHI->SetWindowTitle("Yume Engine");
 		gYume->pRHI->SetWindowPos(Vector2(250,250));
 
-		FsPath resourceTree = FsPath(gYume->pEnv->GetVariant("ResourceTree").Get<YumeString>());
+		FsPath resourceTree = FsPath(gYume->pEnv->GetVariant("ResourceTree").Get<YumeString>().c_str());
 		resourceTree = gYume->pIO->GetBinaryRoot() / "Yume" / resourceTree;
 
 		gYume->pResourceManager->AddResourcePath(resourceTree);
@@ -202,6 +201,7 @@ namespace YumeEngine
 		gYume->pInput = (YumeAPINew YumeInput);
 		//SharedPtr<YumeTexture2D> earth = resourceManager_->PrepareResource<YumeTexture2D>("Textures/Earth_Diffuse.dds");
 
+		gYume->pRenderer = (YumeAPINew YumeRenderer(renderer));
 		gYume->pRenderer->Initialize();
 
 		gYume->pDebugRenderer = (new YumeDebugRenderer);
@@ -221,14 +221,14 @@ namespace YumeEngine
 
 	void YumeEngine3D::AddListener(EngineEventListener* listener)
 	{
-		if(std::find(engineListeners_.begin(),engineListeners_.end(),listener) != engineListeners_.end())
+		if(engineListeners_.Contains(listener))
 			return;
 		engineListeners_.push_back(listener);
 	}
 
 	void YumeEngine3D::RemoveListener(EngineEventListener* listener)
 	{
-		EngineEventListeners::iterator i = std::find(engineListeners_.begin(),engineListeners_.end(),listener);
+		EngineEventListeners::Iterator i = engineListeners_.find(listener);
 		if(i != engineListeners_.end())
 			engineListeners_.erase(i);
 	}
@@ -238,19 +238,19 @@ namespace YumeEngine
 		switch(evt)
 		{
 		case E_UPDATE:
-			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
+			for(EngineEventListeners::Iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
 				(*i)->HandleUpdate(gYume->pTimer->GetTimeStep());
 			break;
 		case E_POSTUPDATE:
-			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
+			for(EngineEventListeners::Iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
 				(*i)->HandlePostUpdate(gYume->pTimer->GetTimeStep());
 			break;
 		case R_UPDATE:
-			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
+			for(EngineEventListeners::Iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
 				(*i)->HandleRenderUpdate(gYume->pTimer->GetTimeStep());
 			break;
 		case R_POSTUPDATE:
-			for(EngineEventListeners::iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
+			for(EngineEventListeners::Iterator i = engineListeners_.begin(); i != engineListeners_.end(); ++i)
 				(*i)->HandlePostRenderUpdate(gYume->pTimer->GetTimeStep());
 			break;
 		}
@@ -359,7 +359,7 @@ namespace YumeEngine
 		{
 			// If the smoothing configuration was changed, ensure correct amount of samples
 
-			lastTimeSteps_.erase(lastTimeSteps_.begin(),lastTimeSteps_.begin() + lastTimeSteps_.size() - (int)timeStepSmoothing_);
+			lastTimeSteps_.erase(0, lastTimeSteps_.size() - timeStepSmoothing_);
 			for(unsigned i = 0; i < lastTimeSteps_.size(); ++i)
 				timeStep_ += lastTimeSteps_[i];
 			timeStep_ /= lastTimeSteps_.size();
@@ -375,7 +375,7 @@ namespace YumeEngine
 
 		if(dynLib)
 		{
-			if(std::find(extLibs_.begin(),extLibs_.end(),dynLib) == extLibs_.end())
+			if(!extLibs_.Contains(dynLib))
 			{
 				extLibs_.push_back(dynLib);
 
@@ -400,7 +400,7 @@ namespace YumeEngine
 
 	void YumeEngine3D::UnloadExternalLibrary(const YumeString& lib)
 	{
-		ExtLibList::iterator i;
+		ExtLibList::Iterator i;
 
 		for(i = extLibs_.begin(); i != extLibs_.end(); ++i)
 		{
@@ -420,7 +420,7 @@ namespace YumeEngine
 
 	void YumeEngine3D::UnloadExternalLibraries()
 	{
-		ExtLibList::iterator i;
+		ExtLibList::Iterator i;
 
 		for(i = extLibs_.begin(); i != extLibs_.end(); ++i)
 		{
@@ -465,11 +465,12 @@ namespace YumeEngine
 		/*graphics_.reset();
 		renderer_.reset();*/
 
+		
 		YUMELOG_INFO("Engine stats: ");
 		YUMELOG_INFO("Total frames: " << gYume->pTimer->GetFrameNumber());
 		YUMELOG_INFO("Time elapsed since start: " << gYume->pTimer->GetElapsedTime());
 
-		YUMELOG_INFO("Exited at time " << gYume->pTimer->GetTimeStamp());
+		YUMELOG_INFO("Exited at time " << gYume->pTimer->GetTimeStamp().c_str());
 
 		if(!gYume->pEnv->GetVariant("turnOffLogging").Get<bool>())
 		{

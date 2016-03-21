@@ -153,7 +153,7 @@ namespace YumeEngine
 	public:
 		typedef void(YumeBase::*ShadowMapFilter)(YumeRenderView* view,YumeTexture2D* shadowMap);
 
-		YumeRenderer(YumeRHI*,const YumeString& name);
+		YumeRenderer(const YumeString& name);
 		virtual ~YumeRenderer();
 
 		void HandleRenderUpdate(float timeStep);
@@ -161,10 +161,11 @@ namespace YumeEngine
 
 
 		void SetNumViewports(unsigned num);
-		void SetViewport(unsigned index,SharedPtr<YumeViewport> viewport);
+		void SetViewport(unsigned index,YumeViewport* viewport);
 		void SetDefaultRenderPath(YumeRenderPipeline* renderPath);
 		void SetDefaultRenderPath(YumeXmlFile* file);
 		void SetHDRRendering(bool enable);
+		void SetGBufferDebugRendering(bool enable);
 		void SetSpecularLighting(bool enable);
 		void SetTextureAnisotropy(int level);
 		void SetTextureFilterMode(TextureFilterMode mode);
@@ -197,6 +198,7 @@ namespace YumeEngine
 		YumeViewport* GetViewport(unsigned index) const;
 		SharedPtr<YumeRenderPipeline> GetDefaultPipeline() const;
 		bool GetHDRRendering() const { return hdrRendering_; }
+		bool GetGBufferDebugRendering() const { return debugGBufferRendering_; }
 		bool GetSpecularLighting() const { return specularLighting_; }
 		bool GetDrawShadows() const { return drawShadows_; }
 		int GetTextureAnisotropy() const { return textureAnisotropy_; }
@@ -245,9 +247,10 @@ namespace YumeEngine
 		void Render();
 		void DrawDebugGeometry(bool depthTest);
 		void QueueRenderable(YumeRenderable* renderTarget);
-		void QueueViewport(YumeRenderable* renderTarget,SharedPtr<YumeViewport> viewport);
+		void QueueViewport(YumeRenderable* renderTarget,YumeViewport* viewport);
 		YumeGeometry* GetLightGeometry(YumeLight* light);
 		YumeGeometry* GetQuadGeometry();
+		YumeGeometry* GetTexturedQuadGeometry();
 		YumeTexture2D* GetShadowMap(YumeLight* light,YumeCamera* camera,unsigned viewWidth,unsigned viewHeight);
 		YumeTexture* GetScreenBuffer(int width,int height,unsigned format,bool cubemap,bool filtered,bool srgb,unsigned persistentKey = 0);
 		YumeRenderable* GetDepthStencil(int width,int height);
@@ -270,8 +273,8 @@ namespace YumeEngine
 		const Rect& GetLightScissor(YumeLight* light,YumeCamera* camera);
 		static YumeRenderView* GetActualView(YumeRenderView* view);
 
-		typedef YumeVector<RendererEventListener*>::type RendererListeners;
-		RendererListeners listeners_;
+		typedef YumeVector<RendererEventListener*> RendererListeners;
+		RendererListeners::type listeners_;
 
 		void AddListener(RendererEventListener* listener);
 		void RemoveListener(RendererEventListener* listener);
@@ -305,12 +308,11 @@ namespace YumeEngine
 		void HandleScreenMode(YumeHash eventType,VariantMap& eventData);
 		void BlurShadowMap(YumeRenderView* view,YumeTexture2D* shadowMap);
 
-
-		YumeRHI* graphics_;
 		YumeString name_;
 		SharedPtr<YumeRenderPipeline> defaultPipeline_;
 		SharedPtr<YumeRendererEnvironment> defaultZone_;
 		SharedPtr<YumeGeometry> dirLightGeometry_;
+		SharedPtr<YumeGeometry> texturedQuadGeometry;
 		SharedPtr<YumeGeometry> spotLightGeometry_;
 		SharedPtr<YumeGeometry> pointLightGeometry_;
 		SharedPtr<YumeVertexBuffer> instancingBuffer_;
@@ -331,15 +333,15 @@ namespace YumeEngine
 		YumeMap<long long,YumeVector<SharedPtr<YumeTexture> >::type >::type screenBuffers_;
 		YumeMap<long long,unsigned>::type screenBufferAllocations_;
 		YumeMap<long long,unsigned>::type savedScreenBufferAllocations_;
-		YumeMap<std::pair<YumeLight*,YumeCamera*>,Rect>::type lightScissorCache_;
+		YumeMap<Pair<YumeLight*,YumeCamera*>,Rect>::type lightScissorCache_;
 		YumeVector<SharedPtr<YumeViewport> >::type viewports_;
-		YumeVector<std::pair<WeakPtr<YumeRenderable>,WeakPtr<YumeViewport> > >::type queuedViewports_;
+		YumeVector<Pair<WeakPtr<YumeRenderable>,WeakPtr<YumeViewport> > >::type queuedViewports_;
 		YumeVector<WeakPtr<YumeRenderView> >::type views_;
 
 
 		YumeMap<YumeCamera*,YumeRenderView*>::type preparedViews_;
-		YumeVector<Octree*>::type updatedOctrees_;
-		YumeVector<YumeRenderTechnique*>::type shaderErrorDisplayed_;
+		YumeHashSet<Octree*>::type updatedOctrees_;
+		YumeHashSet<YumeRenderTechnique*>::type shaderErrorDisplayed_;
 		Mutex rendererMutex_;
 		YumeVector<YumeString>::type deferredLightPSVariations_;
 
@@ -367,6 +369,7 @@ namespace YumeEngine
 		unsigned numBatches_;
 		unsigned shadersChangedFrameNumber_;
 		unsigned char lightStencilValue_;
+		bool debugGBufferRendering_;
 		bool hdrRendering_;
 		bool specularLighting_;
 		bool drawShadows_;

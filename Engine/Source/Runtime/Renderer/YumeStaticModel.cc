@@ -52,7 +52,7 @@ namespace YumeEngine
 	}
 
 
-	void YumeStaticModel::ProcessRayQuery(const RayOctreeQuery& query,YumeVector<RayQueryResult>::type& results)
+	void YumeStaticModel::ProcessRayQuery(const RayOctreeQuery& query,YumePodVector<RayQueryResult>::type& results)
 	{
 		RayQueryLevel level = query.level_;
 

@@ -28,6 +28,13 @@
 #include "Renderer/YumeCamera.h"
 #include "Scene/YumeSceneNode.h"
 
+#include "YumeTexture.h"
+
+#include "YumeRenderer.h"
+#include "YumeGeometry.h"
+#include "YumeRHI.h"
+#include "YumeRenderable.h"
+
 #include "Core/YumeTimer.h"
 
 #include "YumeRHI.h"
@@ -347,6 +354,51 @@ namespace YumeEngine
 		AddLine(v1,v2,uintColor,depthTest);
 		AddLine(v2,v3,uintColor,depthTest);
 		AddLine(v3,v0,uintColor,depthTest);
+	}
+
+	void YumeDebugRenderer::RenderInternalTexture(const IntVector2& screenPos,YumeTexture* texture)
+	{
+
+		if(!texture)
+			return;
+
+		gYume->pRHI->SetViewport(IntRect(screenPos.x_,screenPos.y_,400 + screenPos.x_,225 + screenPos.y_));
+		gYume->pRHI->Clear(CLEAR_COLOR | CLEAR_DEPTH |CLEAR_STENCIL);
+
+
+		YumeShaderVariation* diffTextureVS = gYume->pRHI->GetShader(VS,"Basic","DIFFMAP");
+		YumeShaderVariation* diffTexturePS = gYume->pRHI->GetShader(PS,"Basic","DIFFMAP");
+		
+
+
+
+
+		gYume->pRHI->SetBlendMode(BLEND_REPLACE);
+		gYume->pRHI->SetDepthTest(CMP_ALWAYS);
+		gYume->pRHI->SetDepthWrite(false);
+		gYume->pRHI->SetFillMode(FILL_SOLID);
+		gYume->pRHI->SetClipPlane(false);
+		gYume->pRHI->SetScissorTest(false);
+		gYume->pRHI->SetStencilTest(false);
+		gYume->pRHI->SetRenderTarget(0,(YumeRenderable*)0);
+		gYume->pRHI->SetTexture(TU_DIFFUSE,texture);
+		gYume->pRHI->SetShaders(diffTextureVS,diffTexturePS);
+		gYume->pRHI->SetDepthStencil((YumeRenderable*)0);
+
+
+
+		YumeGeometry* geometry = gYume->pRenderer->GetTexturedQuadGeometry();
+
+		Matrix3x4 model = Matrix3x4::IDENTITY;
+		Matrix4 projection = Matrix4::IDENTITY;
+
+		gYume->pRHI->SetCullMode(CULL_NONE);
+		gYume->pRHI->SetShaderParameter(VSP_MODEL,model);
+		gYume->pRHI->SetShaderParameter(VSP_VIEWPROJ,projection);
+		gYume->pRHI->SetShaderParameter(PSP_MATDIFFCOLOR,YumeColor(1,1,1,1));
+		gYume->pRHI->ClearTransformSources();
+
+		geometry->Draw(gYume->pRHI);
 	}
 
 	void YumeDebugRenderer::Render()

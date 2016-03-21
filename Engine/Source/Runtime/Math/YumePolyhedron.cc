@@ -155,7 +155,7 @@ namespace YumeEngine
 		for(unsigned i = faces_.size() - 1; i < faces_.size(); --i)
 		{
 			if(faces_[i].empty())
-				faces_.erase(std::find(faces_.begin(),faces_.end(),faces_[i]));
+				faces_.erase(i);
 		}
 
 		// Create a new face from the clipped vertices. First remove duplicates
@@ -164,7 +164,7 @@ namespace YumeEngine
 			for(unsigned j = clippedVertices_.size() - 1; j > i; --j)
 			{
 				if(clippedVertices_[j].Equals(clippedVertices_[i]))
-					clippedVertices_.erase(std::find(clippedVertices_.begin(),clippedVertices_.end(),clippedVertices_[j]));
+					clippedVertices_.erase(j);
 			}
 		}
 
@@ -194,7 +194,7 @@ namespace YumeEngine
 				}
 
 				outFace_.push_back(clippedVertices_[bestIndex]);
-				clippedVertices_.erase(std::find(clippedVertices_.begin(),clippedVertices_.end(),clippedVertices_[bestIndex]));
+				clippedVertices_.erase(bestIndex);
 			}
 
 			faces_.push_back(outFace_);

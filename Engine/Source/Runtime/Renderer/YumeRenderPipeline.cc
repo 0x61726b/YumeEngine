@@ -174,7 +174,7 @@ namespace YumeEngine
 
 		// By default use 1 output, which is the viewport
 		outputs_.resize(1);
-		outputs_[0] = std::make_pair(YumeString("viewport"),FACE_POSITIVE_X);
+		outputs_[0] = MakePair(YumeString("viewport"),FACE_POSITIVE_X);
 		if(!element.attribute("output").empty())
 			outputs_[0].first = element.attribute("output").as_string();
 		if(!element.attribute("face").empty())
@@ -237,9 +237,9 @@ namespace YumeEngine
 	void RenderCommand::SetOutput(unsigned index,const YumeString& name,CubeMapFace face)
 	{
 		if(index < outputs_.size())
-			outputs_[index] = std::make_pair(name,face);
+			outputs_[index] = MakePair(name,face);
 		else if(index == outputs_.size() && index < MAX_RENDERTARGETS)
-			outputs_.push_back(std::make_pair(name,face));
+			outputs_.push_back(MakePair(name,face));
 	}
 
 	void RenderCommand::SetOutputName(unsigned index,const YumeString& name)
@@ -247,7 +247,7 @@ namespace YumeEngine
 		if(index < outputs_.size())
 			outputs_[index].first = name;
 		else if(index == outputs_.size() && index < MAX_RENDERTARGETS)
-			outputs_.push_back(std::make_pair(name,FACE_POSITIVE_X));
+			outputs_.push_back(MakePair(name,FACE_POSITIVE_X));
 	}
 
 	void RenderCommand::SetOutputFace(unsigned index,CubeMapFace face)
@@ -255,7 +255,7 @@ namespace YumeEngine
 		if(index < outputs_.size())
 			outputs_[index].second = face;
 		else if(index == outputs_.size() && index < MAX_RENDERTARGETS)
-			outputs_.push_back(std::make_pair(EmptyString,face));
+			outputs_.push_back(MakePair(EmptyString,face));
 	}
 
 
@@ -329,7 +329,7 @@ namespace YumeEngine
 			RenderTargetInfo info;
 			info.Load(rtChild);
 
-			boost::trim(info.name_);
+			info.name_ = info.name_.Trimmed();
 			if(!info.name_.empty())
 				renderTargets_.push_back(info);
 		}

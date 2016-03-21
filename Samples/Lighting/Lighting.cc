@@ -66,26 +66,26 @@ namespace YumeEngine
 		scene_->CreateComponent<Octree>();
 		scene_->CreateComponent<YumeDebugRenderer>();
 
-		//YumeSceneNode* zoneNode = scene_->CreateChild("Zone");
-		//YumeRendererEnvironment* zone = zoneNode->CreateComponent<YumeRendererEnvironment>();
-		//zone->SetBoundingBox(BoundingBox(-1000.0f,1000.0f));
-		//zone->SetAmbientColor(YumeColor(0.15f,0.15f,0.15f));
-		//zone->SetFogColor(YumeColor(0,0,0));
-		//zone->SetFogStart(100.0f);
-		//zone->SetFogEnd(300.0f);
+		YumeSceneNode* zoneNode = scene_->CreateChild("Zone");
+		YumeRendererEnvironment* zone = zoneNode->CreateComponent<YumeRendererEnvironment>();
+		zone->SetBoundingBox(BoundingBox(-1000.0f,1000.0f));
+		zone->SetAmbientColor(YumeColor(0.15f,0.15f,0.15f));
+		zone->SetFogColor(YumeColor(0,0,0));
+		zone->SetFogStart(100.0f);
+		zone->SetFogEnd(300.0f);
 
-		//YumeSceneNode* lightNode = scene_->CreateChild("DirectionalLight");
-		//lightNode->SetDirection(Vector3(0.6f,-1.0f,0.8f)); // The direction vector does not need to be normalized
-		//YumeLight* light = lightNode->CreateComponent<YumeLight>();
-		//light->SetLightType(LIGHT_DIRECTIONAL);
-		//light->SetCastShadows(true);
-		//light->SetShadowBias(BiasParameters(0.00025f,0.5f));
-		//light->SetShadowCascade(CascadeParameters(10.0f,50.0f,200.0f,0.0f,0.8f));
+		YumeSceneNode* lightNode = scene_->CreateChild("DirectionalLight");
+		lightNode->SetDirection(Vector3(0.6f,-1.0f,0.8f)); // The direction vector does not need to be normalized
+		YumeLight* light = lightNode->CreateComponent<YumeLight>();
+		light->SetLightType(LIGHT_DIRECTIONAL);
+		light->SetCastShadows(true);
+		light->SetShadowBias(BiasParameters(0.00025f,0.5f));
+		light->SetShadowCascade(CascadeParameters(10.0f,50.0f,200.0f,0.0f,0.8f));
 
 
-		for(int i=0; i < 10; ++i)
-			for(int j=0; j < 10; ++j)
-				CreateLight(Vector3(-25,0,-25) + Vector3(i*7.0f,2.8f,j*7),YumeColor(Random(0.0f,1.0f),Random(0.0f,1.0f),Random(0.0f,1.0f),1));
+		for(int i=0; i < 1; ++i)
+			for(int j=0; j < 1; ++j)
+				CreateLight(Vector3(0,1,0),YumeColor(Random(0.0f,1.0f),Random(0.0f,1.0f),Random(0.0f,1.0f),1));
 
 		YumeSceneNode* plane = scene_->CreateChild("Plane");
 		plane->SetPosition(Vector3(0,0,0));
@@ -95,22 +95,6 @@ namespace YumeEngine
 		YumeStaticModel* planeModel = plane->CreateComponent<YumeStaticModel>();
 		planeModel->SetModel(rm_->PrepareResource<YumeModel>("Models/Plane.mdl"));
 		planeModel->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/StoneTiled.xml"));
-
-		const unsigned NUM_OBJECTS = 15;
-		for(unsigned i = 0; i < NUM_OBJECTS; ++i)
-		{
-			for(int j=0; j < NUM_OBJECTS;++j)
-			{
-				YumeSceneNode* test = scene_->CreateChild("Test");
-				test->SetPosition(Vector3(-25,0,-40) + Vector3(i*3.5f + Random(0.0f,3.0f),0.5f,j*7));
-				test->SetRotation(Quaternion(0.0f,Random(0.0f,360.0f),0.0f));
-				test->SetScale(0.5f + Random(0.4f,2.0f));
-				YumeStaticModel* drawable = test->CreateComponent<YumeStaticModel>();
-				drawable->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-				drawable->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
-				drawable->SetCastShadows(true);
-			}
-		}
 
 
 		//YumeSceneNode* test = scene_->CreateChild("Test");
@@ -138,12 +122,13 @@ namespace YumeEngine
 		//large->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
 		//large->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
 		//large->SetCastShadows(true);
+		//large->SetOccluder(true);
 
-		//YumeSceneNode* skyNode = scene_->CreateChild("Sky");
-		//skyNode->SetScale(500.0f); // The scale actually does not matter
-		//YumeSkybox* skybox = skyNode->CreateComponent<YumeSkybox>();
-		//skybox->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		//skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Skybox.xml"));
+		YumeSceneNode* skyNode = scene_->CreateChild("Sky");
+		skyNode->SetScale(500.0f); // The scale actually does not matter
+		YumeSkybox* skybox = skyNode->CreateComponent<YumeSkybox>();
+		skybox->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
+		skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Skybox.xml"));
 
 		cameraNode_ = scene_->CreateChild("Camera");
 		YumeCamera* camera = cameraNode_->CreateComponent<YumeCamera>();
@@ -215,7 +200,7 @@ namespace YumeEngine
 	{
 		BaseApplication::Setup();
 
-		engineVariants_["WindowWidth"] = 1366;
-		engineVariants_["WindowHeight"] = 768;
+		engineVariants_["WindowWidth"] = 1600;
+		engineVariants_["WindowHeight"] = 900;
 	}
 }

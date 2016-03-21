@@ -69,7 +69,7 @@ namespace YumeEngine
 	{
 	public:
 		/// Construct with frustum and query parameters.
-		ShadowCasterOctreeQuery(YumeVector<YumeDrawable*>::type& result,const Frustum& frustum,unsigned char drawableFlags = DRAWABLE_ANY,
+		ShadowCasterOctreeQuery(YumePodVector<YumeDrawable*>::type& result,const Frustum& frustum,unsigned char drawableFlags = DRAWABLE_ANY,
 			unsigned viewMask = DEFAULT_VIEWMASK):
 			FrustumOctreeQuery(result,frustum,drawableFlags,viewMask)
 		{
@@ -97,7 +97,7 @@ namespace YumeEngine
 	{
 	public:
 		/// Construct with frustum and query parameters.
-		ZoneOccluderOctreeQuery(YumeVector<YumeDrawable*>::type& result,const Frustum& frustum,unsigned char drawableFlags = DRAWABLE_ANY,
+		ZoneOccluderOctreeQuery(YumePodVector<YumeDrawable*>::type& result,const Frustum& frustum,unsigned char drawableFlags = DRAWABLE_ANY,
 			unsigned viewMask = DEFAULT_VIEWMASK):
 			FrustumOctreeQuery(result,frustum,drawableFlags,viewMask)
 		{
@@ -126,7 +126,7 @@ namespace YumeEngine
 	{
 	public:
 		/// Construct with frustum, occlusion buffer and query parameters.
-		OccludedFrustumOctreeQuery(YumeVector<YumeDrawable*>::type& result,const Frustum& frustum,OcclusionBuffer* buffer,
+		OccludedFrustumOctreeQuery(YumePodVector<YumeDrawable*>::type& result,const Frustum& frustum,OcclusionBuffer* buffer,
 			unsigned char drawableFlags = DRAWABLE_ANY,unsigned viewMask = DEFAULT_VIEWMASK):
 			FrustumOctreeQuery(result,frustum,drawableFlags,viewMask),
 			buffer_(buffer)
@@ -396,11 +396,6 @@ namespace YumeEngine
 
 		if(gYume->pEngine->GetRendererName() == "OpenGL")
 		{
-#ifdef GL_ES_VERSION_2_0
-			// On OpenGL ES we assume a stencil is not available or would not give a good performance, and disable light stencil
-			// optimizations in any case
-			noStencil_ = true;
-#else
 			for(unsigned i = 0; i < renderPath_->commands_.size(); ++i)
 			{
 				const RenderCommand& command = renderPath_->commands_[i];
@@ -414,7 +409,6 @@ namespace YumeEngine
 					break;
 				}
 			}
-#endif
 		}
 
 		// Make sure that all necessary batch queues exist
@@ -452,16 +446,11 @@ namespace YumeEngine
 				}
 
 				YumeMap<unsigned,BatchQueue>::iterator j = batchQueues_.find(info.passIndex_);
-				std::pair<YumeMap<unsigned,BatchQueue>::iterator,bool> ret;
 				if(j == batchQueues_.end())
 				{
-					ret = batchQueues_.insert(std::make_pair(info.passIndex_,BatchQueue()));
-					info.batchQueue_ = &ret.first->second;
+					j= batchQueues_.insert(MakePair(info.passIndex_,BatchQueue()));
 				}
-				else
-					info.batchQueue_ = &j->second;
-
-
+				info.batchQueue_ = &j->second;
 
 				scenePasses_.push_back(info);
 			}
@@ -536,7 +525,7 @@ namespace YumeEngine
 			maxOccluderTriangles_ = 0;
 
 		return true;
-			}
+	}
 
 
 	void YumeRenderView::Update(const FrameInfo& frame)
@@ -640,6 +629,19 @@ namespace YumeEngine
 		graphics_->SetDepthBias(0.0f,0.0f);
 		graphics_->SetScissorTest(false);
 		graphics_->SetStencilTest(false);
+
+		if(deferred_ && renderer_->GetGBufferDebugRendering())
+		{
+			YumeDebugRenderer* debug = octree_->GetComponent<YumeDebugRenderer>();
+
+			if(debug)
+			{
+				debug->RenderInternalTexture(IntVector2(0,0),FindNamedTexture("albedo",true));
+				debug->RenderInternalTexture(IntVector2(300,0),FindNamedTexture("normal",true));
+				debug->RenderInternalTexture(IntVector2(600,0),FindNamedTexture("depth",true));
+			}
+
+		}
 
 		// Draw the associated debug geometry now if enabled
 		if(drawDebug_ && octree_ && camera_)
@@ -807,7 +809,7 @@ namespace YumeEngine
 			return;
 
 		YumeWorkQueue* queue = gYume->pWorkSystem;
-		YumeVector<YumeDrawable*>::type& tempDrawables = tempDrawables_[0];
+		YumePodVector<YumeDrawable*>::type& tempDrawables = tempDrawables_[0];
 
 		// Get zones and occluders first
 		{
@@ -918,7 +920,7 @@ namespace YumeEngine
 			if(i < numWorkItems - 1 && end - start > drawablesPerItem)
 				end = start + drawablesPerItem;
 
-			
+
 			item->start_ = &(*start);
 			item->end_ = &(*end);
 			queue->AddWorkItem(item);
@@ -940,8 +942,8 @@ namespace YumeEngine
 		for(unsigned i = 0; i < sceneResults_.size(); ++i)
 		{
 			PerThreadSceneResult& result = sceneResults_[i];
-			geometries_.insert(geometries_.end(),result.geometries_.begin(),result.geometries_.end());
-			lights_.insert(lights_.end(),result.lights_.begin(),result.lights_.end());
+			geometries_.push_back(result.geometries_);
+			lights_.push_back(result.lights_);
 			minZ_ = Min(minZ_,result.minZ_);
 			maxZ_ = Max(maxZ_,result.maxZ_);
 		}
@@ -953,8 +955,8 @@ namespace YumeEngine
 		minZ_ = result.minZ_;
 		maxZ_ = result.maxZ_;
 
-		std::swap(geometries_,result.geometries_);
-		std::swap(lights_,result.lights_);
+		Swap(geometries_,result.geometries_);
+		Swap(lights_,result.lights_);
 	}
 
 	if(minZ_ == M_INFINITY)
@@ -968,7 +970,7 @@ namespace YumeEngine
 		light->SetLightQueue(0);
 	}
 
-	std::sort(lights_.begin(),lights_.end(),CompareLights);
+	Sort(lights_.begin(),lights_.end(),CompareLights);
 	}
 
 
@@ -1130,7 +1132,7 @@ namespace YumeEngine
 						if(!drawable->GetMaxLights())
 							GetLitBatches(drawable,lightQueue,alphaQueue);
 						else
-							maxLightsDrawables_.push_back(drawable);
+							maxLightsDrawables_.insert(drawable);
 					}
 
 					// In deferred modes, store the light volume batch now
@@ -1168,11 +1170,11 @@ namespace YumeEngine
 		// Process drawables with limited per-pixel light count
 		if(maxLightsDrawables_.size())
 		{
-			for(YumeVector<YumeDrawable*>::iterator i = maxLightsDrawables_.begin(); i != maxLightsDrawables_.end(); ++i)
+			for(YumeHashSet<YumeDrawable*>::iterator i = maxLightsDrawables_.begin(); i != maxLightsDrawables_.end(); ++i)
 			{
 				YumeDrawable* drawable = *i;
 				drawable->LimitLights();
-				const YumeVector<YumeLight*>::type& lights = drawable->GetLights();
+				const YumePodVector<YumeLight*>::type& lights = drawable->GetLights();
 
 				for(unsigned i = 0; i < lights.size(); ++i)
 				{
@@ -1233,7 +1235,7 @@ namespace YumeEngine
 
 					if(info.vertexLights_)
 					{
-						const YumeVector<YumeLight*>::type& drawableVertexLights = drawable->GetVertexLights();
+						const YumePodVector<YumeLight*>::type& drawableVertexLights = drawable->GetVertexLights();
 						if(drawableVertexLights.size() && !vertexLightsProcessed)
 						{
 							// Limit vertex lights. If this is a deferred opaque batch, remove converted per-pixel lights,
@@ -1248,16 +1250,15 @@ namespace YumeEngine
 							// Find a vertex light queue. If not found, create new
 							unsigned long long hash = GetVertexLightQueueHash(drawableVertexLights);
 							YumeMap<unsigned long long,LightBatchQueue>::iterator i = vertexLightQueues_.find(hash);
-							std::pair<YumeMap<unsigned long long,LightBatchQueue>::iterator,bool> ret;
 							if(i == vertexLightQueues_.end())
 							{
-								ret = vertexLightQueues_.insert(std::make_pair(hash,LightBatchQueue()));
-								ret.first->second.light_ = 0;
-								ret.first->second.shadowMap_ = 0;
-								ret.first->second.vertexLights_ = drawableVertexLights;
+								i = vertexLightQueues_.insert(MakePair(hash,LightBatchQueue()));
+								i->second.light_ = 0;
+								i->second.shadowMap_ = 0;
+								i->second.vertexLights_ = drawableVertexLights;
 							}
 
-							destBatch.lightQueue_ = &(ret.first->second);
+							destBatch.lightQueue_ = &(i->second);
 						}
 					}
 					else
@@ -1577,6 +1578,14 @@ namespace YumeEngine
 					bool allowDepthWrite = SetTextures(command);
 					graphics_->SetClipPlane(camera_->GetUseClipping(),camera_->GetClipPlane(),camera_->GetView(),
 						camera_->GetProjection());
+
+					if(command.passIndex_ == 3 && renderer_->GetGBufferDebugRendering())
+					{
+						graphics_->ClearRenderTarget(1,CLEAR_COLOR);
+						graphics_->ClearRenderTarget(2,CLEAR_COLOR);
+						graphics_->ClearRenderTarget(3,CLEAR_COLOR);
+					}
+
 					queue.Draw(this,camera_,command.markToStencil_,false,allowDepthWrite);
 				}
 			}
@@ -1681,7 +1690,7 @@ namespace YumeEngine
 
 		while(index < command.outputs_.size())
 		{
-			if(strcmp(command.outputs_[index].first.c_str(),"viewport") == 0)
+			if(!command.outputs_[index].first.Compare("viewport",false))
 			{
 				graphics_->SetRenderTarget(index,currentRenderTarget_);
 				useViewportOutput = true;
@@ -1745,7 +1754,7 @@ namespace YumeEngine
 				continue;
 
 			// Bind the rendered output
-			if(strcmp(command.textureNames_[i].c_str(),"viewport") == 0)
+			if(!command.textureNames_[i].Compare("viewport",false))
 			{
 				graphics_->SetTexture(i,currentViewportTexture_);
 				continue;
@@ -1839,7 +1848,7 @@ namespace YumeEngine
 	{
 		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
 		{
-			if(!command.textureNames_[i].empty() && strcmp(command.textureNames_[i].c_str(),"viewport") == 0)
+			if(!command.textureNames_[i].empty() && !command.textureNames_[i].Compare("viewport",false))
 				return true;
 		}
 
@@ -1850,7 +1859,7 @@ namespace YumeEngine
 	{
 		for(unsigned i = 0; i < command.outputs_.size(); ++i)
 		{
-			if(strcmp(command.outputs_[i].first.c_str(),"viewport") == 0)
+			if(!command.outputs_[i].first.Compare("viewport",false))
 				return true;
 		}
 
@@ -1911,7 +1920,7 @@ namespace YumeEngine
 			{
 				for(unsigned j = 0; j < command.outputs_.size(); ++j)
 				{
-					if(strcmp(command.outputs_[j].first.c_str(),"viewport") == 0)
+					if(command.outputs_[j].first.Compare("viewport",false))
 					{
 						hasScenePassToRTs = true;
 						break;
@@ -2085,7 +2094,7 @@ namespace YumeEngine
 		geometry->Draw(graphics_);
 	}
 
-	void YumeRenderView::UpdateOccluders(YumeVector<YumeDrawable*>::type& occluders,YumeCamera* camera)
+	void YumeRenderView::UpdateOccluders(YumePodVector<YumeDrawable*>::type& occluders,YumeCamera* camera)
 	{
 		float occluderSizeThreshold_ = renderer_->GetOccluderSizeThreshold();
 		float halfViewSize = camera->GetHalfViewSize();
@@ -2132,10 +2141,10 @@ namespace YumeEngine
 
 		// Sort occluders so that if triangle budget is exceeded, best occluders have been drawn
 		if(occluders.size())
-			std::sort(occluders.begin(),occluders.end(),CompareDrawables);
+			Sort(occluders.begin(),occluders.end(),CompareDrawables);
 	}
 
-	void YumeRenderView::DrawOccluders(OcclusionBuffer* buffer,const YumeVector<YumeDrawable*>::type& occluders)
+	void YumeRenderView::DrawOccluders(OcclusionBuffer* buffer,const YumePodVector<YumeDrawable*>::type& occluders)
 	{
 		buffer->SetMaxTriangles((unsigned)maxOccluderTriangles_);
 		buffer->Clear();
@@ -2161,7 +2170,7 @@ namespace YumeEngine
 				if(!success)
 					break;
 			}
-	}
+		}
 		else
 		{
 			// In threaded mode submit all triangles first, then render (cannot test in this case)
@@ -2178,7 +2187,7 @@ namespace YumeEngine
 
 		// Finally build the depth mip levels
 		buffer->BuildDepthHierarchy();
-		}
+	}
 
 	void YumeRenderView::ProcessLight(LightQueryResult& query,unsigned threadIndex)
 	{
@@ -2197,7 +2206,7 @@ namespace YumeEngine
 			isShadowed = false;
 #endif
 		// Get lit geometries. They must match the light mask and be inside the main camera frustum to be considered
-		YumeVector<YumeDrawable*>::type& tempDrawables = tempDrawables_[threadIndex];
+		YumePodVector<YumeDrawable*>::type& tempDrawables = tempDrawables_[threadIndex];
 		query.litGeometries_.clear();
 
 		switch(type)
@@ -2282,7 +2291,7 @@ namespace YumeEngine
 			query.numSplits_ = 0;
 	}
 
-	void YumeRenderView::ProcessShadowCasters(LightQueryResult& query,const YumeVector<YumeDrawable*>::type& drawables,unsigned splitIndex)
+	void YumeRenderView::ProcessShadowCasters(LightQueryResult& query,const YumePodVector<YumeDrawable*>::type& drawables,unsigned splitIndex)
 	{
 		YumeLight* light = query.light_;
 
@@ -2787,8 +2796,7 @@ namespace YumeEngine
 		{
 			BatchGroupKey key(batch);
 
-			boost::unordered_map<BatchGroupKey,BatchGroup>::iterator i = batchQueue.batchGroups_.find(key);
-			std::pair<boost::unordered_map<BatchGroupKey,BatchGroup>::iterator,bool> ret;
+			YumeMap<BatchGroupKey,BatchGroup>::iterator i = batchQueue.batchGroups_.find(key);
 			if(i == batchQueue.batchGroups_.end())
 			{
 				// Create a new group based on the batch
@@ -2797,22 +2805,17 @@ namespace YumeEngine
 				newGroup.geometryType_ = GEOM_STATIC;
 				renderer_->SetBatchShaders(newGroup,tech,allowShadows);
 				newGroup.CalculateSortKey();
-				ret = batchQueue.batchGroups_.insert(std::make_pair(key,newGroup));
+				i = batchQueue.batchGroups_.insert(MakePair(key,newGroup));
 			}
-			else
-				ret.first = i;
 
-
-
-
-			int oldSize = ret.first->second.instances_.size();
-			ret.first->second.AddTransforms(batch);
+			int oldSize = i->second.instances_.size();
+			i->second.AddTransforms(batch);
 			// Convert to using instancing shaders when the instancing limit is reached
-			if(oldSize < minInstances_ && (int)ret.first->second.instances_.size() >= minInstances_)
+			if(oldSize < minInstances_ && (int)i->second.instances_.size() >= minInstances_)
 			{
-				ret.first->second.geometryType_ = GEOM_INSTANCED;
-				renderer_->SetBatchShaders(ret.first->second,tech,allowShadows);
-				ret.first->second.CalculateSortKey();
+				i->second.geometryType_ = GEOM_INSTANCED;
+				renderer_->SetBatchShaders(i->second,tech,allowShadows);
+				i->second.CalculateSortKey();
 			}
 		}
 		else
@@ -3022,10 +3025,7 @@ namespace YumeEngine
 		if(!texture)
 			return 0;
 
-		YumeHash type = texture->GetType();
-		YumeHash tex = YumeHash("Texture");
-		YumeHash tex2D = YumeHash("Texture2D");
-		YumeHash texCube = YumeHash("TextureCube");
+
 		if(texture->GetType() == YumeTexture2D::GetTypeStatic())
 			return static_cast<YumeTexture2D*>(texture)->GetRenderSurface();
 		else if(texture->GetType() == YumeTextureCube::GetTypeStatic())
@@ -3072,4 +3072,4 @@ namespace YumeEngine
 
 		return 0;
 	}
-	}
+}

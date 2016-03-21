@@ -519,7 +519,7 @@ namespace YumeEngine
 			unsigned char* pixelData = GetImageData(source,width,height,components);
 			if(!pixelData)
 			{
-				YUMELOG_ERROR("Could not load image " + source.GetName() + ": " + YumeString(stbi_failure_reason()));
+				YUMELOG_ERROR("Could not load image " << source.GetName().c_str() << ": " << YumeString(stbi_failure_reason()).c_str());
 				return false;
 			}
 			SetSize(width,height,components);
@@ -1606,7 +1606,7 @@ namespace YumeEngine
 
 		if(rect.left_ < 0 || rect.top_ < 0 || rect.right_ > width_ || rect.bottom_ > height_ || !rect.Width() || !rect.Height())
 		{
-			YUMELOG_ERROR("Can not get subimage from image " + GetName() + " with invalid region");
+			YUMELOG_ERROR("Can not get subimage from image " << GetName().c_str() << " with invalid region");
 			return 0;
 		}
 
@@ -1682,7 +1682,7 @@ namespace YumeEngine
 
 			if(!subimageLevels)
 			{
-				YUMELOG_ERROR("Subimage region from compressed image " + GetName() + " did not produce any data");
+				YUMELOG_ERROR("Subimage region from compressed image " << GetName().c_str() << " did not produce any data");
 				return 0;
 			}
 
@@ -1714,7 +1714,7 @@ namespace YumeEngine
 
 		if(IsCompressed())
 		{
-			YUMELOG_ERROR("Can not get SDL surface from compressed image " + GetName());
+			YUMELOG_ERROR("Can not get SDL surface from compressed image " << GetName().c_str());
 			return 0;
 		}
 
@@ -1762,7 +1762,7 @@ namespace YumeEngine
 			SDL_UnlockSurface(surface);
 		}
 		else
-			YUMELOG_ERROR("Failed to create SDL surface from image " + GetName());
+			YUMELOG_ERROR("Failed to create SDL surface from image " << GetName().c_str());
 
 		return surface;
 	}
