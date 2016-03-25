@@ -1,0 +1,33 @@
+body
+{
+  background-color: transparent;
+  font-family: 'Roboto';
+  font-weight: 300;
+}
+
+#topLeftInfo
+{
+  margin-left:0px;
+  margin-top:0px;
+  color:white;
+  background-image:url("../images/yumeLogoOverlay.png");
+  background-repeat: no-repeat;
+  background-position: left;
+  width:522px;
+  height:261px;
+}
+#sampleName
+{
+  margin-left:150px;
+  padding-top:25px;
+}
+#fps
+{
+  margin-left:150px;
+  padding-top:2px;
+}
+#totalMemory
+{
+  margin-left:150px;
+  padding-top:2px;
+}

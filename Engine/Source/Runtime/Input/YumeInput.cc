@@ -22,6 +22,7 @@
 #include "YumeHeaders.h"
 #include "YumeInput.h"
 
+
 #include "Engine/YumeEngine.h"
 #include "Renderer/YumeRHI.h"
 
@@ -37,10 +38,7 @@ namespace YumeEngine
 			return KEY_ESC;
 		else
 		{
-			if(gYume->pInput->GetKeyDown(KEY_CAPSLOCK))
-				return SDL_toupper(keySym);
-			else
-				return keySym;
+			return SDL_toupper(keySym);
 		}
 	}
 
@@ -84,7 +82,7 @@ namespace YumeEngine
 		mouseMoveWheel_ = 0;
 
 		SDL_Event evt;
-		SDL_EventState( SDL_SYSWMEVENT, SDL_ENABLE );
+		SDL_EventState(SDL_SYSWMEVENT,SDL_ENABLE);
 
 		while(SDL_PollEvent(&evt))
 			HandleSDLEvent(&evt);

@@ -363,17 +363,14 @@ namespace YumeEngine
 			return;
 
 		gYume->pRHI->SetViewport(screenPos);
-		gYume->pRHI->Clear(CLEAR_COLOR | CLEAR_DEPTH |CLEAR_STENCIL);
+		/*gYume->pRHI->Clear(CLEAR_COLOR | CLEAR_DEPTH |CLEAR_STENCIL);*/
+
 
 
 		YumeShaderVariation* diffTextureVS = gYume->pRHI->GetShader(VS,"Basic","DIFFMAP");
 		YumeShaderVariation* diffTexturePS = gYume->pRHI->GetShader(PS,"Basic","DIFFMAP");
-		
 
-
-
-
-		gYume->pRHI->SetBlendMode(BLEND_REPLACE);
+		gYume->pRHI->SetBlendMode(BLEND_PREMULALPHA);
 		gYume->pRHI->SetDepthTest(CMP_ALWAYS);
 		gYume->pRHI->SetDepthWrite(false);
 		gYume->pRHI->SetFillMode(FILL_SOLID);

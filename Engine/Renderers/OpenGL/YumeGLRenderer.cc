@@ -2742,7 +2742,7 @@ namespace YumeEngine
 	}
 	unsigned YumeGLRenderer::GetBGRAFormatNs()
 	{
-		return GL_BGRA;
+		return GL_RGBA;
 	}
 
 

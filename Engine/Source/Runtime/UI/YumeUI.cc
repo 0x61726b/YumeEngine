@@ -74,7 +74,11 @@ namespace YumeEngine
 			{
 				IntVector2 screen = gYume->pRHI->GetRenderTargetDimensions();
 				CefUI::CefRect rect(0,0,screen.x_,screen.y_);
-				CreateBrowser(rect,"http://www.google.com",true);
+
+				std::string overlayPath("file:///");
+				overlayPath.append(binaryRoot.generic_string());
+				overlayPath.append("/Engine/Assets/UI/Overlay/Overlay.html");
+				CreateBrowser(rect,overlayPath,true);
 
 				return true;
 			}

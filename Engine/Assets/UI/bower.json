@@ -1,0 +1,19 @@
+{
+    "name": "yume",
+    "version": "0.0.1",
+    "authors": [
+    "arkenthera"
+  ],
+    "license": "MIT",
+    "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+    "dependencies": {
+        "roboto-fontface": "~0.4.3",
+        "components-font-awesome": "~4.5.0"
+    }
+}
