@@ -21,7 +21,7 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 #include "YumeIO.h"
-
+#include "YumeDefaults.h"
 
 #include <sys/stat.h>
 
@@ -62,14 +62,10 @@ namespace YumeEngine
 
 	FsPath YumeIO::GetBinaryRoot()
 	{
-		FsPath current = GetCurrentPath();
+		FsPath current = FsPath(GetArguments().At(0).c_str());
 
-		//ToDo(arkenthera) fix this by working around Debug/Release that vs uses
-#if YUME_PLATFORM == YUME_PLATFORM_WIN32
+		//ToDo(arkenthera) fix this by working around Debug/Release that vs 
 		FsPath root = current / "..";
-#else
-		FsPath root = current / "..";
-#endif
 		return boost::filesystem::absolute(root);
 	}
 

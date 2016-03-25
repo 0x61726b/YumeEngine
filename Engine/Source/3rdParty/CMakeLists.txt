@@ -39,6 +39,8 @@ if(YUME_BUILD_OPENGL)
   ADD_SUBDIRECTORY(GLEW)
 endif()
 
+add_subdirectory(cef3d)
+
 
 #Boost
 add_boost_library(system)

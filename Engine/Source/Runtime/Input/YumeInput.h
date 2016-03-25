@@ -45,6 +45,23 @@ namespace YumeEngine
 		MM_FREE
 	};
 
+	enum ModifierFlags {
+		EVENTFLAG_NONE                = 0,
+		EVENTFLAG_CAPS_LOCK_ON        = 1 << 0,
+		EVENTFLAG_SHIFT_DOWN          = 1 << 1,
+		EVENTFLAG_CONTROL_DOWN        = 1 << 2,
+		EVENTFLAG_ALT_DOWN            = 1 << 3,
+		EVENTFLAG_LEFT_MOUSE_BUTTON   = 1 << 4,
+		EVENTFLAG_MIDDLE_MOUSE_BUTTON = 1 << 5,
+		EVENTFLAG_RIGHT_MOUSE_BUTTON  = 1 << 6,
+		// Mac OS-X command key.
+		EVENTFLAG_COMMAND_DOWN        = 1 << 7,
+		EVENTFLAG_NUM_LOCK_ON         = 1 << 8,
+		EVENTFLAG_IS_KEY_PAD          = 1 << 9,
+		EVENTFLAG_IS_LEFT             = 1 << 10,
+		EVENTFLAG_IS_RIGHT            = 1 << 11,
+	};
+
 
 	static const int MOUSEB_LEFT = SDL_BUTTON_LMASK;
 	static const int MOUSEB_MIDDLE = SDL_BUTTON_MMASK;
@@ -417,7 +434,7 @@ namespace YumeEngine
 	static const int SCANCODE_APP2 = SDL_SCANCODE_APP2;
 
 	class YumeRHI;
-	
+
 
 	class YumeAPIExport YumeInput : public YumeTimerEventListener,public RHIEventListener,public RefCounted
 	{
@@ -437,9 +454,16 @@ namespace YumeEngine
 
 		YumeString GetKeyName(int key) const;
 		int GetKeyFromName(const YumeString& name) const;
+		int GetKeyFromScancode(int scancode) const;
+		int GetScancodeFromKey(int key) const;
+		int GetScancodeFromName(const String& name) const;
+		YumeString GetScancodeName(int scancode) const;
 
 		bool GetMouseButtonDown(int button) const;
 		bool GetMouseButtonPress(int button) const;
+
+		bool GetScancodeDown(int scancode) const;
+		bool GetScancodePress(int scancode) const;
 
 		bool GetKeyDown(int key) const;
 		bool GetKeyPress(int key) const;
@@ -467,7 +491,7 @@ namespace YumeEngine
 		void LoseFocus();
 		void ResetState();
 
-		void SetMouseButton(int button,bool newState);
+		void SetMouseButton(int native,int button,bool newState);
 		void SetKey(int key,int scancode,unsigned raw,bool newState);
 
 		void SetMouseWheel(int delta);
@@ -478,12 +502,16 @@ namespace YumeEngine
 		void HandleSDLEvent(void* sdlEvent);
 		void SendInputFocusEvent();
 
-		
+
 		void AddListener(InputEventListener* listener);
 		void RemoveListener(InputEventListener* listener);
 
+		int GetModifiers();
+		int GetMouseModifiers();
+
 	private:
-		void FireMouseButtonDown(bool state,int button,unsigned buttons);
+		void FireMouseButtonDown(int m,bool state,int button,unsigned buttons);
+		void FireMouseMove(int m,int mouseX,int mouseY,unsigned buttons);
 		void FireKeyDown(bool state,int key,unsigned buttons,int repeat);
 
 	private:
@@ -492,6 +520,8 @@ namespace YumeEngine
 
 		YumeHashSet<int>::type keyDown_;
 		YumeHashSet<int>::type keyPress_;
+		YumeHashSet<int>::type scancodeDown_;
+		YumeHashSet<int>::type scancodePress_;
 
 		YumeRHI* graphics_;
 

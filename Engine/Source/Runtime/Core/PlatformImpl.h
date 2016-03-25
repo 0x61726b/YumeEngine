@@ -55,11 +55,12 @@
 #		endif
 #	endif
 
-namespace YumeEngine
-{
-
-}
-
+#if YUME_PLATFORM == YUME_PLATFORM_WIN32
+extern YumeAPIExport int GetWndMouseModifiers(WPARAM wparam);
+extern YumeAPIExport int GetWndKeyboardModifiers(WPARAM wparam, LPARAM lparam);
+extern YumeAPIExport bool IsKeyDown(WPARAM wparam);
+extern YumeAPIExport float GetDeviceScaleFactor();
+#endif
 
 struct YumeAPIExport GlobalSystems : public YumeEngine::RefCounted
 {
@@ -67,12 +68,12 @@ struct YumeAPIExport GlobalSystems : public YumeEngine::RefCounted
 	YumeEngine::YumeRHI*													pRHI;
 	YumeEngine::SharedPtr<YumeEngine::YumeRenderer>							pRenderer;
 	YumeEngine::SharedPtr<YumeEngine::YumeResourceManager>					pResourceManager;
-	YumeEngine::SharedPtr<YumeEngine::YumeIO>							pIO;
+	YumeEngine::SharedPtr<YumeEngine::YumeIO>								pIO;
 	YumeEngine::SharedPtr<YumeEngine::YumeTime>								pTimer;
-
-	YumeEngine::SharedPtr<YumeEngine::YumeWorkQueue>					pWorkSystem;
+	YumeEngine::SharedPtr<YumeEngine::YumeUI>								pUI;
+	YumeEngine::SharedPtr<YumeEngine::YumeWorkQueue>						pWorkSystem;
 	YumeEngine::SharedPtr<YumeEngine::YumeEnvironment>						pEnv;
-	YumeEngine::SharedPtr<YumeEngine::YumeDebugRenderer>				pDebugRenderer;
+	YumeEngine::SharedPtr<YumeEngine::YumeDebugRenderer>					pDebugRenderer;
 	YumeEngine::SharedPtr<YumeEngine::YumeInput>							pInput;
 	YumeEngine::SharedPtr<YumeEngine::YumeObjectFactory>					pObjFactory;
 };

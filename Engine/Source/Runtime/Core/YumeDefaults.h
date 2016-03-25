@@ -35,7 +35,7 @@ namespace YumeEngine
 {
 	
 	void CreateConfigFile(const boost::filesystem::path& path);
-	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(const YumeString&,bool skipFirst = true);
+	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(const YumeString&,bool skipFirst = false);
 	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(const char* cmdLine);
 	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(const std::wstring& cmdLine);
 	YumeAPIExport const YumeVector<YumeString>::type& ParseArguments(int argc,char** argv);

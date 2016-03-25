@@ -27,14 +27,12 @@
 #include "Core/YumeTimer.h"
 #include "Core/YumeEventHub.h"
 
-#include <boost/shared_ptr.hpp>
 
 #define REGISTER_ENGINE_LISTENER gYume->pEngine->AddListener(this)
 //----------------------------------------------------------------------------
 namespace log4cplus {
 	class Initializer;
 }
-
 namespace YumeEngine
 {
 	class YumeRHI;
@@ -79,8 +77,6 @@ namespace YumeEngine
 
 	public:
 		const YumeString& GetRendererName() const;
-
-
 		log4cplus::Initializer* log4cplusinitializer_;
 
 	private:

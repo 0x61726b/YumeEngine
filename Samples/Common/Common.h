@@ -29,7 +29,7 @@
 namespace YumeEngine
 {
 	class YumeSceneNode;
-	class BaseApplication : public YumeApplication,public InputEventListener,public EngineEventListener
+	class BaseApplication : public YumeApplication,public InputEventListener,public EngineEventListener,public YumeTimerEventListener
 	{
 	public:
 		BaseApplication();
@@ -45,6 +45,8 @@ namespace YumeEngine
 		virtual void HandleMouseButtonDown(int button,unsigned buttons) { }
 		virtual void HandleMouseButtonUp(int button,unsigned buttons) { }
 		//~
+
+		
 
 		virtual void HandlePostRenderUpdate(float timeStep);
 

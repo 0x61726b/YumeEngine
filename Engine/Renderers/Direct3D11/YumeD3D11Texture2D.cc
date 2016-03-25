@@ -232,6 +232,11 @@ namespace YumeEngine
 		return true;
 	}
 
+	bool YumeD3D11Texture2D::SetData(unsigned level,int x,int y,int width,int height,unsigned f1,unsigned f2,unsigned f3,const void* data)
+	{
+		return false;
+	}
+
 	bool YumeD3D11Texture2D::SetData(SharedPtr<YumeImage> image,bool useAlpha)
 	{
 		if(!image)
@@ -549,13 +554,13 @@ namespace YumeEngine
 		case DXGI_FORMAT_R16_FLOAT:
 		case DXGI_FORMAT_R16_TYPELESS:
 			return (unsigned)(width * 2);
-
 		case DXGI_FORMAT_R8G8B8A8_UNORM:
 		case DXGI_FORMAT_R16G16_UNORM:
 		case DXGI_FORMAT_R16G16_FLOAT:
 		case DXGI_FORMAT_R32_FLOAT:
 		case DXGI_FORMAT_R24G8_TYPELESS:
 		case DXGI_FORMAT_R32_TYPELESS:
+		case DXGI_FORMAT_B8G8R8A8_UNORM:
 			return (unsigned)(width * 4);
 
 		case DXGI_FORMAT_R16G16B16A16_UNORM:

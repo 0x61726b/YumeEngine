@@ -356,13 +356,13 @@ namespace YumeEngine
 		AddLine(v3,v0,uintColor,depthTest);
 	}
 
-	void YumeDebugRenderer::RenderInternalTexture(const IntVector2& screenPos,YumeTexture* texture)
+	void YumeDebugRenderer::RenderInternalTexture(const IntRect& screenPos,YumeTexture* texture)
 	{
 
 		if(!texture)
 			return;
 
-		gYume->pRHI->SetViewport(IntRect(screenPos.x_,screenPos.y_,400 + screenPos.x_,225 + screenPos.y_));
+		gYume->pRHI->SetViewport(screenPos);
 		gYume->pRHI->Clear(CLEAR_COLOR | CLEAR_DEPTH |CLEAR_STENCIL);
 
 

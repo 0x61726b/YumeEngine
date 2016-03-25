@@ -780,7 +780,7 @@ namespace YumeEngine
 				0,
 				D3D_DRIVER_TYPE_HARDWARE,
 				0,
-				D3D10_CREATE_DEVICE_DEBUG,
+				D3D10_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_BGRA_SUPPORT ,
 				0,
 				0,
 				D3D11_SDK_VERSION,
@@ -2406,6 +2406,11 @@ namespace YumeEngine
 	unsigned YumeD3D11Renderer::GetRGBAFormatNs()
 	{
 		return DXGI_FORMAT_R8G8B8A8_UNORM;
+	}
+
+	unsigned YumeD3D11Renderer::GetBGRAFormatNs()
+	{
+		return DXGI_FORMAT_B8G8R8A8_UNORM;
 	}
 
 	unsigned YumeD3D11Renderer::GetRGBA16FormatNs()

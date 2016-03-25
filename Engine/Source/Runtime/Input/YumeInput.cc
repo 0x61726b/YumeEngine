@@ -27,6 +27,8 @@
 
 #include "Logging/logging.h"
 
+#include <SDL_syswm.h>
+
 namespace YumeEngine
 {
 	int ConvertSDLKeyCode(int keySym,int scanCode)
@@ -34,7 +36,12 @@ namespace YumeEngine
 		if(scanCode == SCANCODE_AC_BACK)
 			return KEY_ESC;
 		else
-			return SDL_toupper(keySym);
+		{
+			if(gYume->pInput->GetKeyDown(KEY_CAPSLOCK))
+				return SDL_toupper(keySym);
+			else
+				return keySym;
+		}
 	}
 
 
@@ -71,11 +78,14 @@ namespace YumeEngine
 	void YumeInput::Update()
 	{
 		keyPress_.clear();
+		scancodePress_.clear();
 		mouseButtonPress_ = 0;
 		mouseMove_ = IntVector2::ZERO;
 		mouseMoveWheel_ = 0;
 
 		SDL_Event evt;
+		SDL_EventState( SDL_SYSWMEVENT, SDL_ENABLE );
+
 		while(SDL_PollEvent(&evt))
 			HandleSDLEvent(&evt);
 
@@ -166,7 +176,12 @@ namespace YumeEngine
 				}
 				else
 				{
-
+					if(mouseVisible_)
+					{
+						FireMouseMove(0,mousePosition.x_,mousePosition.y_,mouseButtonDown_);
+					}
+					else
+						FireMouseMove(0,mouseMove_.x_,mouseMove_.y_,mouseButtonDown_);
 				}
 			}
 		}
@@ -261,10 +276,6 @@ namespace YumeEngine
 				else if(mode == MM_WRAP)
 				{
 					SDL_SetWindowGrab(window,SDL_TRUE);
-
-					/*	VariantMap& eventData = GetEventDataMap();
-						eventData[MouseModeChanged::P_MODE] = mode;
-						SendEvent(E_MOUSEMODECHANGED,eventData);*/
 				}
 			}
 		}
@@ -279,6 +290,36 @@ namespace YumeEngine
 		return SDL_GetKeyFromName(name.c_str());
 	}
 
+
+	int YumeInput::GetKeyFromScancode(int scancode) const
+	{
+		return SDL_GetKeyFromScancode((SDL_Scancode)scancode);
+	}
+
+	int YumeInput::GetScancodeFromKey(int key) const
+	{
+		return SDL_GetScancodeFromKey(key);
+	}
+
+	int YumeInput::GetScancodeFromName(const String& name) const
+	{
+		return SDL_GetScancodeFromName(name.c_str());
+	}
+
+	YumeString YumeInput::GetScancodeName(int scancode) const
+	{
+		return SDL_GetScancodeName((SDL_Scancode)scancode);
+	}
+
+	bool YumeInput::GetScancodeDown(int scancode) const
+	{
+		return scancodeDown_.Contains(scancode);
+	}
+
+	bool YumeInput::GetScancodePress(int scancode) const
+	{
+		return scancodePress_.Contains(scancode);
+	}
 
 	YumeString YumeInput::GetKeyName(int key) const
 	{
@@ -339,7 +380,10 @@ namespace YumeEngine
 
 		graphics_ = graphics;
 
-		// In external window mode only visible mouse is supported
+		SDL_SysWMinfo info;
+		SDL_VERSION(&info.version);
+
+		SDL_EventState(SDL_SYSWMEVENT,SDL_QUERY);
 
 		// Set the initial activation
 		initialized_ = true;
@@ -399,11 +443,13 @@ namespace YumeEngine
 	{
 		keyDown_.clear();
 		keyPress_.clear();
+		scancodeDown_.clear();
+		scancodePress_.clear();
 
 		// Use SetMouseButton() to reset the state so that mouse events will be sent properly
-		SetMouseButton(MOUSEB_LEFT,false);
-		SetMouseButton(MOUSEB_RIGHT,false);
-		SetMouseButton(MOUSEB_MIDDLE,false);
+		SetMouseButton(0,MOUSEB_LEFT,false);
+		SetMouseButton(0,MOUSEB_RIGHT,false);
+		SetMouseButton(0,MOUSEB_MIDDLE,false);
 
 		mouseMove_ = IntVector2::ZERO;
 		mouseMoveWheel_ = 0;
@@ -415,7 +461,7 @@ namespace YumeEngine
 	}
 
 
-	void YumeInput::SetMouseButton(int button,bool newState)
+	void YumeInput::SetMouseButton(int native,int button,bool newState)
 	{
 		if(newState)
 		{
@@ -432,7 +478,7 @@ namespace YumeEngine
 			mouseButtonDown_ &= ~button;
 		}
 		//ToDo mbutton down event
-		FireMouseButtonDown(newState,button,mouseButtonDown_);
+		FireMouseButtonDown(native,newState,button,mouseButtonDown_);
 	}
 
 	void YumeInput::SetKey(int key,int scancode,unsigned raw,bool newState)
@@ -441,6 +487,9 @@ namespace YumeEngine
 
 		if(newState)
 		{
+			scancodeDown_.insert(scancode);
+			scancodePress_.insert(scancode);
+
 			if(!keyDown_.Contains((key)))
 			{
 				keyDown_.insert(key);
@@ -451,12 +500,12 @@ namespace YumeEngine
 		}
 		else
 		{
+			scancodeDown_.erase(scancode);
+
 			if(!keyDown_.erase(key))
 				return;
 		}
-
-		//ToDo Key Up down event
-		FireKeyDown(newState,key,mouseButtonDown_,repeat);
+		FireKeyDown(newState,(key),mouseButtonDown_,repeat);
 
 		if((key == KEY_RETURN || key == KEY_RETURN2 || key == KEY_KP_ENTER) && newState && !repeat && toggleFullscreen_ &&
 			(GetKeyDown(KEY_LALT) || GetKeyDown(KEY_RALT)))
@@ -494,15 +543,19 @@ namespace YumeEngine
 		if(i != listeners_.end())
 			listeners_.erase(i);
 	}
-	void YumeInput::FireMouseButtonDown(bool state,int button,unsigned buttons)
+
+
+	void YumeInput::FireMouseButtonDown(int modifiers,bool state,int button,unsigned buttons)
 	{
 		if(state)
 			for(InputEventListeners::Iterator i = listeners_.begin(); i != listeners_.end(); ++i)
-				(*i)->HandleMouseButtonDown(button,buttons);
+				(*i)->HandleMouseButtonDown(GetMouseModifiers(),button,buttons);
 		else
 			for(InputEventListeners::Iterator i = listeners_.begin(); i != listeners_.end(); ++i)
-				(*i)->HandleMouseButtonUp(button,buttons);
+				(*i)->HandleMouseButtonUp(GetMouseModifiers(),button,buttons);
 	}
+
+
 	void YumeInput::FireKeyDown(bool state,int key,unsigned buttons,int repeat)
 	{
 		if(state)
@@ -512,9 +565,85 @@ namespace YumeEngine
 			for(InputEventListeners::Iterator i = listeners_.begin(); i != listeners_.end(); ++i)
 				(*i)->HandleKeyUp(key,buttons,repeat);
 	}
+
+	void YumeInput::FireMouseMove(int modifiers,int mouseX,int mouseY,unsigned buttons)
+	{
+		for(InputEventListeners::Iterator i = listeners_.begin(); i != listeners_.end(); ++i)
+			(*i)->HandleMouseMove(mouseX,mouseY,GetMouseModifiers(),buttons);
+	}
+
+	int YumeInput::GetModifiers()
+	{
+		int modifiers = 0;
+		if(GetKeyDown(KEY_SHIFT))
+			modifiers |= EVENTFLAG_SHIFT_DOWN;
+		if(GetKeyDown(KEY_CTRL))
+			modifiers |= EVENTFLAG_CONTROL_DOWN;
+		if(GetKeyDown(KEY_ALT))
+			modifiers |= EVENTFLAG_ALT_DOWN;
+
+		int mod = SDL_GetModState();
+		mod = mod & KMOD_CAPS;
+
+		if(mod == KMOD_CAPS)
+			modifiers |= EVENTFLAG_CAPS_LOCK_ON;
+
+		mod = SDL_GetModState();
+		mod = mod & KMOD_NUM;
+
+		if(GetKeyDown(KEY_LCTRL))
+			modifiers |= EVENTFLAG_IS_LEFT;
+
+		if(GetKeyDown(KEY_RCTRL))
+			modifiers |= EVENTFLAG_IS_RIGHT;
+
+		if(GetKeyDown(KEY_LSHIFT))
+			modifiers |= EVENTFLAG_IS_LEFT;
+		if(GetKeyDown(KEY_RSHIFT))
+			modifiers |= EVENTFLAG_IS_RIGHT;;
+
+		if(mod == KMOD_NUM)
+			modifiers |= EVENTFLAG_NUM_LOCK_ON;
+
+		return modifiers;
+	}
+
+	int YumeInput::GetMouseModifiers()
+	{
+		int modifiers = 0;
+
+		if(GetKeyDown(KEY_SHIFT))
+			modifiers |= EVENTFLAG_SHIFT_DOWN;
+		if(GetKeyDown(KEY_CTRL))
+			modifiers |= EVENTFLAG_CONTROL_DOWN;
+		if(GetKeyDown(KEY_ALT))
+			modifiers |= EVENTFLAG_ALT_DOWN;
+		if(GetMouseButtonDown(MOUSEB_LEFT))
+			modifiers |= EVENTFLAG_LEFT_MOUSE_BUTTON;
+		if(GetMouseButtonDown(MOUSEB_MIDDLE))
+			modifiers |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
+		if(GetMouseButtonDown(MOUSEB_RIGHT))
+			modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
+
+		int mod = SDL_GetModState();
+		mod = mod & KMOD_NUM;
+
+		// Low bit set from GetKeyState indicates "toggled".
+		if(mod == KMOD_NUM)
+			modifiers |= EVENTFLAG_NUM_LOCK_ON;
+
+		mod = SDL_GetModState();
+		mod = mod & KMOD_CAPS;
+
+		if(mod == KMOD_CAPS)
+			modifiers |= EVENTFLAG_CAPS_LOCK_ON;
+		return modifiers;
+	}
+
 	void YumeInput::HandleSDLEvent(void* sdlEvent)
 	{
 		SDL_Event& evt = *static_cast<SDL_Event*>(sdlEvent);
+
 
 		if(!inputFocus_ && evt.type >= SDL_KEYDOWN && evt.type <= SDL_MULTIGESTURE)
 		{
@@ -536,8 +665,16 @@ namespace YumeEngine
 				return;
 		}
 
+
+
 		switch(evt.type)
 		{
+		case SDL_SYSWMEVENT:
+		{
+			UINT message = evt.syswm.msg->msg.win.msg;
+			break;
+		}
+		break;
 		case SDL_KEYDOWN:
 			SetKey(ConvertSDLKeyCode(evt.key.keysym.sym,evt.key.keysym.scancode),evt.key.keysym.scancode,0,true);
 			break;
@@ -547,35 +684,11 @@ namespace YumeEngine
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
-			int x,y;
-			SDL_GetMouseState(&x,&y);
-
-			SDL_Event event;
-			event.type = SDL_FINGERDOWN;
-			event.tfinger.touchId = 0;
-			event.tfinger.fingerId = evt.button.button - 1;
-			event.tfinger.pressure = 1.0f;
-			event.tfinger.x = (float)x / (float)graphics_->GetWidth();
-			event.tfinger.y = (float)y / (float)graphics_->GetHeight();
-			event.tfinger.dx = 0;
-			event.tfinger.dy = 0;
-			SDL_PushEvent(&event);
+			SetMouseButton(0,1 << (evt.button.button - 1),true);
 			break;
 		case SDL_MOUSEBUTTONUP:
 		{
-			int x,y;
-			SDL_GetMouseState(&x,&y);
-
-			SDL_Event event;
-			event.type = SDL_FINGERUP;
-			event.tfinger.touchId = 0;
-			event.tfinger.fingerId = evt.button.button - 1;
-			event.tfinger.pressure = 0.0f;
-			event.tfinger.x = (float)x / (float)graphics_->GetWidth();
-			event.tfinger.y = (float)y / (float)graphics_->GetHeight();
-			event.tfinger.dx = 0;
-			event.tfinger.dy = 0;
-			SDL_PushEvent(&event);
+			SetMouseButton(0,1 << (evt.button.button - 1),false);
 		}
 		break;
 
@@ -585,6 +698,12 @@ namespace YumeEngine
 				mouseMove_.x_ += evt.motion.xrel;
 				mouseMove_.y_ += evt.motion.yrel;
 
+				if(mouseVisible_)
+				{
+					FireMouseMove(0,evt.motion.x,evt.motion.y,mouseButtonDown_);
+				}
+				else
+					FireMouseMove(0,evt.motion.xrel,evt.motion.yrel,mouseButtonDown_);
 			}
 			break;
 

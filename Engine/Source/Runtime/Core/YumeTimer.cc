@@ -139,6 +139,11 @@ namespace YumeEngine
 		}
 	}
 
+	void YumeTime::RemoveAllListeners()
+	{
+		listenerList_.clear();
+	}
+
 	static unsigned Tick()
 	{
 #ifdef _WIN32

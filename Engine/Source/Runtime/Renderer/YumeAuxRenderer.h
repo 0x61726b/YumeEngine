@@ -102,7 +102,7 @@ namespace YumeEngine
 
 		
 		void Render();
-		void RenderInternalTexture(const IntVector2& screenPos,YumeTexture* texture);
+		void RenderInternalTexture(const IntRect& rect,YumeTexture* texture);
 
 		static YumeHash GetTypeStatic() { return type_; };
 		virtual YumeHash GetType() { return type_; };

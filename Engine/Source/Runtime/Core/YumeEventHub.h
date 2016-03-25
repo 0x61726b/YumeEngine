@@ -84,8 +84,9 @@ namespace YumeEngine
 	public:
 		virtual void HandleKeyDown(unsigned key,unsigned mouseButton,int repeat) { }
 		virtual void HandleKeyUp(unsigned key,unsigned mouseButton,int repeat) { }
-		virtual void HandleMouseButtonDown(int button,unsigned buttons) { }
-		virtual void HandleMouseButtonUp(int button,unsigned buttons) { }
+		virtual void HandleMouseButtonDown(int modifiers,int button,unsigned buttons) { }
+		virtual void HandleMouseButtonUp(int modifiers,int button,unsigned buttons) { }
+		virtual void HandleMouseMove(int mouseX,int mouseY,int modifiers,unsigned buttons) { }
 
 	};
 	class YumeAPIExport SceneEventListener
@@ -103,6 +104,12 @@ namespace YumeEngine
 		virtual void HandleEndFrame(int frameNumber) { };
 	};
 
+	class YumeAPIExport UIEventListener
+	{
+	public:
+		virtual void OnBrowserReady(unsigned int browserIndex) = 0;
+
+	};
 }
 
 

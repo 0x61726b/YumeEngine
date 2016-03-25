@@ -26,4 +26,5 @@ if(YUME_BUILD_OPENGL)
   add_subdirectory(OpenGL)
 endif()
 
-add_subdirectory(Null)
+#Screw testing for now
+#add_subdirectory(Null)

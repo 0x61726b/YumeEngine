@@ -636,9 +636,9 @@ namespace YumeEngine
 
 			if(debug)
 			{
-				debug->RenderInternalTexture(IntVector2(0,0),FindNamedTexture("albedo",true));
-				debug->RenderInternalTexture(IntVector2(300,0),FindNamedTexture("normal",true));
-				debug->RenderInternalTexture(IntVector2(600,0),FindNamedTexture("depth",true));
+				debug->RenderInternalTexture(IntRect(0,0,400,400),FindNamedTexture("albedo",true));
+				debug->RenderInternalTexture(IntRect(0,0,300,0),FindNamedTexture("normal",true));
+				debug->RenderInternalTexture(IntRect(0,0,600,0),FindNamedTexture("depth",true));
 			}
 
 		}

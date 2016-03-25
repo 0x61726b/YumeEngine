@@ -177,6 +177,7 @@ namespace YumeEngine
 		virtual unsigned						GetLuminanceAlphaFormatNs();
 		virtual unsigned						GetRGBFormatNs();
 		virtual unsigned						GetRGBAFormatNs();
+		virtual unsigned						GetBGRAFormatNs();
 		virtual unsigned						GetRGBA16FormatNs();
 		virtual unsigned						GetRGBAFloat16FormatNs();
 		virtual unsigned						GetRGBAFloat32FormatNs();

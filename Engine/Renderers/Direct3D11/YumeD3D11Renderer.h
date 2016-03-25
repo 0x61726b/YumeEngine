@@ -192,6 +192,7 @@ namespace YumeEngine
 		unsigned								GetLuminanceAlphaFormatNs();
 		unsigned								GetRGBFormatNs();
 		unsigned								GetRGBAFormatNs();
+		unsigned								GetBGRAFormatNs();
 		unsigned								GetRGBA16FormatNs();
 		unsigned								GetRGBAFloat16FormatNs();
 		unsigned								GetRGBAFloat32FormatNs();

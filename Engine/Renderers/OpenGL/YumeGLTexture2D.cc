@@ -114,7 +114,7 @@ namespace YumeEngine
 			// If has a resource file, reload through the resource cache. Otherwise just recreate.
 			YumeResourceManager* rm_ = gYume->pResourceManager;
 			//if(rm_ ->Exists(GetName()))
-				//dataLost_ = !rm_ ->ReloadResource(this);
+			//dataLost_ = !rm_ ->ReloadResource(this);
 
 			if(!object_)
 			{
@@ -203,6 +203,33 @@ namespace YumeEngine
 		return Create();
 	}
 
+
+	unsigned YumeGLTexture2D::GetDataType(unsigned format)
+	{
+#ifndef GL_ES_VERSION_2_0
+		if(format == GL_DEPTH24_STENCIL8_EXT)
+			return GL_UNSIGNED_INT_24_8_EXT;
+		else if(format == GL_RG16 || format == GL_RGBA16)
+			return GL_UNSIGNED_SHORT;
+		else if(format == GL_RGBA32F_ARB || format == GL_RG32F || format == GL_R32F)
+			return GL_FLOAT;
+		else if(format == GL_RGBA16F_ARB || format == GL_RG16F || format == GL_R16F)
+			return GL_HALF_FLOAT_ARB;
+		else if(format == GL_RGBA)
+			return GL_UNSIGNED_INT_8_8_8_8_REV;
+		else
+			return GL_UNSIGNED_BYTE;
+#else
+		if(format == GL_DEPTH_COMPONENT || format == GL_DEPTH_COMPONENT24_OES)
+			return GL_UNSIGNED_INT;
+		else if(format == GL_DEPTH_COMPONENT16)
+			return GL_UNSIGNED_SHORT;
+		else
+			return GL_UNSIGNED_BYTE;
+#endif
+	}
+
+
 	unsigned YumeGLTexture2D::GetExternalFormat(unsigned format)
 	{
 #ifndef GL_ES_VERSION_2_0
@@ -222,6 +249,8 @@ namespace YumeEngine
 			return GL_RGBA;
 		else if(format == GL_SRGB_EXT)
 			return GL_RGB;
+		else if(format == GL_RGBA)
+			return GL_BGRA;
 		else
 			return format;
 #else
@@ -280,6 +309,72 @@ namespace YumeEngine
 		{
 			if(wholeLevel)
 				glTexImage2D(target_,level,format,width,height,0,GetExternalFormat(format_),GetDataType(format_),data);
+			else
+				glTexSubImage2D(target_,level,x,y,width,height,GetExternalFormat(format_),GetDataType(format_),data);
+		}
+		else
+		{
+			if(wholeLevel)
+				glCompressedTexImage2D(target_,level,format,width,height,0,GetDataSize(width,height),data);
+			else
+				glCompressedTexSubImage2D(target_,level,x,y,width,height,format,GetDataSize(width,height),data);
+		}
+
+		gYume->pRHI->SetTexture(0,0);
+		return true;
+	}
+
+	bool YumeGLTexture2D::SetData(unsigned level,int x,int y,int width,int height,unsigned f1,unsigned f2,unsigned f3,const void* data)
+	{
+		if(!object_)
+		{
+			YUMELOG_ERROR("No texture created, can not set data");
+			return false;
+		}
+
+		if(!data)
+		{
+			YUMELOG_ERROR("Null source for setting data");
+			return false;
+		}
+
+		if(level >= levels_)
+		{
+			YUMELOG_ERROR("Illegal mip level for setting data");
+			return false;
+		}
+
+
+		if(gYume->pRHI->IsDeviceLost())
+		{
+			YUMELOG_WARN("Texture data assignment while device is lost");
+			dataPending_ = true;
+			return true;
+		}
+
+		if(IsCompressed())
+		{
+			x &= ~3;
+			y &= ~3;
+		}
+
+		int levelWidth = GetLevelWidth(level);
+		int levelHeight = GetLevelHeight(level);
+		if(x < 0 || x + width > levelWidth || y < 0 || y + height > levelHeight || width <= 0 || height <= 0)
+		{
+			YUMELOG_ERROR("Illegal dimensions for setting data");
+			return false;
+		}
+
+		static_cast<YumeGLRenderer*>(gYume->pRHI)->SetTextureForUpdate(this);
+
+		bool wholeLevel = x == 0 && y == 0 && width == levelWidth && height == levelHeight;
+		unsigned format = GetSRGB() ? GetSRGBFormat(format_) : format_;
+
+		if(!IsCompressed())
+		{
+			if(wholeLevel)
+				glTexImage2D(target_,level,f1,width,height,0,f2,f3,data);
 			else
 				glTexSubImage2D(target_,level,x,y,width,height,GetExternalFormat(format_),GetDataType(format_),data);
 		}
@@ -452,7 +547,7 @@ namespace YumeEngine
 		{
 			YUMELOG_WARN("Getting texture data while device is lost");
 			return false;
-	}
+		}
 
 		static_cast<YumeGLRenderer*>(gYume->pRHI)->SetTextureForUpdate(const_cast<YumeGLTexture2D*>(this));
 
@@ -467,7 +562,7 @@ namespace YumeEngine
 		YUMELOG_ERROR("Getting texture data not supported");
 		return false;
 #endif
-}
+	}
 
 	bool YumeGLTexture2D::Create()
 	{
@@ -480,7 +575,7 @@ namespace YumeEngine
 		{
 			YUMELOG_WARN("Texture creation while device is lost");
 			return true;
-	}
+		}
 
 		unsigned format = GetSRGB() ? GetSRGBFormat(format_) : format_;
 		unsigned externalFormat = GetExternalFormat(format_);
@@ -704,29 +799,6 @@ namespace YumeEngine
 	}
 
 
-	unsigned YumeGLTexture2D::GetDataType(unsigned format)
-	{
-#ifndef GL_ES_VERSION_2_0
-		if(format == GL_DEPTH24_STENCIL8_EXT)
-			return GL_UNSIGNED_INT_24_8_EXT;
-		else if(format == GL_RG16 || format == GL_RGBA16)
-			return GL_UNSIGNED_SHORT;
-		else if(format == GL_RGBA32F_ARB || format == GL_RG32F || format == GL_R32F)
-			return GL_FLOAT;
-		else if(format == GL_RGBA16F_ARB || format == GL_RG16F || format == GL_R16F)
-			return GL_HALF_FLOAT_ARB;
-		else
-			return GL_UNSIGNED_BYTE;
-#else
-		if(format == GL_DEPTH_COMPONENT || format == GL_DEPTH_COMPONENT24_OES)
-			return GL_UNSIGNED_INT;
-		else if(format == GL_DEPTH_COMPONENT16)
-			return GL_UNSIGNED_SHORT;
-		else
-			return GL_UNSIGNED_BYTE;
-#endif
-	}
-
 	void YumeGLTexture2D::CheckTextureBudget(YumeHash type)
 	{
 
@@ -740,4 +812,4 @@ namespace YumeEngine
 			format_ == COMPRESSED_RGB_PVRTC_2BPPV1_IMG || format_ == COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
 	}
 
-}
+	}

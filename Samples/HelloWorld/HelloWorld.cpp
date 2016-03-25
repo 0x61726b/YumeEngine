@@ -38,6 +38,9 @@
 #include "Engine/YumeEngine.h"
 
 #include "Core/SharedPtr.h"
+
+#include "UI/YumeUI.h"
+
 YUME_DEFINE_ENTRY_POINT(YumeEngine::HelloWorld);
 
 namespace YumeEngine
@@ -91,7 +94,7 @@ namespace YumeEngine
 
 		YumeStaticModel* planeModel = plane->CreateComponent<YumeStaticModel>();
 		planeModel->SetModel(rm_->PrepareResource<YumeModel>("Models/Plane.mdl"));
-		planeModel->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/StoneTiled.xml"));
+		planeModel->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Stone.xml"));
 
 
 		YumeSceneNode* test = scene_->CreateChild("Test");
@@ -99,7 +102,7 @@ namespace YumeEngine
 		test->SetRotation(Quaternion::IDENTITY);
 		YumeStaticModel* drawable = test->CreateComponent<YumeStaticModel>();
 		drawable->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		drawable->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Stone.xml"));
+		drawable->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
 		drawable->SetCastShadows(true);
 
 		//YumeSceneNode* test2 = scene_->CreateChild("Test");
@@ -137,14 +140,7 @@ namespace YumeEngine
 		SharedPtr<YumeViewport> viewport(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>()));
 
 		YumeRenderer* renderer = gYume->pRenderer;
-		/*renderer->SetNumViewports(2);*/
 		renderer->SetViewport(0,viewport);
-
-		//SharedPtr<YumeViewport> rearViewport(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>(),
-		//	IntRect(gYume->pRHI->GetWidth() * 2 / 3,32,gYume->pRHI->GetWidth() - 32,gYume->pRHI->GetHeight() / 3)));
-		//renderer->SetViewport(1,rearViewport);
-
-		//camera->SetViewOverrideFlags(VO_DISABLE_OCCLUSION);
 	}
 
 	void HelloWorld::MoveCamera(float timeStep)

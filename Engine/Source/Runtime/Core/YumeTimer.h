@@ -101,6 +101,7 @@ namespace YumeEngine
 	public:
 		void AddTimeEventListener(YumeTimerEventListener* listener);
 		void RemoveTimeEventListener(YumeTimerEventListener* listener);
+		void RemoveAllListeners();
 	protected:
 		int frameNumber_;
 		double timeStep_;

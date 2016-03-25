@@ -17,3 +17,7 @@
 [submodule "Engine/Source/3rdParty/pugixml"]
 	path = Engine/Source/3rdParty/pugixml
 	url = https://github.com/zeux/pugixml
+[submodule "Engine/Source/3rdParty/cef3d"]
+	path = Engine/Source/3rdParty/cef3d
+	url = https://github.com/arkenthera/cef3d
+	branch = master

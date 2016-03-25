@@ -21,8 +21,11 @@
 #Minimal application with empty window
 add_subdirectory(HelloWorld)
 
+
 add_subdirectory(Lighting)
 
+add_subdirectory(CefTest)
+
 if(NOT OS_MACOSX)
-  add_subdirectory(TestSuite)
+  #add_subdirectory(TestSuite)
 endif()

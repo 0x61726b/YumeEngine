@@ -62,12 +62,11 @@
 #include "Renderer/YumeAuxRenderer.h"
 #include "Renderer/YumeSkybox.h"
 #include "Renderer/YumeRendererEnv.h"
-
 #include "Input/YumeInput.h"
+#include "UI/YumeUI.h"
 
 #include <boost/filesystem.hpp>
 #include <log4cplus/initializer.h>
-#include <SDL.h>
 
 YumeEngine::YumeEngine3D* YumeEngineGlobal = 0;
 
@@ -112,7 +111,6 @@ namespace YumeEngine
 		gYume->pTimer = (YumeAPINew YumeTime);
 		gYume->pEnv = (YumeAPINew YumeEnvironment);
 		gYume->pWorkSystem = (YumeAPINew YumeWorkQueue);
-
 		gYume->pResourceManager = YumeAPINew YumeResourceManager;
 
 		VariantMap::const_iterator It = variants.begin();
@@ -171,14 +169,14 @@ namespace YumeEngine
 		if(!initialized_)
 			return false;
 
-		
+
 
 
 		gYume->pRHI->SetWindowTitle("Yume Engine");
 		gYume->pRHI->SetWindowPos(Vector2(250,250));
 
 		FsPath resourceTree = FsPath(gYume->pEnv->GetVariant("ResourceTree").Get<YumeString>().c_str());
-		resourceTree = gYume->pIO->GetBinaryRoot() / "Yume" / resourceTree;
+		resourceTree = gYume->pIO->GetBinaryRoot() / resourceTree;
 
 		gYume->pResourceManager->AddResourcePath(resourceTree);
 
@@ -199,13 +197,20 @@ namespace YumeEngine
 		frameTimer_.Reset();
 
 		gYume->pInput = (YumeAPINew YumeInput);
-		//SharedPtr<YumeTexture2D> earth = resourceManager_->PrepareResource<YumeTexture2D>("Textures/Earth_Diffuse.dds");
+
 
 		gYume->pRenderer = (YumeAPINew YumeRenderer(renderer));
 		gYume->pRenderer->Initialize();
 
 		gYume->pDebugRenderer = (new YumeDebugRenderer);
 
+
+		{
+			gYume->pUI = new YumeUI;
+			bool initUI = gYume->pUI->Initialize();
+			if(!initUI)
+				return false;
+		}
 
 		YUMELOG_INFO("Initialized Yume Engine...");
 
@@ -283,6 +288,7 @@ namespace YumeEngine
 
 		//Renderer
 		gYume->pRenderer->Render();
+		gYume->pUI->Render();
 
 		gYume->pRHI->EndFrame();
 	}
@@ -306,6 +312,8 @@ namespace YumeEngine
 			return;
 
 		gYume->pTimer->BeginFrame(timeStep_);
+
+
 
 		Update();
 		Render();
@@ -359,7 +367,7 @@ namespace YumeEngine
 		{
 			// If the smoothing configuration was changed, ensure correct amount of samples
 
-			lastTimeSteps_.erase(0, lastTimeSteps_.size() - timeStepSmoothing_);
+			lastTimeSteps_.erase(0,lastTimeSteps_.size() - timeStepSmoothing_);
 			for(unsigned i = 0; i < lastTimeSteps_.size(); ++i)
 				timeStep_ += lastTimeSteps_[i];
 			timeStep_ /= lastTimeSteps_.size();
@@ -455,9 +463,11 @@ namespace YumeEngine
 		YUMELOG_INFO("Exiting Yume Engine...");
 
 
-
 		if(gYume->pRHI)
 			gYume->pRHI->Close();
+
+		gYume->pUI->Shutdown();
+
 
 
 		//UnloadExternalLibraries();
@@ -465,7 +475,7 @@ namespace YumeEngine
 		/*graphics_.reset();
 		renderer_.reset();*/
 
-		
+
 		YUMELOG_INFO("Engine stats: ");
 		YUMELOG_INFO("Total frames: " << gYume->pTimer->GetFrameNumber());
 		YUMELOG_INFO("Time elapsed since start: " << gYume->pTimer->GetElapsedTime());

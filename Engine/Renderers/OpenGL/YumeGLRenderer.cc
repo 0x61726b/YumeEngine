@@ -2699,7 +2699,7 @@ namespace YumeEngine
 			impl_->boundUBO_ = object;
 		}
 #endif
-		}
+	}
 
 	unsigned YumeGLRenderer::GetAlphaFormatNs()
 	{
@@ -2740,6 +2740,11 @@ namespace YumeEngine
 	{
 		return GL_RGBA;
 	}
+	unsigned YumeGLRenderer::GetBGRAFormatNs()
+	{
+		return GL_BGRA;
+	}
+
 
 	unsigned YumeGLRenderer::GetRGBA16FormatNs()
 	{
@@ -2748,7 +2753,7 @@ namespace YumeEngine
 #else
 		return GL_RGBA;
 #endif
-}
+	}
 
 	unsigned YumeGLRenderer::GetRGBAFloat16FormatNs()
 	{
@@ -3061,4 +3066,4 @@ namespace YumeEngine
 		gYume->pObjFactory->UnRegisterFactoryFunction(("IndexBuffer"));
 		gYume->pObjFactory->UnRegisterFactoryFunction(("VertexBuffer"));
 	}
-	}
+}

@@ -39,6 +39,7 @@ namespace YumeEngine
 		virtual void Release();
 		virtual bool SetSize(int width,int height,unsigned format,TextureUsage usage = TEXTURE_STATIC);
 		virtual bool SetData(unsigned level,int x,int y,int width,int height,const void* data);
+		virtual bool SetData(unsigned level,int x,int y,int width,int height,unsigned f1,unsigned f2,unsigned f3,const void* data);
 		virtual bool SetData(SharedPtr<YumeImage> image,bool useAlpha = false);
 
 		virtual bool GetData(unsigned level,void* dest) const;
