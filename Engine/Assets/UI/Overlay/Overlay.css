@@ -2,7 +2,7 @@ body
 {
   background-color: transparent;
   font-family: 'Roboto';
-  font-weight: 300;
+  font-weight: 500;
 }
 
 #topLeftInfo
@@ -10,6 +10,7 @@ body
   margin-left:0px;
   margin-top:0px;
   color:white;
+  font-size: 13px;
   background-image:url("../images/yumeLogoOverlay.png");
   background-repeat: no-repeat;
   background-position: left;
@@ -26,8 +27,51 @@ body
   margin-left:150px;
   padding-top:2px;
 }
+#fps p {
+  display: inline;
+  color: #25D366;
+}
+#fps span {
+  display: inline;
+  font-size: 9px;
+  color: white;
+}
 #totalMemory
 {
   margin-left:150px;
   padding-top:2px;
+}
+#textureQuality
+{
+  margin-left:0px;
+  margin-top:150px;
+  padding-top:2px;
+}
+p {
+  display: inline;
+  color: #2ecc71;
+}
+#totalMemory p {
+  display: inline;
+  color:magenta;
+}
+#sampleName p {
+  display: inline;
+  color: lightblue;
+}
+.memoryUsagePanel {
+  right: 0px;
+  bottom: 0px;
+  position:fixed;
+  color:white;
+}
+.cameraPanel {
+  left: 0px;
+  bottom: 0px;
+  position:fixed;
+  color:white;
+  font-size:11px;
+}
+.cameraPanel div {
+  color:red;
 }

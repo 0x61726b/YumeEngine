@@ -36,6 +36,7 @@ namespace YumeEngine
 
 	YumeGpuResource::~YumeGpuResource()
 	{
-		
+		if(gYume->pRHI)
+			gYume->pRHI->RemoveGpuResource(this);
 	}
 }

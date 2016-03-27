@@ -181,6 +181,8 @@ set( SRC_CORE
 	Core/YumeVectorBuffer.cc
 	Core/YumeXmlFile.h
 	Core/YumeXmlFile.cc
+	Core/YumeJsFile.h
+	Core/YumeJsFile.cc
 		)
 set( SRC_CORE_IO
 	Core/YumeIO.h
@@ -247,7 +249,13 @@ set( SRC_ENGINE
 
 set(SRC_UI
 UI/YumeUI.h
-UI/YumeUI.cc)
+UI/YumeUI.cc
+UI/YumeDebugOverlay.h
+UI/YumeDebugOverlay.cc
+UI/YumeUIBinding.h
+UI/YumeUIBinding.cc
+UI/YumeUIElement.h
+UI/YumeUIElement.cc)
 
 file(GLOB CONTAINER_SOURCES "Container/*.cpp" "Container/*.h")
 
@@ -327,16 +335,16 @@ endif()
 
 
 link_boost_library(${YUME} filesystem)
-link_boost_library(${YUME} thread)
 link_boost_library(${YUME} system)
 link_boost_library(${YUME} date_time)
+target_link_libraries(${YUME} boost_system)
 target_link_libraries(${YUME} SDL2)
 target_link_libraries(${YUME} pugixml)
 target_link_libraries(${YUME} STB)
 target_link_libraries(${YUME} JO)
 target_link_libraries(${YUME} Cef3D
 )
-set(YUME_LIBRARIES ${YUME_LIBRARIES} boost_filesystem boost_thread boost_system boost_date_time log4cplus)
+set(YUME_LIBRARIES ${YUME_LIBRARIES} boost_filesystem boost_system boost_date_time log4cplus)
 
 include_directories(${YUME_INCLUDE_DIR})
 

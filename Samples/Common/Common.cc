@@ -31,6 +31,8 @@
 
 #include "Input/YumeInput.h"
 
+#include "UI/YumeDebugOverlay.h"
+
 namespace YumeEngine
 {
 	BaseApplication::BaseApplication()
@@ -67,10 +69,56 @@ namespace YumeEngine
 			engine_->Exit();
 		}
 
-		if(key == KEY_1)
+		if(key == KEY_M)
 		{
 			input->SetMouseVisible(!input->IsMouseVisible());
 		}
+
+		else if(key == '1')
+		{
+			int quality = gYume->pRenderer->GetTextureQuality();
+			++quality;
+			if(quality > QUALITY_HIGH)
+				quality = QUALITY_LOW;
+			gYume->pRenderer->SetTextureQuality(quality);
+		}
+
+		// Material quality
+		else if(key == '2')
+		{
+			int quality = gYume->pRenderer->GetMaterialQuality();
+			++quality;
+			if(quality > QUALITY_HIGH)
+				quality = QUALITY_LOW;
+			gYume->pRenderer->SetMaterialQuality(quality);
+		}
+		else if(key == '3')
+			gYume->pRenderer->SetDrawShadows(!gYume->pRenderer->GetDrawShadows());
+		else if(key == '4')
+		{
+			int shadowMapSize = gYume->pRenderer->GetShadowMapSize();
+			shadowMapSize *= 2;
+			if(shadowMapSize > 2048)
+				shadowMapSize = 512;
+			gYume->pRenderer->SetShadowMapSize(shadowMapSize);
+		}
+		else if(key == '5')
+		{
+			ShadowQuality quality = gYume->pRenderer->GetShadowQuality();
+			quality = (ShadowQuality)(quality + 1);
+			if(quality > SHADOWQUALITY_BLUR_VSM)
+				quality = SHADOWQUALITY_SIMPLE_16BIT;
+			gYume->pRenderer->SetShadowQuality(quality);
+		}
+		else if(key == '6')
+		{
+			bool occlusion = gYume->pRenderer->GetMaxOccluderTriangles() > 0;
+			occlusion = !occlusion;
+			gYume->pRenderer->SetMaxOccluderTriangles(occlusion ? 5000 : 0);
+		}
+
+		if(input->GetKeyPress(KEY_U))
+			gYume->pUI->SetUIEnabled(!gYume->pUI->GetUIEnabled());
 
 		if(input->GetKeyPress(KEY_SPACE))
 			drawDebug_ = !drawDebug_;
@@ -96,6 +144,10 @@ namespace YumeEngine
 		SetupWindowProperties();
 
 		gYume->pInput->AddListener(this);
+
+		overlay_ = new YumeDebugOverlay;
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);
 	}
 
 	void BaseApplication::Exit()

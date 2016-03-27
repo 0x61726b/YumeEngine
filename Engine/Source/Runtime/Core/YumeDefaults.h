@@ -84,6 +84,7 @@ namespace YumeEngine
 	YumeAPIExport void StringToBuffer(YumeVector<unsigned char>::type& dest,const YumeString& source);
 	YumeAPIExport void StringToBuffer(YumeVector<unsigned char>::type& dest,const char* source);
 	YumeAPIExport void BufferToString(YumeString& dest, const void* data, unsigned size);
+	YumeAPIExport YumeString GetFileSizeString(unsigned long long memorySize);
 
 	YumeAPIExport bool IsDigit(unsigned ch);
 	YumeAPIExport bool IsAlpha(unsigned ch);

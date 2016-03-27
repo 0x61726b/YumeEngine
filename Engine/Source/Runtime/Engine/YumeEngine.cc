@@ -42,6 +42,7 @@
 #include "Core/YumeDefaults.h"
 #include "Core/YumeBase.h"
 #include "Core/YumeXmlFile.h"
+#include "Core/YumeJsFile.h"
 #include "Core/YumeWorkQueue.h"
 
 #include "Renderer/YumeRenderer.h"
@@ -170,10 +171,8 @@ namespace YumeEngine
 			return false;
 
 
-
-
 		gYume->pRHI->SetWindowTitle("Yume Engine");
-		gYume->pRHI->SetWindowPos(Vector2(250,250));
+		gYume->pRHI->SetWindowPos(Vector2(100,50));
 
 		FsPath resourceTree = FsPath(gYume->pEnv->GetVariant("ResourceTree").Get<YumeString>().c_str());
 		resourceTree = gYume->pIO->GetBinaryRoot() / resourceTree;
@@ -181,6 +180,7 @@ namespace YumeEngine
 		gYume->pResourceManager->AddResourcePath(resourceTree);
 
 		YumeThreadWrapper::SetMainThread();
+
 
 		YumeImage* appIcon = gYume->pResourceManager->PrepareResource<YumeImage>("Textures/appIcon.png");
 		gYume->pRHI->SetWindowIcon(appIcon);
@@ -198,7 +198,6 @@ namespace YumeEngine
 
 		gYume->pInput = (YumeAPINew YumeInput);
 
-
 		gYume->pRenderer = (YumeAPINew YumeRenderer(renderer));
 		gYume->pRenderer->Initialize();
 
@@ -207,8 +206,7 @@ namespace YumeEngine
 
 		{
 			gYume->pUI = new YumeUI;
-			bool initUI = gYume->pUI->Initialize();
-			if(!initUI)
+			if(!gYume->pUI->Initialize())
 				return false;
 		}
 
@@ -273,6 +271,7 @@ namespace YumeEngine
 		YumeObjectRegistrar<Octree> octreeObj(("Octree"));
 		YumeObjectRegistrar<YumeCamera> cameraObj(("Camera"));
 		YumeObjectRegistrar<YumeXmlFile> xmlFile(("XmlFile"));
+		YumeObjectRegistrar<YumeJsFile> jsFile(("JsFile"));
 		YumeObjectRegistrar<YumeLight> light(("Light"));
 		YumeObjectRegistrar<YumeMaterial> material(("Material"));
 		YumeObjectRegistrar<YumeModel> model(("Model"));
@@ -374,7 +373,6 @@ namespace YumeEngine
 		}
 		else
 			timeStep_ = lastTimeSteps_.back();
-
 	}
 
 	bool YumeEngine3D::LoadExternalLibrary(const YumeString& lib)

@@ -31,8 +31,6 @@ typedef pthread_t ThreadID;
 typedef unsigned ThreadID;
 #endif
 
-
-#include <boost/thread.hpp>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {

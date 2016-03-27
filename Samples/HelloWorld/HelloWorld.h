@@ -14,6 +14,7 @@
 namespace YumeEngine
 {
 	class YumeScene;
+	class YumeSceneNode;
 
 	class HelloWorld : public BaseApplication
 	{
@@ -28,7 +29,8 @@ namespace YumeEngine
 
 		virtual void HandleUpdate(float timeStep);
 
-		
+		YumeSceneNode* cubeNode_;
+		Quaternion rot_;
 	};
 }
 

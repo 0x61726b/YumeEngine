@@ -553,12 +553,8 @@ namespace YumeEngine
 			YUMELOG_ERROR("Rendering window couldn't be created! Error:" << std::endl << SDL_GetError());
 			return false;
 		}
-		int *x = new int;
-		int *y = new int;
-		SDL_GetWindowPosition(window_,x,y);
+		SDL_GetWindowPosition(window_,&windowPos_.x_,&windowPos_.y_);
 
-		windowPos_.x_ = (float)*x;
-		windowPos_.y_ = (float)*y;
 
 		return true;
 	}

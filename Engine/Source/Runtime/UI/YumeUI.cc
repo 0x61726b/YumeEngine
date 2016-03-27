@@ -27,9 +27,16 @@
 #include "Renderer/YumeTexture2D.h"
 #include "Logging/logging.h"
 
+#include "Core/YumeJsFile.h"
+
+#include "YumeUIElement.h"
+
 #include <cef3d/Cef3D.h>
 
 #include <SDL_syswm.h>
+
+
+
 
 namespace YumeEngine
 {
@@ -37,7 +44,8 @@ namespace YumeEngine
 		: cef3d_(0),
 		renderUI_(true),
 		mouseX_(0),
-		mouseY_(0)
+		mouseY_(0),
+		lastTimeStep_(0.0f)
 	{
 		gYume->pTimer->AddTimeEventListener(this);
 		gYume->pEngine->AddListener(this);
@@ -54,6 +62,9 @@ namespace YumeEngine
 #else
 		cef3d_ = new CefUI::Cef3D(this,0);
 #endif
+		YumeResourceManager* rm_ = gYume->pResourceManager;
+		YumeJsFile* cef3DExtension = rm_->PrepareResource<YumeJsFile>("UI/Cef3D.js");
+		cef3d_->SetCustomExtensionSourceCode(cef3DExtension->GetContent().c_str());
 
 		gYume->pInput->AddListener(this);
 	}
@@ -63,36 +74,17 @@ namespace YumeEngine
 		delete cef3d_;
 	}
 
+
+
+
 	bool YumeUI::Initialize()
 	{
 		FsPath binaryRoot = gYume->pIO->GetBinaryRoot();
 
 		YUMELOG_INFO("Initializing Cef...");
-		if(cef3d_->Initialize(binaryRoot.generic_string().c_str()))
-		{
-			if(renderUI_)
-			{
-				IntVector2 screen = gYume->pRHI->GetRenderTargetDimensions();
-				CefUI::CefRect rect(0,0,screen.x_,screen.y_);
-
-				std::string overlayPath("file:///");
-				overlayPath.append(binaryRoot.generic_string());
-				overlayPath.append("/Engine/Assets/UI/Overlay/Overlay.html");
-				CreateBrowser(rect,overlayPath,true);
-
-				return true;
-			}
-			else
-				return true;
-		}
-		else
+		if(!cef3d_->Initialize(binaryRoot.generic_string().c_str()))
 			return false;
-		return false;
-	}
-
-	void YumeUI::OnContextReady()
-	{
-
+		return true;
 	}
 
 	void YumeUI::OnBrowserReady(unsigned index)
@@ -100,18 +92,33 @@ namespace YumeEngine
 		YUMELOG_DEBUG("CEF browser " << index << " is ready.");
 		for(UIListeners::iterator l = listeners_.begin(); l != listeners_.end(); ++l)
 			(*l)->OnBrowserReady(index);
+
+		
 	}
 
-	int YumeUI::CreateBrowser(const CefUI::CefRect& rect,const std::string& url,bool isUiElement)
+	int YumeUI::CreateBrowser(YumeUIElement* element)
 	{
-		YUMELOG_DEBUG("Creating CEF browser (" << rect.x << "," << rect.y << "," << rect.width << "," << rect.height << ") with URL " << url.c_str());
-		SharedPtr<YumeTexture2D> texture(gYume->pRHI->CreateTexture2D());
-		texture->SetSize(rect.width,rect.height,gYume->pRHI->GetBGRAFormatNs(),TEXTURE_DYNAMIC);
-		int index = cef3d_->CreateBrowser(rect,url);
+		CefUI::CefRect rect;
+		rect.x = element->GetRect().left_;
+		rect.y = element->GetRect().top_;
+		rect.width = element->GetRect().right_;
+		rect.height = element->GetRect().bottom_;
 
+		YUMELOG_DEBUG("Creating CEF browser (" << rect.x << "," << rect.y << "," << rect.width << "," << rect.height << ") with URL " << element->GetURL().c_str());
 
-		browserRects_.insert(MakePair(MakePair(index,isUiElement),MakePair(rect,texture)));
-		return browserRects_.size() - 1;
+		int index = cef3d_->CreateBrowser(rect,element->GetURL().c_str());
+
+		return index;
+	}
+
+	void YumeUI::Update()
+	{
+		UIElements::iterator It = uiElements_.begin();
+		for(;It != uiElements_.end(); ++It)
+		{
+			if((*It)->GetVisible())
+				(*It)->Update();
+		}
 	}
 
 	void YumeUI::Render()
@@ -119,27 +126,47 @@ namespace YumeEngine
 		if(!renderUI_)
 			return;
 
-		BrowserElements::iterator It = browserRects_.begin();
-		for(;It != browserRects_.end(); ++It)
+		UIElements::iterator It = uiElements_.begin();
+		for(;It != uiElements_.end(); ++It)
 		{
-			if(!It->first.second) //if not UI element continue
-				continue;
-
-			CefUI::CefRect rect = It->second.first;
-
-			gYume->pDebugRenderer->RenderInternalTexture(IntRect(rect.x,rect.y,rect.width + rect.x,rect.height + rect.y),It->second.second);
+			if((*It)->GetVisible())
+				gYume->pDebugRenderer->RenderInternalTexture((*It)->GetRect(),(*It)->GetTexture());
 		}
+	}
+
+	void YumeUI::AddUIElement(YumeUIElement* element)
+	{
+		uiElements_.push_back(element);
+		element->PrepareResources();
+	}
+
+	void YumeUI::SendEvent(const YumeString& name,const YumeString& data)
+	{
+		cef3d_->SendEvent(0,name.c_str(),data.c_str());
+	}
+
+	void YumeUI::OnRendererContextReady()
+	{
+		UIElements::iterator It = uiElements_.begin();
+		for(;It != uiElements_.end(); ++It)
+		{
+			if((*It)->GetVisible())
+				(*It)->OnContextReady();
+		}
+
 	}
 
 	void YumeUI::OnPaint(int browserIndex,std::vector<CefUI::CefRect>& rectList,const void* buffer,
 		int width,
 		int height)
 	{
-		if(browserRects_.size())
+		if(!renderUI_)
+			return;
+		if(uiElements_.size())
 		{
-			BrowserElements::iterator It = browserRects_.find(MakePair(browserIndex,true));
-			if(It != browserRects_.end())
-				It->second.second->SetData(0,0,0,width,height,buffer);
+			YumeUIElement* element = uiElements_[browserIndex];
+			if(element)
+				element->GetTexture()->SetData(0,0,0,width,height,buffer);
 		}
 	}
 
@@ -149,8 +176,16 @@ namespace YumeEngine
 			cef3d_->RunCefLoop();
 	}
 
+	void YumeUI::HandlePostRenderUpdate(float timeStep)
+	{
+		Update();
+	}
+
 	void YumeUI::HandleKeyDown(unsigned key,unsigned mouseButton,int repeat)
 	{
+		if(!cef3d_->IsInitialized())
+			return;
+
 		int modifiers = gYume->pInput->GetModifiers();
 		cef3d_->HandleKeyEvent(0,modifiers,key);
 
@@ -163,6 +198,8 @@ namespace YumeEngine
 
 	void YumeUI::HandleKeyUp(unsigned key,unsigned mouseButton,int repeat)
 	{
+		if(!cef3d_->IsInitialized())
+			return;
 		int modifiers = gYume->pInput->GetModifiers();
 
 
@@ -171,16 +208,23 @@ namespace YumeEngine
 
 	void YumeUI::HandleMouseButtonDown(int native,int button,unsigned buttons)
 	{
+		if(!cef3d_->IsInitialized())
+			return;
+
 		cef3d_->HandleMouseButtonDown(mouseX_,mouseY_,native,button,buttons);
 	}
 
 	void YumeUI::HandleMouseButtonUp(int native,int button,unsigned buttons)
 	{
+		if(!cef3d_->IsInitialized())
+			return;
 		cef3d_->HandleMouseButtonUp(mouseX_,mouseY_,native,button,buttons);
 	}
 
 	void YumeUI::HandleMouseMove(int mouseX,int mouseY,int native,unsigned buttons)
 	{
+		if(!cef3d_->IsInitialized())
+			return;
 		mouseX_ = mouseX;
 		mouseY_ = mouseY;
 		cef3d_->HandleMouseMove(mouseX,mouseY,native,buttons);

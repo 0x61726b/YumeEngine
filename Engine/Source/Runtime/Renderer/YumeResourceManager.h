@@ -89,6 +89,10 @@ namespace YumeEngine
 		template <class T> SharedPtr<T> GetTempResource(const YumeString& name);
 		template <class T> void GetResources(Vector<T*>& result) const;
 
+		unsigned long long GetMemoryUse(YumeHash type) const;
+		unsigned long long GetTotalMemoryUse() const;
+
+		YumeString PrintMemoryUsage() const; 
 
 	private:
 		Mutex resourceMutex_;

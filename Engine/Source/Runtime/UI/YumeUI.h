@@ -32,6 +32,9 @@ namespace CefUI {
 
 namespace YumeEngine
 {
+	class YumeDebugOverlay;
+	class YumeUIElement;
+
 	class YumeAPIExport YumeUI :
 		public YumeBase,
 		public YumeTimerEventListener,
@@ -46,19 +49,23 @@ namespace YumeEngine
 		bool Initialize();
 		void Shutdown();
 
-		int CreateBrowser(const CefUI::CefRect& rect,const std::string& url,bool isUiElement = false);
+		int CreateBrowser(YumeUIElement* element);
+		void AddUIElement(YumeUIElement* element);
 
+		virtual void OnRendererContextReady();
 
 		//Time
 		virtual void HandleBeginFrame(int frameNumber);
 
+		virtual void HandlePostRenderUpdate(float timeStep);
+
 		void Render();
+		void Update();
 
 		//Osr delegate
 		virtual void OnPaint(int browserIndex,std::vector<CefUI::CefRect>& rectList,const void* buffer,
 			int width,
 			int height);
-		virtual void OnContextReady();
 		virtual void OnBrowserReady(unsigned index);
 
 		//Input
@@ -71,29 +78,28 @@ namespace YumeEngine
 		bool GetUIEnabled() const { return renderUI_; }
 		void SetUIEnabled(bool enable);
 
+		void SendEvent(const YumeString& name,const YumeString& data);
 
-		Pair<CefUI::CefRect,SharedPtr<YumeTexture2D> > GetBrowserImage(int index,bool uiElement)
-		{
-			BrowserElements::iterator It = browserRects_.find(MakePair(index,uiElement));
-			if(It != browserRects_.end())
-				return It->second;
-		}
+		const CefUI::Cef3D* GetCefWrapper() const { return cef3d_; }
+
 	private:
 		CefUI::Cef3D* cef3d_;
-
+		
 		typedef YumeVector<UIEventListener*> UIListeners;
 		UIListeners::type listeners_;
+
+		typedef YumeVector<YumeUIElement*> UIElements;
+		UIElements::type uiElements_;
 
 		bool renderUI_;
 
 		int mouseX_;
 		int mouseY_;
+
+		float lastTimeStep_;
 	public:
 		void AddListener(UIEventListener* listener);
 		void RemoveListener(UIEventListener* listener);
-	private:
-		typedef YumeMap<Pair<int,bool>,Pair<CefUI::CefRect,SharedPtr<YumeTexture2D> > > BrowserElements;
-		BrowserElements::type browserRects_;
 	};
 
 	template <> inline unsigned MakeHash(const Pair<int,bool>& value)

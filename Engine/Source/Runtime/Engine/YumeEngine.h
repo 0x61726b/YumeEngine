@@ -73,6 +73,7 @@ namespace YumeEngine
 
 		void FireEvent(YumeEngineEvents evt);
 		
+		float GetSmoothedTimestep() const {return timeStep_; }
 		void RegisterFactories();
 
 	public:

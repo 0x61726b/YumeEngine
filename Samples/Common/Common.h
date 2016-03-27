@@ -29,6 +29,8 @@
 namespace YumeEngine
 {
 	class YumeSceneNode;
+	class YumeDebugOverlay;
+
 	class BaseApplication : public YumeApplication,public InputEventListener,public EngineEventListener,public YumeTimerEventListener
 	{
 	public:
@@ -54,6 +56,7 @@ namespace YumeEngine
 
 		SharedPtr<YumeScene> scene_;
 		YumeSceneNode* cameraNode_;
+		SharedPtr<YumeDebugOverlay> overlay_;
 
 		float yaw_;
 		float pitch_;

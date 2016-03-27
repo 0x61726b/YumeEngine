@@ -39,19 +39,18 @@ if(YUME_BUILD_OPENGL)
   ADD_SUBDIRECTORY(GLEW)
 endif()
 
-add_subdirectory(cef3d)
+
 
 
 #Boost
 add_boost_library(system)
 add_boost_library(filesystem)
-add_boost_library(thread)
 add_boost_library(date_time)
-add_boost_library(test)
+
+
 
 set_target_properties(boost_system PROPERTIES FOLDER "3rdParty" )
 set_target_properties(boost_filesystem PROPERTIES FOLDER "3rdParty" )
-set_target_properties(boost_thread PROPERTIES FOLDER "3rdParty" )
 set_target_properties(boost_date_time PROPERTIES FOLDER "3rdParty" )
 # set_target_properties(SDL2-static PROPERTIES FOLDER "3rdParty" )
 set_target_properties(SDL2main PROPERTIES FOLDER "3rdParty" )
@@ -63,12 +62,9 @@ set_target_properties(JO PROPERTIES FOLDER "3rdParty" )
 
 setup_lib("pugixml")
 setup_lib("STB")
-setup_lib("boost_test")
 
 if(OS_LINUX)
   target_compile_options(boost_system PUBLIC "-fPIC")
   target_compile_options(boost_filesystem PUBLIC "-fPIC")
-  target_compile_options(boost_thread PUBLIC "-fPIC")
   target_compile_options(boost_date_time PUBLIC "-fPIC")
-  target_compile_options(boost_test PUBLIC "-fPIC")
 endif()

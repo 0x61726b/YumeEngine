@@ -363,4 +363,78 @@ namespace YumeEngine
 	{
 		return false;
 	}
+
+	unsigned long long YumeResourceManager::GetMemoryUse(YumeHash type) const
+	{
+		HashMap<YumeHash,ResourceGroup>::ConstIterator i = resourceGroups_.find(type);
+		return i != resourceGroups_.end() ? i->second.memoryUse_ : 0;
+	}
+
+	unsigned long long YumeResourceManager::GetTotalMemoryUse() const
+	{
+		unsigned long long total = 0;
+		for(HashMap<YumeHash,ResourceGroup>::ConstIterator i = resourceGroups_.begin(); i != resourceGroups_.end(); ++i)
+			total += i->second.memoryUse_;
+		return total;
+	}
+
+
+	YumeString YumeResourceManager::PrintMemoryUsage() const
+	{
+		String output = "Resource Type                 Cnt       Avg       Max    Budget     Total\n\n";
+		char outputLine[256];
+
+		unsigned totalResourceCt = 0;
+		unsigned long long totalLargest = 0;
+		unsigned long long totalAverage = 0;
+		unsigned long long totalUse = GetTotalMemoryUse();
+
+		for(HashMap<YumeHash,ResourceGroup>::ConstIterator cit = resourceGroups_.begin(); cit != resourceGroups_.end(); ++cit)
+		{
+			const unsigned resourceCt = cit->second.resources_.size();
+			unsigned long long average = 0;
+			if(resourceCt > 0)
+				average = cit->second.memoryUse_ / resourceCt;
+			else
+				average = 0;
+			unsigned long long largest = 0;
+			for(HashMap<YumeHash,SharedPtr<YumeResource> >::ConstIterator resIt = cit->second.resources_.begin(); resIt != cit->second.resources_.end(); ++resIt)
+			{
+				if(resIt->second->GetMemoryUse() > largest)
+					largest = resIt->second->GetMemoryUse();
+				if(largest > totalLargest)
+					totalLargest = largest;
+			}
+
+			totalResourceCt += resourceCt;
+
+			const String countString(cit->second.resources_.size());
+			const String memUseString = GetFileSizeString(average);
+			const String memMaxString = GetFileSizeString(largest);
+			const String memBudgetString = GetFileSizeString(cit->second.memoryBudget_);
+			const String memTotalString = GetFileSizeString(cit->second.memoryUse_);
+			const String resTypeName = (cit->first.ToString());
+
+			memset(outputLine,' ',256);
+			outputLine[255] = 0;
+			sprintf(outputLine,"%-28s %4s %9s %9s %9s %9s\n",resTypeName.c_str(),countString.c_str(),memUseString.c_str(),memMaxString.c_str(),memBudgetString.c_str(),memTotalString.c_str());
+
+			output += ((const char*)outputLine);
+		}
+
+		if(totalResourceCt > 0)
+			totalAverage = totalUse / totalResourceCt;
+
+		const String countString(totalResourceCt);
+		const String memUseString = GetFileSizeString(totalAverage);
+		const String memMaxString = GetFileSizeString(totalLargest);
+		const String memTotalString = GetFileSizeString(totalUse);
+
+		memset(outputLine,' ',256);
+		outputLine[255] = 0;
+		sprintf(outputLine,"%-28s %4s %9s %9s %9s %9s\n","All",countString.c_str(),memUseString.c_str(),memMaxString.c_str(),"-",memTotalString.c_str());
+		output += ((const char*)outputLine);
+
+		return output;
+	}
 }

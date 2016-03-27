@@ -30,6 +30,7 @@
 
 #include <SDL_syswm.h>
 
+
 namespace YumeEngine
 {
 	int ConvertSDLKeyCode(int keySym,int scanCode)

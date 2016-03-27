@@ -409,7 +409,7 @@ namespace YumeEngine
 
 	void YumeRenderer::SetDrawShadows(bool enable)
 	{
-		if(gYume->pRHI || !gYume->pRHI->GetShadowMapFormat())
+		if(!gYume->pRHI || !gYume->pRHI->GetShadowMapFormat())
 			return;
 
 		drawShadows_ = enable;

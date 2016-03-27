@@ -87,6 +87,7 @@ namespace YumeEngine
 	YumeD3D11Texture2D::~YumeD3D11Texture2D()
 	{
 		Release();
+		gYume->pRenderer->RemoveListener(this);
 	}
 
 	void YumeD3D11Texture2D::Release()
@@ -107,6 +108,7 @@ namespace YumeEngine
 		D3D_SAFE_RELEASE(shaderResourceView_);
 		D3D_SAFE_RELEASE(sampler_);
 	}
+
 
 
 	bool YumeD3D11Texture2D::SetSize(int width,int height,unsigned format,TextureUsage usage)

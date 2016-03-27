@@ -184,6 +184,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ADD_SUBDIRECTORY(Engine)
 ADD_SUBDIRECTORY(Samples)
+ADD_SUBDIRECTORY(Engine/Source/3rdParty/cef3d)
 
 message(STATUS "*** CONFIGURATION SETTINGS ***")
 message(STATUS "Generator:                    ${CMAKE_GENERATOR}")
