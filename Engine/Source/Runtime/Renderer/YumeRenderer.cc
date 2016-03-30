@@ -1542,6 +1542,7 @@ namespace YumeEngine
 			i->second = 0;
 	}
 
+
 	void YumeRenderer::Initialize()
 	{
 		YumeResourceManager* cache = gYume->pResourceManager;
@@ -1567,6 +1568,10 @@ namespace YumeEngine
 		viewports_.resize(1);
 		ResetShadowMaps();
 		ResetBuffers();
+
+
+
+
 
 		shadersDirty_ = true;
 		initialized_ = true;

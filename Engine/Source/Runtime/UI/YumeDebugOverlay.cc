@@ -27,6 +27,7 @@
 #include "Core/YumeDefaults.h"
 
 #include "Renderer/YumeCamera.h"
+#include "Renderer/YumeRenderPipeline.h"
 #include "Scene/YumeSceneNode.h"
 
 static const char* qualityTexts[] =
@@ -57,6 +58,65 @@ namespace YumeEngine
 	{
 	}
 
+	void YumeDebugOverlay::OnDomEvent(const YumeString& domElement,DOMEvents event,const YumeString& data)
+	{
+		switch(event)
+		{
+		case DOMEvents::InputChecked:
+		{
+			if(domElement == ("bloomSwitch"))
+			{
+				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+
+				if(data == ("true"))
+					fxBloom->SetEnabled("Bloom",true);
+				else
+					fxBloom->SetEnabled("Bloom",false);
+			}
+			if(domElement == ("bloomHDRSwitch"))
+			{
+				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+
+				if(data == ("true"))
+					fxBloom->SetEnabled("BloomHDR",true);
+				else
+					fxBloom->SetEnabled("BloomHDR",false);
+			}
+			if(domElement == ("blurSwitch"))
+			{
+				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+
+				if(data == ("true"))
+					fxBloom->SetEnabled("Blur",true);
+				else
+					fxBloom->SetEnabled("Blur",false);
+			}
+			if(domElement == ("fxaaSwitch"))
+			{
+				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+
+				if(data == ("true"))
+					fxBloom->SetEnabled("FXAA2",true);
+				else
+					fxBloom->SetEnabled("FXAA2",false);
+			}
+		}
+		break;
+		case DOMEvents::InputValueChanged:
+		{
+			if(domElement == "bloomHDRThreshold")
+			{
+				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+				float threshold = atof(data.c_str());
+				threshold = threshold / 10.0f;
+				fxBloom->SetShaderParameter("BloomHDRThreshold",threshold);
+			}
+		}
+		break;
+		default:
+			break;
+		}
+	}
 
 	bool YumeDebugOverlay::Initialize()
 	{
@@ -76,6 +136,7 @@ namespace YumeEngine
 		AddBinding(elapsedTime_);
 		AddBinding(sampleName_);
 
+		gYume->pUI->AddDOMListener(this);
 
 		return true;
 	}

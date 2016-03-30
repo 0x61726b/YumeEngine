@@ -1,6 +1,6 @@
 <Material>
   <Techniques>
-    <Technique name="Techniques/DiffNormalPacked.xml" quality="1" />
+    <Technique name="Techniques/DiffNormal.xml" quality="1" />
     <Technique name="Techniques/Diff.xml" quality="0" />
   </Techniques>
   <Textures>

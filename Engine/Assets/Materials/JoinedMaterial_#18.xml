@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<material>
+	<technique name="Techniques/Diff.xml" />
+	<texture unit="diffuse" name="Textures/KAMEN.JPG" />
+	<parameter name="MatDiffColor" value="0.627451 0.572549 0.560784 1" />
+	<parameter name="MatSpecColor" value="0 0 0 32" />
+	<parameter name="MatEmissiveColor" value="0 0 0 1" />
+</material>

@@ -24,6 +24,7 @@
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 #include "YumeUIElement.h"
+#include "YumeUI.h"
 //----------------------------------------------------------------------------
 namespace CefUI
 {
@@ -31,7 +32,9 @@ namespace CefUI
 }
 namespace YumeEngine
 {
-	class YumeAPIExport YumeDebugOverlay : public YumeUIElement
+	class YumeAPIExport YumeDebugOverlay :
+		public YumeUIElement,
+		public YumeDOMListener
 	{
 	public:
 		YumeDebugOverlay();
@@ -41,6 +44,8 @@ namespace YumeEngine
 
 		virtual void Update();
 		virtual void OnContextReady();
+
+		virtual void OnDomEvent(const YumeString&,DOMEvents event,const YumeString& data);
 
 	private:
 		SharedPtr<YumeUIBinding> frameRate_;

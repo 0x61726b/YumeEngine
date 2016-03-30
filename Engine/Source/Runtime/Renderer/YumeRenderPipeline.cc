@@ -65,7 +65,7 @@ namespace YumeEngine
 		if(!element.attribute("enabled").empty())
 			enabled_ = element.attribute("enabled").as_bool();
 		if(!element.attribute("cubemap").empty())
-		cubemap_ = element.attribute("cubemap").as_bool();
+			cubemap_ = element.attribute("cubemap").as_bool();
 
 		YumeString formatName = element.attribute("format").as_string();
 
@@ -159,11 +159,14 @@ namespace YumeEngine
 					blendMode_ = ((BlendMode)GetStringListIndex(blend.c_str(),blendModeNames,BLEND_REPLACE));
 				}
 
-				XmlNode parameterElem = element.child("parameter");
-				for(XmlNode parameterChild = parameterElem.first_child(); parameterChild; parameterChild = parameterChild.next_sibling())
+				XmlNode parameters = element.child("Parameters");
+				for(XmlNode parameterChild = parameters.first_child(); parameterChild; parameterChild = parameterChild.next_sibling())
 				{
-					YumeString name = parameterElem.attribute("name").as_string();
-					shaderParameters_[name] = YumeMaterial::ParseShaderParameterValue(parameterChild.attribute("value").as_string());
+					YumeString name = parameterChild.attribute("name").as_string();
+					if(!parameterChild.attribute("value").empty())
+						shaderParameters_[name] = YumeMaterial::ParseShaderParameterValue(parameterChild.attribute("value").as_string());
+					else
+						shaderParameters_[name] = Variant();
 				}
 			}
 			break;
@@ -171,6 +174,7 @@ namespace YumeEngine
 		default:
 			break;
 		}
+
 
 		// By default use 1 output, which is the viewport
 		outputs_.resize(1);
@@ -195,10 +199,10 @@ namespace YumeEngine
 			}
 		}
 
-		XmlNode textureElem = element.child("texture");
+		XmlNode textureElem = element.child("Textures");
 		if(!textureElem.empty())
 		{
-			for(XmlNode tChild = element.first_child(); tChild; tChild = tChild.next_sibling())
+			for(XmlNode tChild = textureElem.first_child(); tChild; tChild = tChild.next_sibling())
 			{
 				TextureUnit unit = TU_DIFFUSE;
 				if(!tChild.attribute("unit").empty())
@@ -350,13 +354,13 @@ namespace YumeEngine
 	{
 		for(unsigned i = 0; i < renderTargets_.size(); ++i)
 		{
-			if(strcmp(renderTargets_[i].tag_.c_str(),tag.c_str()) != 0)
+			if(!renderTargets_[i].tag_.Compare(tag,false))
 				renderTargets_[i].enabled_ = active;
 		}
 
 		for(unsigned i = 0; i < commands_.size(); ++i)
 		{
-			if(strcmp(commands_[i].tag_.c_str(),tag.c_str()) != 0)
+			if(!commands_[i].tag_.Compare(tag,false))
 				commands_[i].enabled_ = active;
 		}
 	}
@@ -365,13 +369,13 @@ namespace YumeEngine
 	{
 		for(unsigned i = 0; i < renderTargets_.size(); ++i)
 		{
-			if(strcmp(renderTargets_[i].tag_.c_str(),tag.c_str()) != 0)
+			if(!renderTargets_[i].tag_.Compare(tag,false))
 				renderTargets_[i].enabled_ = !renderTargets_[i].enabled_;
 		}
 
 		for(unsigned i = 0; i < commands_.size(); ++i)
 		{
-			if(strcmp(commands_[i].tag_.c_str(),tag.c_str()) != 0)
+			if(!commands_[i].tag_.Compare(tag,false))
 				commands_[i].enabled_ = !commands_[i].enabled_;
 		}
 	}

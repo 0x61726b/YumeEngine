@@ -29,7 +29,8 @@ namespace YumeEngine
 {
 	class YumeTexture2D;
 
-	class YumeAPIExport YumeUIElement : public YumeBase
+	class YumeAPIExport YumeUIElement :
+		public YumeBase
 	{
 	public:
 		YumeUIElement(const YumeString& name = "UIElement");

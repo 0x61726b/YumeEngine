@@ -15,13 +15,17 @@
       </Outputs>
     </command>
     <command type="lightvolumes" vs="DeferredLight" ps="DeferredLight">
+      <Textures>
         <texture unit="albedo" name="albedo" />
         <texture unit="normal" name="normal" />
         <texture unit="depth" name="depth" />
+      </Textures>
     </command>
     <command type="scenepass" pass="postopaque" />
     <command type="scenepass" pass="refract">
+      <Textures>
         <texture unit="environment" name="viewport" />
+      </Textures>
     </command>
     <command type="scenepass" pass="alpha" vertexlights="true" sort="backtofront" metadata="alpha" />
     <command type="scenepass" pass="postalpha" sort="backtofront" />

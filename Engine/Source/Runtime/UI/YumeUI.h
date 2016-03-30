@@ -30,8 +30,26 @@ namespace CefUI {
 	class Cef3D;
 }
 
+enum DOMEvents
+{
+	InputChecked,
+	InputValueChanged
+};
+
 namespace YumeEngine
 {
+	class YumeDOMListener
+	{
+	public:
+		virtual void OnDomEvent(const YumeString&,DOMEvents event,const YumeString& data) { };
+
+	};
+}
+
+
+namespace YumeEngine
+{
+
 	class YumeDebugOverlay;
 	class YumeUIElement;
 
@@ -67,6 +85,7 @@ namespace YumeEngine
 			int width,
 			int height);
 		virtual void OnBrowserReady(unsigned index);
+		virtual void OnDomEvent(const std::string& str,const std::string& event,const std::string& data);
 
 		//Input
 		virtual void HandleKeyDown(unsigned key,unsigned mouseButton,int repeat);
@@ -84,13 +103,17 @@ namespace YumeEngine
 
 	private:
 		CefUI::Cef3D* cef3d_;
-		
+
 		typedef YumeVector<UIEventListener*> UIListeners;
 		UIListeners::type listeners_;
+
+		typedef YumeVector<YumeDOMListener*> DOMListeners;
+		DOMListeners::type domListeners_;
 
 		typedef YumeVector<YumeUIElement*> UIElements;
 		UIElements::type uiElements_;
 
+		void FireDOMEvent(const YumeString& domElem,DOMEvents event,const YumeString& data);
 		bool renderUI_;
 
 		int mouseX_;
@@ -100,6 +123,9 @@ namespace YumeEngine
 	public:
 		void AddListener(UIEventListener* listener);
 		void RemoveListener(UIEventListener* listener);
+
+		void AddDOMListener(YumeDOMListener*);
+		void RemoveDOMListener(YumeDOMListener*);
 	};
 
 	template <> inline unsigned MakeHash(const Pair<int,bool>& value)

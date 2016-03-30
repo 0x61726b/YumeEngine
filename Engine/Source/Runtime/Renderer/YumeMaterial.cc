@@ -21,7 +21,6 @@
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
 #include "YumeMaterial.h"
-
 #include "YumeTexture.h"
 #include "YumeTexture2D.h"
 #include "YumeTexture3D.h"
@@ -40,7 +39,6 @@
 #include "Engine/YumeEngine.h"
 
 #include "Logging/logging.h"
-
 
 namespace YumeEngine
 {
@@ -587,7 +585,7 @@ namespace YumeEngine
 
 	SharedPtr<YumeMaterial> YumeMaterial::Clone(const YumeString& cloneName) const
 	{
-		SharedPtr<YumeMaterial> ret = SharedPtr<YumeMaterial>(new YumeMaterial);
+		SharedPtr<YumeMaterial> ret(new YumeMaterial);
 
 		ret->SetName(cloneName);
 		ret->techniques_ = techniques_;

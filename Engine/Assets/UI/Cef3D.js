@@ -34,3 +34,9 @@ Cef3D.OnDomReady = function() {
   native function OnDomReady();
   OnDomReady();
 };
+
+Cef3D.SendDomEvent = function(callback,s,type,v) {
+  native function SendDomEvent();
+
+  SendDomEvent(callback,s,type,v);
+};

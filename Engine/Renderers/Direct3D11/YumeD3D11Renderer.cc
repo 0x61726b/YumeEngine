@@ -776,7 +776,7 @@ namespace YumeEngine
 				0,
 				D3D_DRIVER_TYPE_HARDWARE,
 				0,
-				D3D10_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_BGRA_SUPPORT ,
+				0 ,
 				0,
 				0,
 				D3D11_SDK_VERSION,
@@ -844,27 +844,27 @@ namespace YumeEngine
 
 
 #ifdef _DEBUG
-		hr = impl_->device_->QueryInterface(IID_ID3D11Debug,(void**)(&impl_->debug_));
-		ID3D11InfoQueue *d3dInfoQueue = nullptr;
-		impl_->device_->QueryInterface(__uuidof(ID3D11InfoQueue),(void**)&d3dInfoQueue);
+		//hr = impl_->device_->QueryInterface(IID_ID3D11Debug,(void**)(&impl_->debug_));
+		//ID3D11InfoQueue *d3dInfoQueue = nullptr;
+		//impl_->device_->QueryInterface(__uuidof(ID3D11InfoQueue),(void**)&d3dInfoQueue);
 
 
 
-		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION,true);
-		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR,true);
+		///*d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION,true);
+		//d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR,true);*/
 
-		D3D11_MESSAGE_ID hide[] =
-		{
-			D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS,
-			(D3D11_MESSAGE_ID)3146081
-		};
+		//D3D11_MESSAGE_ID hide[] =
+		//{
+		//	D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS,
+		//	(D3D11_MESSAGE_ID)3146081
+		//};
 
-		D3D11_INFO_QUEUE_FILTER filter;
-		memset(&filter,0,sizeof(filter));
-		filter.DenyList.NumIDs = _countof(hide);
-		filter.DenyList.pIDList = hide;
-		d3dInfoQueue->AddStorageFilterEntries(&filter);
-		d3dInfoQueue->Release();
+		//D3D11_INFO_QUEUE_FILTER filter;
+		//memset(&filter,0,sizeof(filter));
+		//filter.DenyList.NumIDs = _countof(hide);
+		//filter.DenyList.pIDList = hide;
+		//d3dInfoQueue->AddStorageFilterEntries(&filter);
+		//d3dInfoQueue->Release();
 #endif
 
 		if(FAILED(hr))
@@ -1037,7 +1037,8 @@ namespace YumeEngine
 				else
 					vs = 0;
 			}
-
+			//debugging purposes
+			/*ID3D11VertexShader* vvv = (ID3D11VertexShader*)vsVar_->GetGPUObject();*/
 			impl_->deviceContext_->VSSetShader((ID3D11VertexShader*)(vs ? vsVar_->GetGPUObject() : 0),0,0);
 			vertexShader_ = vs;
 			vertexDeclarationDirty_ = true;

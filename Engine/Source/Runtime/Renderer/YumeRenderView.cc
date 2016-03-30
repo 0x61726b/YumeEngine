@@ -630,6 +630,7 @@ namespace YumeEngine
 		graphics_->SetScissorTest(false);
 		graphics_->SetStencilTest(false);
 
+
 		if(deferred_ && renderer_->GetGBufferDebugRendering())
 		{
 			YumeDebugRenderer* debug = octree_->GetComponent<YumeDebugRenderer>();
@@ -1473,6 +1474,8 @@ namespace YumeEngine
 				lastCommandIndex = i;
 		}
 
+
+
 		for(unsigned i = 0; i < renderPath_->commands_.size(); ++i)
 		{
 			RenderCommand& command = renderPath_->commands_[i];
@@ -1542,12 +1545,12 @@ namespace YumeEngine
 					// render depth buffer sensitive debug geometry afterward (backbuffer and textures can not share depth)
 					if(renderer_->GetName() == "OpenGL")
 					{
-						if(i == lastCommandIndex && command.type_ == CMD_QUAD)
+						if(i == lastCommandIndex && command.type_ == CMD_QUAD && renderTarget_)
 							currentRenderTarget_ = renderTarget_;
 					}
 					else
 					{
-						if(i == lastCommandIndex && command.type_ == CMD_QUAD && renderTarget_)
+						if(i == lastCommandIndex && command.type_ == CMD_QUAD)
 							currentRenderTarget_ = renderTarget_;
 					}
 				}
@@ -1778,6 +1781,7 @@ namespace YumeEngine
 		return allowDepthWrite;
 	}
 
+
 	void YumeRenderView::RenderQuad(RenderCommand& command)
 	{
 		if(command.vertexShaderName_.empty() || command.pixelShaderName_.empty())
@@ -1836,6 +1840,7 @@ namespace YumeEngine
 		graphics_->SetStencilTest(false);
 
 		DrawFullscreenQuad(false);
+
 	}
 
 	bool YumeRenderView::IsNecessary(const RenderCommand& command)
@@ -2971,6 +2976,7 @@ namespace YumeEngine
 
 			parameters = BiasParameters(0.0f,0.0f);
 		}
+
 
 		for(unsigned i = 0; i < queue.shadowSplits_.size(); ++i)
 		{

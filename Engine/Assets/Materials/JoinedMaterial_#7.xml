@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<material>
+	<technique name="Techniques/Diff.xml" />
+	<texture unit="diffuse" name="Textures/01_STUB.JPG" />
+	<parameter name="MatDiffColor" value="0.737255 0.709804 0.670588 1" />
+	<parameter name="MatSpecColor" value="0 0 0 32" />
+	<parameter name="MatEmissiveColor" value="0 0 0 1" />
+</material>

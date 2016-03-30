@@ -133,6 +133,7 @@ namespace YumeEngine
 		return static_cast<T*>(PrepareResource(type,resource));
 	}
 
+
 	template <class T> SharedPtr<T> YumeResourceManager::GetTempResource(const YumeString& name)
 	{
 		YumeHash type = T::GetTypeStatic();

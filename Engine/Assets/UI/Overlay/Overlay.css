@@ -75,3 +75,19 @@ p {
 .cameraPanel div {
   color:red;
 }
+.postFxPanel {
+  right: 0px;
+  top: 0px;
+  width:300px;
+  position: fixed;
+  color:red;
+}
+.bloomSwitchOptions {
+  display:none;
+}
+.bloomHDRSwitchOptions {
+  display:none;
+}
+.blurSwitchOptions {
+  display:none;
+}

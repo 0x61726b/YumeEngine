@@ -37,7 +37,6 @@
 
 
 
-
 namespace YumeEngine
 {
 	YumeUI::YumeUI()
@@ -93,7 +92,7 @@ namespace YumeEngine
 		for(UIListeners::iterator l = listeners_.begin(); l != listeners_.end(); ++l)
 			(*l)->OnBrowserReady(index);
 
-		
+
 	}
 
 	int YumeUI::CreateBrowser(YumeUIElement* element)
@@ -133,6 +132,27 @@ namespace YumeEngine
 				gYume->pDebugRenderer->RenderInternalTexture((*It)->GetRect(),(*It)->GetTexture());
 		}
 	}
+
+	void YumeUI::OnDomEvent(const std::string& str,const std::string& event,const std::string& data)
+	{
+		DOMEvents domEvent;
+		if(event == "InputChecked")
+		{
+			domEvent = DOMEvents::InputChecked;
+
+			FireDOMEvent(YumeString(str.c_str()),domEvent,YumeString(data.c_str()));
+		}
+		if(event == "InputValueChanged")
+		{
+			domEvent = DOMEvents::InputValueChanged;
+
+			FireDOMEvent(YumeString(str.c_str()),domEvent,YumeString(data.c_str()));
+		}
+	}
+
+
+
+
 
 	void YumeUI::AddUIElement(YumeUIElement* element)
 	{
@@ -253,6 +273,31 @@ namespace YumeEngine
 		}
 	}
 
+	//
+	void YumeUI::FireDOMEvent(const YumeString& domElem,DOMEvents event,const YumeString& data)
+	{
+		for(DOMListeners::iterator l = domListeners_.begin(); l != domListeners_.end(); ++l)
+		{
+			(*l)->OnDomEvent(domElem,event,data);
+		}
+	}
+
+	void YumeUI::AddDOMListener(YumeDOMListener* listener)
+	{
+		domListeners_.push_back(listener);
+	}
+
+	void YumeUI::RemoveDOMListener(YumeDOMListener* listener)
+	{
+		for(DOMListeners::iterator l = domListeners_.begin(); l != domListeners_.end(); ++l)
+		{
+			if(*l == listener)
+			{
+				domListeners_.erase(l);
+				break;
+			}
+		}
+	}
 
 	void YumeUI::Shutdown()
 	{

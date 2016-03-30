@@ -5,7 +5,9 @@
     <command type="forwardlights" pass="light" />
     <command type="scenepass" pass="postopaque" />
     <command type="scenepass" pass="refract">
+      <Textures>
         <texture unit="environment" name="viewport" />
+      </Textures>
     </command>
     <command type="scenepass" pass="alpha" vertexlights="true" sort="backtofront" metadata="alpha" />
     <command type="scenepass" pass="postalpha" sort="backtofront" />

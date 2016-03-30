@@ -128,6 +128,76 @@ var Overlay = React.createClass( {
   }
 });
 
+var PostFxPanel = React.createClass({
+  getInitialState: function() {
+    return { bloomOn:false,bloomHDROn:false,fxaaOn:false,blurOn:false,autoExposureOn:false };
+  },
+  openOptionsPanel: function(element) {
+    $("." + $(element.target).attr("id") + "Options").slideToggle("fast");
+  },
+  onSendDomEvent: function() {
+
+  },
+  onSwitchChange: function(element) {
+    this.openOptionsPanel(element);
+    Cef3D.SendDomEvent(this.onSendDomEvent,$(element.target).attr("id"),"InputChecked","" + $(element.target).is(':checked') + "");
+  },
+  onSliderChange: function(element) {
+    Cef3D.SendDomEvent(this.onSendDomEvent,$(element.target).attr("id"),"InputValueChanged","" + element.target.value + "");
+  },
+  render: function() {
+    return(
+      <div>
+        <div className="postFxPanel">
+          <div>Post Processing Options</div>
+          <div id="bloom">
+            <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="bloomSwitch">
+              <span className="mdl-switch__label">Bloom</span>
+              <input type="checkbox" id="bloomSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
+            </label>
+            <div className="bloomSwitchOptions">
+                <span>Option 1</span><input className="mdl-slider mdl-js-slider" type="range" id="s1" min="0" max="10" value="8" onChange={this.onSliderChange} />
+                <span>Option 2</span><input className="mdl-slider mdl-js-slider" type="range" id="s2" min="0" max="10" value="8" onChange={this.onSliderChange} />
+            </div>
+          </div>
+
+          <div id="bloomHDR">
+            <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="bloomHDRSwitch">
+              <span className="mdl-switch__label">Bloom HDR</span>
+              <input type="checkbox" id="bloomHDRSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
+            </label>
+            <div className="bloomHDRSwitchOptions">
+              <p style={{width:"300px"}}>
+                <span>Threshold</span><input className="mdl-slider mdl-js-slider" type="range" id="bloomHDRThreshold" min="0" max="10" value="8" onChange={this.onSliderChange} />
+              </p>
+            </div>
+          </div>
+
+          <div id="fxaa">
+            <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="fxaaSwitch">
+              <span className="mdl-switch__label">FXAA</span>
+              <input type="checkbox" id="fxaaSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
+            </label>
+          </div>
+
+          <div id="blur">
+            <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="blurSwitch">
+              <span className="mdl-switch__label">Blur</span>
+              <input type="checkbox" id="blurSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
+            </label>
+            <div className="blurSwitchOptions">
+              <p style={{width:"300px"}}>
+                <span>Option 1</span><input className="mdl-slider mdl-js-slider" type="range" id="s1" min="0" max="10" value="4" step="2" onChange={this.onSliderChange} />
+                <span>Option 2</span><input className="mdl-slider mdl-js-slider" type="range" id="s1" min="0" max="10" value="4" step="2" onChange={this.onSliderChange} />
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+});
+
  window.addEventListener('setFrameInfo',handleOverlay);
  window.addEventListener('setMemoryInfo',handleMemoryInfo);
  window.addEventListener('setSampleName',handleSampleInfo);
@@ -159,6 +229,7 @@ var Root = React.createClass({
       <Overlay />
       <CameraPanel />
       <MemoryUsagePanel />
+      <PostFxPanel />
       </div>
     );
   }

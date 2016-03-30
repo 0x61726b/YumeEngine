@@ -33,6 +33,8 @@
 
 #include "Scene/YumeSceneNode.h"
 
+#include "Core/YumeFile.h"
+
 
 
 namespace YumeEngine
@@ -257,10 +259,12 @@ namespace YumeEngine
 			return false;
 		}
 
-		batches_[index].material_ = SharedPtr<YumeMaterial>(material);
+		batches_[index].material_ = (material);
 
 		return true;
 	}
+
+
 
 	void YumeStaticModel::SetOcclusionLodLevel(unsigned level)
 	{
@@ -270,7 +274,28 @@ namespace YumeEngine
 
 	void YumeStaticModel::ApplyMaterialList(const YumeString& fileName)
 	{
+		String useFileName = fileName;
+		if(useFileName.Trimmed().empty() && model_)
+		{
+			String path,file,extension;
+			SplitPath(model_->GetName(),path,file,extension);
+			useFileName = path + file + ".txt";
+		}
 
+
+		SharedPtr<YumeFile> file = gYume->pResourceManager->GetFile(useFileName);
+		if(!file)
+			return;
+
+		unsigned index = 0;
+		while(!file->Eof() && index < batches_.size())
+		{
+			YumeMaterial* material = gYume->pResourceManager->PrepareResource<YumeMaterial>(file->ReadLine());
+			if(material)
+				SetMaterial(index,material);
+
+			++index;
+		}
 	}
 
 	YumeMaterial* YumeStaticModel::GetMaterial(unsigned index) const
