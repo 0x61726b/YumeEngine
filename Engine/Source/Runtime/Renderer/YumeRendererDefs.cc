@@ -47,12 +47,19 @@ namespace YumeEngine
 	extern YumeAPIExport const YumeHash VSP_VIEW(("View"));
 	extern YumeAPIExport const YumeHash VSP_VIEWINV(("ViewInv"));
 	extern YumeAPIExport const YumeHash VSP_VIEWPROJ(("ViewProj"));
+
+	extern YumeAPIExport const YumeHash VSP_WORLDVIEW("WorldView");
+	extern YumeAPIExport const YumeHash VSP_WORLDINVTRANSPOSEVIEW("WorldInvTransposeView");
+	extern YumeAPIExport const YumeHash VSP_WORLDVIEWPROJ("WorldViewProj");
+
 	extern YumeAPIExport const YumeHash VSP_UOFFSET(("UOffset"));
 	extern YumeAPIExport const YumeHash VSP_VOFFSET(("VOffset"));
 	extern YumeAPIExport const YumeHash VSP_ZONE(("Zone"));
 	extern YumeAPIExport const YumeHash VSP_LIGHTMATRICES(("LightMatrices"));
 	extern YumeAPIExport const YumeHash VSP_SKINMATRICES(("SkinMatrices"));
 	extern YumeAPIExport const YumeHash VSP_VERTEXLIGHTS(("VertexLights"));
+	extern YumeAPIExport const YumeHash VSP_FRUSTUMCORNERS(("FrustumCorners"));
+	extern YumeAPIExport const YumeHash PSP_OFFSETVECTORS(("OffsetVectors"));
 	extern YumeAPIExport const YumeHash PSP_AMBIENTCOLOR(("AmbientColor"));
 	extern YumeAPIExport const YumeHash PSP_CAMERAPOS(("CameraPosPS"));
 	extern YumeAPIExport const YumeHash PSP_DELTATIME(("DeltaTimePS"));

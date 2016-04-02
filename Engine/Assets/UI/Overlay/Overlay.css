@@ -3,6 +3,7 @@ body
   background-color: transparent;
   font-family: 'Roboto';
   font-weight: 500;
+  -webkit-user-select: none;
 }
 
 #topLeftInfo
@@ -31,7 +32,7 @@ body
   display: inline;
   color: #25D366;
 }
-#fps span {
+#fps div.innerMs {
   display: inline;
   font-size: 9px;
   color: white;
@@ -80,7 +81,8 @@ p {
   top: 0px;
   width:300px;
   position: fixed;
-  color:red;
+  color:white;
+  background-color:rgba(176,190,197 ,0.5);
 }
 .bloomSwitchOptions {
   display:none;
@@ -90,4 +92,16 @@ p {
 }
 .blurSwitchOptions {
   display:none;
+}
+.autoexposureSwitchOptions {
+  display: none;
+}
+.advancedOptsPanel {
+  right: 0px;
+  width: 300px;
+  position: fixed;
+  color:white;
+}
+.ssaoAdditional {
+  margin-left: 10px;
 }

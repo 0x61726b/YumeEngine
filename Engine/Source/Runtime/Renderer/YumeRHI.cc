@@ -40,6 +40,15 @@
 
 namespace YumeEngine
 {
+	RHIEvent::RHIEvent(const YumeString& event)
+	{
+		gYume->pRHI->BeginEvent(event);
+	}
+	RHIEvent::~RHIEvent()
+	{
+		gYume->pRHI->EndEvent();
+	}
+
 	YumeRHI::YumeRHI():
 		windowIcon_(0),
 		window_(0),

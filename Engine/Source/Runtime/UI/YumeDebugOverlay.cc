@@ -58,6 +58,8 @@ namespace YumeEngine
 	{
 	}
 
+
+
 	void YumeDebugOverlay::OnDomEvent(const YumeString& domElement,DOMEvents event,const YumeString& data)
 	{
 		switch(event)
@@ -66,39 +68,63 @@ namespace YumeEngine
 		{
 			if(domElement == ("bloomSwitch"))
 			{
-				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
 
 				if(data == ("true"))
-					fxBloom->SetEnabled("Bloom",true);
+					fx->SetEnabled("Bloom",true);
 				else
-					fxBloom->SetEnabled("Bloom",false);
+					fx->SetEnabled("Bloom",false);
 			}
 			if(domElement == ("bloomHDRSwitch"))
 			{
-				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
 
 				if(data == ("true"))
-					fxBloom->SetEnabled("BloomHDR",true);
+					fx->SetEnabled("BloomHDR",true);
 				else
-					fxBloom->SetEnabled("BloomHDR",false);
+					fx->SetEnabled("BloomHDR",false);
 			}
 			if(domElement == ("blurSwitch"))
 			{
-				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
 
 				if(data == ("true"))
-					fxBloom->SetEnabled("Blur",true);
+					fx->SetEnabled("Blur",true);
 				else
-					fxBloom->SetEnabled("Blur",false);
+					fx->SetEnabled("Blur",false);
 			}
 			if(domElement == ("fxaaSwitch"))
 			{
-				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
 
 				if(data == ("true"))
-					fxBloom->SetEnabled("FXAA2",true);
+					fx->SetEnabled("FXAA2",true);
 				else
-					fxBloom->SetEnabled("FXAA2",false);
+					fx->SetEnabled("FXAA2",false);
+			}
+			if(domElement == "autoexposureSwitch")
+			{
+				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+
+				if(data == ("true"))
+					fx->SetEnabled("AutoExposure",true);
+				else
+					fx->SetEnabled("AutoExposure",false);
+			}
+			if(domElement == "ssaoInput")
+			{
+				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+
+				if(data == ("true"))
+				{
+					fx->SetEnabled("LinearDepthSSAO",true);
+					fx->SetEnabled("BlurGaussian",true);
+				}
+				else
+				{
+					fx->SetEnabled("LinearDepthSSAO",false);
+					fx->SetEnabled("BlurGaussian",false);
+				}
 			}
 		}
 		break;
@@ -111,11 +137,41 @@ namespace YumeEngine
 				threshold = threshold / 10.0f;
 				fxBloom->SetShaderParameter("BloomHDRThreshold",threshold);
 			}
+			if(domElement == "bloomThreshold")
+			{
+				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+				float threshold = atof(data.c_str());
+				threshold = threshold / 10.0f;
+				fxBloom->SetShaderParameter("BloomThreshold",threshold);
+			}
+			if(domElement == "blurSigma")
+			{
+				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+				float sigma = atof(data.c_str());
+				fxBloom->SetShaderParameter("BlurSigma",sigma);
+			}
+			if(domElement == "AEadaptRate")
+			{
+				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+				float threshold = atof(data.c_str());
+				threshold = threshold / 10.0f;
+				fxBloom->SetShaderParameter("AutoExposureAdaptRate",threshold);
+			}
+			if(domElement == "ssaoRadius")
+			{
+				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
+				float value = atof(data.c_str());
+				fx->SetShaderParameter("Radius",value);
+			}
+
+
+
 		}
 		break;
 		default:
 			break;
 		}
+
 	}
 
 	bool YumeDebugOverlay::Initialize()
@@ -126,8 +182,6 @@ namespace YumeEngine
 		overlayPath.append("/Engine/Assets/UI/Overlay/Overlay.html");
 
 		SetURL(overlayPath.c_str());
-
-
 
 
 		elapsedTime_ = new YumeUIBinding(this,"ElapsedTime",0.0f,BINDING_DYNAMIC);

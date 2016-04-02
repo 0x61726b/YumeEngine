@@ -1,0 +1,13 @@
+<Material>
+	<Techniques>
+		<Technique name="Techniques/Diff.xml" />
+	</Techniques>
+	<Textures>
+		<texture unit="diffuse" name="Textures/lambertian.jpg" />
+	</Textures>
+	<Parameters>
+		<parameter name="MatDiffColor" value="0.6 0.6 0.6 1" />
+		<parameter name="MatSpecColor" value="0.0001 0.0001 0.0001 20" />
+		<parameter name="MatEmissiveColor" value="0 0 0 1" />
+	</Parameters>
+</Material>

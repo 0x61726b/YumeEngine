@@ -1,0 +1,9 @@
+<Material>
+  <Techniques>
+    <technique name="Techniques/DiffSkydome.xml" />
+  </Techniques>
+  <Textures>
+    <texture unit="diffuse" name="Textures/Skydome.jpg" />
+  </Textures>
+  <Cull value="none" />
+</Material>

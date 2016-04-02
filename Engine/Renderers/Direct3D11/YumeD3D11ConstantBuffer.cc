@@ -76,7 +76,7 @@ namespace YumeEngine
 			bufferDesc.CPUAccessFlags = 0;
 			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
-			
+
 			HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateBuffer(&bufferDesc,0,(ID3D11Buffer**)&object_);
 			if(FAILED(hr))
 			{

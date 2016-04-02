@@ -48,7 +48,8 @@
 YUME_DEFINE_ENTRY_POINT(YumeEngine::PlaygroundDemo);
 
 #define TURNOFF 1
-//#define OBJECTS_CAST_SHADOW
+#define OBJECTS_CAST_SHADOW
+//#define NO_SKYBOX
 //#define NO_PLANE
 
 namespace YumeEngine
@@ -69,11 +70,6 @@ namespace YumeEngine
 
 	void PlaygroundDemo::Start()
 	{
-		BaseApplication::Start();
-
-		overlay_->GetBinding("SampleName")->SetValue("HelloWorld");
-		gYume->pUI->SetUIEnabled(false);
-
 		YumeResourceManager* rm_ = gYume->pResourceManager;
 
 		scene_ = SharedPtr<YumeScene>(new YumeScene);
@@ -94,19 +90,28 @@ namespace YumeEngine
 		YumeSceneNode* plane = scene_->CreateChild("Cube");
 		plane->SetPosition(Vector3(0,0,0));
 		plane->SetRotation(Quaternion::IDENTITY);
-		plane->SetScale(Vector3(25,1,25));
+		plane->SetScale(Vector3(50,1,50));
 		YumeStaticModel* drawable = plane->CreateComponent<YumeStaticModel>();
 		drawable->SetModel(rm_->PrepareResource<YumeModel>("Models/Plane.mdl"));
 		YumeMaterial* planeMat = rm_->PrepareResource<YumeMaterial>("Materials/StoneTiled.xml");
 		drawable->SetMaterial(planeMat);
 #endif
 
+		/*CreateModel(Vector3(0,1.5f,0),Quaternion::IDENTITY);*/
+
+#ifndef NO_SKYBOX
+		YumeSceneNode* skyNode = scene_->CreateChild("Sky");
+		skyNode->SetScale(500.0f); // The scale actually does not matter
+		YumeSkybox* skybox = skyNode->CreateComponent<YumeSkybox>();
+		skybox->SetModel(rm_->PrepareResource<YumeModel>("Models/Sphere.mdl"));
+		skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Skydome.xml"));
+#endif
+
+#if TURNOFF == 1
 		CreateCube(Vector3(-3,1,0),
 			Quaternion(0,Vector3(0,1,0)),2.5f,YumeColor(1,0,0,0));
 
-#if TURNOFF == 1
-
-		CreateCube(Vector3(0,1,0),
+		CreateCube(Vector3(0,0.3f,0),
 			Quaternion::IDENTITY,2,YumeColor(0,1,0,0));
 		CreateCube(Vector3(2,0.5f,0),
 			Quaternion::IDENTITY,1,YumeColor(0,0,1,0));
@@ -155,29 +160,32 @@ namespace YumeEngine
 		Quaternion q;
 		q.FromLookRotation((cameraNode_->GetWorldPosition() * -1).Normalized());
 		cameraNode_->SetRotation(q);
-		camera->SetFarClip(300.0f);
+		camera->SetFarClip(1000.0f);
+		camera->SetFov(45);
 
+		BaseApplication::Start();
 
+		overlay_->GetBinding("SampleName")->SetValue("Playground");
+		gYume->pUI->SetUIEnabled(false);
+	}
 
-		SharedPtr<YumeViewport> viewport(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>()));
+	void PlaygroundDemo::SSAOOffsetVectors()
+	{
 
-		YumeRenderPipeline* pipeline = viewport->GetRenderPath();
-		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/Bloom.xml"));
-		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/BloomHDR.xml"));
-		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/Blur.xml"));
-		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/FXAA2.xml"));
-		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/AutoExposure.xml"));
-		pipeline->SetShaderParameter("BloomMix",Vector2(0.9f,0.6f));
-		pipeline->SetShaderParameter("BloomHDRThreshold",0.8f);
-		pipeline->SetEnabled("Bloom",false);
-		pipeline->SetEnabled("AutoExposure",false);
-		pipeline->SetEnabled("BloomHDR",false);
-		pipeline->SetEnabled("Blur",false);
-		pipeline->SetEnabled("AutoExposure",false);
-		viewport->SetRenderPath(pipeline);
+	}
 
-		YumeRenderer* renderer = gYume->pRenderer;
-		renderer->SetViewport(0,viewport);
+	void PlaygroundDemo::CreateModel(Vector3 Pos,Quaternion Rot)
+	{
+		YumeSceneNode* cubeNode_ = scene_->CreateChild("Cube");
+		cubeNode_->SetPosition(Pos);
+		cubeNode_->SetRotation(Rot);
+		cubeNode_->SetScale(0.1f);
+		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
+		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/cryteksponza.yume"));
+		drawable->ApplyMaterialList("Models/cryteksponza.txt");
+#ifdef OBJECTS_CAST_SHADOW
+		drawable->SetCastShadows(true);
+#endif
 	}
 
 	void PlaygroundDemo::CreateCube(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
@@ -187,11 +195,10 @@ namespace YumeEngine
 		cubeNode_->SetRotation(Rot);
 		cubeNode_->SetScale(size);
 		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/dragon.yume"));
-		//drawable->ApplyMaterialList("Models/sponza.txt");
-
-		/*mat->SetShaderParameter("MatDiffColor",color);*/
-		drawable->SetMaterial(gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml"));
+		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/Box.mdl"));
+		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
+		mat->SetShaderParameter("MatDiffColor",color);
+		drawable->SetMaterial(mat);
 #ifdef OBJECTS_CAST_SHADOW
 		drawable->SetCastShadows(true);
 #endif
@@ -294,6 +301,13 @@ namespace YumeEngine
 	void PlaygroundDemo::HandleUpdate(float timeStep)
 	{
 		MoveCamera(timeStep);
+	}
+	void PlaygroundDemo::HandleRenderUpdate(float timeStep)
+	{
+		YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
+		YumeRenderPipeline* fx = viewport->GetRenderPath();
+		YumeCamera* cam = viewport->GetCamera();
+
 	}
 
 	void PlaygroundDemo::Setup()

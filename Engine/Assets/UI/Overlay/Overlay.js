@@ -54,7 +54,7 @@ var CameraPanel = React.createClass({
 
 var Overlay = React.createClass( {
   getInitialState: function() {
-    return { fps:0,ms:0,sampleName: "Sample Name",
+    return { fps:"199.23492482",ms:"",sampleName: "Sample Name",
     totalMemory:"12 mb",materialQuality:"High",shadowInfo:"test",textureQuality:"High",
     softwareOcc:0,batchCount:0,lightCount:0,occluders:0,primitiveCount:0,shadowMaps:0
    };
@@ -64,8 +64,13 @@ var Overlay = React.createClass( {
       this.setState( { sampleName: data.SampleName });
     };
     OverlayGlobal.setFrameInfo = (data) => {
-      this.setState( { ms: data.ElapsedTime,
-        fps: data.FrameRate,
+      var cutFps = data.FrameRate;
+      cutFps = cutFps.substring(0,6);
+
+      var cutMs = data.ElapsedTime;
+      cutMs = cutMs.substring(0,6);
+      this.setState( { ms: cutMs,
+        fps: cutFps,
         shadowInfo: data.ShadowInfo,
         materialQuality:data.MaterialQuality,
         textureQuality:data.TextureQuality,
@@ -81,6 +86,7 @@ var Overlay = React.createClass( {
       var memory = data.TotalMemory;
       memory = memory / 1024;
       memory = memory / 1024;
+      memory = memory.substring(0,6);
       this.setState( { totalMemory: memory });
     };
   },
@@ -94,7 +100,7 @@ var Overlay = React.createClass( {
           Application Name: <p>{this.state.sampleName}</p>
         </div>
         <div id="fps" onClick={this.onFpsClick}>
-          FPS: <p>{this.state.fps}</p> <span>({this.state.ms} ms)</span>
+          FPS: <p>{this.state.fps}</p> <div className="innerMs">({this.state.ms} ms)</div>
         </div>
         <div id="totalMemory">
           Memory Usage: <p>{this.state.totalMemory}</p> MBs
@@ -145,6 +151,19 @@ var PostFxPanel = React.createClass({
   onSliderChange: function(element) {
     Cef3D.SendDomEvent(this.onSendDomEvent,$(element.target).attr("id"),"InputValueChanged","" + element.target.value + "");
   },
+  onCheckboxChange: function(element) {
+    //
+    // if($(element.target).attr("id") == "ssaoInput")
+    // {
+    //   this.enableInput($("#ssaoRadius"));
+    //   this.enableInput($("#blurPass"));
+    // }
+
+    Cef3D.SendDomEvent(this.onSendDomEvent,$(element.target).attr("id"),"InputChecked","" + $(element.target).is(':checked') + "");
+  },
+  enableInput: function(element) {
+    element.prop("disabled",!element.attr("disabled"));
+  },
   render: function() {
     return(
       <div>
@@ -156,8 +175,7 @@ var PostFxPanel = React.createClass({
               <input type="checkbox" id="bloomSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
             </label>
             <div className="bloomSwitchOptions">
-                <span>Option 1</span><input className="mdl-slider mdl-js-slider" type="range" id="s1" min="0" max="10" value="8" onChange={this.onSliderChange} />
-                <span>Option 2</span><input className="mdl-slider mdl-js-slider" type="range" id="s2" min="0" max="10" value="8" onChange={this.onSliderChange} />
+                <span>Threshold</span><input className="mdl-slider mdl-js-slider" type="range" id="bloomThreshold" min="0" max="10" onChange={this.onSliderChange} />
             </div>
           </div>
 
@@ -168,7 +186,7 @@ var PostFxPanel = React.createClass({
             </label>
             <div className="bloomHDRSwitchOptions">
               <p style={{width:"300px"}}>
-                <span>Threshold</span><input className="mdl-slider mdl-js-slider" type="range" id="bloomHDRThreshold" min="0" max="10" value="8" onChange={this.onSliderChange} />
+                <span>Threshold</span><input className="mdl-slider mdl-js-slider" type="range" id="bloomHDRThreshold" min="0" max="10" onChange={this.onSliderChange} />
               </p>
             </div>
           </div>
@@ -187,9 +205,32 @@ var PostFxPanel = React.createClass({
             </label>
             <div className="blurSwitchOptions">
               <p style={{width:"300px"}}>
-                <span>Option 1</span><input className="mdl-slider mdl-js-slider" type="range" id="s1" min="0" max="10" value="4" step="2" onChange={this.onSliderChange} />
-                <span>Option 2</span><input className="mdl-slider mdl-js-slider" type="range" id="s1" min="0" max="10" value="4" step="2" onChange={this.onSliderChange} />
+                <span>Sigma</span><input className="mdl-slider mdl-js-slider" type="range" id="blurSigma" min="0" max="10" onChange={this.onSliderChange} />
               </p>
+            </div>
+          </div>
+
+          <div id="autoexposure">
+            <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="autoexposureSwitch">
+              <span className="mdl-switch__label">Auto Exposure</span>
+              <input type="checkbox" id="autoexposureSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
+            </label>
+            <div className="autoexposureSwitchOptions">
+              <p style={{width:"300px"}}>
+                <span>Adapt Rate</span><input className="mdl-slider mdl-js-slider" type="range" id="AEadaptRate" min="0" max="10" onChange={this.onSliderChange} />
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="advancedOptsPanel">
+          <div> Advanced Options</div>
+          <div className="ssaoOptions">
+            <label className="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" htmlFor="ssaoInput">
+              <input type="checkbox" id="ssaoInput" className="mdl-checkbox__input" onChange={this.onCheckboxChange} />
+              <span className="mdl-checkbox__label">SSAO</span>
+            </label>
+            <div className="ssaoAdditional">
+              <span>Radius</span><input className="mdl-slider mdl-js-slider" type="range" id="ssaoRadius" min="0" max="2" step="0.1" onChange={this.onSliderChange} />
             </div>
           </div>
         </div>
@@ -223,6 +264,9 @@ function handleCameraInfo (e) {
 
 
 var Root = React.createClass({
+  onChange: function(test) {
+    return test;
+  },
   render: function() {
     return(
       <div>

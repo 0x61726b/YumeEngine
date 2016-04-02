@@ -54,6 +54,12 @@
 
 namespace YumeEngine
 {
+	struct Vertex32
+	{
+		Vector3 Pos;
+		Vector3 Normal;
+		Vector2 Tex;
+	};
 	static const float dirLightVertexData[] =
 	{
 		-1,1,0,
@@ -75,6 +81,21 @@ namespace YumeEngine
 		0,1,2,
 		2,3,0,
 	};
+
+	static const float ssaoQuadVertexData[] =
+	{
+		-1,1,0,1,0,0,0,0,
+		1,1,0,2,0,0,1,0,
+		1,-1,0,3,0,0,1,1
+		-1,1,0,0,0,0,0,1,
+	};
+
+	static const unsigned short ssaoQuadIndices[] =
+	{
+		0,1,2,
+		0,2,3
+	};
+
 
 	static const float pointLightVertexData[] =
 	{
@@ -280,11 +301,10 @@ namespace YumeEngine
 		threadedOcclusion_(false),
 		shadersDirty_(true),
 		initialized_(false),
-		resetViews_(false)
+		resetViews_(false),
+		randomVectorMap_(0)
 	{
 		REGISTER_ENGINE_LISTENER;
-
-
 	}
 
 	YumeRenderer::~YumeRenderer()
@@ -350,6 +370,8 @@ namespace YumeEngine
 			viewports_.resize(index + 1);
 
 		viewports_[index] = (viewport);
+
+		CreateSSAOResources();
 	}
 
 
@@ -767,6 +789,8 @@ namespace YumeEngine
 				YumeRenderable* renderTarget = views_[i]->GetRenderTarget();
 				FireEvent(R_BEGINVIEWRENDER,views_[i],renderTarget,(renderTarget ? renderTarget->GetParentTexture() : 0),views_[i]->GetScene(),views_[i]->GetCamera());
 
+				RHIEvent event("Begin Rendering View");
+
 				// Screen buffers can be reused between views, as each is rendered completely
 				PrepareViewRender();
 				views_[i]->Render();
@@ -868,6 +892,10 @@ namespace YumeEngine
 	YumeGeometry* YumeRenderer::GetTexturedQuadGeometry()
 	{
 		return texturedQuadGeometry;
+	}
+	YumeGeometry* YumeRenderer::GetSSAOQuadGeometry()
+	{
+		return ssaoQuad_;
 	}
 
 	YumeTexture2D* YumeRenderer::GetShadowMap(YumeLight* light,YumeCamera* camera,unsigned viewWidth,unsigned viewHeight)
@@ -1558,10 +1586,10 @@ namespace YumeEngine
 
 		defaultLightRamp_ = cache->PrepareResource<YumeTexture2D>("Textures/Ramp.png");
 		defaultLightSpot_ = cache->PrepareResource<YumeTexture2D>("Textures/Spot.png");
-		defaultMaterial_ = SharedPtr<YumeMaterial>(new YumeMaterial);
+		defaultMaterial_ = (new YumeMaterial);
 
-		defaultPipeline_ = SharedPtr<YumeRenderPipeline>(new YumeRenderPipeline());
-		defaultPipeline_->Load(cache->PrepareResource<YumeXmlFile>("Pipelines/Forward.xml"));
+		defaultPipeline_ = (new YumeRenderPipeline());
+		defaultPipeline_->Load(cache->PrepareResource<YumeXmlFile>("Pipelines/ForwardSSAO.xml"));
 		CreateGeometries();
 		CreateInstancingBuffer();
 
@@ -1569,7 +1597,8 @@ namespace YumeEngine
 		ResetShadowMaps();
 		ResetBuffers();
 
-
+		randomVectorMap_ = gYume->pRHI->CreateTexture2D();
+		randomVectorMap_->SetSize(256,256,gYume->pRHI->GetRGBAFormatNs());
 
 
 
@@ -1771,6 +1800,49 @@ namespace YumeEngine
 		texturedQuadGeometry->SetIndexBuffer(spib);
 		texturedQuadGeometry->SetDrawRange(TRIANGLE_LIST,0,spib->GetIndexCount());
 
+		//SSAO Quad
+		Vertex32 v[4];
+
+		v[0].Pos = Vector3(-1.0f,-1.0f,0.0f);
+		v[1].Pos = Vector3(-1.0f,+1.0f,0.0f);
+		v[2].Pos = Vector3(+1.0f,+1.0f,0.0f);
+		v[3].Pos = Vector3(+1.0f,-1.0f,0.0f);
+
+		// Store far plane frustum corner indices in Normal.x slot.
+		v[0].Normal = Vector3(0.0f,0.0f,0.0f);
+		v[1].Normal = Vector3(1.0f,0.0f,0.0f);
+		v[2].Normal = Vector3(2.0f,0.0f,0.0f);
+		v[3].Normal = Vector3(3.0f,0.0f,0.0f);
+
+		v[0].Tex = Vector2(0.0f,1.0f);
+		v[1].Tex = Vector2(0.0f,0.0f);
+		v[2].Tex = Vector2(1.0f,0.0f);
+		v[3].Tex = Vector2(1.0f,1.0f);
+
+		int sizeTest = sizeof(Vertex32);
+
+		SharedPtr<YumeVertexBuffer> ssaoVb(gYume->pRHI->CreateVertexBuffer());
+		ssaoVb->SetShadowed(true);
+		ssaoVb->SetSize(4,MASK_POSITION | MASK_NORMAL | MASK_TEXCOORD1) ;
+		ssaoVb->SetData(&v[0]);
+		unsigned sizeTest2 = ssaoVb->GetVertexSize();
+
+		SharedPtr<YumeIndexBuffer> ssaoIb(gYume->pRHI->CreateIndexBuffer());
+		ssaoIb->SetShadowed(true);
+		ssaoIb->SetSize(6,false);
+		ssaoIb->SetData(ssaoQuadIndices);
+
+		ssaoQuad_ = new YumeGeometry();
+		ssaoQuad_->SetVertexBuffer(0,ssaoVb);
+		ssaoQuad_->SetIndexBuffer(ssaoIb);
+		ssaoQuad_->SetDrawRange(TRIANGLE_LIST,0,ssaoIb->GetIndexCount());
+
+
+		//
+
+
+
+
 		//Not opengl
 		if(gYume->pRHI->GetShadowMapFormat())
 		{
@@ -1789,6 +1861,80 @@ namespace YumeEngine
 
 			SetIndirectionTextureData();
 		}
+	}
+
+	void YumeRenderer::CreateSSAOResources()
+	{
+		CreateRandomColors();
+
+		YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
+		YumeRenderPipeline* fx = viewport->GetRenderPath();
+		YumeCamera* cam = viewport->GetCamera();
+
+		float aspect = (float)gYume->pRHI->GetWidth()/ (float)gYume->pRHI->GetHeight();
+
+		float fovy = 0.25f * M_PI;
+		float halfHeight = cam->GetFarClip() * tanf(0.5f*fovy);
+		float halfWidth  = aspect * halfHeight;
+
+		frustumCorners_[0] = Vector4(-halfWidth,-halfHeight,cam->GetFarClip(),0.0f);
+		frustumCorners_[1] = Vector4(-halfWidth,+halfHeight,cam->GetFarClip(),0.0f);
+		frustumCorners_[2] = Vector4(+halfWidth,+halfHeight,cam->GetFarClip(),0.0f);
+		frustumCorners_[3] = Vector4(+halfWidth,-halfHeight,cam->GetFarClip(),0.0f);
+
+		vectorOffsets_[0] = Vector4(+1.0f,+1.0f,+1.0f,0.0f);
+		vectorOffsets_[1] = Vector4(-1.0f,-1.0f,-1.0f,0.0f);
+
+		vectorOffsets_[2] = Vector4(-1.0f,+1.0f,+1.0f,0.0f);
+		vectorOffsets_[3] = Vector4(+1.0f,-1.0f,-1.0f,0.0f);
+
+		vectorOffsets_[4] = Vector4(+1.0f,+1.0f,-1.0f,0.0f);
+		vectorOffsets_[5] = Vector4(-1.0f,-1.0f,+1.0f,0.0f);
+
+		vectorOffsets_[6] = Vector4(-1.0f,+1.0f,-1.0f,0.0f);
+		vectorOffsets_[7] = Vector4(+1.0f,-1.0f,+1.0f,0.0f);
+
+		// 6 centers of cube faces
+		vectorOffsets_[8] = Vector4(-1.0f,0.0f,0.0f,0.0f);
+		vectorOffsets_[9] = Vector4(+1.0f,0.0f,0.0f,0.0f);
+
+		vectorOffsets_[10] = Vector4(0.0f,-1.0f,0.0f,0.0f);
+		vectorOffsets_[11] = Vector4(0.0f,+1.0f,0.0f,0.0f);
+
+		vectorOffsets_[12] = Vector4(0.0f,0.0f,-1.0f,0.0f);
+		vectorOffsets_[13] = Vector4(0.0f,0.0f,+1.0f,0.0f);
+
+		for(int i = 0; i < 14; ++i)
+		{
+			// Create random lengths in [0.25, 1.0].
+			float s = Random(0.25f,1.0f);
+
+
+			Vector4 v = vectorOffsets_[i].Normalized();
+
+			vectorOffsets_[i] = s * v;
+		}
+	}
+
+	void YumeRenderer::CreateRandomColors()
+	{
+
+		unsigned char data[256*256*4];
+		unsigned char* dest = data;
+		for(int i = 0; i < 256; ++i)
+		{
+			for(int j = 0; j < 256; ++j)
+			{
+				dest[0] = Random(0,255);
+				dest[1] = Random(0,255);
+				dest[2] = Random(0,255);
+				dest[3] = Random(0,255);
+
+				dest += 4;
+			}
+		}
+
+		randomVectorMap_->SetData(0,0,0,256,256,&data);
 	}
 
 	void YumeRenderer::SetIndirectionTextureData()
@@ -1830,11 +1976,11 @@ namespace YumeEngine
 			}
 
 			indirectionCubeMap_->SetData((CubeMapFace)i,0,0,0,256,256,data);
-	}
+		}
 
 		faceSelectCubeMap_->ClearDataLost();
 		indirectionCubeMap_->ClearDataLost();
-}
+	}
 
 	void YumeRenderer::CreateInstancingBuffer()
 	{
@@ -1866,7 +2012,7 @@ namespace YumeEngine
 		occlusionBuffers_.clear();
 		screenBuffers_.clear();
 		screenBufferAllocations_.clear();
-	}
+}
 
 	YumeString YumeRenderer::GetShadowVariations() const
 	{
@@ -1954,4 +2100,4 @@ namespace YumeEngine
 		view->DrawFullscreenQuad(false);
 	}
 
-	}
+}

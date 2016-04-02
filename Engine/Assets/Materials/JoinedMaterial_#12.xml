@@ -1,8 +1,14 @@
 <?xml version="1.0"?>
-<material>
-	<technique name="Techniques/Diff.xml" />
-	<texture unit="diffuse" name="Textures/SP_LUK.JPG" />
-	<parameter name="MatDiffColor" value="0.745098 0.709804 0.67451 1" />
-	<parameter name="MatSpecColor" value="0 0 0 32" />
-	<parameter name="MatEmissiveColor" value="0 0 0 1" />
-</material>
+<Material>
+	<Techniques>
+		<Technique name="Techniques/Diff.xml" />
+	</Techniques>
+	<Textures>
+		<texture unit="diffuse" name="Textures/SP_LUK.JPG" />
+	</Textures>
+	<Parameters>
+		<parameter name="MatDiffColor" value="0.745098 0.709804 0.67451 1" />
+		<parameter name="MatSpecColor" value="0 0 0 32" />
+		<parameter name="MatEmissiveColor" value="0 0 0 1" />
+	</Parameters>
+</Material>

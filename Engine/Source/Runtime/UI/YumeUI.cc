@@ -151,9 +151,6 @@ namespace YumeEngine
 	}
 
 
-
-
-
 	void YumeUI::AddUIElement(YumeUIElement* element)
 	{
 		uiElements_.push_back(element);

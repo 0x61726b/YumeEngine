@@ -182,6 +182,8 @@ namespace YumeEngine
 	}
 
 
+
+
 	bool YumeRenderTechnique::BeginLoad(YumeFile& source)
 	{
 		passes_.clear();
@@ -208,7 +210,6 @@ namespace YumeEngine
 			globalPSDefines += ' ';
 
 		bool globalAlphaMask = technique.attribute("alphamask").as_bool();
-
 
 		for(XmlNode pass = technique.first_child(); pass; pass = pass.next_sibling())
 		{

@@ -27,14 +27,14 @@
 
 namespace YumeEngine
 {
-	
+
 	YumeConstantBuffer::YumeConstantBuffer()
 	{
 	}
 
 	YumeConstantBuffer::~YumeConstantBuffer()
 	{
-		
+
 	}
 
 	void YumeConstantBuffer::SetParameter(unsigned offset,unsigned size,const void* data)
@@ -61,6 +61,37 @@ namespace YumeEngine
 			*dest++ = *src++;
 			++dest; // Skip over the w coordinate
 		}
+
+		dirty_ = true;
+	}
+
+
+
+
+	void YumeConstantBuffer::SetVector4ArrayParameter(unsigned offset,unsigned rows,const void* data)
+	{
+		if(offset + rows * 4 * sizeof(float) > size_)
+			return; // Would overflow the buffer
+
+		float* dest = (float*)&shadowData_[offset];
+		const float* src = (const float*)data;
+
+		for(int i=0; i < size_; ++i)
+			shadowData_[i] = (unsigned char)2.5f;
+
+		/*unsigned bytesWritten = 0;
+		while(rows--)
+		{
+			dest[0] = 0;
+			bytesWritten += 4;
+			dest[1] = 1;
+			bytesWritten += 4;
+			dest[2] = 2;
+			bytesWritten += 4;
+			dest[3] = 3;
+			bytesWritten += 4;
+			dest += 4;
+		}*/
 
 		dirty_ = true;
 	}

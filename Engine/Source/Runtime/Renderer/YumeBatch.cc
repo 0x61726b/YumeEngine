@@ -253,7 +253,10 @@ namespace YumeEngine
 					12 * numWorldTransforms_);
 			}
 			else
+			{
 				graphics->SetShaderParameter(VSP_MODEL,*worldTransform_);
+				graphics->SetShaderParameter(VSP_WORLDVIEW,*worldTransform_ * camera->GetView());
+			}
 
 			// Set the orientation for billboards, either from the object itself or from the camera
 			if(geometryType_ == GEOM_BILLBOARD)
@@ -624,6 +627,8 @@ namespace YumeEngine
 			graphics->SetTexture(TU_ZONE,zone_->GetZoneTexture());
 	}
 
+
+
 	void Batch::Draw(YumeRenderView* view,YumeCamera* camera,bool allowDepthWrite) const
 	{
 		if(!geometry_->IsEmpty())
@@ -668,7 +673,10 @@ namespace YumeEngine
 				for(unsigned i = 0; i < instances_.size(); ++i)
 				{
 					if(graphics->NeedParameterUpdate(SP_OBJECT,instances_[i].worldTransform_))
+					{
 						graphics->SetShaderParameter(VSP_MODEL,*instances_[i].worldTransform_);
+						graphics->SetShaderParameter(VSP_WORLDVIEW,*worldTransform_ * camera->GetView());
+					}
 
 					graphics->Draw(geometry_->GetPrimitiveType(),geometry_->GetIndexStart(),geometry_->GetIndexCount(),
 						geometry_->GetVertexStart(),geometry_->GetVertexCount());

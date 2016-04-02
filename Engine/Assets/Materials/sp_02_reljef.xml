@@ -1,8 +1,14 @@
 <?xml version="1.0"?>
-<material>
-	<technique name="Techniques/Diff.xml" />
-	<texture unit="diffuse" name="Textures/RELJEF.JPG" />
-	<parameter name="MatDiffColor" value="0.529412 0.498039 0.490196 1" />
-	<parameter name="MatSpecColor" value="0 0 0 32" />
-	<parameter name="MatEmissiveColor" value="0 0 0 1" />
-</material>
+<Material>
+	<Techniques>
+		<Technique name="Techniques/Diff.xml" />
+	</Techniques>
+	<Textures>
+		<texture unit="diffuse" name="Textures/RELJEF.JPG" />
+	</Textures>
+	<Parameters>
+		<parameter name="MatDiffColor" value="0.529412 0.498039 0.490196 1" />
+		<parameter name="MatSpecColor" value="0 0 0 32" />
+		<parameter name="MatEmissiveColor" value="0 0 0 1" />
+	</Parameters>
+</Material>

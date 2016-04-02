@@ -58,6 +58,7 @@ namespace YumeEngine
 
 	TextureUnit ParseTextureUnitName(YumeString name);
 
+
 	void RenderTargetInfo::Load(const XmlNode& element)
 	{
 		name_ = element.attribute("name").as_string();
@@ -454,7 +455,6 @@ namespace YumeEngine
 	void YumeRenderPipeline::SetShaderParameter(const YumeString& name,const Variant& value)
 	{
 		YumeHash nameHash(name);
-
 		for(unsigned i = 0; i < commands_.size(); ++i)
 		{
 			YumeMap<YumeHash,Variant>::iterator j = commands_[i].shaderParameters_.find(nameHash);

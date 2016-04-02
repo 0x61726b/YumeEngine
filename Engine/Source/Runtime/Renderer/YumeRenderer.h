@@ -231,11 +231,15 @@ namespace YumeEngine
 		unsigned GetNumLights(bool allViews = false) const;
 		unsigned GetNumShadowMaps(bool allViews = false) const;
 		unsigned GetNumOccluders(bool allViews = false) const;
+		
+		Vector4* GetFrustumCorners() { return frustumCorners_; };
+		Vector4* GetSSAOVectorOffsets() { return vectorOffsets_; }
 
 
 		YumeRendererEnvironment* GetDefaultZone() const { return defaultZone_; }
 		YumeMaterial* GetDefaultMaterial() const { return defaultMaterial_; }
 		YumeTexture2D* GetDefaultLightRamp() const { return defaultLightRamp_; }
+		YumeTexture2D* GetRandomVectorMap() const { return randomVectorMap_; }
 		YumeTexture2D* GetDefaultLightSpot() const { return defaultLightSpot_; }
 		YumeTextureCube* GetFaceSelectCubeMap() const { return faceSelectCubeMap_; }
 		YumeTextureCube* GetIndirectionCubeMap() const { return indirectionCubeMap_; }
@@ -250,6 +254,7 @@ namespace YumeEngine
 		void QueueViewport(YumeRenderable* renderTarget,YumeViewport* viewport);
 		YumeGeometry* GetLightGeometry(YumeLight* light);
 		YumeGeometry* GetQuadGeometry();
+		YumeGeometry* GetSSAOQuadGeometry();
 		YumeGeometry* GetTexturedQuadGeometry();
 		YumeTexture2D* GetShadowMap(YumeLight* light,YumeCamera* camera,unsigned viewWidth,unsigned viewHeight);
 		YumeTexture* GetScreenBuffer(int width,int height,unsigned format,bool cubemap,bool filtered,bool srgb,unsigned persistentKey = 0);
@@ -302,7 +307,8 @@ namespace YumeEngine
 		void ResetScreenBufferAllocations();
 		void ResetShadowMaps();
 		void ResetBuffers();
-
+		void CreateRandomColors();
+		void CreateSSAOResources();
 
 		YumeString GetShadowVariations() const;
 		void HandleScreenMode(YumeHash eventType,VariantMap& eventData);
@@ -313,12 +319,14 @@ namespace YumeEngine
 		SharedPtr<YumeRendererEnvironment> defaultZone_;
 		SharedPtr<YumeGeometry> dirLightGeometry_;
 		SharedPtr<YumeGeometry> texturedQuadGeometry;
+		SharedPtr<YumeGeometry> ssaoQuad_;
 		SharedPtr<YumeGeometry> spotLightGeometry_;
 		SharedPtr<YumeGeometry> pointLightGeometry_;
 		SharedPtr<YumeVertexBuffer> instancingBuffer_;
 		SharedPtr<YumeMaterial> defaultMaterial_;
 		SharedPtr<YumeTexture2D> defaultLightRamp_;
 		SharedPtr<YumeTexture2D> defaultLightSpot_;
+		SharedPtr<YumeTexture2D> randomVectorMap_;
 		SharedPtr<YumeTextureCube> faceSelectCubeMap_;
 		SharedPtr<YumeTextureCube> indirectionCubeMap_;
 
@@ -344,6 +352,10 @@ namespace YumeEngine
 		YumeHashSet<YumeRenderTechnique*>::type shaderErrorDisplayed_;
 		Mutex rendererMutex_;
 		YumeVector<YumeString>::type deferredLightPSVariations_;
+
+		//SSAO
+		Vector4 frustumCorners_[4];
+		Vector4 vectorOffsets_[14];
 
 
 		FrameInfo frame_;

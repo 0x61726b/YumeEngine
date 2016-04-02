@@ -28,6 +28,8 @@
 #include "Scene/YumeOctree.h"
 #include "Renderer/YumeAuxRenderer.h"
 #include "Renderer/YumeRenderer.h"
+#include "Renderer/YumeRenderPipeline.h"
+#include "Renderer/YumeCamera.h"
 
 #include "Input/YumeInput.h"
 
@@ -38,7 +40,8 @@ namespace YumeEngine
 	BaseApplication::BaseApplication()
 		: yaw_(0.0f),
 		pitch_(0.0f),
-		drawDebug_(false)
+		drawDebug_(false),
+		ssaoDebug_(false)
 	{
 		REGISTER_ENGINE_LISTENER;
 	}
@@ -128,6 +131,26 @@ namespace YumeEngine
 			YumeRenderer* renderer = gYume->pRenderer;
 			renderer->SetGBufferDebugRendering(!renderer->GetGBufferDebugRendering());
 		}
+
+		//FX Debug
+
+		if(input->GetKeyPress(KEY_F1))
+		{
+			ssaoDebug_ = !ssaoDebug_;
+
+			YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
+			YumeRenderPipeline* pipeline = viewport->GetRenderPath();
+
+			RenderCommand p = pipeline->commands_[ssaoCommandIndex_];
+
+			if(ssaoDebug_)
+				p.pixelShaderDefines_ = "DEBUG_AO";
+			else
+				p.pixelShaderDefines_ = "COMBINE";
+
+			pipeline->RemoveCommand(ssaoCommandIndex_);
+			pipeline->InsertCommand(ssaoCommandIndex_,p);
+		}
 	}
 
 	void BaseApplication::HandlePostRenderUpdate(float timeStep)
@@ -148,6 +171,47 @@ namespace YumeEngine
 		overlay_ = new YumeDebugOverlay;
 		gYume->pUI->AddUIElement(overlay_);
 		overlay_->SetVisible(true);
+
+		SharedPtr<YumeViewport> viewport(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>()));
+
+		YumeRenderPipeline* pipeline = viewport->GetRenderPath();
+		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/Bloom.xml"));
+		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/BloomHDR.xml"));
+		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/Blur.xml"));
+		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/FXAA2.xml"));
+		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/AutoExposure.xml"));
+		pipeline->SetShaderParameter("BloomMix",Vector2(0.9f,0.6f));
+		pipeline->SetShaderParameter("BloomHDRThreshold",0.8f);
+		pipeline->SetEnabled("Bloom",false);
+		pipeline->SetEnabled("AutoExposure",false);
+		pipeline->SetEnabled("BloomHDR",false);
+		pipeline->SetEnabled("Blur",false);
+		pipeline->SetEnabled("AutoExposure",false);
+		pipeline->SetEnabled("FXAA2",false);
+		viewport->SetRenderPath(pipeline);
+
+		YumeRenderer* renderer = gYume->pRenderer;
+		renderer->SetViewport(0,viewport);
+
+		for(int i=0; i < pipeline->GetNumCommands(); ++i)
+		{
+			if(pipeline->commands_[i].tag_ == "LinearDepthSSAO")
+				ssaoCommandIndex_ = i;
+		}
+
+		Vector3 ao_radius = Vector3(1.0f,0.0f,4.0f);
+		Vector3 ao_intensity = Vector3(0.15f,0.0f,2.0f);
+		Vector3 ao_projscale = Vector3(0.3f,0.0f,1.0f);
+		Vector3 ao_bias = Vector3(0.01f,0.0f,0.1f);
+
+		pipeline->SetShaderParameter("Radius",ao_radius.x_);
+		pipeline->SetShaderParameter("ProjScale2",ao_projscale.x_);
+		pipeline->SetShaderParameter("IntensityDivR6",ao_intensity.x_);
+		pipeline->SetShaderParameter("Bias",ao_bias.x_);
+
+		pipeline->commands_[ssaoCommandIndex_].enabled_ = false;
+		pipeline->SetEnabled("BlurGaussian",false);
+
 	}
 
 	void BaseApplication::Exit()

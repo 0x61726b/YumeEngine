@@ -43,8 +43,8 @@ namespace YumeEngine
 		virtual bool SetSize(unsigned size) = 0;
 		
 		void SetParameter(unsigned offset,unsigned size,const void* data);
-		
 		void SetVector3ArrayParameter(unsigned offset,unsigned rows,const void* data);
+		void SetVector4ArrayParameter(unsigned offset,unsigned rows,const void* data);
 		
 		virtual void Apply() = 0;
 

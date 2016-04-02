@@ -29,7 +29,7 @@
 
 #include <D3D11.h>
 #include <DXGI.h>
-
+#include <d3d9.h>
 #include <SDL.h>
 
 static const D3D11_FILTER d3dFilterMode[] =

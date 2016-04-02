@@ -35,6 +35,7 @@ namespace YumeEngine
 	const ResourceRefList Variant::emptyResourceRefList;
 	const VariantMap::type Variant::emptyVariantMap;
 	const VariantVector::type Variant::emptyVariantVector;
+	const Vector4Vector::type Variant::emptyVector4Array;
 	const StringVector::type Variant::emptyStringVector;
 
 	static const char* typeNames[] =
@@ -89,8 +90,13 @@ namespace YumeEngine
 			break;
 
 		case VAR_VARIANTVECTOR:
-			*(reinterpret_cast<VariantVector*>(&value_)) = *(reinterpret_cast<const VariantVector*>(&rhs.value_));
+			*(reinterpret_cast<VariantVector::type*>(&value_)) = *(reinterpret_cast<const VariantVector::type*>(&rhs.value_));
 			break;
+
+		case VAR_VECTOR4VECTOR:
+			*(reinterpret_cast<Vector4Vector::type*>(&value_)) = *(reinterpret_cast<const Vector4Vector::type*>(&rhs.value_));
+			break;
+
 
 		case VAR_STRINGVECTOR:
 			*(reinterpret_cast<StringVector*>(&value_)) = *(reinterpret_cast<const StringVector*>(&rhs.value_));
@@ -171,6 +177,9 @@ namespace YumeEngine
 
 		case VAR_VARIANTVECTOR:
 			return *(reinterpret_cast<const VariantVector::type*>(&value_)) == *(reinterpret_cast<const VariantVector::type*>(&rhs.value_));
+
+		case VAR_VECTOR4VECTOR:
+			return *(reinterpret_cast<const Vector4Vector::type*>(&value_)) == *(reinterpret_cast<const Vector4Vector::type*>(&rhs.value_));
 
 		case VAR_STRINGVECTOR:
 		{
@@ -543,9 +552,12 @@ namespace YumeEngine
 			break;
 
 		case VAR_VARIANTVECTOR:
-			(reinterpret_cast<VariantVector*>(&value_))->~VariantVector();
+			(reinterpret_cast<VariantVector::type*>(&value_))->~Vector();
 			break;
 
+		case VAR_VECTOR4VECTOR:
+			(reinterpret_cast<Vector4Vector::type*>(&value_))->~Vector();
+			break;
 		case VAR_STRINGVECTOR:
 			(reinterpret_cast<StringVector*>(&value_))->~StringVector();
 			break;
@@ -591,9 +603,12 @@ namespace YumeEngine
 			break;
 
 		case VAR_VARIANTVECTOR:
-			new(reinterpret_cast<VariantVector*>(&value_)) VariantVector();
+			new(reinterpret_cast<VariantVector::type*>(&value_)) VariantVector::type();
 			break;
 
+		case VAR_VECTOR4VECTOR:
+			new(reinterpret_cast<Vector4Vector::type*>(&value_)) Vector4Vector::type();
+			break;
 		case VAR_STRINGVECTOR:
 			new(reinterpret_cast<StringVector*>(&value_)) StringVector();
 			break;

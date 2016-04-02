@@ -1,5 +1,5 @@
 
-// Gaussian filter using texture bilinear interpolation. For the Urho3D engine.
+// Gaussian filter using texture bilinear interpolation.
 // Based on a paper by Daniel Rákos:
 // http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling
 
@@ -11,8 +11,8 @@
 #line 11
 
 void VS(float4 iPos : POSITION,
-    out float4 oPos : POSITION,
-    out float2 oTexCoord : TEXCOORD0)
+    out float2 oTexCoord : TEXCOORD0,
+    out float4 oPos : OUTPOSITION)
 {
     float4x3 modelMatrix = iModelMatrix;
     float3 worldPos = GetWorldPos(modelMatrix);
@@ -29,20 +29,20 @@ void VS(float4 iPos : POSITION,
 #endif
 
 void PS(float2 iTexCoord : TEXCOORD0,
-    out float4 oColor : COLOR0)
+    out float4 oColor : OUTCOLOR0)
 {
     // 2+1+2 samples
 #if SAMPLES==2
     //float2 weight = float2( 0.29412, 0.35294 );                         //sigma = 1.483
-    //float2 offset = float2( 0.0, 1.3333 ) * cGBufferInvSize.AXIS; 
+    //float2 offset = float2( 0.0, 1.3333 ) * cGBufferInvSize.AXIS;
     // sigma = 1.5
     // gauss = 0.292082 0.233881 0.120078
     float2 weight = float2( 0.292082 0.353959 );
     float2 offset = float2( 0.0, 1.33924 ) * cGBufferInvSize.AXIS;
 
-    oColor  = tex2D(sDiffMap, iTexCoord - float2(offset.y, 0.0).DIR) * weight.y;
-    oColor += tex2D(sDiffMap, iTexCoord                            ) * weight.x;
-    oColor += tex2D(sDiffMap, iTexCoord + float2(offset.y, 0.0).DIR) * weight.y;
+    oColor  = Sample2D(DiffMap, iTexCoord - float2(offset.y, 0.0).DIR) * weight.y;
+    oColor += Sample2D(DiffMap, iTexCoord                            ) * weight.x;
+    oColor += Sample2D(DiffMap, iTexCoord + float2(offset.y, 0.0).DIR) * weight.y;
 
     // 4+1+4 samples
 #elif SAMPLES==4
@@ -51,16 +51,16 @@ void PS(float2 iTexCoord : TEXCOORD0,
     //vec3 weight = vec3( 0.250404, 0.320621, 0.0541771 );          //sigma = 1.6
     //vec3 offset = vec3( 0.0, 1.35757, 3.20307 ) * cGBufferInvSize.AXIS;
     // sigma = 2
-    // gauss = 0.204164 0.180174 0.123832 0.0662822 0.0276306 
+    // gauss = 0.204164 0.180174 0.123832 0.0662822 0.0276306
     float4 weight = float4( 0.204164, 0.304005, 0.0939128 );
     float4 offset = float4( 0.0, 1.40733, 3.29421 ) * cGBufferInvSize.AXIS;
- 
-    oColor  = tex2D(sDiffMap, iTexCoord - float2(offset.z, 0.0).DIR) * weight.z;
-    oColor += tex2D(sDiffMap, iTexCoord - float2(offset.y, 0.0).DIR) * weight.y;
-    oColor += tex2D(sDiffMap, iTexCoord                            ) * weight.x;
-    oColor += tex2D(sDiffMap, iTexCoord + float2(offset.y, 0.0).DIR) * weight.y;
-    oColor += tex2D(sDiffMap, iTexCoord + float2(offset.z, 0.0).DIR) * weight.z;
- 
+
+    oColor  = Sample2D(DiffMap, iTexCoord - float2(offset.z, 0.0).DIR) * weight.z;
+    oColor += Sample2D(DiffMap, iTexCoord - float2(offset.y, 0.0).DIR) * weight.y;
+    oColor += Sample2D(DiffMap, iTexCoord                            ) * weight.x;
+    oColor += Sample2D(DiffMap, iTexCoord + float2(offset.y, 0.0).DIR) * weight.y;
+    oColor += Sample2D(DiffMap, iTexCoord + float2(offset.z, 0.0).DIR) * weight.z;
+
     // 6+1+6 samples
 #elif SAMPLES==6
     //float4 weight = float4( 0.18571, 0.28870, 0.10364, 0.014805 );        //sigma = 2.15327
@@ -71,14 +71,14 @@ void PS(float2 iTexCoord : TEXCOORD0,
     // gauss = 0.121569 0.116706 0.103256 0.0841947 0.0632704 0.0438191 0.0279688
     float4 weight = float4( 0.121569, 0.219963, 0.147465, 0.071788 );
     float4 offset = float4( 0.0, 1.46943, 3.42905, 5.3896 ) * cGBufferInvSize.AXIS;
- 
-    oColor  = tex2D(sDiffMap, iTexCoord - float2(offset.w, 0.0).DIR) * weight.w;
-    oColor += tex2D(sDiffMap, iTexCoord - float2(offset.z, 0.0).DIR) * weight.z;
-    oColor += tex2D(sDiffMap, iTexCoord - float2(offset.y, 0.0).DIR) * weight.y;
-    oColor += tex2D(sDiffMap, iTexCoord                            ) * weight.x;
-    oColor += tex2D(sDiffMap, iTexCoord + float2(offset.y, 0.0).DIR) * weight.y;
-    oColor += tex2D(sDiffMap, iTexCoord + float2(offset.z, 0.0).DIR) * weight.z;
-    oColor += tex2D(sDiffMap, iTexCoord + float2(offset.w, 0.0).DIR) * weight.w;
+
+    oColor  = Sample2D(DiffMap, iTexCoord - float2(offset.w, 0.0).DIR) * weight.w;
+    oColor += Sample2D(DiffMap, iTexCoord - float2(offset.z, 0.0).DIR) * weight.z;
+    oColor += Sample2D(DiffMap, iTexCoord - float2(offset.y, 0.0).DIR) * weight.y;
+    oColor += Sample2D(DiffMap, iTexCoord                            ) * weight.x;
+    oColor += Sample2D(DiffMap, iTexCoord + float2(offset.y, 0.0).DIR) * weight.y;
+    oColor += Sample2D(DiffMap, iTexCoord + float2(offset.z, 0.0).DIR) * weight.z;
+    oColor += Sample2D(DiffMap, iTexCoord + float2(offset.w, 0.0).DIR) * weight.w;
 
     // 8+1+8 samples
 #elif SAMPLES==8
@@ -87,16 +87,15 @@ void PS(float2 iTexCoord : TEXCOORD0,
     float weight0 = 0.087545;
     float4 weight = float4( 0.166625, 0.136694, 0.0957112, 0.0571972 );
     float4 offset = float4( 1.4850, 3.4651, 5.44522, 7.42556 ) * cGBufferInvSize.AXIS;
-    
-    oColor  = tex2D(sDiffMap, iTexCoord - float2(offset.w, 0.0).DIR) * weight.w;
-    oColor += tex2D(sDiffMap, iTexCoord - float2(offset.z, 0.0).DIR) * weight.z;
-    oColor += tex2D(sDiffMap, iTexCoord - float2(offset.y, 0.0).DIR) * weight.y;
-    oColor += tex2D(sDiffMap, iTexCoord - float2(offset.x, 0.0).DIR) * weight.x;
-    oColor += tex2D(sDiffMap, iTexCoord                            ) * weight0;
-    oColor += tex2D(sDiffMap, iTexCoord + float2(offset.x, 0.0).DIR) * weight.x;
-    oColor += tex2D(sDiffMap, iTexCoord + float2(offset.y, 0.0).DIR) * weight.y;
-    oColor += tex2D(sDiffMap, iTexCoord + float2(offset.z, 0.0).DIR) * weight.z;
-    oColor += tex2D(sDiffMap, iTexCoord + float2(offset.w, 0.0).DIR) * weight.w;
+
+    oColor  = Sample2D(DiffMap, iTexCoord - float2(offset.w, 0.0).DIR) * weight.w;
+    oColor += Sample2D(DiffMap, iTexCoord - float2(offset.z, 0.0).DIR) * weight.z;
+    oColor += Sample2D(DiffMap, iTexCoord - float2(offset.y, 0.0).DIR) * weight.y;
+    oColor += Sample2D(DiffMap, iTexCoord - float2(offset.x, 0.0).DIR) * weight.x;
+    oColor += Sample2D(DiffMap, iTexCoord                            ) * weight0;
+    oColor += Sample2D(DiffMap, iTexCoord + float2(offset.x, 0.0).DIR) * weight.x;
+    oColor += Sample2D(DiffMap, iTexCoord + float2(offset.y, 0.0).DIR) * weight.y;
+    oColor += Sample2D(DiffMap, iTexCoord + float2(offset.z, 0.0).DIR) * weight.z;
+    oColor += Sample2D(DiffMap, iTexCoord + float2(offset.w, 0.0).DIR) * weight.w;
 #endif
 }
-

@@ -292,12 +292,19 @@ namespace YumeEngine
 	extern YumeAPIExport const YumeHash VSP_VIEW;
 	extern YumeAPIExport const YumeHash VSP_VIEWINV;
 	extern YumeAPIExport const YumeHash VSP_VIEWPROJ;
+
+	extern YumeAPIExport const YumeHash VSP_WORLDVIEW;
+	extern YumeAPIExport const YumeHash VSP_WORLDINVTRANSPOSEVIEW;
+	extern YumeAPIExport const YumeHash VSP_WORLDVIEWPROJ;
+
 	extern YumeAPIExport const YumeHash VSP_UOFFSET;
 	extern YumeAPIExport const YumeHash VSP_VOFFSET;
 	extern YumeAPIExport const YumeHash VSP_ZONE;
 	extern YumeAPIExport const YumeHash VSP_LIGHTMATRICES;
 	extern YumeAPIExport const YumeHash VSP_SKINMATRICES;
 	extern YumeAPIExport const YumeHash VSP_VERTEXLIGHTS;
+	extern YumeAPIExport const YumeHash VSP_FRUSTUMCORNERS;
+	extern YumeAPIExport const YumeHash PSP_OFFSETVECTORS;
 	extern YumeAPIExport const YumeHash PSP_AMBIENTCOLOR;
 	extern YumeAPIExport const YumeHash PSP_CAMERAPOS;
 	extern YumeAPIExport const YumeHash PSP_DELTATIME;

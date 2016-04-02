@@ -131,6 +131,18 @@ namespace YumeEngine
 			return *this;
 		}
 
+		Vector4& Normalized()
+		{
+			float len = powf(x_,2) + powf(y_,2) + powf(z_,2);
+			len = sqrtf(len);
+
+			x_ /= len;
+			y_ /= len;
+			z_ /= len;
+			w_ /= len;
+
+			return *this;
+		} 
 		
 		Vector4& operator -=(const Vector4& rhs)
 		{

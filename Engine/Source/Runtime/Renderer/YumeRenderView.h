@@ -124,7 +124,7 @@ namespace YumeEngine
 		void SetGlobalShaderParameters();	
 		void SetCameraShaderParameters(YumeCamera* camera,bool setProjectionMatrix);
 		void SetGBufferShaderParameters(const IntVector2& texSize,const IntRect& viewRect);	
-		void DrawFullscreenQuad(bool nearQuad);
+		void DrawFullscreenQuad(bool nearQuad,bool ssaoPass = false);
 		YumeTexture* FindNamedTexture(const YumeString& name,bool isRenderTarget,bool isVolumeMap = false);
 	private:
 		void GetDrawables();

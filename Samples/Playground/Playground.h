@@ -28,7 +28,11 @@ namespace YumeEngine
 		void MoveCamera(float timeStep);
 
 		virtual void HandleUpdate(float timeStep);
+		virtual void HandleRenderUpdate(float timeStep);
 
+		void SSAOOffsetVectors();
+
+		void CreateModel(Vector3 Pos,Quaternion Rot);
 		void CreateCube(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
 		void CreateSphere(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
 		void CreateCylinder(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
@@ -37,6 +41,8 @@ namespace YumeEngine
 
 		YumeSceneNode* cubeNode_;
 		Quaternion rot_;
+
+		Vector4Vector::type mOffsets;
 	};
 }
 

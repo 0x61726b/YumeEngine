@@ -774,6 +774,8 @@ namespace YumeEngine
 			graphics_->SetShaderParameter(VSP_VIEWINV,camera->GetEffectiveWorldTransform());
 			graphics_->SetShaderParameter(VSP_VIEW,camera->GetView());
 			graphics_->SetShaderParameter(VSP_VIEWPROJ,projection * camera->GetView());
+
+
 		}
 	}
 
@@ -801,7 +803,13 @@ namespace YumeEngine
 		float invSizeX = 1.0f / texWidth;
 		float invSizeY = 1.0f / texHeight;
 		graphics_->SetShaderParameter(PSP_GBUFFERINVSIZE,Vector2(invSizeX,invSizeY));
+
+
+
+
+
 	}
+
 
 
 	void YumeRenderView::GetDrawables()
@@ -1558,11 +1566,12 @@ namespace YumeEngine
 					currentRenderTarget_ = substituteRenderTarget_ ? substituteRenderTarget_ : renderTarget_;
 
 			}
-
 			switch(command.type_)
 			{
 			case CMD_CLEAR:
 			{
+				RHIEvent event("Clear");
+
 				YumeColor clearColor = command.clearColor_;
 				if(command.useFogColor_)
 					clearColor = actualView->farClipZone_->GetFogColor();
@@ -1577,6 +1586,9 @@ namespace YumeEngine
 				BatchQueue& queue = actualView->batchQueues_[command.passIndex_];
 				if(!queue.IsEmpty())
 				{
+					YumeString eventName("Scene Pass ");
+					eventName.AppendWithFormat("%i",command.passIndex_);
+					RHIEvent rhiEvent(eventName);
 					SetRenderTargets(command);
 					bool allowDepthWrite = SetTextures(command);
 					graphics_->SetClipPlane(camera_->GetUseClipping(),camera_->GetClipPlane(),camera_->GetView(),
@@ -1596,6 +1608,7 @@ namespace YumeEngine
 
 			case CMD_QUAD:
 			{
+				RHIEvent event("Render Quad");
 				SetRenderTargets(command);
 				SetTextures(command);
 				RenderQuad(command);
@@ -1606,6 +1619,7 @@ namespace YumeEngine
 				// Render shadow maps + opaque objects' additive lighting
 				if(!actualView->lightQueues_.empty())
 				{
+					RHIEvent event("Begin Rendering Forward Lights");
 					SetRenderTargets(command);
 
 					for(YumeVector<LightBatchQueue>::iterator i = actualView->lightQueues_.begin(); i != actualView->lightQueues_.end(); ++i)
@@ -1613,6 +1627,7 @@ namespace YumeEngine
 						// If reusing shadowmaps, render each of them before the lit batches
 						if(renderer_->GetReuseShadowMaps() && i->shadowMap_)
 						{
+							RHIEvent event("Render Shadowmap");
 							RenderShadowMap(*i);
 							SetRenderTargets(command);
 						}
@@ -1621,12 +1636,14 @@ namespace YumeEngine
 						graphics_->SetClipPlane(camera_->GetUseClipping(),camera_->GetClipPlane(),camera_->GetView(),
 							camera_->GetProjection());
 
+						RHIEvent event("Render Forward Lights");
 						// Draw base (replace blend) batches first
 						i->litBaseBatches_.Draw(this,camera_,false,false,allowDepthWrite);
 
 						// Then, if there are additive passes, optimize the light and draw them
 						if(!i->litBatches_.IsEmpty())
 						{
+							RHIEvent event("Optimize Light");
 							renderer_->OptimizeLightByScissor(i->light_,camera_);
 							if(!noStencil_)
 								renderer_->OptimizeLightByStencil(i->light_,camera_);
@@ -1643,12 +1660,14 @@ namespace YumeEngine
 				// Render shadow maps + light volumes
 				if(!actualView->lightQueues_.empty())
 				{
+					RHIEvent event("Begin Rendering Light Volumes");
 					SetRenderTargets(command);
 					for(YumeVector<LightBatchQueue>::iterator i = actualView->lightQueues_.begin(); i != actualView->lightQueues_.end(); ++i)
 					{
 						// If reusing shadowmaps, render each of them before the lit batches
 						if(renderer_->GetReuseShadowMaps() && i->shadowMap_)
 						{
+							RHIEvent("Render Shadowmap");
 							RenderShadowMap(*i);
 							SetRenderTargets(command);
 						}
@@ -1657,6 +1676,9 @@ namespace YumeEngine
 
 						for(unsigned j = 0; j < i->volumeBatches_.size(); ++j)
 						{
+							YumeString eventName("Render Light Volume #");
+							eventName.append(j);
+							RHIEvent rhiEvent(eventName);
 							SetupLightVolumeBatch(i->volumeBatches_[j]);
 							i->volumeBatches_[j].Draw(this,camera_,false);
 						}
@@ -1839,8 +1861,28 @@ namespace YumeEngine
 		graphics_->SetScissorTest(false);
 		graphics_->SetStencilTest(false);
 
-		DrawFullscreenQuad(false);
 
+
+		bool ssaoPass = false;
+		if(vs->GetName() == "LinearDepthSSAO")
+		{
+			ssaoPass = true;
+			graphics_->SetTexture(TU_CUSTOM1,gYume->pRenderer->GetRandomVectorMap());
+
+			Matrix4 p = camera_->GetProjection();
+
+			Vector4 projInfo = Vector4(2.0f / p.m00_,
+				-2.0f / p.m11_,
+				-(1.0f + p.m02_ + 1.0f / gYume->pRHI->GetWidth()) / p.m00_,
+				(1.0f - p.m12_ + 1.0f / gYume->pRHI->GetHeight()) / p.m11_);
+
+			float viewSize = 2.0f * camera_->GetHalfViewSize();
+
+			
+			renderPath_->SetShaderParameter("ProjInfo",projInfo);
+			renderPath_->SetShaderParameter("ProjScale",(gYume->pRHI->GetHeight()/ viewSize));
+		}
+		DrawFullscreenQuad(false,ssaoPass);
 	}
 
 	bool YumeRenderView::IsNecessary(const RenderCommand& command)
@@ -2073,7 +2115,9 @@ namespace YumeEngine
 		DrawFullscreenQuad(false);
 	}
 
-	void YumeRenderView::DrawFullscreenQuad(bool nearQuad)
+
+
+	void YumeRenderView::DrawFullscreenQuad(bool nearQuad,bool ssaoPass)
 	{
 		YumeGeometry* geometry = renderer_->GetQuadGeometry();
 
@@ -2094,6 +2138,17 @@ namespace YumeEngine
 		graphics_->SetCullMode(CULL_NONE);
 		graphics_->SetShaderParameter(VSP_MODEL,model);
 		graphics_->SetShaderParameter(VSP_VIEWPROJ,projection);
+
+
+
+
+
+		//Bind vectors necessary for SSAO
+		if(ssaoPass)
+		{
+
+		}
+
 		graphics_->ClearTransformSources();
 
 		geometry->Draw(graphics_);
@@ -3047,11 +3102,8 @@ namespace YumeEngine
 		if(renderTargets_.find(nameHash) != renderTargets_.end())
 			return renderTargets_[nameHash];
 
-		// Then the resource system
 		YumeResourceManager* rm_= gYume->pResourceManager;
 
-		// Check existing resources first. This does not load resources, so we can afford to guess the resource type wrong
-		// without having to rely on the file extension
 		YumeTexture* texture = rm_->RetrieveResource<YumeTexture2D>(name);
 		if(!texture)
 			texture = rm_->RetrieveResource<YumeTextureCube>(name);
@@ -3060,13 +3112,10 @@ namespace YumeEngine
 		if(texture)
 			return texture;
 
-		// If not a rendertarget (which will never be loaded from a file), finally also try to load the texture
-		// This will log an error if not found; the texture binding will be cleared in that case to not constantly spam the log
 		if(!isRenderTarget)
 		{
 			if(GetExtension(name) == ".xml")
 			{
-				// Assume 3D textures are only bound to the volume map unit, otherwise it's a cube texture
 				if(isVolumeMap)
 					return rm_->PrepareResource<YumeTexture3D>(name);
 				else

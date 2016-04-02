@@ -1,0 +1,57 @@
+<Pipeline>
+  <RenderTargets>
+    <rendertarget name="depth" sizedivisor="1 1" format="lineardepth" />
+    <rendertarget name="ambientMap" sizedivisor="1 1" format="rgba" filter="true" />
+    <rendertarget name="blurv" sizedivisor="1 1" format="rgba" />
+    <rendertarget name="blurh" sizedivisor="1 1" format="rgba" />
+  </RenderTargets>
+  <Commands>
+    <command type="clear" color="1 1 1 1" depth="1.0" output="depth" />
+    <command type="scenepass" pass="depth" output="depth" />
+    <command type="clear" color="fog" depth="1.0" stencil="0" />
+    <command type="scenepass" pass="base" vertexlights="true" metadata="base" />
+    <command type="forwardlights" pass="light" />
+
+    <command type="quad" tag="LinearDepthSSAO" vs="LinearDepthSSAO" ps="LinearDepthSSAO" psdefines="SSAO_PASS" output="ambientMap">
+      <Textures>
+        <texture unit="diffuse" name="viewport" />
+        <texture unit="depth" name="depth" />
+      </Textures>
+      <Parameters>
+        <parameter name="ProjInfo" />
+        <parameter name="ProjScale" />
+        <parameter name="Radius" value="1.0" />
+        <parameter name="Bias" value="0.01" />
+        <parameter name="ProjScale2" value="1.0" />
+        <parameter name="IntensityDivR6" value="1.0" />
+      </Parameters>
+    </command>
+
+    <command type="quad" tag="BlurGaussian" vs="BlurGaussian" ps="BlurGaussian" psdefines="SAMPLES=8" output="blurh">
+      <Textures>
+        <texture unit="diffuse" name="ambientMap" />
+      </Textures>
+    </command>
+    <command type="quad" tag="BlurGaussian" vs="BlurGaussian" ps="BlurGaussian" psdefines="SAMPLES=8 VERTICAL" output="ambientMap">
+      <Textures>
+        <texture unit="diffuse" name="blurh" />
+      </Textures>
+    </command>
+
+    <command type="quad" tag="LinearDepthSSAO" vs="LinearDepthSSAO" ps="LinearDepthSSAO" psdefines="COMBINE" >
+      <Textures>
+        <texture unit="diffuse" name="viewport" />
+        <texture unit="emissive" name="ambientMap" />
+      </Textures>
+    </command>
+
+    <command type="scenepass" pass="postopaque" />
+    <command type="scenepass" pass="refract">
+      <Textures>
+        <texture unit="environment" name="viewport" />
+      </Textures>
+    </command>
+    <command type="scenepass" pass="alpha" vertexlights="true" sort="backtofront" metadata="alpha" />
+    <command type="scenepass" pass="postalpha" sort="backtofront" />
+  </Commands>
+</Pipeline>

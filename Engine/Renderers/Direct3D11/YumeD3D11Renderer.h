@@ -105,6 +105,9 @@ namespace YumeEngine
 		virtual YumeTextureCube*				CreateTextureCube();
 		virtual YumeInputLayout* 				CreateInputLayout(YumeShaderVariation* vertexShader,YumeVertexBuffer** buffers,unsigned* elementMasks);
 
+		virtual void							BeginEvent(const YumeString& str);
+		virtual void							EndEvent();
+
 
 		virtual YumeShaderVariation* 			GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const;
 		virtual YumeShaderVariation* 			GetShader(ShaderType type,const char* name,const char* defines) const;
@@ -126,6 +129,7 @@ namespace YumeEngine
 		virtual void  							SetShaderParameter(YumeHash param,const Matrix4& matrix);
 		virtual void  							SetShaderParameter(YumeHash param,const Vector4& vector);
 		virtual void  							SetShaderParameter(YumeHash param,const Variant& value);
+		virtual void  							SetShaderParameter(YumeHash param,const Vector4Vector::type& vectorArray);
 
 		virtual void  							SetVertexBuffer(YumeVertexBuffer* buffer);
 		virtual void  							SetIndexBuffer(YumeIndexBuffer* buffer);

@@ -272,6 +272,7 @@ namespace YumeEngine
 
 	}
 
+
 	void YumeStaticModel::ApplyMaterialList(const YumeString& fileName)
 	{
 		String useFileName = fileName;

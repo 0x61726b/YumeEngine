@@ -776,7 +776,7 @@ namespace YumeEngine
 				0,
 				D3D_DRIVER_TYPE_HARDWARE,
 				0,
-				0 ,
+				0,
 				0,
 				0,
 				D3D11_SDK_VERSION,
@@ -1203,6 +1203,18 @@ namespace YumeEngine
 			dirtyConstantBuffers_.push_back(buffer);
 		buffer->SetParameter(i->second.offset_,sizeof(Matrix3x4),&matrix);
 	}
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const Vector4Vector::type& vectorArray)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+
+		SetShaderParameter(param,vectorArray[0].Data(),4);
+	}
 
 	/// Set shader 3D vector constant.
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const Vector3& vector)
@@ -1280,7 +1292,19 @@ namespace YumeEngine
 		case VAR_MATRIX4:
 			SetShaderParameter(param,value.GetMatrix4());
 			break;
-
+		case VAR_VARIANTVECTOR:
+		{
+			const VariantVector::type vector = value.GetVariantVector();
+			int size = vector.size();
+			SetShaderParameter(param,vector);
+		}
+		break;
+		case VAR_VECTOR4VECTOR:
+		{
+			const Vector4Vector::type& vector = value.GetVector4Array();
+			SetShaderParameter(param,vector);
+		}
+		break;
 		case VAR_BUFFER:
 		{
 			const YumeVector<unsigned char>::type& buffer = value.GetBuffer();
@@ -2049,6 +2073,8 @@ namespace YumeEngine
 
 		PreDraw();
 
+
+
 		unsigned primitiveCount;
 		D3D_PRIMITIVE_TOPOLOGY d3dPrimitiveType;
 
@@ -2116,6 +2142,16 @@ namespace YumeEngine
 
 		numPrimitives_ += instanceCount * primitiveCount;
 		++numBatches_;
+	}
+
+	void YumeD3D11Renderer::BeginEvent(const YumeString& str)
+	{
+		WString event(str);
+		D3DPERF_BeginEvent(0xFFFFFFFF,event.c_str());
+	}
+	void YumeD3D11Renderer::EndEvent()
+	{
+		D3DPERF_EndEvent();
 	}
 
 	bool YumeD3D11Renderer::ResolveToTexture(YumeTexture2D* destination,const IntRect& viewport)

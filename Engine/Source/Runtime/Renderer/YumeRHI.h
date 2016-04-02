@@ -55,6 +55,7 @@ namespace YumeEngine
 	class YumeTexture;
 	class YumeIndexBuffer;
 	class YumeTextureCube;
+	class YumeRHI;
 
 	struct ScratchBuffer
 	{
@@ -106,6 +107,9 @@ namespace YumeEngine
 		virtual void							AddGpuResource(YumeGpuResource* object) = 0;
 		virtual void							RemoveGpuResource(YumeGpuResource* object) = 0;
 
+		virtual void							BeginEvent(const YumeString& string) {};
+		virtual void							EndEvent() {};
+
 
 		virtual YumeConstantBuffer*				GetOrCreateConstantBuffer(ShaderType type,unsigned index,unsigned size) = 0;
 		virtual YumeConstantBuffer*				GetOrCreateConstantBuffer(unsigned bindingIndex,unsigned size) = 0;
@@ -149,6 +153,7 @@ namespace YumeEngine
 		virtual void  							SetShaderParameter(YumeHash param,const Vector3& vector) = 0;
 		virtual void  							SetShaderParameter(YumeHash param,const Matrix4& matrix) = 0;
 		virtual void  							SetShaderParameter(YumeHash param,const Vector4& vector) = 0;
+		virtual void  							SetShaderParameter(YumeHash param,Vector4* vectorArray) { };
 		virtual void  							SetShaderParameter(YumeHash param,const Variant& value) = 0;
 
 		virtual void  							SetVertexBuffer(YumeVertexBuffer* buffer) = 0;
@@ -183,7 +188,7 @@ namespace YumeEngine
 		virtual void 							Draw(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount) = 0;
 		virtual void 							DrawInstanced(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount,unsigned instanceCount) = 0;
 
-		virtual bool							ResolveToTexture(YumeTexture2D* destination, const IntRect& viewport) = 0;
+		virtual bool							ResolveToTexture(YumeTexture2D* destination,const IntRect& viewport) = 0;
 		virtual void							ClearParameterSource(ShaderParameterGroup group) = 0;
 		virtual void							ClearParameterSources() = 0;
 		virtual void							ClearTransformSources() = 0;
@@ -380,6 +385,14 @@ namespace YumeEngine
 		YumeString apiName_;
 
 		const Vector2 pixelUVOffset;
+	};
+
+
+	class RHIEvent
+	{
+	public:
+		RHIEvent(const YumeString& event);
+		~RHIEvent();
 	};
 }
 
