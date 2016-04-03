@@ -41,7 +41,8 @@ namespace YumeEngine
 		: yaw_(0.0f),
 		pitch_(0.0f),
 		drawDebug_(false),
-		ssaoDebug_(false)
+		ssaoDebug_(false),
+		gbufferDebugIndex_(0)
 	{
 		REGISTER_ENGINE_LISTENER;
 	}
@@ -134,7 +135,7 @@ namespace YumeEngine
 
 		//FX Debug
 
-		if(input->GetKeyPress(KEY_F1))
+		if(input->GetKeyPress(KEY_F2))
 		{
 			ssaoDebug_ = !ssaoDebug_;
 
@@ -150,6 +151,15 @@ namespace YumeEngine
 
 			pipeline->RemoveCommand(ssaoCommandIndex_);
 			pipeline->InsertCommand(ssaoCommandIndex_,p);
+		}
+
+		if(input->GetKeyPress(KEY_F1))
+		{
+			YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
+			YumeRenderPipeline* pipeline = viewport->GetRenderPath();
+
+			pipeline->ToggleEnabled("DebugGBuffer");
+			gYume->pRenderer->SetGBufferDebugRendering(!gYume->pRenderer->GetGBufferDebugRendering());
 		}
 	}
 
@@ -197,6 +207,8 @@ namespace YumeEngine
 		{
 			if(pipeline->commands_[i].tag_ == "LinearDepthSSAO")
 				ssaoCommandIndex_ = i;
+			if(pipeline->commands_[i].tag_ == "DebugGBuffer")
+				gbufferDebugIndex_ = i;
 		}
 
 		Vector3 ao_radius = Vector3(1.0f,0.0f,4.0f);
@@ -209,8 +221,9 @@ namespace YumeEngine
 		pipeline->SetShaderParameter("IntensityDivR6",ao_intensity.x_);
 		pipeline->SetShaderParameter("Bias",ao_bias.x_);
 
-		pipeline->commands_[ssaoCommandIndex_].enabled_ = false;
-		pipeline->SetEnabled("BlurGaussian",false);
+		pipeline->SetEnabled("LinearDepthSSAO",true);
+		pipeline->SetEnabled("BlurGaussianDepth",false);
+		
 
 	}
 

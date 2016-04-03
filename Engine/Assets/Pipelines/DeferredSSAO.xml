@@ -3,9 +3,11 @@
     <rendertarget name="albedo" sizedivisor="1 1" format="rgba" />
     <rendertarget name="normal" sizedivisor="1 1" format="rgba" />
     <rendertarget name="depth" sizedivisor="1 1" format="lineardepth" />
-    <rendertarget name="ao" sizedivisor="1 1" format="r16f" />
+    <rendertarget name="ambientMap" sizedivisor="1 1" format="rgba" filter="true" />
+    <rendertarget name="blurh" sizedivisor="1 1" format="rgba" filter="true" />
   </RenderTargets>
   <Commands>
+    <command type="clear" color="1 1 1 1" depth="1.0" output="depth" />
     <command type="clear" color="fog" depth="1.0" stencil="0" />
     <command type="scenepass" pass="deferred" marktostencil="true" vertexlights="true" metadata="gbuffer">
       <Outputs>
@@ -16,14 +18,33 @@
       </Outputs>
     </command>
 
-    <command type="quad" tag="SSAODeferred" vs="DeferredSSAO" ps="DeferredSSAO" psdefines="NORMAL_MAP" output="ao">
-        <Textures>
-          <texture unit="diffuse" name="viewport" />
-          <texture unit="normal" name="normal" />
-          <texture unit="depth" name="depth" />
-        </Textures>
+    <command type="quad" tag="LinearDepthSSAO" vs="LinearDepthSSAO" ps="LinearDepthSSAO" psdefines="SSAO_PASS NORMAL_MAP" output="ambientMap">
+      <Textures>
+        <texture unit="diffuse" name="viewport" />
+        <texture unit="normal" name="normal" />
+        <texture unit="depth" name="depth" />
+      </Textures>
+      <Parameters>
+        <parameter name="ProjInfo" />
+        <parameter name="ProjScale" />
+        <parameter name="ViewThree" />
+        <parameter name="Radius" value="1.0" />
+        <parameter name="Bias" value="0.01" />
+        <parameter name="ProjScale2" value="1.0" />
+        <parameter name="IntensityDivR6" value="1.0" />
+      </Parameters>
     </command>
 
+    <command type="quad" tag="BlurGaussianDepth" vs="BlurGaussianDepth" ps="BlurGaussianDepth" psdefines="SAMPLES=8" output="blurh">
+      <Textures>
+        <texture unit="diffuse" name="ambientMap" />
+      </Textures>
+    </command>
+    <command type="quad" tag="BlurGaussianDepth" vs="BlurGaussianDepth" ps="BlurGaussianDepth" psdefines="SAMPLES=8 VERTICAL" output="ambientMap">
+      <Textures>
+        <texture unit="diffuse" name="blurh" />
+      </Textures>
+    </command>
 
     <command type="lightvolumes" vs="DeferredLight" ps="DeferredLight">
       <Textures>
@@ -32,6 +53,23 @@
         <texture unit="depth" name="depth" />
       </Textures>
     </command>
+
+    <command type="quad" tag="LinearDepthSSAO" vs="LinearDepthSSAO" ps="LinearDepthSSAO" psdefines="COMBINE" >
+      <Textures>
+        <texture unit="diffuse" name="viewport" />
+        <texture unit="emissive" name="ambientMap" />
+      </Textures>
+    </command>
+
+    <command type="quad" tag="DebugGBuffer" enabled="false" vs="DebugGBuffer" ps="DebugGBuffer">
+      <Textures>
+        <texture unit="albedo" name="albedo" />
+        <texture unit="normal" name="normal" />
+        <texture unit="depth" name="depth" />
+        <texture unit="emissive" name="ambientMap" />
+      </Textures>
+    </command>
+
     <command type="scenepass" pass="postopaque" />
     <command type="scenepass" pass="refract">
       <Textures>

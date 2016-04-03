@@ -635,12 +635,12 @@ namespace YumeEngine
 		{
 			YumeDebugRenderer* debug = octree_->GetComponent<YumeDebugRenderer>();
 
-			if(debug)
+			/*if(debug)
 			{
 				debug->RenderInternalTexture(IntRect(0,0,400,400),FindNamedTexture("albedo",true));
 				debug->RenderInternalTexture(IntRect(0,0,300,0),FindNamedTexture("normal",true));
 				debug->RenderInternalTexture(IntRect(0,0,600,0),FindNamedTexture("depth",true));
-			}
+			}*/
 
 		}
 
@@ -719,6 +719,7 @@ namespace YumeEngine
 		if(!camera)
 			return;
 
+
 		Matrix3x4 cameraEffectiveTransform = camera->GetEffectiveWorldTransform();
 
 		graphics_->SetShaderParameter(VSP_CAMERAPOS,cameraEffectiveTransform.Translation());
@@ -731,6 +732,8 @@ namespace YumeEngine
 		graphics_->SetShaderParameter(VSP_FARCLIP,farClip);
 		graphics_->SetShaderParameter(PSP_NEARCLIP,nearClip);
 		graphics_->SetShaderParameter(PSP_FARCLIP,farClip);
+
+
 
 		Vector4 depthMode = Vector4::ZERO;
 		if(camera->IsOrthographic())
@@ -1596,15 +1599,19 @@ namespace YumeEngine
 
 					if(command.passIndex_ == 3 && renderer_->GetGBufferDebugRendering())
 					{
+						graphics_->ClearRenderTarget(0,CLEAR_COLOR | CLEAR_DEPTH);
 						graphics_->ClearRenderTarget(1,CLEAR_COLOR);
 						graphics_->ClearRenderTarget(2,CLEAR_COLOR);
 						graphics_->ClearRenderTarget(3,CLEAR_COLOR);
 					}
 
 					queue.Draw(this,camera_,command.markToStencil_,false,allowDepthWrite);
+
+
 				}
 			}
 			break;
+
 
 			case CMD_QUAD:
 			{
@@ -2058,6 +2065,8 @@ namespace YumeEngine
 			float width = rtInfo.size_.x_;
 			float height = rtInfo.size_.y_;
 
+
+
 			if(rtInfo.sizeMode_ == SIZE_VIEWPORTDIVISOR)
 			{
 				width = (float)viewSize_.x_ / Max(width,M_EPSILON);
@@ -2077,6 +2086,8 @@ namespace YumeEngine
 				renderer_->GetScreenBuffer(intWidth,intHeight,rtInfo.format_,rtInfo.cubemap_,rtInfo.filtered_,rtInfo.sRGB_,
 				rtInfo.persistent_ ? YumeHash(rtInfo.name_).Value() + (unsigned)(size_t)this : 0);
 		}
+
+
 	}
 
 	void YumeRenderView::BlitFramebuffer(YumeTexture* source,YumeRenderable* destination,bool depthWrite)

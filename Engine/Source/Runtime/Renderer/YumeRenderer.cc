@@ -1589,7 +1589,7 @@ namespace YumeEngine
 		defaultMaterial_ = (new YumeMaterial);
 
 		defaultPipeline_ = (new YumeRenderPipeline());
-		defaultPipeline_->Load(cache->PrepareResource<YumeXmlFile>("Pipelines/ForwardSSAO.xml"));
+		defaultPipeline_->Load(cache->PrepareResource<YumeXmlFile>("Pipelines/DeferredSSAO.xml"));
 		CreateGeometries();
 		CreateInstancingBuffer();
 
@@ -1599,6 +1599,10 @@ namespace YumeEngine
 
 		randomVectorMap_ = gYume->pRHI->CreateTexture2D();
 		randomVectorMap_->SetSize(256,256,gYume->pRHI->GetRGBAFormatNs());
+
+
+
+
 
 
 

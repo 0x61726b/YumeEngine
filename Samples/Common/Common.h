@@ -62,6 +62,7 @@ namespace YumeEngine
 		SharedPtr<YumeDebugOverlay> overlay_;
 
 		int ssaoCommandIndex_;
+		int gbufferDebugIndex_;
 		bool ssaoDebug_;
 
 		float yaw_;

@@ -47,8 +47,8 @@
 
 YUME_DEFINE_ENTRY_POINT(YumeEngine::PlaygroundDemo);
 
-#define TURNOFF 1
-#define OBJECTS_CAST_SHADOW
+#define TURNOFF 0
+//#define OBJECTS_CAST_SHADOW
 //#define NO_SKYBOX
 //#define NO_PLANE
 
@@ -97,7 +97,7 @@ namespace YumeEngine
 		drawable->SetMaterial(planeMat);
 #endif
 
-		/*CreateModel(Vector3(0,1.5f,0),Quaternion::IDENTITY);*/
+		CreateModel(Vector3(0,1.5f,0),Quaternion(180,Vector3(0,1,0)));
 
 #ifndef NO_SKYBOX
 		YumeSceneNode* skyNode = scene_->CreateChild("Sky");
@@ -161,7 +161,7 @@ namespace YumeEngine
 		q.FromLookRotation((cameraNode_->GetWorldPosition() * -1).Normalized());
 		cameraNode_->SetRotation(q);
 		camera->SetFarClip(1000.0f);
-		camera->SetFov(45);
+		camera->SetFov(60);
 
 		BaseApplication::Start();
 
@@ -179,10 +179,12 @@ namespace YumeEngine
 		YumeSceneNode* cubeNode_ = scene_->CreateChild("Cube");
 		cubeNode_->SetPosition(Pos);
 		cubeNode_->SetRotation(Rot);
-		cubeNode_->SetScale(0.1f);
+		cubeNode_->SetScale(3);
 		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/cryteksponza.yume"));
-		drawable->ApplyMaterialList("Models/cryteksponza.txt");
+		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/buddha.yume"));
+		/*drawable->ApplyMaterialList("Models/cryteksponza.txt");*/
+		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
+		drawable->SetMaterial(mat);
 #ifdef OBJECTS_CAST_SHADOW
 		drawable->SetCastShadows(true);
 #endif
@@ -308,6 +310,8 @@ namespace YumeEngine
 		YumeRenderPipeline* fx = viewport->GetRenderPath();
 		YumeCamera* cam = viewport->GetCamera();
 
+
+		fx->SetShaderParameter("ViewThree",cam->GetView().ToMatrix3());
 	}
 
 	void PlaygroundDemo::Setup()

@@ -13,8 +13,8 @@
 #ifdef COMPILEVS
 
 void VS(float4 iPos : POSITION,
-    out float4 oPos : POSITION,
-    out float2 oTexCoord : TEXCOORD0)
+    out float2 oTexCoord : TEXCOORD0,
+    out float4 oPos : OUTPOSITION)
 {
     float4x3 modelMatrix = iModelMatrix;
     float3 worldPos = GetWorldPos(modelMatrix);
@@ -55,7 +55,7 @@ float smallDecodeDepth(float2 depth)
 
 void getValues(float2 pos, out VALUE_TYPE value, out float depth)
 {
-    float4 values = tex2D(sDiffMap, pos);
+    float4 values = Sample2D(DiffMap, pos);
     value = values;
 #if 1
     depth = smallDecodeDepth(values.gb);
@@ -69,7 +69,7 @@ VALUE_TYPE getResult(float2 pos, float centerDepth, float gaussianWeight, inout 
     VALUE_TYPE value;
     float depth;
     getValues(pos, value, depth);
-    
+
     float depthWeight = max(0.0, 1.0 - EDGE_SHARPNESS * abs(depth - centerDepth));
     float weight = (GAUSSIAN_OFFSET + gaussianWeight) * depthWeight;
     totalWeight += weight;
@@ -77,26 +77,26 @@ VALUE_TYPE getResult(float2 pos, float centerDepth, float gaussianWeight, inout 
 }
 
 void PS(float2 iTexCoord : TEXCOORD0,
-    out float4 oColor : COLOR0)
+    out float4 oColor : OUTCOLOR0)
 {
     VALUE_TYPE centerValue;
     float centerDepth;
     getValues(iTexCoord, centerValue, centerDepth);
-    
+
     // 2+1+2 samples
 #if SAMPLES==2
     //float2 weight = float2( 0.29412, 0.35294 );                         //sigma = 1.483
-    //float2 offset = float2( 0.0, 1.3333 ) * cGBufferInvSize.AXIS; 
+    //float2 offset = float2( 0.0, 1.3333 ) * cGBufferInvSize.AXIS;
     // sigma = 1.5
     // gauss = 0.292082 0.233881 0.120078
     float2 weight = float2( 0.292082 0.353959 );
     float2 offset = float2( 0.0, 1.33924 ) * cGBufferInvSize.AXIS;
- 
+
     float totalWeight = GAUSSIAN_OFFSET + weight.x;
     VALUE_TYPE result = centerValue * totalWeight;
     result += getResult(iTexCoord - float2(offset.y, 0.0).DIR, centerDepth, weight.y, totalWeight);
     result += getResult(iTexCoord + float2(offset.y, 0.0).DIR, centerDepth, weight.y, totalWeight);
-    
+
     // 4+1+4 samples
 #elif SAMPLES==4
     //vec3 weight = vec3( 0.227027, 0.316217, 0.070270 );           //sigma = 1.7754
@@ -104,17 +104,17 @@ void PS(float2 iTexCoord : TEXCOORD0,
     //vec3 weight = vec3( 0.250404, 0.320621, 0.0541771 );          //sigma = 1.6
     //vec3 offset = vec3( 0.0, 1.35757, 3.20307 ) * cGBufferInvSize.AXIS;
     // sigma = 2
-    // gauss = 0.204164 0.180174 0.123832 0.0662822 0.0276306 
+    // gauss = 0.204164 0.180174 0.123832 0.0662822 0.0276306
     float4 weight = float4( 0.204164, 0.304005, 0.0939128 );
     float4 offset = float4( 0.0, 1.40733, 3.29421 ) * cGBufferInvSize.AXIS;
- 
+
     float totalWeight = GAUSSIAN_OFFSET + weight.x;
     VALUE_TYPE result = centerValue * totalWeight;
     result += getResult(iTexCoord - float2(offset.z, 0.0).DIR, centerDepth, weight.z, totalWeight);
     result += getResult(iTexCoord - float2(offset.y, 0.0).DIR, centerDepth, weight.y, totalWeight);
     result += getResult(iTexCoord + float2(offset.y, 0.0).DIR, centerDepth, weight.y, totalWeight);
     result += getResult(iTexCoord + float2(offset.z, 0.0).DIR, centerDepth, weight.z, totalWeight);
- 
+
     // 6+1+6 samples
 #elif SAMPLES==6
     //float4 weight = float4( 0.18571, 0.28870, 0.10364, 0.014805 );        //sigma = 2.15327
@@ -125,7 +125,7 @@ void PS(float2 iTexCoord : TEXCOORD0,
     // gauss = 0.121569 0.116706 0.103256 0.0841947 0.0632704 0.0438191 0.0279688
     float4 weight = float4( 0.121569, 0.219963, 0.147465, 0.071788 );
     float4 offset = float4( 0.0, 1.46943, 3.42905, 5.3896 ) * cGBufferInvSize.AXIS;
- 
+
     float totalWeight = GAUSSIAN_OFFSET + weight.x;
     VALUE_TYPE result = centerValue * totalWeight;
     result += getResult(iTexCoord - float2(offset.w, 0.0).DIR, centerDepth, weight.w, totalWeight);
@@ -134,7 +134,7 @@ void PS(float2 iTexCoord : TEXCOORD0,
     result += getResult(iTexCoord + float2(offset.y, 0.0).DIR, centerDepth, weight.y, totalWeight);
     result += getResult(iTexCoord + float2(offset.z, 0.0).DIR, centerDepth, weight.z, totalWeight);
     result += getResult(iTexCoord + float2(offset.w, 0.0).DIR, centerDepth, weight.w, totalWeight);
-    
+
     // 8+1+8 samples
 #elif SAMPLES==8
     // sigma = 5
@@ -159,4 +159,3 @@ void PS(float2 iTexCoord : TEXCOORD0,
     oColor = result / (totalWeight + 0.0001);
 }
 #endif
-

@@ -366,6 +366,8 @@ namespace YumeEngine
 		}
 	}
 
+
+
 	void YumeRenderPipeline::ToggleEnabled(const YumeString& tag)
 	{
 		for(unsigned i = 0; i < renderTargets_.size(); ++i)
@@ -461,6 +463,7 @@ namespace YumeEngine
 			if(j != commands_[i].shaderParameters_.end())
 				j->second = value;
 		}
+
 	}
 
 	const Variant& YumeRenderPipeline::GetShaderParameter(const YumeString& name) const

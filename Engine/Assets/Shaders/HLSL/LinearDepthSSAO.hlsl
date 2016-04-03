@@ -20,6 +20,7 @@ float3 GetViewFarRay(float4 clipPos)
 
 cbuffer CustomPS : register(b6)
 {
+  float3x3 cViewThree;
   float4 cProjInfo;
   float cRadius;
   float cProjScale;
@@ -91,7 +92,13 @@ void PS(float2 iTexCoord : TEXCOORD0,
  //float3 randVec = tRandomVecMap.SampleLevel(samRandomVec, iScreenPos, 0.0f);
  //float randomAngle = randVec.x;
  float randomAngle = frac(pow(iScreenPos.x, iScreenPos.y) * 43758.5453) / cGBufferInvSize.x;
- float3 vsN = normalize(cross(ddx(viewPos), ddy(viewPos)));
+
+#ifdef NORMAL_MAP
+  float3 normal = DecodeNormal(Sample2D(NormalMap, iScreenPos));
+  float3 vsN = mul(normal, cViewThree);
+#else
+  float3 vsN = normalize(cross(ddx(viewPos), ddy(viewPos)));
+#endif
  float ssDiskRadius = cProjScale2 * cProjScale * cRadius / viewPos.z;
  float sum = 0.0;
  float radius2 = cRadius * cRadius;
@@ -112,7 +119,8 @@ void PS(float2 iTexCoord : TEXCOORD0,
    sum += f * f * f * max((vn - cBias) / (epsilon + vv), 0.0);
  }
  float occlusion = max(0.0, 1.0 - sum * intensity * (5.0 / NUM_SAMPLES));
- oColor = float4(occlusion, occlusion,occlusion, 1.0);
+ //occlusion = (clamp(1.0 - (1.0 - occlusion) * 5, 0.0, 1.0) + 0.1f) / (1.0 + 0.1f);
+ oColor = float4(occlusion, SmallEncodeDepth(depthC), 1.0);
  #endif
 
  #ifdef COMBINE

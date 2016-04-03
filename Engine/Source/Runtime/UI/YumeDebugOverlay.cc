@@ -118,13 +118,14 @@ namespace YumeEngine
 				if(data == ("true"))
 				{
 					fx->SetEnabled("LinearDepthSSAO",true);
-					fx->SetEnabled("BlurGaussian",true);
+					fx->SetEnabled("BlurGaussianDepth",true);
 				}
 				else
 				{
 					fx->SetEnabled("LinearDepthSSAO",false);
-					fx->SetEnabled("BlurGaussian",false);
+					fx->SetEnabled("BlurGaussianDepth",false);
 				}
+
 			}
 		}
 		break;
