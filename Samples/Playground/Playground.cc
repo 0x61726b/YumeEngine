@@ -47,7 +47,7 @@
 
 YUME_DEFINE_ENTRY_POINT(YumeEngine::PlaygroundDemo);
 
-#define TURNOFF 0
+#define TURNOFF 1
 //#define OBJECTS_CAST_SHADOW
 //#define NO_SKYBOX
 //#define NO_PLANE
@@ -78,9 +78,9 @@ namespace YumeEngine
 		scene_->CreateComponent<Octree>();
 		scene_->CreateComponent<YumeDebugRenderer>();
 
-		YumeSceneNode* lightNode = scene_->CreateChild("DirectionalLight");
-		lightNode->SetDirection(Vector3(0.6f,-1.0f,0.8f)); // The direction vector does not need to be normalized
-		YumeLight* light = lightNode->CreateComponent<YumeLight>();
+		dirLightNode_ = scene_->CreateChild("DirectionalLight");
+		dirLightNode_->SetDirection(Vector3(-2,-5,-2).Normalized()); // The direction vector does not need to be normalized
+		YumeLight* light = dirLightNode_->CreateComponent<YumeLight>();
 		light->SetLightType(LIGHT_DIRECTIONAL);
 		light->SetShadowBias(BiasParameters(0.00025f,0.5f));
 		light->SetCastShadows(true);
@@ -102,8 +102,10 @@ namespace YumeEngine
 		skyNode->SetScale(500.0f); // The scale actually does not matter
 		YumeSkybox* skybox = skyNode->CreateComponent<YumeSkybox>();
 		skybox->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Skybox.xml"));
+		skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/CustomSky.xml"));
 #endif
+
+		CreateModel(Vector3(0,2,0),Quaternion::IDENTITY);
 
 #if TURNOFF == 0
 		CreateCube(Vector3(-3,1,0),
@@ -177,12 +179,12 @@ namespace YumeEngine
 		YumeSceneNode* cubeNode_ = scene_->CreateChild("Cube");
 		cubeNode_->SetPosition(Pos);
 		cubeNode_->SetRotation(Rot);
-		cubeNode_->SetScale(3);
+		cubeNode_->SetScale(0.01);
 		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/buddha.yume"));
-		/*drawable->ApplyMaterialList("Models/cryteksponza.txt");*/
-		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
-		drawable->SetMaterial(mat);
+		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/cryteksponza.yume"));
+		drawable->ApplyMaterialList("Models/cryteksponza.txt");
+		/*SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
+		drawable->SetMaterial(mat);*/
 #ifdef OBJECTS_CAST_SHADOW
 		drawable->SetCastShadows(true);
 #endif

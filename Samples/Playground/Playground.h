@@ -40,6 +40,7 @@ namespace YumeEngine
 		void CreateCone(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
 
 		YumeSceneNode* cubeNode_;
+		YumeSceneNode* dirLightNode_;
 		Quaternion rot_;
 
 		Vector4Vector::type mOffsets;

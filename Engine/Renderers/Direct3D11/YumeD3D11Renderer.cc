@@ -1069,31 +1069,33 @@ namespace YumeEngine
 		}
 
 
-		//if(gs && gs != geometryShader_)
-		//{
-		//	YumeD3D11ShaderVariation* gsVar_ = static_cast<YumeD3D11ShaderVariation*>(gs);
-		//	if(gsVar_ && !gsVar_->GetGPUObject())
-		//	{
-		//		if(gs->GetCompilerOutput().empty())
-		//		{
-		//			bool success = gs->Create();
-		//			if(!success)
-		//			{
-		//				YUMELOG_ERROR("Failed to compile geometry shader " << gs->GetFullName().c_str() << ":\n" << gs->GetCompilerOutput().c_str());
-		//				gs = 0;
-		//			}
-		//		}
-		//		else
-		//			gs = 0;
-		//	}
+		if(gs && gs != geometryShader_)
+		{
+			YumeD3D11ShaderVariation* gsVar_ = static_cast<YumeD3D11ShaderVariation*>(gs);
+			if(gsVar_ && !gsVar_->GetGPUObject())
+			{
+				if(gs->GetCompilerOutput().empty())
+				{
+					bool success = gs->Create();
+					if(!success)
+					{
+						YUMELOG_ERROR("Failed to compile geometry shader " << gs->GetFullName().c_str() << ":\n" << gs->GetCompilerOutput().c_str());
+						gs = 0;
+					}
+				}
+				else
+					gs = 0;
+			}
 
-		//	impl_->deviceContext_->GSSetShader((ID3D11GeometryShader*)(gsVar_ ? gsVar_->GetGPUObject() : 0),0,0);
-		//	geometryShader_ = gs;
-		//}
-		//else
-		//{
-		//	impl_->deviceContext_->GSSetShader(NULL,0,0);
-		//}
+			impl_->deviceContext_->GSSetShader((ID3D11GeometryShader*)(gsVar_ ? gsVar_->GetGPUObject() : 0),0,0);
+			geometryShader_ = gs;
+		}
+		else
+		{
+			if(geometryShader_)
+				impl_->deviceContext_->GSSetShader(NULL,0,0);
+			geometryShader_ = 0;
+		}
 
 		if(vertexShader_ && pixelShader_)
 		{
@@ -1103,7 +1105,7 @@ namespace YumeEngine
 				shaderProgram_ = i->second;
 			else
 			{
-				SharedPtr<YumeD3D11ShaderProgram> newProgram = shaderPrograms_[p] = (new YumeD3D11ShaderProgram(this,vertexShader_,pixelShader_));
+				SharedPtr<YumeD3D11ShaderProgram> newProgram = shaderPrograms_[p] = (new YumeD3D11ShaderProgram(this,vertexShader_,pixelShader_,geometryShader_));
 				shaderProgram_ = newProgram;
 			}
 

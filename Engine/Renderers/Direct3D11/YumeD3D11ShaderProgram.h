@@ -36,7 +36,7 @@ namespace YumeEngine
 	{
 	public:
 		/// Construct.
-		YumeD3D11ShaderProgram(YumeRHI* graphics,YumeShaderVariation* vertexShader,YumeShaderVariation* pixelShader)
+		YumeD3D11ShaderProgram(YumeRHI* graphics,YumeShaderVariation* vertexShader,YumeShaderVariation* pixelShader,YumeShaderVariation* geometryShader)
 		{
 			// Create needed constant buffers
 			const unsigned* vsBufferSizes = vertexShader->GetConstantBufferSizes();
@@ -57,24 +57,24 @@ namespace YumeEngine
 					psConstantBuffers_[i] = 0;
 			}
 
-			//if(geometryShader)
-			//{
-			//	const unsigned* gsBufferSizes = geometryShader->GetConstantBufferSizes();
-			//	for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
-			//	{
-			//		if(gsBufferSizes[i])
-			//			gsConstantBuffers_[i] = graphics->GetOrCreateConstantBuffer(GS,i,gsBufferSizes[i]);
-			//		else
-			//			gsConstantBuffers_[i] = 0;
-			//	}
+			if(geometryShader)
+			{
+				const unsigned* gsBufferSizes = geometryShader->GetConstantBufferSizes();
+				for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
+				{
+					if(gsBufferSizes[i])
+						gsConstantBuffers_[i] = graphics->GetOrCreateConstantBuffer(GS,i,gsBufferSizes[i]);
+					else
+						gsConstantBuffers_[i] = 0;
+				}
 
-			//	const YumeMap<YumeHash,ShaderParameter>::type& gsParams = static_cast<YumeD3D11ShaderVariation*>(geometryShader)->GetParameters();
-			//	for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = gsParams.begin(); i != gsParams.end(); ++i)
-			//	{
-			//		parameters_[i->first] = i->second;
-			//		parameters_[i->first].bufferPtr_ = gsConstantBuffers_[i->second.buffer_];
-			//	}
-			//}
+				const YumeMap<YumeHash,ShaderParameter>::type& gsParams = static_cast<YumeD3D11ShaderVariation*>(geometryShader)->GetParameters();
+				for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = gsParams.begin(); i != gsParams.end(); ++i)
+				{
+					parameters_[i->first] = i->second;
+					parameters_[i->first].bufferPtr_ = gsConstantBuffers_[i->second.buffer_];
+				}
+			}
 			// Copy parameters. Add direct links to constant buffers.
 			const YumeMap<YumeHash,ShaderParameter>::type& vsParams = static_cast<YumeD3D11ShaderVariation*>(vertexShader)->GetParameters();
 			for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = vsParams.begin(); i != vsParams.end(); ++i)
@@ -102,7 +102,7 @@ namespace YumeEngine
 		YumeMap<YumeHash,ShaderParameter>::type parameters_;
 		YumeConstantBuffer* vsConstantBuffers_[MAX_SHADER_PARAMETER_GROUPS];
 		YumeConstantBuffer* psConstantBuffers_[MAX_SHADER_PARAMETER_GROUPS];
-		/*YumeConstantBuffer* gsConstantBuffers_[MAX_SHADER_PARAMETER_GROUPS];*/
+		YumeConstantBuffer* gsConstantBuffers_[MAX_SHADER_PARAMETER_GROUPS];
 	};
 }
 

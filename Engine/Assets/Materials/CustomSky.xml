@@ -4,7 +4,7 @@
   </Techniques>
   <Parameters>
     <parameter name="Bias" value="1 1 1 1"/>
-    <parameter name="SunDirection" value="0.577f 0.577f 0.577f 1" />
+    <parameter name="SunDirection" value="0.577 0.577 0.577 1" />
   </Parameters>
   <Cull value="none" />
 </Material>

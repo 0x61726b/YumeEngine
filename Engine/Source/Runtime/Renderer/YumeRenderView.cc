@@ -763,6 +763,7 @@ namespace YumeEngine
 		camera->GetFrustumSize(nearVector,farVector);
 		graphics_->SetShaderParameter(VSP_FRUSTUMSIZE,farVector);
 
+
 		if(setProjection)
 		{
 			Matrix4 projection = camera->GetProjection();
@@ -806,10 +807,6 @@ namespace YumeEngine
 		float invSizeX = 1.0f / texWidth;
 		float invSizeY = 1.0f / texHeight;
 		graphics_->SetShaderParameter(PSP_GBUFFERINVSIZE,Vector2(invSizeX,invSizeY));
-
-
-
-
 
 	}
 

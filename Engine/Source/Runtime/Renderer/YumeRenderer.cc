@@ -1311,6 +1311,10 @@ namespace YumeEngine
 		{
 			batch.geometryShader_ = geometryShaders[0];
 		}
+		else
+		{
+			batch.geometryShader_ = 0;
+		}
 
 		// Log error if shaders could not be assigned, but only once per technique
 		if(!batch.vertexShader_ || !batch.pixelShader_ || !batch.geometryShader_)
@@ -1372,6 +1376,8 @@ namespace YumeEngine
 			batch.pixelShader_ = gYume->pRHI->GetShader(PS,psName,deferredLightPSVariations_[psi] + psDefines);
 		else
 			batch.pixelShader_ = gYume->pRHI->GetShader(PS,psName,deferredLightPSVariations_[psi]);
+
+		batch.geometryShader_ = 0;
 	}
 
 	void YumeRenderer::SetCullMode(CullMode mode,YumeCamera* camera)
@@ -1598,7 +1604,7 @@ namespace YumeEngine
 		defaultMaterial_ = (new YumeMaterial);
 
 		defaultPipeline_ = (new YumeRenderPipeline());
-		defaultPipeline_->Load(cache->PrepareResource<YumeXmlFile>("Pipelines/Forward.xml"));
+		defaultPipeline_->Load(cache->PrepareResource<YumeXmlFile>("Pipelines/DeferredSSAO.xml"));
 		CreateGeometries();
 		CreateInstancingBuffer();
 
