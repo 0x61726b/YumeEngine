@@ -49,9 +49,13 @@ namespace YumeEngine
 	class YumeTexture3D;
 	class YumeTextureCube;
 
+
+
+
+	//VertexShader, PixelShader,GeometryShader
 	typedef YumeMap<Pair<YumeShaderVariation*,YumeShaderVariation*>,SharedPtr<YumeD3D11ShaderProgram> > ShaderProgramMap;
 
-	class YumeD3DExport YumeD3D11Renderer : public YumeRHI,std::enable_shared_from_this<YumeD3D11Renderer>
+	class YumeD3DExport YumeD3D11Renderer : public YumeRHI
 	{
 	public:
 		YumeD3D11Renderer();
@@ -114,7 +118,7 @@ namespace YumeEngine
 
 		virtual unsigned						GetFormat(CompressedFormat format) const;
 
-		virtual void						    SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps);
+		virtual void						    SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps,YumeShaderVariation* gs = 0);
 
 
 		virtual bool							HasShaderParameter(YumeHash param);
@@ -163,7 +167,7 @@ namespace YumeEngine
 		virtual void 							Draw(PrimitiveType type,unsigned vertexStart,unsigned vertexCount);
 		virtual void 							Draw(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount);
 		virtual void 							DrawInstanced(PrimitiveType type,unsigned indexStart,unsigned indexCount,unsigned minVertex,unsigned vertexCount,unsigned instanceCount);
-		virtual bool							ResolveToTexture(YumeTexture2D* destination, const IntRect& viewport);
+		virtual bool							ResolveToTexture(YumeTexture2D* destination,const IntRect& viewport);
 		virtual void							ClearParameterSource(ShaderParameterGroup group);
 		virtual void							ClearParameterSources();
 		virtual void							ClearTransformSources();

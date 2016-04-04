@@ -1,0 +1,10 @@
+<Material>
+  <Techniques>
+    <technique name="Techniques/Skybox_GS.xml" />
+  </Techniques>
+  <Parameters>
+    <parameter name="Bias" value="1 1 1 1"/>
+    <parameter name="SunDirection" value="0.577f 0.577f 0.577f 1" />
+  </Parameters>
+  <Cull value="none" />
+</Material>

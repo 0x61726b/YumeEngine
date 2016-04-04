@@ -37,7 +37,7 @@ namespace YumeEngine
 	{
 		unsigned startPos = code.find(signature);
 		unsigned braceLevel = 0;
-		if(startPos == std::string::npos)
+		if(startPos == M_MAX_UNSIGNED)
 			return;
 
 		code.Insert(startPos,"/*");
@@ -81,8 +81,17 @@ namespace YumeEngine
 
 		vsSourceCode_ = shaderCode;
 		psSourceCode_ = shaderCode;
+		gsSourceCode_ = shaderCode;
+
 		CommentOutFunction(vsSourceCode_,"void PS(");
+		CommentOutFunction(vsSourceCode_,"void GS(");
+
 		CommentOutFunction(psSourceCode_,"void VS(");
+		CommentOutFunction(psSourceCode_,"VSOutput VS(");
+		CommentOutFunction(psSourceCode_,"void GS(");
+
+		CommentOutFunction(gsSourceCode_,"void VS(");
+		CommentOutFunction(gsSourceCode_,"void PS(");
 
 
 		RefreshMemoryUse();
@@ -94,6 +103,8 @@ namespace YumeEngine
 		for(YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> >::iterator i = vsVariations_.begin(); i != vsVariations_.end(); ++i)
 			i->second->Release();
 		for(YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> >::iterator i = psVariations_.begin(); i != psVariations_.end(); ++i)
+			i->second->Release();
+		for(YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> >::iterator i = gsVariations_.begin(); i != gsVariations_.end(); ++i)
 			i->second->Release();
 
 		return true;
@@ -108,7 +119,10 @@ namespace YumeEngine
 	{
 		YumeHash definesHash = (defines);
 		typedef YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> > ShaderMap;
+
 		ShaderMap::type& variations = (type == VS ? vsVariations_ : psVariations_);
+		if(type == GS)
+			variations = gsVariations_;
 
 		ShaderMap::iterator i = variations.find(definesHash);
 
@@ -146,6 +160,6 @@ namespace YumeEngine
 	void YumeD3D11Shader::RefreshMemoryUse()
 	{
 		SetMemoryUsage(
-			(unsigned)(sizeof(YumeD3D11Shader) + vsSourceCode_.length() + psSourceCode_.length() + numVariations_ * sizeof(YumeD3D11ShaderVariation)));
+			(unsigned)(sizeof(YumeD3D11Shader) + vsSourceCode_.length() + psSourceCode_.length() + gsSourceCode_.length() +  numVariations_ * sizeof(YumeD3D11ShaderVariation)));
 	}
 }

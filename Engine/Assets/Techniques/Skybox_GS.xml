@@ -1,0 +1,5 @@
+<Yume>
+    <Technique vs="SkyWithSun" ps="SkyWithSun" gs="SkyWithSun">
+        <Pass name="postopaque" depthwrite="false" />
+    </Technique>
+</Yume>

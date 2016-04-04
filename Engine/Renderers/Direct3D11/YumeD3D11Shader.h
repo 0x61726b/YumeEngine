@@ -51,8 +51,8 @@ namespace YumeEngine
 		virtual void RefreshMemoryUse() ;
 
 		YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> >::type vsVariations_;
-		/// Pixel shader variations.
 		YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> >::type psVariations_;
+		YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> >::type gsVariations_;
 	};
 }
 

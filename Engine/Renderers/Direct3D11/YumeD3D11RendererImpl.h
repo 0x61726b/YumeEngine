@@ -70,7 +70,7 @@ namespace YumeEngine
 		ID3D11ShaderResourceView* shaderResourceViews_[MAX_TEXTURE_UNITS];
 		ID3D11SamplerState* samplers_[MAX_TEXTURE_UNITS];
 		ID3D11Buffer* vertexBuffers_[MAX_VERTEX_STREAMS];
-		ID3D11Buffer* constantBuffers_[2][MAX_SHADER_PARAMETER_GROUPS];
+		ID3D11Buffer* constantBuffers_[3][MAX_SHADER_PARAMETER_GROUPS];
 		unsigned vertexSizes_[MAX_VERTEX_STREAMS];
 		unsigned vertexOffsets_[MAX_VERTEX_STREAMS];
 

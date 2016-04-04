@@ -129,6 +129,7 @@ namespace YumeEngine
 
 		YumeShaderVariation* 				    GetVertexShader() const { return vertexShader_; }
 		YumeShaderVariation* 				    GetPixelShader() const { return pixelShader_; }
+		YumeShaderVariation* 				    GetGeometryShader() const { return geometryShader_; }
 
 		YumeVertexBuffer* 					    GetVertexBuffer(unsigned index) const;
 		YumeIndexBuffer* 				        GetIndexBuffer() const { return indexBuffer_; }
@@ -141,7 +142,7 @@ namespace YumeEngine
 		virtual unsigned						GetFormat(CompressedFormat format) const = 0;
 		unsigned int							GetFormatNs(const YumeString&);
 
-		virtual void						    SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps) = 0;
+		virtual void						    SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps,YumeShaderVariation* gs = 0) = 0;
 
 		virtual void  							SetShaderParameter(YumeHash param,const float* data,unsigned count) = 0;
 		virtual void  							SetShaderParameter(YumeHash param,float value) = 0;
@@ -329,6 +330,7 @@ namespace YumeEngine
 		unsigned long long vertexDeclarationHash_;
 		unsigned primitiveType_;
 		YumeShaderVariation* vertexShader_;
+		YumeShaderVariation* geometryShader_;
 		YumeShaderVariation* pixelShader_;
 		YumeTexture* textures_[MAX_TEXTURE_UNITS];
 		YumeMap<YumeString,TextureUnit>::type textureUnits_;

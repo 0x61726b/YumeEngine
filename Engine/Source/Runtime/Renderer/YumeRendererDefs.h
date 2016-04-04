@@ -210,6 +210,7 @@ namespace YumeEngine
 	{
 		VS = 0,
 		PS,
+		GS
 	};
 
 	

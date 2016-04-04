@@ -72,43 +72,32 @@ namespace YumeEngine
 			worldTransform_(rhs.worldTransform_),
 			numWorldTransforms_(rhs.numWorldTransforms_),
 			lightQueue_(0),
-			geometryType_(rhs.geometryType_)
+			geometryType_(rhs.geometryType_),
+			vertexShader_(0),
+			geometryShader_(0),
+			pixelShader_(0)
 		{
 		}
 
 
 		void CalculateSortKey();
-
 		void Prepare(YumeRenderView* view,YumeCamera* camera,bool setModelTransform,bool allowDepthWrite) const;
-
 		void Draw(YumeRenderView* view,YumeCamera* camera,bool allowDepthWrite) const;
 
 		unsigned long long sortKey_;
-
 		float distance_;
-
 		unsigned char renderOrder_;
-
 		unsigned char lightMask_;
-
 		bool isBase_;
-
 		YumeGeometry* geometry_;
-
 		YumeMaterial* material_;
-
 		const Matrix3x4* worldTransform_;
-
 		unsigned numWorldTransforms_;
-
 		YumeRendererEnvironment* zone_;
-
 		LightBatchQueue* lightQueue_;
-
 		YumeRenderPass* pass_;
-
 		YumeShaderVariation* vertexShader_;
-
+		YumeShaderVariation* geometryShader_;
 		YumeShaderVariation* pixelShader_;
 
 		GeometryType geometryType_;
@@ -171,12 +160,8 @@ namespace YumeEngine
 
 
 		void SetTransforms(void* lockedData,unsigned& freeIndex);
-
 		void Draw(YumeRenderView* view,YumeCamera* camera,bool allowDepthWrite) const;
-
-
 		YumeVector<InstanceData>::type instances_;
-
 		unsigned startIndex_;
 	};
 
@@ -253,17 +238,11 @@ namespace YumeEngine
 	public:
 
 		void Clear(int maxSortedInstances);
-
 		void SortBackToFront();
-
 		void SortFrontToBack();
-
 		void SortFrontToBack2Pass(YumePodVector<Batch*>::type& batches);
-
 		void SetTransforms(void* lockedData,unsigned& freeIndex);
-
 		void Draw(YumeRenderView* view,YumeCamera* camera,bool markToStencil,bool usingLightOptimization,bool allowDepthWrite) const;
-
 		unsigned GetNumInstances() const;
 
 
@@ -286,36 +265,23 @@ namespace YumeEngine
 
 	struct ShadowBatchQueue
 	{
-
 		YumeCamera* shadowCamera_;
-
 		IntRect shadowViewport_;
-
 		BatchQueue shadowBatches_;
-
 		float nearSplit_;
-
 		float farSplit_;
 	};
 
 
 	struct LightBatchQueue
 	{
-
 		YumeLight* light_;
-
 		bool negative_;
-
 		YumeTexture2D* shadowMap_;
-
 		BatchQueue litBaseBatches_;
-
 		BatchQueue litBatches_;
-
 		YumeVector<ShadowBatchQueue>::type shadowSplits_;
-
 		YumePodVector<YumeLight*>::type vertexLights_;
-
 		YumePodVector<Batch>::type volumeBatches_;
 	};
 }

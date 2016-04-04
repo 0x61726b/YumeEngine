@@ -1211,6 +1211,8 @@ namespace YumeEngine
 		YumeRenderPass* pass = batch.pass_;
 		YumeVector<SharedPtr<YumeShaderVariation> >::type& vertexShaders = pass->GetVertexShaders();
 		YumeVector<SharedPtr<YumeShaderVariation> >::type& pixelShaders = pass->GetPixelShaders();
+		YumeVector<SharedPtr<YumeShaderVariation> >::type& geometryShaders = pass->GetGeometryShaders();
+
 		if(!vertexShaders.size() || !pixelShaders.size() || pass->GetShadersLoadedFrameNumber() != shadersChangedFrameNumber_)
 		{
 			// First release all previous shaders, then load
@@ -1239,6 +1241,7 @@ namespace YumeEngine
 					// Do not log error, as it would result in a lot of spam
 					batch.vertexShader_ = 0;
 					batch.pixelShader_ = 0;
+					batch.geometryShader_ = 0;
 					return;
 				}
 
@@ -1304,8 +1307,13 @@ namespace YumeEngine
 			}
 		}
 
+		if(pass->GetGeometryShader().length())
+		{
+			batch.geometryShader_ = geometryShaders[0];
+		}
+
 		// Log error if shaders could not be assigned, but only once per technique
-		if(!batch.vertexShader_ || !batch.pixelShader_)
+		if(!batch.vertexShader_ || !batch.pixelShader_ || !batch.geometryShader_)
 		{
 			if(!shaderErrorDisplayed_.Contains(tech))
 			{
@@ -1341,6 +1349,7 @@ namespace YumeEngine
 				psi += DLPS_POINT;
 			break;
 		}
+
 
 		if(batch.lightQueue_->shadowMap_)
 			psi += DLPS_SHADOW;
@@ -1589,7 +1598,7 @@ namespace YumeEngine
 		defaultMaterial_ = (new YumeMaterial);
 
 		defaultPipeline_ = (new YumeRenderPipeline());
-		defaultPipeline_->Load(cache->PrepareResource<YumeXmlFile>("Pipelines/DeferredSSAO.xml"));
+		defaultPipeline_->Load(cache->PrepareResource<YumeXmlFile>("Pipelines/Forward.xml"));
 		CreateGeometries();
 		CreateInstancingBuffer();
 
@@ -1639,10 +1648,12 @@ namespace YumeEngine
 	{
 		YumeVector<SharedPtr<YumeShaderVariation> >::type& vertexShaders = pass->GetVertexShaders();
 		YumeVector<SharedPtr<YumeShaderVariation> >::type& pixelShaders = pass->GetPixelShaders();
+		YumeVector<SharedPtr<YumeShaderVariation> >::type& geometryShaders = pass->GetGeometryShaders();
 
 		// Forget all the old shaders
 		vertexShaders.clear();
 		pixelShaders.clear();
+		geometryShaders.clear();
 
 		YumeString extraShaderDefines = " ";
 		if(pass->GetName() == "shadow"
@@ -1708,9 +1719,14 @@ namespace YumeEngine
 			pixelShaders.resize(2);
 			for(unsigned j = 0; j < 2; ++j)
 			{
-				pixelShaders[j] =
-					SharedPtr<YumeShaderVariation>(gYume->pRHI->GetShader(PS,pass->GetPixelShader(),pass->GetPixelShaderDefines() + extraShaderDefines + heightFogVariations[j]));
+				pixelShaders[j] = SharedPtr<YumeShaderVariation>(gYume->pRHI->GetShader(PS,pass->GetPixelShader(),pass->GetPixelShaderDefines() + extraShaderDefines + heightFogVariations[j]));
 			}
+		}
+
+		if(pass->GetGeometryShader().length() > 0)
+		{
+			geometryShaders.resize(1);
+			geometryShaders[0] = gYume->pRHI->GetShader(GS,pass->GetGeometryShader(),pass->GetGeometryShaderDefines());
 		}
 
 		pass->MarkShadersLoaded(shadersChangedFrameNumber_);
@@ -1976,11 +1992,11 @@ namespace YumeEngine
 					dest[3] = faceY;
 #endif
 					dest += 4;
-				}
-			}
+		}
+	}
 
 			indirectionCubeMap_->SetData((CubeMapFace)i,0,0,0,256,256,data);
-		}
+}
 
 		faceSelectCubeMap_->ClearDataLost();
 		indirectionCubeMap_->ClearDataLost();
@@ -2016,7 +2032,7 @@ namespace YumeEngine
 		occlusionBuffers_.clear();
 		screenBuffers_.clear();
 		screenBufferAllocations_.clear();
-}
+	}
 
 	YumeString YumeRenderer::GetShadowVariations() const
 	{
@@ -2048,7 +2064,7 @@ namespace YumeEngine
 			return "VSM_SHADOW ";
 		case SHADOWQUALITY_BLUR_VSM:
 			return "VSM_SHADOW ";
-		}
+	}
 		return "";
 	};
 

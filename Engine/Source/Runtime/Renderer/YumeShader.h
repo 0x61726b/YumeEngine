@@ -48,7 +48,15 @@ namespace YumeEngine
 		virtual YumeShaderVariation* GetVariation(ShaderType type,const char* defines) = 0;
 		virtual void RefreshMemoryUse() = 0;
 
-		const YumeString& GetSourceCode(ShaderType type) const { return type == VS ? vsSourceCode_ : psSourceCode_; }		
+		const YumeString& GetSourceCode(ShaderType type) const
+		{
+			if(type == VS)
+				return vsSourceCode_;
+			if(type == PS)
+				return psSourceCode_;
+			if(type == GS)
+				return gsSourceCode_;
+		}		
 		unsigned GetTimeStamp() const { return timeStamp_; }
 
 	protected:
@@ -57,6 +65,8 @@ namespace YumeEngine
 	protected:	
 		YumeString vsSourceCode_;	
 		YumeString psSourceCode_;
+		YumeString gsSourceCode_;
+
 		unsigned timeStamp_;	
 		unsigned numVariations_;
 

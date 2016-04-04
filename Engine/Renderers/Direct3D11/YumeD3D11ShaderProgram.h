@@ -57,6 +57,24 @@ namespace YumeEngine
 					psConstantBuffers_[i] = 0;
 			}
 
+			//if(geometryShader)
+			//{
+			//	const unsigned* gsBufferSizes = geometryShader->GetConstantBufferSizes();
+			//	for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
+			//	{
+			//		if(gsBufferSizes[i])
+			//			gsConstantBuffers_[i] = graphics->GetOrCreateConstantBuffer(GS,i,gsBufferSizes[i]);
+			//		else
+			//			gsConstantBuffers_[i] = 0;
+			//	}
+
+			//	const YumeMap<YumeHash,ShaderParameter>::type& gsParams = static_cast<YumeD3D11ShaderVariation*>(geometryShader)->GetParameters();
+			//	for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = gsParams.begin(); i != gsParams.end(); ++i)
+			//	{
+			//		parameters_[i->first] = i->second;
+			//		parameters_[i->first].bufferPtr_ = gsConstantBuffers_[i->second.buffer_];
+			//	}
+			//}
 			// Copy parameters. Add direct links to constant buffers.
 			const YumeMap<YumeHash,ShaderParameter>::type& vsParams = static_cast<YumeD3D11ShaderVariation*>(vertexShader)->GetParameters();
 			for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = vsParams.begin(); i != vsParams.end(); ++i)
@@ -71,6 +89,8 @@ namespace YumeEngine
 				parameters_[i->first] = i->second;
 				parameters_[i->first].bufferPtr_ = psConstantBuffers_[i->second.buffer_];
 			}
+
+
 			parameters_.Rehash(NextPowerOfTwo(parameters_.size()));
 		}
 
@@ -79,12 +99,10 @@ namespace YumeEngine
 		{
 		}
 
-		/// Combined parameters from the vertex and pixel shader.
 		YumeMap<YumeHash,ShaderParameter>::type parameters_;
-		/// Vertex shader constant buffers.
 		YumeConstantBuffer* vsConstantBuffers_[MAX_SHADER_PARAMETER_GROUPS];
-		/// Pixel shader constant buffers.
 		YumeConstantBuffer* psConstantBuffers_[MAX_SHADER_PARAMETER_GROUPS];
+		/*YumeConstantBuffer* gsConstantBuffers_[MAX_SHADER_PARAMETER_GROUPS];*/
 	};
 }
 

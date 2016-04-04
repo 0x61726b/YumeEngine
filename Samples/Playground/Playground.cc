@@ -97,17 +97,15 @@ namespace YumeEngine
 		drawable->SetMaterial(planeMat);
 #endif
 
-		CreateModel(Vector3(0,1.5f,0),Quaternion(180,Vector3(0,1,0)));
-
 #ifndef NO_SKYBOX
 		YumeSceneNode* skyNode = scene_->CreateChild("Sky");
 		skyNode->SetScale(500.0f); // The scale actually does not matter
 		YumeSkybox* skybox = skyNode->CreateComponent<YumeSkybox>();
-		skybox->SetModel(rm_->PrepareResource<YumeModel>("Models/Sphere.mdl"));
-		skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Skydome.xml"));
+		skybox->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
+		skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Skybox.xml"));
 #endif
 
-#if TURNOFF == 1
+#if TURNOFF == 0
 		CreateCube(Vector3(-3,1,0),
 			Quaternion(0,Vector3(0,1,0)),2.5f,YumeColor(1,0,0,0));
 

@@ -263,6 +263,7 @@ namespace YumeEngine
 		primitiveType_ = 0;
 		vertexShader_ = 0;
 		pixelShader_ = 0;
+		geometryShader_ = 0;
 		shaderProgram_ = 0;
 		blendMode_ = BLEND_REPLACE;
 		textureAnisotropy_ = 1;
@@ -346,7 +347,7 @@ namespace YumeEngine
 			SetFillMode(FILL_SOLID);
 			SetScissorTest(false);
 			SetStencilTest((flags & CLEAR_STENCIL) != 0,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,stencil);
-			SetShaders(GetShader(VS,"ClearFramebuffer"),GetShader(PS,"ClearFramebuffer"));
+			SetShaders(GetShader(VS,"ClearFramebuffer"),GetShader(PS,"ClearFramebuffer"),0);
 			SetShaderParameter(VSP_MODEL,model);
 			SetShaderParameter(VSP_VIEWPROJ,projection);
 			SetShaderParameter(PSP_MATDIFFCOLOR,color);
@@ -1004,7 +1005,8 @@ namespace YumeEngine
 		return shaderProgram_ && shaderProgram_->parameters_.find(param) != shaderProgram_->parameters_.end();
 	}
 
-	void YumeD3D11Renderer::SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps)
+
+	void YumeD3D11Renderer::SetShaders(YumeShaderVariation* vs,YumeShaderVariation* ps,YumeShaderVariation* gs)
 	{
 		// Switch to the clip plane variations if necessary
 		/// \todo Causes overhead and string manipulation per drawcall
@@ -1066,16 +1068,42 @@ namespace YumeEngine
 			pixelShader_ = ps;
 		}
 
-		// Update current shader parameters & constant buffers
+
+		//if(gs && gs != geometryShader_)
+		//{
+		//	YumeD3D11ShaderVariation* gsVar_ = static_cast<YumeD3D11ShaderVariation*>(gs);
+		//	if(gsVar_ && !gsVar_->GetGPUObject())
+		//	{
+		//		if(gs->GetCompilerOutput().empty())
+		//		{
+		//			bool success = gs->Create();
+		//			if(!success)
+		//			{
+		//				YUMELOG_ERROR("Failed to compile geometry shader " << gs->GetFullName().c_str() << ":\n" << gs->GetCompilerOutput().c_str());
+		//				gs = 0;
+		//			}
+		//		}
+		//		else
+		//			gs = 0;
+		//	}
+
+		//	impl_->deviceContext_->GSSetShader((ID3D11GeometryShader*)(gsVar_ ? gsVar_->GetGPUObject() : 0),0,0);
+		//	geometryShader_ = gs;
+		//}
+		//else
+		//{
+		//	impl_->deviceContext_->GSSetShader(NULL,0,0);
+		//}
+
 		if(vertexShader_ && pixelShader_)
 		{
-			Pair<YumeShaderVariation*,YumeShaderVariation*> key = MakePair(vertexShader_,pixelShader_);
-			ShaderProgramMap::iterator i = shaderPrograms_.find(key);
+			Pair<YumeShaderVariation*,YumeShaderVariation*> p = MakePair(vertexShader_,pixelShader_);
+			ShaderProgramMap::iterator i = shaderPrograms_.find(p);
 			if(i != shaderPrograms_.end())
 				shaderProgram_ = i->second;
 			else
 			{
-				SharedPtr<YumeD3D11ShaderProgram> newProgram = shaderPrograms_[key] = SharedPtr<YumeD3D11ShaderProgram>(new YumeD3D11ShaderProgram(this,vertexShader_,pixelShader_));
+				SharedPtr<YumeD3D11ShaderProgram> newProgram = shaderPrograms_[p] = (new YumeD3D11ShaderProgram(this,vertexShader_,pixelShader_));
 				shaderProgram_ = newProgram;
 			}
 
@@ -1875,6 +1903,11 @@ namespace YumeEngine
 			impl_->deviceContext_->PSSetShaderResources(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
 				&impl_->shaderResourceViews_[firstDirtyTexture_]);
 			impl_->deviceContext_->PSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
+				&impl_->samplers_[firstDirtyTexture_]);
+
+			impl_->deviceContext_->GSSetShaderResources(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
+				&impl_->shaderResourceViews_[firstDirtyTexture_]);
+			impl_->deviceContext_->GSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
 				&impl_->samplers_[firstDirtyTexture_]);
 
 			firstDirtyTexture_ = lastDirtyTexture_ = M_MAX_UNSIGNED;

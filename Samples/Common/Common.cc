@@ -221,7 +221,7 @@ namespace YumeEngine
 		pipeline->SetShaderParameter("IntensityDivR6",ao_intensity.x_);
 		pipeline->SetShaderParameter("Bias",ao_bias.x_);
 
-		pipeline->SetEnabled("LinearDepthSSAO",true);
+		pipeline->SetEnabled("LinearDepthSSAO",false);
 		pipeline->SetEnabled("BlurGaussianDepth",false);
 		
 

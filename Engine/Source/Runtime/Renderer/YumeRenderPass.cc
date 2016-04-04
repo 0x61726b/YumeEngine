@@ -137,6 +137,12 @@ namespace YumeEngine
 		ReleaseShaders();
 	}
 
+	void YumeRenderPass::SetGeometryShader(const YumeString& name)
+	{
+		geometryShaderName_ = name;
+		ReleaseShaders();
+	}
+
 	void YumeRenderPass::SetVertexShaderDefines(const YumeString& defines)
 	{
 		vertexShaderDefines_ = defines;
@@ -149,10 +155,17 @@ namespace YumeEngine
 		ReleaseShaders();
 	}
 
+	void YumeRenderPass::SetGeometryShaderDefines(const YumeString& defines)
+	{
+		geometryShaderDefines_ = defines;
+		ReleaseShaders();
+	}
+
 	void YumeRenderPass::ReleaseShaders()
 	{
 		vertexShaders_.clear();
 		pixelShaders_.clear();
+		geometryShaders_.clear();
 	}
 
 	void YumeRenderPass::MarkShadersLoaded(unsigned frameNumber)
@@ -181,9 +194,6 @@ namespace YumeEngine
 	{
 	}
 
-
-
-
 	bool YumeRenderTechnique::BeginLoad(YumeFile& source)
 	{
 		passes_.clear();
@@ -201,13 +211,17 @@ namespace YumeEngine
 
 		YumeString globalVS = technique.attribute("vs").as_string();
 		YumeString globalPS = technique.attribute("ps").as_string();
+		YumeString globalGS = technique.attribute("gs").as_string();
 		YumeString globalVSDefines = technique.attribute("vsdefines").as_string();
 		YumeString globalPSDefines = technique.attribute("psdefines").as_string();
+		YumeString globalGSDefines = technique.attribute("gsdefines").as_string();
 
 		if(!globalVSDefines.empty())
 			globalVSDefines += ' ';
 		if(!globalPSDefines.empty())
 			globalPSDefines += ' ';
+		if(!globalGSDefines.empty())
+			globalGSDefines += ' ';
 
 		bool globalAlphaMask = technique.attribute("alphamask").as_bool();
 
@@ -225,6 +239,7 @@ namespace YumeEngine
 				newPass->SetVertexShader(globalVS);
 				newPass->SetVertexShaderDefines(globalVSDefines + pass.attribute("vsdefines").as_string());
 			}
+
 			if(!pass.attribute("ps").empty())
 			{
 				newPass->SetPixelShader(pass.attribute("ps").as_string());
@@ -234,6 +249,17 @@ namespace YumeEngine
 			{
 				newPass->SetPixelShader(globalPS);
 				newPass->SetPixelShaderDefines(globalPSDefines + pass.attribute("psdefines").as_string());
+			}
+
+			if(!pass.attribute("gs").empty())
+			{
+				newPass->SetGeometryShader(pass.attribute("gs").as_string());
+				newPass->SetGeometryShaderDefines(pass.attribute("gsdefines").as_string());
+			}
+			else
+			{
+				newPass->SetGeometryShader(globalGS);
+				newPass->SetGeometryShaderDefines(globalPSDefines + pass.attribute("gsdefines").as_string());
 			}
 
 			if(!pass.attribute("lighting").empty())

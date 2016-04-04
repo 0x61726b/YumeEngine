@@ -30,7 +30,7 @@ if(WIN32) # The only platform it makes sense to check for DirectX SDK
           NO_DEFAULT_PATH)    # Do not use default paths such as the PATH variable, to potentially avoid using a wrong architecture DLL
   if (DIRECT3D_DLL)
                 if (YUME_BUILD_DIRECT3D11)
-                    set (DirectX_D3D11_LIBRARIES d3d11 d3dcompiler dxgi dxguid)
+                    set (DirectX_D3D11_LIBRARIES d3d11 d3d9 d3dcompiler dxgi dxguid)
                   endif()
                 unset (DIRECT3D_INCLUDE_DIRS)
             endif ()

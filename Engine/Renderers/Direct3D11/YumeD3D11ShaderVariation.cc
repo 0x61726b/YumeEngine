@@ -80,9 +80,14 @@ namespace YumeEngine
 				if(gYume->pRHI->GetVertexShader() == this)
 					gYume->pRHI->SetShaders(0,0);
 			}
-			else
+			else if(type_ == PS)
 			{
 				if(gYume->pRHI->GetPixelShader() == this)
+					gYume->pRHI->SetShaders(0,0);
+			}
+			else if(type_ == GS)
+			{
+				if(gYume->pRHI->GetGeometryShader() == this)
 					gYume->pRHI->SetShaders(0,0);
 			}
 
@@ -117,17 +122,17 @@ namespace YumeEngine
 		SplitPath(owner_->GetName(),path,name,extension);
 		extension = type_ == VS ? ".vs4" : ".ps4";
 
-		YumeString binaryShaderName = path + "Cache/" + name + "_" + (defines_) + extension;
+		YumeString binaryShaderName = path + "Cache/" + name + "_" + (defines_)+extension;
 
 		if(!Compile())
 			return false;
 		/*if(!LoadByteCode(binaryShaderName))
 		{
-			if(!Compile())
-				return false;
+		if(!Compile())
+		return false;
 
-			if(owner_->GetTimeStamp())
-				SaveByteCode(binaryShaderName);
+		if(owner_->GetTimeStamp())
+		SaveByteCode(binaryShaderName);
 		}*/
 
 		// Then create shader from the bytecode
@@ -146,7 +151,7 @@ namespace YumeEngine
 			else
 				compilerOutput_ = "Could not create vertex shader, empty bytecode";
 		}
-		else
+		else if(type_ == PS)
 		{
 			if(device && byteCode_.size())
 			{
@@ -159,6 +164,20 @@ namespace YumeEngine
 			}
 			else
 				compilerOutput_ = "Could not create pixel shader, empty bytecode";
+		}
+		else if(type_ == GS)
+		{
+			if(device && byteCode_.size())
+			{
+				HRESULT hr = device->CreateGeometryShader(&byteCode_[0],byteCode_.size(),0,(ID3D11GeometryShader**)&object_);
+				if(FAILED(hr))
+				{
+					D3D_SAFE_RELEASE(object_);
+					compilerOutput_ = "Could not create GEOMETRY shader (HRESULT " + String(hr) + ")";
+				}
+			}
+			else
+				compilerOutput_ = "Could not create GEOMETRY shader, empty bytecode";
 		}
 
 		return object_ != 0;
@@ -249,11 +268,18 @@ namespace YumeEngine
 			defines.push_back("COMPILEVS");
 			profile = "vs_4_0";
 		}
-		else
+		else if(type_ == PS)
 		{
 			entryPoint = "PS";
 			defines.push_back("COMPILEPS");
 			profile = "ps_4_0";
+			flags |= 0;
+		}
+		else if(type_ == GS)
+		{
+			entryPoint = "GS";
+			defines.push_back("COMPILEGS");
+			profile = "gs_4_0";
 			flags |= 0;
 		}
 
@@ -311,8 +337,10 @@ namespace YumeEngine
 		{
 			if(type_ == VS)
 				YUMELOG_DEBUG("Compiled vertex shader " << GetFullName().c_str());
-			else
+			if(type_ == PS)
 				YUMELOG_DEBUG("Compiled pixel shader " << GetFullName().c_str());
+			if(type_ == GS)
+				YUMELOG_DEBUG("Compiled geometry shader " << GetFullName().c_str());
 
 			unsigned char* bufData = (unsigned char*)shaderCode->GetBufferPointer();
 			unsigned bufSize = (unsigned)shaderCode->GetBufferSize();

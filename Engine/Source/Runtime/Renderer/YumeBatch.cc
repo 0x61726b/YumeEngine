@@ -171,7 +171,7 @@ namespace YumeEngine
 	void Batch::CalculateSortKey()
 	{
 		unsigned shaderID = (unsigned)(
-			((*((unsigned*)&vertexShader_) / sizeof(YumeShaderVariation)) + (*((unsigned*)&pixelShader_) / sizeof(YumeShaderVariation))) &
+			((*((unsigned*)&vertexShader_) / sizeof(YumeShaderVariation)) + (*((unsigned*)&geometryShader_) / sizeof(YumeShaderVariation)) + (*((unsigned*)&pixelShader_) / sizeof(YumeShaderVariation))) &
 			0x3fff);
 		if(!isBase_)
 			shaderID |= 0x8000;
@@ -198,7 +198,7 @@ namespace YumeEngine
 		YumeTexture2D* shadowMap = lightQueue_ ? lightQueue_->shadowMap_ : 0;
 
 		// Set shaders first. The available shader parameters and their register/uniform positions depend on the currently set shaders
-		graphics->SetShaders(vertexShader_,pixelShader_);
+		graphics->SetShaders(vertexShader_,pixelShader_,geometryShader_);
 
 		// Set pass / material-specific renderstates
 		if(pass_ && material_)
@@ -666,6 +666,8 @@ namespace YumeEngine
 			if(!instanceBuffer || geometryType_ != GEOM_INSTANCED || startIndex_ == M_MAX_UNSIGNED)
 			{
 				Batch::Prepare(view,camera,false,allowDepthWrite);
+
+
 
 				graphics->SetIndexBuffer(geometry_->GetIndexBuffer());
 				graphics->SetVertexBuffers(geometry_->GetVertexBuffers(),geometry_->GetVertexElementMasks());

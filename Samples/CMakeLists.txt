@@ -29,6 +29,8 @@ add_subdirectory(CefTest)
 
 add_subdirectory(Playground)
 
+add_subdirectory(AmbientOcclusion1)
+
 if(NOT OS_MACOSX)
   #add_subdirectory(TestSuite)
 endif()
