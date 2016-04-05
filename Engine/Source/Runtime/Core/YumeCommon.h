@@ -38,6 +38,7 @@
 #include "Renderer/YumeAuxRenderer.h"
 #include "Renderer/YumeRenderView.h"
 #include "Renderer/YumeTexture2D.h"
+#include "Renderer/YumePostProcessor.h"
 #include "UI/YumeUI.h"
 
 #include "Core/YumeIO.h"

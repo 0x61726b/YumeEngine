@@ -125,7 +125,17 @@ namespace YumeEngine
 					fx->SetEnabled("LinearDepthSSAO",false);
 					fx->SetEnabled("BlurGaussianDepth",false);
 				}
-
+			}
+			if(domElement == "godraysSwitch")
+			{
+				if(data == "true")
+				{
+					gYume->pPostFx->SetEnableLightScattering(true);
+				}
+				else
+				{
+					gYume->pPostFx->SetEnableLightScattering(false);
+				}
 			}
 		}
 		break;
@@ -166,6 +176,25 @@ namespace YumeEngine
 			}
 
 
+			if(domElement == "lsSampleCount")
+			{
+				gYume->pPostFx->SetLightScatteringParameter(LS_SAMPLECOUNT,(float)atof(data.c_str()));
+			}
+
+			if(domElement == "lsWeight")
+			{
+				gYume->pPostFx->SetLightScatteringParameter(LS_WEIGHT,(float)atof(data.c_str()));
+			}
+
+			if(domElement == "lsDecay")
+			{
+				gYume->pPostFx->SetLightScatteringParameter(LS_DECAY,(float)atof(data.c_str()));
+			}
+
+			if(domElement == "lsExposure")
+			{
+				gYume->pPostFx->SetLightScatteringParameter(LS_EXPOSURE,(float)atof(data.c_str()));
+			}
 
 		}
 		break;
@@ -174,6 +203,7 @@ namespace YumeEngine
 		}
 
 	}
+
 
 	bool YumeDebugOverlay::Initialize()
 	{

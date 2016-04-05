@@ -391,7 +391,13 @@ namespace YumeEngine
 				graphics->SetShaderParameter(PSP_LIGHTPOS,
 					Vector4((isLightVolume ? (lightNode->GetWorldPosition() - cameraEffectivePos) : lightNode->GetWorldPosition()),
 					atten));
+				Vector4 lightScreen = Vector4((isLightVolume ? (lightNode->GetWorldPosition() - cameraEffectivePos) : lightNode->GetWorldPosition()),
+					atten);
+				Matrix4 viewproj = (camera->GetProjection() * camera->GetView());
+				lightScreen = viewproj * lightScreen;
 
+
+				graphics->SetShaderParameter(PSP_LIGHTPOSSCREEN,viewproj);
 				if(graphics->HasShaderParameter(PSP_LIGHTMATRICES))
 				{
 					switch(light->GetLightType())
@@ -443,6 +449,8 @@ namespace YumeEngine
 					break;
 					}
 				}
+
+
 
 				// Set shadow mapping shader parameters
 				if(shadowMap)
@@ -626,8 +634,6 @@ namespace YumeEngine
 		if(zone_ && graphics->HasTextureUnit(TU_ZONE))
 			graphics->SetTexture(TU_ZONE,zone_->GetZoneTexture());
 	}
-
-
 
 	void Batch::Draw(YumeRenderView* view,YumeCamera* camera,bool allowDepthWrite) const
 	{

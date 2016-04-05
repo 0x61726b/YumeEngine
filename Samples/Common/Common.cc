@@ -161,6 +161,14 @@ namespace YumeEngine
 			pipeline->ToggleEnabled("DebugGBuffer");
 			gYume->pRenderer->SetGBufferDebugRendering(!gYume->pRenderer->GetGBufferDebugRendering());
 		}
+
+		if(input->GetKeyPress(KEY_F3))
+		{
+			YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
+			YumeRenderPipeline* pipeline = viewport->GetRenderPath();
+
+			pipeline->ToggleEnabled("VolumetricLightScatter");
+		}
 	}
 
 	void BaseApplication::HandlePostRenderUpdate(float timeStep)
@@ -190,6 +198,7 @@ namespace YumeEngine
 		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/Blur.xml"));
 		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/FXAA2.xml"));
 		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/AutoExposure.xml"));
+		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/LightScatter.xml"));
 		pipeline->SetShaderParameter("BloomMix",Vector2(0.9f,0.6f));
 		pipeline->SetShaderParameter("BloomHDRThreshold",0.8f);
 		pipeline->SetEnabled("Bloom",false);
@@ -198,6 +207,7 @@ namespace YumeEngine
 		pipeline->SetEnabled("Blur",false);
 		pipeline->SetEnabled("AutoExposure",false);
 		pipeline->SetEnabled("FXAA2",false);
+		pipeline->SetEnabled("VolumetricLightScatter",false);
 		viewport->SetRenderPath(pipeline);
 
 		YumeRenderer* renderer = gYume->pRenderer;
@@ -222,8 +232,11 @@ namespace YumeEngine
 		pipeline->SetShaderParameter("Bias",ao_bias.x_);
 
 		pipeline->SetEnabled("LinearDepthSSAO",false);
-		pipeline->SetEnabled("BlurGaussianDepth",false);
-		
+
+		gYume->pPostFx->SetDefaultParameters();
+
+
+
 
 	}
 

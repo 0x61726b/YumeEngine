@@ -1,0 +1,70 @@
+<Pipeline>
+  <RenderTargets>
+    <rendertarget name="godrayMap" sizedivisor="1 1" format="rgba" />
+    <rendertarget name="blur" sizedivisor="1 1" format="rgba" />
+  </RenderTargets>
+  <Commands>
+
+    <!-- <command type="quad" tag="VolumetricDepthPass" vs="VolumetricDepthPass" ps="VolumetricDepthPass" output="godrayMap">
+      <Textures>
+        <texture unit="diffuse" name="viewport" />
+        <texture unit="emissive" name="depth" />
+      </Textures>
+    </command>
+
+    <command type="quad" tag="VolumetricBlurPass" vs="VolumetricBlurPass" ps="VolumetricBlurPass" psdefines="GODRAY_PASS" output="blur">
+      <Textures>
+        <texture unit="diffuse" name="godrayMap" />
+      </Textures>
+    </command>
+
+    <command type="quad" tag="VolumetricBlurPass" vs="VolumetricBlurPass" ps="VolumetricBlurPass" psdefines="COMBINE" output="viewport">
+      <Textures>
+        <texture unit="diffuse" name="viewport" />
+        <texture unit="emissive" name="blur" />
+      </Textures>
+    </command> -->
+
+    <command type="quad" tag="VolumetricLightScatter" vs="VolumetricLightScatter" ps="VolumetricLightScatter" psdefines="GODRAY_PASS" output="godrayMap">
+      <Textures>
+        <texture unit="diffuse" name="viewport" />
+      </Textures>
+      <Parameters>
+        <parameter name="LSSampleCount" value="100"/>
+        <parameter name="LSWeight" value="0.08"/>
+        <parameter name="LSDecay" value="0.95"/>
+        <parameter name="LSExposure" value="0.4"/>
+      </Parameters>
+    </command>
+
+    <command type="quad" tag="VolumetricLightScatter" vs="BlurGaussian" ps="BlurGaussian" psdefines="SAMPLES=8" output="blur">
+      <Textures>
+        <texture unit="diffuse" name="godrayMap" />
+      </Textures>
+    </command>
+    <command type="quad" tag="VolumetricLightScatter" vs="BlurGaussian" ps="BlurGaussian" psdefines="SAMPLES=8 VERTICAL" output="godrayMap">
+      <Textures>
+        <texture unit="diffuse" name="blur" />
+      </Textures>
+    </command>
+
+
+    <command type="quad" tag="VolumetricLightScatter" vs="VolumetricLightScatter" ps="VolumetricLightScatter" psdefines="COMBINE" output="viewport">
+      <Textures>
+        <texture unit="diffuse" name="viewport" />
+        <texture unit="emissive" name="godrayMap" />
+      </Textures>
+    </command>
+
+    <command type="quad" tag="VolumetricLightScatter" vs="ToneMap" ps="ToneMap" psdefines="UNCHARTED2" output="viewport">
+      <Textures>
+        <texture unit="diffuse" name="viewport" />
+      </Textures>
+      <Parameters>
+        <parameter name="TonemapExposureBias" value="0.8"/>
+        <parameter name="TonemapMaxWhite" value="0.9"/>
+      </Parameters>
+    </command>
+
+  </Commands>
+<Pipeline>

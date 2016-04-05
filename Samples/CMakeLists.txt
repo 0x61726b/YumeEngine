@@ -31,6 +31,8 @@ add_subdirectory(Playground)
 
 add_subdirectory(AmbientOcclusion1)
 
+add_subdirectory(GodRays)
+
 if(NOT OS_MACOSX)
   #add_subdirectory(TestSuite)
 endif()

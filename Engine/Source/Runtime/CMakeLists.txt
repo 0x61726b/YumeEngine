@@ -95,6 +95,8 @@ set(SRC_RENDERER
 	Renderer/YumeStaticModel.cc
 	Renderer/YumeSkeleton.h
 	Renderer/YumeSkeleton.cc
+	Renderer/YumePostProcessor.h
+	Renderer/YumePostProcessor.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

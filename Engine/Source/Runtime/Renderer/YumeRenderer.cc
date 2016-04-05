@@ -277,8 +277,8 @@ namespace YumeEngine
 		textureFilterMode_(FILTER_TRILINEAR),
 		textureQuality_(QUALITY_HIGH),
 		materialQuality_(QUALITY_HIGH),
-		shadowMapSize_(1024),
-		shadowQuality_(SHADOWQUALITY_PCF_16BIT),
+		shadowMapSize_(2048),
+		shadowQuality_(SHADOWQUALITY_PCF_24BIT),
 		shadowSoftness_(2.0f),
 		vsmShadowParams_(0.0000001f,0.2f),
 		maxShadowMaps_(1),
@@ -1538,6 +1538,8 @@ namespace YumeEngine
 		ResetScreenBufferAllocations();
 		lightScissorCache_.clear();
 		lightStencilValue_ = 1;
+
+
 	}
 
 	void YumeRenderer::RemoveUnusedBuffers()
@@ -1612,17 +1614,19 @@ namespace YumeEngine
 		ResetShadowMaps();
 		ResetBuffers();
 
+
+
+
+
+
+
+
 		randomVectorMap_ = gYume->pRHI->CreateTexture2D();
 		randomVectorMap_->SetSize(256,256,gYume->pRHI->GetRGBAFormatNs());
 
-
-
-
-
-
-
 		shadersDirty_ = true;
 		initialized_ = true;
+
 
 		YUMELOG_INFO("Initialized renderer");
 	}

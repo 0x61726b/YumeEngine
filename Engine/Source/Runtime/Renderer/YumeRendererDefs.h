@@ -317,6 +317,7 @@ namespace YumeEngine
 	extern YumeAPIExport const YumeHash PSP_LIGHTCOLOR;
 	extern YumeAPIExport const YumeHash PSP_LIGHTDIR;
 	extern YumeAPIExport const YumeHash PSP_LIGHTPOS;
+	extern YumeAPIExport const YumeHash PSP_LIGHTPOSSCREEN;
 	extern YumeAPIExport const YumeHash PSP_MATDIFFCOLOR;
 	extern YumeAPIExport const YumeHash PSP_MATEMISSIVECOLOR;
 	extern YumeAPIExport const YumeHash PSP_MATENVMAPCOLOR;

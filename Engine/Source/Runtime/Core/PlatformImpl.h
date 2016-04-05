@@ -76,6 +76,7 @@ struct YumeAPIExport GlobalSystems : public YumeEngine::RefCounted
 	YumeEngine::SharedPtr<YumeEngine::YumeDebugRenderer>					pDebugRenderer;
 	YumeEngine::SharedPtr<YumeEngine::YumeInput>							pInput;
 	YumeEngine::SharedPtr<YumeEngine::YumeObjectFactory>					pObjFactory;
+	YumeEngine::SharedPtr<YumeEngine::YumePostProcessor>					pPostFx;
 };
 
 extern YumeAPIExport YumeEngine::SharedPtr<GlobalSystems> gYume;

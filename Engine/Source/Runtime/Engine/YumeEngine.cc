@@ -113,6 +113,7 @@ namespace YumeEngine
 		gYume->pEnv = (YumeAPINew YumeEnvironment);
 		gYume->pWorkSystem = (YumeAPINew YumeWorkQueue);
 		gYume->pResourceManager = YumeAPINew YumeResourceManager;
+		gYume->pPostFx = YumeAPINew YumePostProcessor;
 
 		VariantMap::const_iterator It = variants.begin();
 

@@ -96,9 +96,13 @@ p {
 .autoexposureSwitchOptions {
   display: none;
 }
+.godraysSwitchOptions {
+  display: none;
+}
 .advancedOptsPanel {
   right: 0px;
   width: 300px;
+  top:500px;
   position: fixed;
   color:white;
 }

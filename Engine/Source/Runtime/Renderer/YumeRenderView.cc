@@ -1608,8 +1608,6 @@ namespace YumeEngine
 				}
 			}
 			break;
-
-
 			case CMD_QUAD:
 			{
 				RHIEvent event("Render Quad");
@@ -2092,6 +2090,9 @@ namespace YumeEngine
 		if(!source)
 			return;
 
+
+
+
 		// If blitting to the destination rendertarget, use the actual viewport. Intermediate textures on the other hand
 		// are always viewport-sized
 		IntVector2 srcSize(source->GetWidth(),source->GetHeight());
@@ -2143,11 +2144,12 @@ namespace YumeEngine
 			model.m23_ = nearQuad ? 0.0f : 1.0f;
 		}
 
+
+
+
 		graphics_->SetCullMode(CULL_NONE);
 		graphics_->SetShaderParameter(VSP_MODEL,model);
 		graphics_->SetShaderParameter(VSP_VIEWPROJ,projection);
-
-
 
 
 

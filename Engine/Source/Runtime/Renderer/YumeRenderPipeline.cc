@@ -177,6 +177,7 @@ namespace YumeEngine
 		}
 
 
+
 		// By default use 1 output, which is the viewport
 		outputs_.resize(1);
 		outputs_[0] = MakePair(YumeString("viewport"),FACE_POSITIVE_X);
@@ -382,6 +383,8 @@ namespace YumeEngine
 				commands_[i].enabled_ = !commands_[i].enabled_;
 		}
 	}
+
+
 
 	void YumeRenderPipeline::SetRenderTarget(unsigned index,const RenderTargetInfo& info)
 	{

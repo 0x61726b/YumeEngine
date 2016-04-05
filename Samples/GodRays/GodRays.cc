@@ -8,7 +8,7 @@
 //--------------------------------------------------------------------------------
 
 #include "Core/YumeHeaders.h"
-#include "Playground.h"
+#include "GodRays.h"
 #include "Logging/logging.h"
 #include "Core/YumeMain.h"
 #include "Scene/YumeOctree.h"
@@ -45,33 +45,31 @@
 
 #include "Renderer/YumeRenderPipeline.h"
 
-YUME_DEFINE_ENTRY_POINT(YumeEngine::PlaygroundDemo);
+YUME_DEFINE_ENTRY_POINT(YumeEngine::GodRays);
 
 #define TURNOFF 1
 //#define NO_MODEL
-#define OBJECTS_CAST_SHADOW
-//#define NO_SKYBOX
-//#define NO_PLANE
+//#define OBJECTS_CAST_SHADOW
+#define NO_SKYBOX
+#define NO_PLANE
 
 namespace YumeEngine
 {
 
 
 
-	PlaygroundDemo::PlaygroundDemo()
+	GodRays::GodRays()
 		: rot_(Quaternion::IDENTITY)
 	{
 		REGISTER_ENGINE_LISTENER;
 	}
 
-	PlaygroundDemo::~PlaygroundDemo()
+	GodRays::~GodRays()
 	{
 
 	}
 
-
-
-	void PlaygroundDemo::Start()
+	void GodRays::Start()
 	{
 		YumeResourceManager* rm_ = gYume->pResourceManager;
 
@@ -108,58 +106,14 @@ namespace YumeEngine
 		skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/CustomSky.xml"));
 #endif
 #ifndef NO_MODEL
-		CreateModel(Vector3(0,2,0),Quaternion::IDENTITY);
-#endif
-
-#if TURNOFF == 0
-		CreateCube(Vector3(-3,1,0),
-			Quaternion(0,Vector3(0,1,0)),2.5f,YumeColor(1,0,0,0));
-
-		CreateCube(Vector3(0,0.3f,0),
-			Quaternion::IDENTITY,2,YumeColor(0,1,0,0));
-		CreateCube(Vector3(2,0.5f,0),
-			Quaternion::IDENTITY,1,YumeColor(0,0,1,0));
-
-		CreateSphere(Vector3(-8,0.5f,9),
-			Quaternion::IDENTITY,1,YumeColor(1,0,0,0));
-
-		CreateSphere(Vector3(-6,0.5f,9),
-			Quaternion::IDENTITY,1,YumeColor(0,1,0,0));
-
-		CreateSphere(Vector3(-4,0.5f,9),
-			Quaternion::IDENTITY,1,YumeColor(0,0,1,0));
-
-		CreatePyramid(Vector3(4,0.5f,9),
-			Quaternion::IDENTITY,1,YumeColor(1,0,0,0));
-
-		CreatePyramid(Vector3(6,0.5f,9),
-			Quaternion::IDENTITY,1,YumeColor(0,1,0,0));
-
-		CreatePyramid(Vector3(8,0.5f,9),
-			Quaternion::IDENTITY,1,YumeColor(0,0,1,0));
-
-		CreateCylinder(Vector3(4,0.5f,6),
-			Quaternion::IDENTITY,1,YumeColor(1,0,0,0));
-
-		CreateCylinder(Vector3(6,0.5f,6),
-			Quaternion::IDENTITY,1,YumeColor(0,1,0,0));
-
-		CreateCylinder(Vector3(8,0.5f,6),
-			Quaternion::IDENTITY,1,YumeColor(0,0,1,0));
-
-		CreateCone(Vector3(-8,0.5f,6),
-			Quaternion::IDENTITY,1,YumeColor(1,0,0,0));
-
-		CreateCone(Vector3(-6,0.5f,6),
-			Quaternion::IDENTITY,1,YumeColor(0,1,0,0));
-
-		CreateCone(Vector3(-4,0.5f,6),
-			Quaternion::IDENTITY,1,YumeColor(0,0,1,0));
+		dragon_ = CreateModel(Vector3(0,0,0),Quaternion::IDENTITY,1,"dragon");
+		CreateModel(Vector3(0.75f,1,0),Quaternion(90,Vector3(0,1,0)),1,"dragon");
+		buddha_ = CreateModel(Vector3(1.5f,0,0),Quaternion::IDENTITY,1,"buddha");
 #endif
 
 		cameraNode_ = scene_->CreateChild("Camera");
 		YumeCamera* camera = cameraNode_->CreateComponent<YumeCamera>();
-		cameraNode_->SetPosition(Vector3(0,5,-10));
+		cameraNode_->SetPosition(Vector3(0,1,-1));
 
 		Quaternion q;
 		q.FromLookRotation((cameraNode_->GetWorldPosition() * -1).Normalized());
@@ -173,35 +127,31 @@ namespace YumeEngine
 		gYume->pUI->SetUIEnabled(false);
 	}
 
-	void PlaygroundDemo::SSAOOffsetVectors()
-	{
-
-	}
-
-	void PlaygroundDemo::CreateModel(Vector3 Pos,Quaternion Rot)
+	YumeSceneNode* GodRays::CreateModel(Vector3 Pos,Quaternion Rot,float scale,const YumeString& model)
 	{
 		YumeSceneNode* cubeNode_ = scene_->CreateChild("Cube");
 		cubeNode_->SetPosition(Pos);
 		cubeNode_->SetRotation(Rot);
-		cubeNode_->SetScale(0.01);
+		cubeNode_->SetScale(scale);
 		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/cryteksponza.yume"));
-		drawable->ApplyMaterialList("Models/cryteksponza.txt");
-		/*SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
-		drawable->SetMaterial(mat);*/
+		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/" + model + ".yume"));
+		/*drawable->ApplyMaterialList("Models/cryteksponza.txt");*/
+		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
+		drawable->SetMaterial(mat);
 #ifdef OBJECTS_CAST_SHADOW
 		drawable->SetCastShadows(true);
 #endif
+		return cubeNode_;
 	}
 
-	void PlaygroundDemo::CreateCube(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
+	void GodRays::CreateCube(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
 	{
 		YumeSceneNode* cubeNode_ = scene_->CreateChild("Cube");
 		cubeNode_->SetPosition(Pos);
 		cubeNode_->SetRotation(Rot);
 		cubeNode_->SetScale(size);
 		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/Box.mdl"));
+		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/Column.mdl"));
 		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
 		mat->SetShaderParameter("MatDiffColor",color);
 		drawable->SetMaterial(mat);
@@ -209,7 +159,7 @@ namespace YumeEngine
 		drawable->SetCastShadows(true);
 #endif
 	}
-	void PlaygroundDemo::CreateSphere(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
+	void GodRays::CreateSphere(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
 	{
 		YumeSceneNode* cubeNode_ = scene_->CreateChild("Sphere");
 		cubeNode_->SetPosition(Pos);
@@ -224,7 +174,7 @@ namespace YumeEngine
 		drawable->SetCastShadows(true);
 #endif
 	}
-	void PlaygroundDemo::CreateCylinder(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
+	void GodRays::CreateCylinder(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
 	{
 		YumeSceneNode* cubeNode_ = scene_->CreateChild("Sphere");
 		cubeNode_->SetPosition(Pos);
@@ -239,7 +189,7 @@ namespace YumeEngine
 		drawable->SetCastShadows(true);
 #endif
 	}
-	void PlaygroundDemo::CreatePyramid(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
+	void GodRays::CreatePyramid(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
 	{
 		YumeSceneNode* cubeNode_ = scene_->CreateChild("Sphere");
 		cubeNode_->SetPosition(Pos);
@@ -254,7 +204,7 @@ namespace YumeEngine
 		drawable->SetCastShadows(true);
 #endif
 	}
-	void PlaygroundDemo::CreateCone(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
+	void GodRays::CreateCone(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
 	{
 		YumeSceneNode* cubeNode_ = scene_->CreateChild("Sphere");
 		cubeNode_->SetPosition(Pos);
@@ -270,7 +220,7 @@ namespace YumeEngine
 		drawable->SetCastShadows(true);
 #endif
 	}
-	void PlaygroundDemo::MoveCamera(float timeStep)
+	void GodRays::MoveCamera(float timeStep)
 	{
 		float MOVE_SPEED = 5.0f;
 		const float MOUSE_SENSITIVITY = 0.1f;
@@ -304,11 +254,14 @@ namespace YumeEngine
 	}
 
 
-	void PlaygroundDemo::HandleUpdate(float timeStep)
+	void GodRays::HandleUpdate(float timeStep)
 	{
 		MoveCamera(timeStep);
+
+		dragon_->Rotate(Quaternion(45 * timeStep,Vector3(0,1,0)));
+		buddha_->Rotate(Quaternion(45 * timeStep,Vector3(0,1,1)));
 	}
-	void PlaygroundDemo::HandleRenderUpdate(float timeStep)
+	void GodRays::HandleRenderUpdate(float timeStep)
 	{
 		YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
 		YumeRenderPipeline* fx = viewport->GetRenderPath();
@@ -318,7 +271,7 @@ namespace YumeEngine
 		fx->SetShaderParameter("ViewThree",cam->GetView().ToMatrix3());
 	}
 
-	void PlaygroundDemo::Setup()
+	void GodRays::Setup()
 	{
 		BaseApplication::Setup();
 

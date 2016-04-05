@@ -43,6 +43,7 @@ namespace YumeEngine
 	extern YumeAPIExport const YumeHash VSP_GBUFFEROFFSETS(("GBufferOffsets"));
 	extern YumeAPIExport const YumeHash VSP_LIGHTDIR(("LightDir"));
 	extern YumeAPIExport const YumeHash VSP_LIGHTPOS(("LightPos"));
+	extern YumeAPIExport const YumeHash PSP_LIGHTPOSSCREEN("LightPosScreen");
 	extern YumeAPIExport const YumeHash VSP_MODEL(("Model"));
 	extern YumeAPIExport const YumeHash VSP_VIEW(("View"));
 	extern YumeAPIExport const YumeHash VSP_VIEWINV(("ViewInv"));

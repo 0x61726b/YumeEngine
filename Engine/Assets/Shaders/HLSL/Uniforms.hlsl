@@ -94,6 +94,7 @@ cbuffer LightPS : register(b3)
 {
     float4 cLightColor;
     float4 cLightPosPS;
+    float4 cLightPosScreen;
     float3 cLightDirPS;
     float4 cShadowCubeAdjust;
     float4 cShadowDepthFade;

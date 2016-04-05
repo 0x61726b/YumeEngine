@@ -221,6 +221,21 @@ var PostFxPanel = React.createClass({
               </p>
             </div>
           </div>
+
+          <div id="godrays">
+            <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="godraysSwitch">
+              <span className="mdl-switch__label">God Rays</span>
+              <input type="checkbox" id="godraysSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
+            </label>
+            <div className="godraysSwitchOptions">
+              <p style={{width:"300px"}}>
+                <span>Sample Count</span><input className="mdl-slider mdl-js-slider" type="range" id="lsSampleCount" min="0" max="100" step="1" onChange={this.onSliderChange} />
+                <span>Weight</span><input className="mdl-slider mdl-js-slider" type="range" id="lsWeight" min="0" max="1" step="0.01" onChange={this.onSliderChange} />
+                <span>Decay</span><input className="mdl-slider mdl-js-slider" type="range" id="lsDecay" min="0" max="1" step="0.05" onChange={this.onSliderChange} />
+                <span>Exposure</span><input className="mdl-slider mdl-js-slider" type="range" id="lsExposure" min="0" max="1" step="0.05" onChange={this.onSliderChange} />
+              </p>
+            </div>
+          </div>
         </div>
         <div className="advancedOptsPanel">
           <div> Advanced Options</div>
