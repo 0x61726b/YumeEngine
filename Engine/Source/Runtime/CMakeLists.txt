@@ -97,6 +97,8 @@ set(SRC_RENDERER
 	Renderer/YumeSkeleton.cc
 	Renderer/YumePostProcessor.h
 	Renderer/YumePostProcessor.cc
+	Renderer/LPVRendererTest.h
+	Renderer/LPVRendererTest.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

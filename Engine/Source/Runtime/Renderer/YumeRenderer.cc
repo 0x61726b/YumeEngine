@@ -52,6 +52,8 @@
 
 #include "Logging/logging.h"
 
+#include "LPVRendererTest.h"
+
 namespace YumeEngine
 {
 	struct Vertex32
@@ -302,7 +304,8 @@ namespace YumeEngine
 		shadersDirty_(true),
 		initialized_(false),
 		resetViews_(false),
-		randomVectorMap_(0)
+		randomVectorMap_(0),
+		lpvRenderer_(0)
 	{
 		REGISTER_ENGINE_LISTENER;
 	}
@@ -757,54 +760,56 @@ namespace YumeEngine
 		// Engine does not render when window is closed or device is lost
 		assert(gYume->pRHI && gYume->pRHI->IsInitialized() && !gYume->pRHI->IsDeviceLost());
 
-		// If the indirection textures have lost content (OpenGL mode only), restore them now
-		if(faceSelectCubeMap_ && faceSelectCubeMap_->IsDataLost())
-			SetIndirectionTextureData();
+		lpvRenderer_->Render();
 
-		gYume->pRHI->SetDefaultTextureFilterMode(textureFilterMode_);
-		gYume->pRHI->SetTextureAnisotropy((unsigned)textureAnisotropy_);
+		//// If the indirection textures have lost content (OpenGL mode only), restore them now
+		//if(faceSelectCubeMap_ && faceSelectCubeMap_->IsDataLost())
+		//	SetIndirectionTextureData();
 
-		// If no views, just clear the screen
-		if(views_.empty())
-		{
-			gYume->pRHI->SetBlendMode(BLEND_REPLACE);
-			gYume->pRHI->SetColorWrite(true);
-			gYume->pRHI->SetDepthWrite(true);
-			gYume->pRHI->SetScissorTest(false);
-			gYume->pRHI->SetStencilTest(false);
-			gYume->pRHI->ResetRenderTargets();
-			gYume->pRHI->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL,defaultZone_->GetFogColor());
+		//gYume->pRHI->SetDefaultTextureFilterMode(textureFilterMode_);
+		//gYume->pRHI->SetTextureAnisotropy((unsigned)textureAnisotropy_);
 
-			numPrimitives_ = 0;
-			numBatches_ = 0;
-		}
-		else
-		{
-			// Render views from last to first (each main view is rendered after the auxiliary views it depends on)
-			for(unsigned i = views_.size() - 1; i < views_.size(); --i)
-			{
-				if(views_[i].Expired())
-					continue;
+		//// If no views, just clear the screen
+		//if(views_.empty())
+		//{
+		//	gYume->pRHI->SetBlendMode(BLEND_REPLACE);
+		//	gYume->pRHI->SetColorWrite(true);
+		//	gYume->pRHI->SetDepthWrite(true);
+		//	gYume->pRHI->SetScissorTest(false);
+		//	gYume->pRHI->SetStencilTest(false);
+		//	gYume->pRHI->ResetRenderTargets();
+		//	gYume->pRHI->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL,defaultZone_->GetFogColor());
 
-				YumeRenderable* renderTarget = views_[i]->GetRenderTarget();
-				FireEvent(R_BEGINVIEWRENDER,views_[i],renderTarget,(renderTarget ? renderTarget->GetParentTexture() : 0),views_[i]->GetScene(),views_[i]->GetCamera());
+		//	numPrimitives_ = 0;
+		//	numBatches_ = 0;
+		//}
+		//else
+		//{
+		//	// Render views from last to first (each main view is rendered after the auxiliary views it depends on)
+		//	for(unsigned i = views_.size() - 1; i < views_.size(); --i)
+		//	{
+		//		if(views_[i].Expired())
+		//			continue;
 
-				RHIEvent event("Begin Rendering View");
+		//		YumeRenderable* renderTarget = views_[i]->GetRenderTarget();
+		//		FireEvent(R_BEGINVIEWRENDER,views_[i],renderTarget,(renderTarget ? renderTarget->GetParentTexture() : 0),views_[i]->GetScene(),views_[i]->GetCamera());
 
-				// Screen buffers can be reused between views, as each is rendered completely
-				PrepareViewRender();
-				views_[i]->Render();
+		//		RHIEvent event("Begin Rendering View");
 
-				FireEvent(R_ENDVIEWRENDER,views_[i],renderTarget,(renderTarget ? renderTarget->GetParentTexture() : 0),views_[i]->GetScene(),views_[i]->GetCamera());
-			}
+		//		// Screen buffers can be reused between views, as each is rendered completely
+		//		PrepareViewRender();
+		//		views_[i]->Render();
 
-			// Copy the number of batches & primitives from Graphics so that we can account for 3D geometry only
-			numPrimitives_ = gYume->pRHI->GetNumPrimitives();
-			numBatches_ = gYume->pRHI->GetNumBatches();
-		}
+		//		FireEvent(R_ENDVIEWRENDER,views_[i],renderTarget,(renderTarget ? renderTarget->GetParentTexture() : 0),views_[i]->GetScene(),views_[i]->GetCamera());
+		//	}
 
-		// Remove unused occlusion buffers and renderbuffers
-		RemoveUnusedBuffers();
+		//	// Copy the number of batches & primitives from Graphics so that we can account for 3D geometry only
+		//	numPrimitives_ = gYume->pRHI->GetNumPrimitives();
+		//	numBatches_ = gYume->pRHI->GetNumBatches();
+		//}
+
+		//// Remove unused occlusion buffers and renderbuffers
+		//RemoveUnusedBuffers();
 	}
 
 	void YumeRenderer::DrawDebugGeometry(bool depthTest)
@@ -1615,7 +1620,7 @@ namespace YumeEngine
 		ResetBuffers();
 
 
-
+		lpvRenderer_ = new LPVRenderer;
 
 
 

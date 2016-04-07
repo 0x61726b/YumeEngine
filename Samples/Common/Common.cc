@@ -186,10 +186,11 @@ namespace YumeEngine
 
 		gYume->pInput->AddListener(this);
 
+#ifndef DISABLE_CEF
 		overlay_ = new YumeDebugOverlay;
 		gYume->pUI->AddUIElement(overlay_);
 		overlay_->SetVisible(true);
-
+#endif
 		SharedPtr<YumeViewport> viewport(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>()));
 
 		YumeRenderPipeline* pipeline = viewport->GetRenderPath();

@@ -69,6 +69,8 @@
 #include <boost/filesystem.hpp>
 #include <log4cplus/initializer.h>
 
+
+
 YumeEngine::YumeEngine3D* YumeEngineGlobal = 0;
 
 namespace YumeEngine
@@ -193,7 +195,7 @@ namespace YumeEngine
 			true,
 			gYume->pEnv->GetVariant("Vsync").Get<bool>(),
 			gYume->pEnv->GetVariant("TripleBuffer").Get<bool>(),
-			gYume->pEnv->GetVariant("MultiSample").Get<int>()))
+			8))
 			return false;
 		frameTimer_.Reset();
 
@@ -205,11 +207,13 @@ namespace YumeEngine
 		gYume->pDebugRenderer = (new YumeDebugRenderer);
 
 
+#ifndef DISABLE_CEF
 		{
 			gYume->pUI = new YumeUI;
 			if(!gYume->pUI->Initialize())
 				return false;
 		}
+#endif
 
 		YUMELOG_INFO("Initialized Yume Engine...");
 
@@ -288,7 +292,9 @@ namespace YumeEngine
 
 		//Renderer
 		gYume->pRenderer->Render();
+#ifndef DISABLE_CEF
 		gYume->pUI->Render();
+#endif
 
 		gYume->pRHI->EndFrame();
 	}
@@ -465,7 +471,9 @@ namespace YumeEngine
 		if(gYume->pRHI)
 			gYume->pRHI->Close();
 
+#ifndef DISABLE_CEF
 		gYume->pUI->Shutdown();
+#endif
 
 
 

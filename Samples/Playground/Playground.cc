@@ -48,10 +48,11 @@
 YUME_DEFINE_ENTRY_POINT(YumeEngine::PlaygroundDemo);
 
 #define TURNOFF 1
-//#define NO_MODEL
+#define NO_MODEL
 #define OBJECTS_CAST_SHADOW
-//#define NO_SKYBOX
-//#define NO_PLANE
+#define NO_SKYBOX
+#define NO_PLANE
+#define CORNELL
 
 namespace YumeEngine
 {
@@ -81,13 +82,49 @@ namespace YumeEngine
 		scene_->CreateComponent<Octree>();
 		scene_->CreateComponent<YumeDebugRenderer>();
 
-		dirLightNode_ = scene_->CreateChild("DirectionalLight");
-		dirLightNode_->SetDirection(Vector3(-2,-5,-2).Normalized()); // The direction vector does not need to be normalized
-		YumeLight* light = dirLightNode_->CreateComponent<YumeLight>();
-		light->SetLightType(LIGHT_DIRECTIONAL);
-		light->SetShadowBias(BiasParameters(0.00025f,0.5f));
-		light->SetCastShadows(true);
+		//dirLightNode_ = scene_->CreateChild("DirectionalLight");
+		//dirLightNode_->SetDirection(Vector3(-2,-5,-2).Normalized()); // The direction vector does not need to be normalized
+		//YumeLight* light = dirLightNode_->CreateComponent<YumeLight>();
+		//light->SetLightType(LIGHT_DIRECTIONAL);
+		//light->SetShadowBias(BiasParameters(0.00025f,0.5f));
+		//light->SetCastShadows(true);
 
+#ifdef CORNELL
+		//Bottom
+		CreateCube(Vector3(0,-2.5f,0),
+			Quaternion(0,Vector3(0,1,0)),2.5f,YumeColor(1,1,1,1));
+
+		//Top
+		CreateCube(Vector3(0,1.7f,0),
+			Quaternion(0,Vector3(0,1,0)),2.5f,YumeColor(1,1,1,1));
+
+		//Left
+		CreateCube(Vector3(-2.5f,0,0),
+			Quaternion(0,Vector3(0,1,0)),2.5f,YumeColor(1,0,0,0));
+
+		//Right
+		CreateCube(Vector3(1.8f,0,0),
+			Quaternion(0,Vector3(0,1,0)),2.5f,YumeColor(0,1,0,0));
+
+		//Front
+		CreateCube(Vector3(0,0,2.5f),
+			Quaternion(0,Vector3(0,1,0)),2.5f,YumeColor(1,1,1,1));
+
+		//Back
+		CreateCube(Vector3(0,0,-2.5f),
+			Quaternion(0,Vector3(0,1,0)),2.5f,YumeColor(1,1,1,1));
+
+		CreateCube(Vector3(-0.6f,-0.8f,0.6f),
+			Quaternion(-15,Vector3(0,1,0)),Vector3(0.6f,1,0.5f),YumeColor(1,1,1,1));
+
+		CreateCube(Vector3(0,-1.0f,-0.3f),
+			Quaternion(15,Vector3(0,1,0)),0.5f,YumeColor(1,1,1,1));
+
+		CreateLight(LIGHT_POINT,Vector3(-0.3f,0.3f,0),Quaternion::IDENTITY,YumeColor::WHITE);
+
+#endif
+
+#pragma region Stuff
 
 #ifndef NO_PLANE
 		YumeSceneNode* plane = scene_->CreateChild("Cube");
@@ -156,26 +193,66 @@ namespace YumeEngine
 		CreateCone(Vector3(-4,0.5f,6),
 			Quaternion::IDENTITY,1,YumeColor(0,0,1,0));
 #endif
-
+#pragma endregion
 		cameraNode_ = scene_->CreateChild("Camera");
 		YumeCamera* camera = cameraNode_->CreateComponent<YumeCamera>();
-		cameraNode_->SetPosition(Vector3(0,5,-10));
+		cameraNode_->SetPosition(Vector3(-0.1f,-0.6f,-2.0f));
 
-		Quaternion q;
-		q.FromLookRotation((cameraNode_->GetWorldPosition() * -1).Normalized());
-		cameraNode_->SetRotation(q);
-		camera->SetFarClip(1000.0f);
-		camera->SetFov(60);
+		//Quaternion q;
+		//q.FromLookRotation((cameraNode_->GetWorldPosition() * -1).Normalized());
+		//cameraNode_->SetRotation(q);
+		//camera->SetFarClip(1000.0f);
+		camera->SetFov(50);
 
 		BaseApplication::Start();
 
+#ifndef DISABLE_CEF
 		overlay_->GetBinding("SampleName")->SetValue("Playground");
 		gYume->pUI->SetUIEnabled(false);
+#endif
+	}
+
+	void PlaygroundDemo::CreateLight(LightType type,Vector3 Pos,Quaternion Rot,YumeColor color)
+	{
+		YumeSceneNode* lightNode = scene_->CreateChild("Light");
+		lightNode->SetPosition(Pos);
+		lightNode->SetRotation(Rot);
+		YumeLight* light = lightNode->CreateComponent<YumeLight>();
+		light->SetLightType(type);
+		light->SetColor(color);
+		light->SetCastShadows(true);
+
+		switch(type)
+		{
+		case LIGHT_POINT:
+		{
+			light->SetFov(30);
+			light->SetRange(3.0f);
+			light->SetBrightness(0.8f);
+		}
+		break;
+		}
 	}
 
 	void PlaygroundDemo::SSAOOffsetVectors()
 	{
 
+	}
+
+	void PlaygroundDemo::CreateCube(Vector3 Pos,Quaternion Rot,Vector3 size,YumeColor color)
+	{
+		YumeSceneNode* cubeNode_ = scene_->CreateChild("Cube");
+		cubeNode_->SetPosition(Pos);
+		cubeNode_->SetRotation(Rot);
+		cubeNode_->SetScale(size);
+		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
+		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/Box.mdl"));
+		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
+		mat->SetShaderParameter("MatDiffColor",color);
+		drawable->SetMaterial(mat);
+#ifdef OBJECTS_CAST_SHADOW
+		drawable->SetCastShadows(true);
+#endif
 	}
 
 	void PlaygroundDemo::CreateModel(Vector3 Pos,Quaternion Rot)
@@ -272,7 +349,7 @@ namespace YumeEngine
 	}
 	void PlaygroundDemo::MoveCamera(float timeStep)
 	{
-		float MOVE_SPEED = 5.0f;
+		float MOVE_SPEED = 1.0f;
 		const float MOUSE_SENSITIVITY = 0.1f;
 
 		YumeInput* input = gYume->pInput;

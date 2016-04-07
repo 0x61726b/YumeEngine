@@ -50,6 +50,7 @@ namespace YumeEngine
 	class YumeTextureCube;
 	class YumeRenderView;
 	class YumeRendererEnvironment;
+	class LPVRenderer;
 
 
 	static const int SHADOW_MIN_PIXELS = 64;
@@ -329,6 +330,8 @@ namespace YumeEngine
 		SharedPtr<YumeTexture2D> randomVectorMap_;
 		SharedPtr<YumeTextureCube> faceSelectCubeMap_;
 		SharedPtr<YumeTextureCube> indirectionCubeMap_;
+
+		LPVRenderer* lpvRenderer_;
 
 
 		YumeVector<SharedPtr<YumeSceneNode> >::type shadowCameraNodes_;

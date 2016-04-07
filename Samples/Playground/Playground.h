@@ -34,10 +34,13 @@ namespace YumeEngine
 
 		void CreateModel(Vector3 Pos,Quaternion Rot);
 		void CreateCube(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
+		void CreateCube(Vector3 Pos,Quaternion Rot,Vector3 size,YumeColor color);
 		void CreateSphere(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
 		void CreateCylinder(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
 		void CreatePyramid(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
 		void CreateCone(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
+
+		void CreateLight(LightType type,Vector3 Pos,Quaternion Rot,YumeColor color);
 
 		YumeSceneNode* cubeNode_;
 		YumeSceneNode* dirLightNode_;

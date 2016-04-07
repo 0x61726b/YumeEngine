@@ -27,6 +27,8 @@
 #include "Core/YumeTimer.h"
 #include "Core/YumeEventHub.h"
 
+#define DISABLE_CEF
+
 
 #define REGISTER_ENGINE_LISTENER gYume->pEngine->AddListener(this)
 //----------------------------------------------------------------------------
