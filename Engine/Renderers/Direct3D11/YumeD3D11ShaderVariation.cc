@@ -47,9 +47,47 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string.hpp>
 
+#define CBUFFER_CONSTANTS_HAVE_NOT_C_ON_FRONT
 
 namespace YumeEngine
 {
+	struct include_handler : public ID3D10Include
+	{
+		std::string path;
+
+		include_handler(const std::string& filename)
+		{
+			path = filename;
+			auto it = path.find_last_of('/');
+
+			if(it != std::string::npos)
+				path = path.substr(0,it+1);
+			else
+				path = "";
+		}
+
+		STDMETHOD(Open)(D3D10_INCLUDE_TYPE IncludeType,LPCSTR pFileName,LPCVOID pParentData,LPCVOID *ppData,UINT *pByteLen)
+		{
+			std::ifstream f(path + pFileName);
+			std::string fstr((std::istreambuf_iterator<char>(f)),
+				std::istreambuf_iterator<char>());
+
+			*pByteLen = static_cast<UINT>(fstr.length());
+			char* data = new char[*pByteLen];
+			memcpy(data,fstr.c_str(),*pByteLen);
+			*ppData = data;
+
+			return S_OK;
+		}
+
+		STDMETHOD(Close)(LPCVOID pData)
+		{
+			char* data = (char*)pData;
+			delete[] data;
+			return S_OK;
+		}
+	};
+
 	YumeD3D11ShaderVariation::YumeD3D11ShaderVariation(YumeShader* owner,ShaderType type)
 	{
 		owner_ = owner;
@@ -326,7 +364,8 @@ namespace YumeEngine
 
 		const char* str = owner_->GetName().c_str();
 
-		HRESULT hr = D3DCompile(sourceCode.c_str(),sourceCode.length(),owner_->GetName().c_str(),&macros.front(),0,
+		include_handler ih(gYume->pResourceManager->GetFullPath(str).c_str());
+		HRESULT hr = D3DCompile(sourceCode.c_str(),sourceCode.length(),owner_->GetName().c_str(),&macros.front(),&ih,
 			entryPoint,profile,flags,0,&shaderCode,&errorMsgs);
 		if(FAILED(hr))
 		{
@@ -394,10 +433,10 @@ namespace YumeEngine
 					{
 						elementMask_ |= (1 << j);
 						break;
-					}
-				}
 			}
 		}
+	}
+}
 
 		YumeMap<YumeString,unsigned>::type cbRegisterMap;
 
@@ -425,11 +464,15 @@ namespace YumeEngine
 				D3D11_SHADER_VARIABLE_DESC varDesc;
 				var->GetDesc(&varDesc);
 				YumeString varName(varDesc.Name);
+#ifndef CBUFFER_CONSTANTS_HAVE_NOT_C_ON_FRONT
 				if(varName[0] == 'c')
 				{
 					varName = varName.substr(1);
 					parameters_[YumeHash(varName)] = ShaderParameter(type_,varName,cbRegister,varDesc.StartOffset,varDesc.Size);
 				}
+#else
+				parameters_[YumeHash(varName)] = ShaderParameter(type_,varName,cbRegister,varDesc.StartOffset,varDesc.Size);
+#endif
 			}
 		}
 

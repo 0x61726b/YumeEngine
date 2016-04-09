@@ -699,6 +699,8 @@ namespace YumeEngine
 
 		FireEvent(R_RENDERTARGETUPDATE);
 
+		lpvRenderer_->Update();
+
 		// Process gathered views. This may queue further views (render surfaces that are only updated when visible)
 		for(unsigned i = 0; i < queuedViewports_.size(); ++i)
 		{
@@ -1621,6 +1623,7 @@ namespace YumeEngine
 
 
 		lpvRenderer_ = new LPVRenderer;
+		lpvRenderer_->Setup();
 
 
 

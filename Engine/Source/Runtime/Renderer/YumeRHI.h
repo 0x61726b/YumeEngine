@@ -93,6 +93,11 @@ namespace YumeEngine
 
 		void									SetWindowIcon(YumeImage* image);
 
+		//
+
+
+		//
+
 		virtual IntVector2						GetRenderTargetDimensions() const = 0;
 		virtual void							CreateRendererCapabilities() = 0;
 		virtual YumeVector<int>::type			GetMultiSampleLevels() const = 0;

@@ -777,7 +777,7 @@ namespace YumeEngine
 				0,
 				D3D_DRIVER_TYPE_HARDWARE,
 				0,
-				0,
+				D3D11_CREATE_DEVICE_DEBUG,
 				0,
 				0,
 				D3D11_SDK_VERSION,
