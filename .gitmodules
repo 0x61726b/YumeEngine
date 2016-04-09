@@ -2,14 +2,6 @@
 	path = Engine/Source/3rdParty/log4cplus
 	url = https://github.com/log4cplus/log4cplus
 	branch = master
-[submodule "Engine/Source/3rdParty/SDL-mirror"]
-	path = Engine/Source/3rdParty/SDL-mirror
-	url = https://github.com/spurious/SDL-mirror
-	branch = master
-[submodule "Engine/Source/3rdParty/yume-freetype"]
-	path = Engine/Source/3rdParty/yume-freetype
-	url = https://github.com/arkenthera/yume-freetype
-	branch = master
 [submodule "Engine/Source/3rdParty/yume-boost"]
 	path = Engine/Source/3rdParty/yume-boost
 	url = https://github.com/arkenthera/yume-boost
@@ -17,7 +9,7 @@
 [submodule "Engine/Source/3rdParty/pugixml"]
 	path = Engine/Source/3rdParty/pugixml
 	url = https://github.com/zeux/pugixml
-[submodule "Engine/Source/3rdParty/cef3d"]
-	path = Engine/Source/3rdParty/cef3d
-	url = https://github.com/arkenthera/cef3d
+[submodule "Engine/Source/3rdParty/assimp"]
+	path = Engine/Source/3rdParty/assimp
+	url = https://github.com/assimp/assimp
 	branch = master

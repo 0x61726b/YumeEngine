@@ -19,20 +19,4 @@
 ################################################################################
 
 #Minimal application with empty window
-add_subdirectory(HelloWorld)
-
-add_subdirectory(Shadows)
-
-add_subdirectory(Lighting)
-
-add_subdirectory(CefTest)
-
-add_subdirectory(Playground)
-
-add_subdirectory(AmbientOcclusion1)
-
-add_subdirectory(GodRays)
-
-if(NOT OS_MACOSX)
-  #add_subdirectory(TestSuite)
-endif()
+ADD_SUBDIRECTORY(LightPropogateVolume)

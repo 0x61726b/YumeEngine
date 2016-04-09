@@ -22,49 +22,10 @@
 #Log4cplus is a very powerful logging library
 ADD_SUBDIRECTORY(log4cplus)
 
-#SDL
-ADD_SUBDIRECTORY(SDL-mirror)
-
-#FreeType
-ADD_SUBDIRECTORY(yume-freetype)
-
-#jo_jpeg
-ADD_SUBDIRECTORY(JO)
-
 ADD_SUBDIRECTORY(pugixml/scripts)
 
-ADD_SUBDIRECTORY(STB)
-
-if(YUME_BUILD_OPENGL)
-  ADD_SUBDIRECTORY(GLEW)
-endif()
+ADD_SUBDIRECTORY(assimp)
 
 
-
-
-#Boost
-add_boost_library(system)
-add_boost_library(filesystem)
-add_boost_library(date_time)
-
-
-
-set_target_properties(boost_system PROPERTIES FOLDER "3rdParty" )
-set_target_properties(boost_filesystem PROPERTIES FOLDER "3rdParty" )
-set_target_properties(boost_date_time PROPERTIES FOLDER "3rdParty" )
-# set_target_properties(SDL2-static PROPERTIES FOLDER "3rdParty" )
-set_target_properties(SDL2main PROPERTIES FOLDER "3rdParty" )
-set_target_properties(SDL2 PROPERTIES FOLDER "3rdParty" )
-set_target_properties(FreeType PROPERTIES FOLDER "3rdParty" )
-set_target_properties(log4cplus PROPERTIES FOLDER "3rdParty" )
-set_target_properties(JO PROPERTIES FOLDER "3rdParty" )
-set_target_properties(JO PROPERTIES FOLDER "3rdParty" )
-
-setup_lib("pugixml")
-setup_lib("STB")
-
-if(OS_LINUX)
-  target_compile_options(boost_system PUBLIC "-fPIC")
-  target_compile_options(boost_filesystem PUBLIC "-fPIC")
-  target_compile_options(boost_date_time PUBLIC "-fPIC")
-endif()
+set_target_properties(log4cplus PROPERTIES FOLDER "3rdParty")
+set_target_properties(assimp PROPERTIES FOLDER "3rdParty")
