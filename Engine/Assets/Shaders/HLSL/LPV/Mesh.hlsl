@@ -57,7 +57,7 @@ cbuffer meshdata_ps             : register(b0)
 	  bool has_normal_tex         : packoffset(c3.y);
 	  bool has_specular_tex       : packoffset(c3.z);
 	  bool has_alpha_tex          : packoffset(c3.w);
-    uint shading_mode           : packoffset(c4.x);
+    float shading_mode           : packoffset(c4.x);
     float roughness             : packoffset(c4.y);
     float refractive_index      : packoffset(c4.z);
 }
@@ -101,7 +101,7 @@ PS_MESH_OUTPUT PS(in VS_MESH_OUTPUT input)
 	PS_MESH_OUTPUT output;
 
 	float z = length(input.ldepth);
-
+  //
 	// alpha
 	if (has_alpha_tex)
 	{
@@ -155,7 +155,7 @@ PS_MESH_OUTPUT PS(in VS_MESH_OUTPUT input)
 	else
 		output.normal = float4(normalize(input.norm.xyz)/2.0 + 0.5, 1.0);
 
-    output.normal.a = float(shading_mode) / 2.0;
+    output.normal.a = shading_mode / 2.0;
 
     // specular
 	if (has_specular_tex)

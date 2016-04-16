@@ -37,7 +37,7 @@ namespace YumeEngine
 		virtual ~YumeD3D11Texture2D();
 
 		virtual void Release();
-		virtual bool SetSize(int width,int height,unsigned format,TextureUsage usage = TEXTURE_STATIC);
+		virtual bool SetSize(int width,int height,unsigned format,TextureUsage usage = TEXTURE_STATIC,int arraySize = 1,int mips = 1);
 		virtual bool SetData(unsigned level,int x,int y,int width,int height,const void* data);
 		virtual bool SetData(unsigned level,int x,int y,int width,int height,unsigned f1,unsigned f2,unsigned f3,const void* data);
 		virtual bool SetData(SharedPtr<YumeImage> image,bool useAlpha = false);
@@ -59,6 +59,8 @@ namespace YumeEngine
 
 		virtual bool IsDataLost() { return false; };
 		virtual void ClearDataLost() {}
+
+		int mips_;
 	};
 }
 

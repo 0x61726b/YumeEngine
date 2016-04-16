@@ -23,6 +23,44 @@
 #include "PlatformImpl.h"
 
 
+
+DirectX::XMFLOAT3 dmax(const DirectX::XMFLOAT3& a,const DirectX::XMFLOAT3& b)
+{
+	DirectX::XMFLOAT3 r;
+
+	r.x = std::max(a.x,b.x);
+	r.y = std::max(a.y,b.y);
+	r.z = std::max(a.z,b.z);
+
+	return r;
+}
+
+DirectX::XMFLOAT3 dmin(const DirectX::XMFLOAT3& a,const DirectX::XMFLOAT3& b)
+{
+	DirectX::XMFLOAT3 r;
+
+	r.x = std::min(a.x,b.x);
+	r.y = std::min(a.y,b.y);
+	r.z = std::min(a.z,b.z);
+
+	return r;
+}
+
+bool dequal(const DirectX::XMFLOAT4& a,const DirectX::XMFLOAT4& b)
+{
+	auto aa = DirectX::XMLoadFloat4(&a);
+	auto bb = DirectX::XMLoadFloat4(&b);
+
+	return DirectX::XMVector4Equal(aa,bb);
+}
+
+YumeEngine::YumeString XMVectorToString(const DirectX::XMVECTOR& v)
+{
+	YumeEngine::YumeString str;
+	str.AppendWithFormat("%f %f %f %f",v.m128_f32[0],v.m128_f32[1],v.m128_f32[2],v.m128_f32[3]);
+	return str;
+}
+
 int GetWndMouseModifiers(WPARAM wparam) {
 	int modifiers = 0;
 	if(wparam & MK_CONTROL)

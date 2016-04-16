@@ -195,7 +195,7 @@ namespace YumeEngine
 			true,
 			gYume->pEnv->GetVariant("Vsync").Get<bool>(),
 			gYume->pEnv->GetVariant("TripleBuffer").Get<bool>(),
-			8))
+			1))
 			return false;
 		frameTimer_.Reset();
 

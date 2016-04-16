@@ -99,6 +99,16 @@ set(SRC_RENDERER
 	Renderer/YumePostProcessor.cc
 	Renderer/LPVRendererTest.h
 	Renderer/LPVRendererTest.cc
+	Renderer/LightPropagationVolume.h
+	Renderer/LightPropagationVolume.cc
+	Renderer/AssimpMesh.h
+	Renderer/AssimpMesh.cc
+	Renderer/YumeMesh.h
+	Renderer/YumeMesh.cc
+	Renderer/YumeCompositeMesh.h
+	Renderer/YumeCompositeMesh.cc
+	Renderer/YumeLPVCamera.h
+	Renderer/YumeLPVCamera.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h
@@ -317,7 +327,11 @@ add_definitions(-DBUILDING_YUME_ENGINE)
 set(YUME_LIB_TYPE "SHARED")
 
 target_link_libraries( ${YUME} log4cplus )
+target_link_libraries( ${YUME} ${DXUT_LIBRARIES} )
+target_link_libraries( ${YUME} ${D3D_LIBS} )
 include_directories(${YUME_3RDPARTY_PATH}/log4cplus/include)
+include_directories(${YUME_3RDPARTY_PATH}/assimp/include)
+include_directories(${DXUT_INCLUDE_DIRS})
 include_directories(${CMAKE_BINARY_DIR}/Engine/Source/3rdParty/log4cplus/include)
 
 if(WIN32 AND MSVC10 AND CMAKE_CL_64)
@@ -346,6 +360,7 @@ target_link_libraries(${YUME} SDL2)
 target_link_libraries(${YUME} pugixml)
 target_link_libraries(${YUME} STB)
 target_link_libraries(${YUME} JO)
+target_link_libraries(${YUME} assimp)
 target_link_libraries(${YUME} Cef3D
 )
 set(YUME_LIBRARIES ${YUME_LIBRARIES} boost_filesystem boost_system boost_date_time log4cplus)

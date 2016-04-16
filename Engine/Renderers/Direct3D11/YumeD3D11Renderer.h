@@ -68,6 +68,7 @@ namespace YumeEngine
 		virtual void							EndFrame();
 		virtual void							Clear(unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0);
 		virtual void							ClearRenderTarget(unsigned index,unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0);
+		virtual void							ClearDepthStencil(unsigned flags,float depth,unsigned stencil);
 		virtual bool							IsInitialized() { return initialized_; }
 
 
@@ -77,6 +78,21 @@ namespace YumeEngine
 		bool									UpdateSwapchain(int width,int height);
 		/* */
 
+		virtual void							BindSampler(ShaderType type,unsigned samplerStartSlot,unsigned samplerCount,unsigned internalIndex);
+		virtual void							BindBackbuffer();
+		virtual void							CreateStandardSampler();
+		virtual void							BindStandardSampler();
+		virtual void							BindLPVSampler();
+		virtual void							BindShadowsSampler();
+		virtual void							BindResetRenderTargets(int count);
+		virtual void							BindResetTextures(int start,int count,bool ps = false);
+		virtual void							BindInjectBlendState();
+		virtual void							BindPropogateBlendState();
+		virtual void							BindPsuedoBuffer();
+		virtual void							BindNullIndexBuffer();
+		virtual void							BindDefaultDepthStencil();
+		virtual void							BindNullBlendState();
+		virtual void							GenerateMips(YumeTexture2D*);
 
 		virtual IntVector2						GetRenderTargetDimensions() const;
 		virtual void							CreateRendererCapabilities();
@@ -135,6 +151,10 @@ namespace YumeEngine
 		virtual void  							SetShaderParameter(YumeHash param,const Variant& value);
 		virtual void  							SetShaderParameter(YumeHash param,const Vector4Vector::type& vectorArray);
 
+		virtual void  							SetShaderParameter(YumeHash param,const DirectX::XMMATRIX& matrix);
+		virtual void  							SetShaderParameter(YumeHash param,const DirectX::XMFLOAT3& vector);
+		virtual void  							SetShaderParameter(YumeHash param,const DirectX::XMFLOAT4& vector);
+
 		virtual void  							SetVertexBuffer(YumeVertexBuffer* buffer);
 		virtual void  							SetIndexBuffer(YumeIndexBuffer* buffer);
 		virtual bool  							SetVertexBuffers(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0);
@@ -151,7 +171,7 @@ namespace YumeEngine
 		virtual void  							SetFillMode(FillMode mode);
 		virtual void  							SetScissorTest(bool enable,const Rect& rect = Rect::FULL,bool borderInclusive = true);
 		virtual void  							SetScissorTest(bool enable,const IntRect& rect);
-		virtual void  							SetStencilTest(bool enable,CompareMode mode = CMP_ALWAYS,StencilOp pass = OP_KEEP,StencilOp fail = OP_KEEP,StencilOp zFail = OP_KEEP,unsigned stencilRef = 0,unsigned compareMask = M_MAX_UNSIGNED,unsigned writeMask = M_MAX_UNSIGNED);
+		virtual void  							SetStencilTest(bool enable,CompareMode mode = CMP_ALWAYS,StencilOp pass = OP_KEEP,StencilOp fail = OP_KEEP,StencilOp zFail = OP_KEEP,StencilOp zFailBack = OP_KEEP,unsigned stencilRef = 0,unsigned compareMask = M_MAX_UNSIGNED,unsigned writeMask = M_MAX_UNSIGNED);
 
 
 		virtual void  							SetClipPlane(bool enable,const Plane& clipPlane,const Matrix3x4& view,const Matrix4& projection);
@@ -226,6 +246,14 @@ namespace YumeEngine
 		YumeD3D11RendererImpl*					impl_;
 		ShaderProgramMap::type					shaderPrograms_;
 		YumeD3D11ShaderProgram*					shaderProgram_;
+
+		ID3D11SamplerState*						standardFilter_;
+		ID3D11SamplerState*						lpvFilter_;
+		ID3D11SamplerState*						vplFilter_;
+		ID3D11SamplerState*						shadowFilter_;
+
+		ID3D11BlendState*						bsInject_;
+		ID3D11BlendState*						bsPropogate_;
 	};
 }
 

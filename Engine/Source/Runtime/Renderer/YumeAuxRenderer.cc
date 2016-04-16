@@ -368,8 +368,8 @@ namespace YumeEngine
 
 
 
-		YumeShaderVariation* diffTextureVS = gYume->pRHI->GetShader(VS,"Basic","DIFFMAP");
-		YumeShaderVariation* diffTexturePS = gYume->pRHI->GetShader(PS,"Basic","DIFFMAP");
+		YumeShaderVariation* diffTextureVS = gYume->pRHI->GetShader(VS,"LPV/fs_triangle");
+		YumeShaderVariation* diffTexturePS = gYume->pRHI->GetShader(PS,"BasicOverlay");
 
 		gYume->pRHI->SetBlendMode(BLEND_PREMULALPHA);
 		gYume->pRHI->SetDepthTest(CMP_ALWAYS);
@@ -378,23 +378,16 @@ namespace YumeEngine
 		gYume->pRHI->SetClipPlane(false);
 		gYume->pRHI->SetScissorTest(false);
 		gYume->pRHI->SetStencilTest(false);
+		gYume->pRHI->BindSampler(PS,2,1,2);
+		gYume->pRHI->BindDefaultDepthStencil();
 		gYume->pRHI->SetRenderTarget(0,(YumeRenderable*)0);
-		gYume->pRHI->SetTexture(TU_DIFFUSE,texture);
+		gYume->pRHI->SetTexture(10,texture);
 		gYume->pRHI->SetShaders(diffTextureVS,diffTexturePS);
-		gYume->pRHI->SetDepthStencil((YumeRenderable*)0);
+		
 
 
 
-		YumeGeometry* geometry = gYume->pRenderer->GetTexturedQuadGeometry();
-
-		Matrix3x4 model = Matrix3x4::IDENTITY;
-		Matrix4 projection = Matrix4::IDENTITY;
-
-		gYume->pRHI->SetCullMode(CULL_NONE);
-		gYume->pRHI->SetShaderParameter(VSP_MODEL,model);
-		gYume->pRHI->SetShaderParameter(VSP_VIEWPROJ,projection);
-		gYume->pRHI->SetShaderParameter(PSP_MATDIFFCOLOR,YumeColor(1,1,1,1));
-		gYume->pRHI->ClearTransformSources();
+		YumeGeometry* geometry = gYume->pRenderer->GetFsTriangle();
 
 		geometry->Draw(gYume->pRHI);
 	}

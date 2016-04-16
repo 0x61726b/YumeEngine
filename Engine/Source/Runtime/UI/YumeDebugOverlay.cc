@@ -30,6 +30,9 @@
 #include "Renderer/YumeRenderPipeline.h"
 #include "Scene/YumeSceneNode.h"
 
+#include "Renderer/LPVRendererTest.h"
+#include "Renderer/YumeLPVCamera.h"
+
 static const char* qualityTexts[] =
 {
 	"Low",
@@ -46,6 +49,8 @@ static const char* shadowQualityTexts[] =
 	"VSM",
 	"Blurred VSM"
 };
+
+#define SOMETHING_STRANGE
 
 namespace YumeEngine
 {
@@ -273,6 +278,7 @@ namespace YumeEngine
 		gYume->pUI->SendEvent("setFrameInfo",ret);
 
 
+#ifndef SOMETHING_STRANGE
 		YumeCamera* cam = gYume->pRenderer->GetViewport(0)->GetCamera();
 		YumeString camera;
 		camera.append("{");
@@ -281,7 +287,17 @@ namespace YumeEngine
 		camera.AppendWithFormat("\"CameraFov\": \"%f\"",cam->GetFov());
 		camera.append("}");
 		gYume->pUI->SendEvent("setCameraInfo",camera);
-
+#else
+		YumeLPVCamera cam = gYume->pRenderer->lpvRenderer_->camera_;
+		
+		YumeString camera;
+		camera.append("{");
+		camera.AppendWithFormat("\"CameraPos\": \"%s\",",XMVectorToString(cam.GetEyePt()).c_str());
+		/*camera.AppendWithFormat("\"CameraRot\": \"%s\",",cam->GetNode()->GetWorldRotation().ToString().c_str());*/
+		camera.AppendWithFormat("\"CameraFov\": \"%f\"",45.0f);
+		camera.append("}");
+		gYume->pUI->SendEvent("setCameraInfo",camera);
+#endif
 		YumeUIElement::Update();
 
 	}

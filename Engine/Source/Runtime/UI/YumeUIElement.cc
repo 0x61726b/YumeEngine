@@ -48,7 +48,7 @@ namespace YumeEngine
 	void YumeUIElement::PrepareResources()
 	{
 		texture_ = (gYume->pRHI->CreateTexture2D());
-		texture_->SetSize(rect_.right_,rect_.bottom_,gYume->pRHI->GetBGRAFormatNs(),TEXTURE_DYNAMIC);
+		texture_->SetSize(rect_.right_,rect_.bottom_,91,TEXTURE_DYNAMIC);
 
 		browserIndex_ = gYume->pUI->CreateBrowser(this);
 	}

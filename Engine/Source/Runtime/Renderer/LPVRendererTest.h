@@ -23,9 +23,25 @@
 #define __LPVRendererTest_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
+#include "LightPropagationVolume.h"
+
+#include <DirectXMath.h>
+
+#include "YumeLPVCamera.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	struct directional_light
+	{
+		DirectX::XMFLOAT4 position;
+		DirectX::XMFLOAT4 normal;
+		DirectX::XMFLOAT4 color;
+	};
+
+	class YumeModel;
+	class YumeStaticModel;
+	class YumeMesh;
+
 	class YumeAPIExport LPVRenderer : public YumeBase
 	{
 	public:
@@ -34,31 +50,102 @@ namespace YumeEngine
 		virtual ~LPVRenderer();
 
 		void Setup();
-		void Update();
+		void Update(float);
 		void Render();
 
-		void SetCameraParameters();
+		void RenderSceneToGBuffer();
 
+		void SetCameraParameters(bool shadowPass);
+		void UpdateCameraParameters();
+
+		void LoadMaterials(const YumeString&);
+
+		void SetLightParameters();
+		void SetInjectStageTextures();
+		void SetMaterialParameters();
+		void SetGIParameters();
+		void SetDeferredLightParameters();
+
+		void UpdateMeshBb(YumeMesh& mesh);
+
+		YumeLPVCamera camera_;
 	private:
-		Matrix4 GetView(const Vector3& vEye, const Vector3& vAt, const Vector3& vUp, bool bRightHanded);
-		Matrix4 GetProj(float nearr, float farr, float fieldOfView, float aspectRatio);
-		Vector3 cameraPos_;
+		
+		DirectX::XMMATRIX MakeProjection(float,float);
+
+		void DrawBox(const DirectX::XMVECTOR& pos,const DirectX::XMVECTOR& scale);
+		void DrawPlane(const DirectX::XMVECTOR& pos,const DirectX::XMVECTOR& scale,const DirectX::XMVECTOR& color);
+		void DrawScene(bool shadowPass);
+
+		bool updateRsm_;
+
+		directional_light dir_light_;
+
+		DirectX::XMFLOAT3 bbMin;
+		DirectX::XMFLOAT3 bbMax;
+
+		float zNear;
+		float zFar;
+
+		float moveScale;
+
+		void RenderRSM();
+		void SetRSMCamera();
+
+		void RenderLPV();
+
+		DirectX::XMVECTOR dirLightUp;
+		DirectX::XMVECTOR dirLightFlux;
+
+		float gi_scale;
+		float lpv_flux_amplifier;
+		bool debug_gi;
+		unsigned number_it;
+
+		DirectX::XMFLOAT4X4 lightViewProj;
+		float yaw_;
+		float pitch_;
 
 		YumeGeometry* cornell_;
-		Matrix4 world_;
-		Matrix4 view_;
-		Matrix4 proj_;
+		YumeGeometry* plane_;
+		YumeStaticModel* model_;
+		YumeVector<YumeMaterial*>::type materials_;
+
+		YumeMesh* mesh_;
+
+		YumeGeometry* triangle_;
+
+
+		DirectX::XMFLOAT4X4 world_;
+		DirectX::XMFLOAT4X4 view_;
+		DirectX::XMFLOAT4X4 proj_;
+
+		DirectX::XMVECTOR materialDiffuse_;
+
 
 		YumeShaderVariation* meshVs_;
 		YumeShaderVariation* meshPs_;
+
+		YumeShaderVariation* triangleVs_;
+		YumeShaderVariation* deferredLpvPs_;
+
+		SharedPtr<YumeTexture2D> noiseTex_;
 
 		//RSM Render Targets
 		SharedPtr<YumeTexture2D> RsmColors_;
 		SharedPtr<YumeTexture2D> RsmNormals_;
 		SharedPtr<YumeTexture2D> RsmLinearDepth_;
 		SharedPtr<YumeTexture2D> RsmDummySpec_;
-
 		SharedPtr<YumeTexture2D> RsmDepthStencil_;
+
+		//Scene Render Targetss
+		SharedPtr<YumeTexture2D> SceneColors_;
+		SharedPtr<YumeTexture2D> SceneNormals_;
+		SharedPtr<YumeTexture2D> SceneLinearDepth_;
+		SharedPtr<YumeTexture2D> SceneSpecular_;
+
+
+		LightPropagationVolume lpv_;
 
 		YumeRHI* rhi_;
 		YumeRenderer* renderer_;

@@ -113,6 +113,7 @@ namespace YumeEngine
 		TextureUsage usage_;
 
 		unsigned levels_;
+		unsigned arraySize_;
 
 		unsigned requestedLevels_;
 

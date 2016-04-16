@@ -3,7 +3,7 @@
     <Technique name="Techniques/NoTexture.xml" />
   </Techniques>
   <Parameters>
-    <parameter name="MatDiffColor" value="0.5 0.5 0.5 1" />
-    <parameter name="MatSpecColor" value="0.5 0.5 0.5 16" />
+    <parameter name="diffuse_color" value="0.5 0.5 0.5 1" />
+    <parameter name="specular_color" value="0.5 0.5 0.5 16" />
   </Parameters>
 </Material>

@@ -39,6 +39,10 @@
 #include "Renderer/YumeInputLayout.h"
 #include "Renderer/YumeConstantBuffer.h"
 
+#ifdef _WIN32
+#include <DirectXMath.h>
+#endif
+
 
 #include <SDL.h>
 //----------------------------------------------------------------------------
@@ -88,14 +92,29 @@ namespace YumeEngine
 		virtual void							EndFrame() = 0;
 		virtual void							Clear(unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) = 0;
 		virtual void							ClearRenderTarget(unsigned index,unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) = 0;
+		virtual void							ClearDepthStencil(unsigned flags,float depth,unsigned stencil) { }
 
 		virtual bool							IsInitialized() = 0;
 
 		void									SetWindowIcon(YumeImage* image);
 
 		//
-
-
+		virtual void							BindSampler(ShaderType type,unsigned samplerStartSlot,unsigned samplerCount,unsigned internalIndex) { };
+		virtual void							BindBackbuffer() { };
+		virtual void							CreateStandardSampler() { };
+		virtual void							BindStandardSampler() { };
+		virtual void							BindLPVSampler() { };
+		virtual void							BindShadowsSampler() { };
+		virtual void							BindPsuedoBuffer() { };
+		virtual void							BindNullIndexBuffer() { };
+		virtual void							BindNullBlendState() { };
+		virtual void							BindResetRenderTargets(int count) { };
+		virtual void							BindResetTextures(int start,int count,bool ps = false) { };
+		virtual void							BindInjectBlendState() { }
+		virtual void							BindPropogateBlendState() { }
+		virtual void							BindDefaultDepthStencil() { }
+		virtual void							GenerateMips(YumeTexture2D*){}
+		
 		//
 
 		virtual IntVector2						GetRenderTargetDimensions() const = 0;
@@ -162,6 +181,14 @@ namespace YumeEngine
 		virtual void  							SetShaderParameter(YumeHash param,Vector4* vectorArray) { };
 		virtual void  							SetShaderParameter(YumeHash param,const Variant& value) = 0;
 
+		//
+#ifdef _WIN32
+		virtual void  							SetShaderParameter(YumeHash param,const DirectX::XMMATRIX& matrix) = 0;
+		virtual void  							SetShaderParameter(YumeHash param,const DirectX::XMFLOAT3& vector) = 0;
+		virtual void  							SetShaderParameter(YumeHash param,const DirectX::XMFLOAT4& vector) = 0;
+#endif
+		//
+
 		virtual void  							SetVertexBuffer(YumeVertexBuffer* buffer) = 0;
 		virtual void  							SetIndexBuffer(YumeIndexBuffer* buffer) = 0;
 		virtual bool  							SetVertexBuffers(const YumeVector<YumeVertexBuffer*>::type& buffers,const YumeVector<unsigned>::type& elementMasks,unsigned instanceOffset = 0) = 0;
@@ -178,7 +205,7 @@ namespace YumeEngine
 		virtual void  							SetFillMode(FillMode mode) = 0;
 		virtual void  							SetScissorTest(bool enable,const Rect& rect = Rect::FULL,bool borderInclusive = true) = 0;
 		virtual void  							SetScissorTest(bool enable,const IntRect& rect) = 0;
-		virtual void  							SetStencilTest(bool enable,CompareMode mode = CMP_ALWAYS,StencilOp pass = OP_KEEP,StencilOp fail = OP_KEEP,StencilOp zFail = OP_KEEP,unsigned stencilRef = 0,unsigned compareMask = M_MAX_UNSIGNED,unsigned writeMask = M_MAX_UNSIGNED) = 0;
+		virtual void  							SetStencilTest(bool enable,CompareMode mode = CMP_ALWAYS,StencilOp pass = OP_KEEP,StencilOp fail = OP_KEEP,StencilOp zFail = OP_KEEP,StencilOp zFailBack = OP_KEEP,unsigned stencilRef = 0,unsigned compareMask = M_MAX_UNSIGNED,unsigned writeMask = M_MAX_UNSIGNED) = 0;
 
 
 		virtual void  							SetClipPlane(bool enable,const Plane& clipPlane = Plane::UP,const Matrix3x4& view =  Matrix3x4::IDENTITY,const Matrix4& projection =  Matrix4::IDENTITY) = 0;
@@ -357,6 +384,7 @@ namespace YumeEngine
 		StencilOp stencilPass_;
 		StencilOp stencilFail_;
 		StencilOp stencilZFail_;
+		StencilOp stencilZFailBack_;
 		unsigned stencilRef_;
 		unsigned stencilCompareMask_;
 		unsigned stencilWriteMask_;

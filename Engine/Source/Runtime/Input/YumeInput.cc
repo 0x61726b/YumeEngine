@@ -30,6 +30,8 @@
 
 #include <SDL_syswm.h>
 
+#include "Renderer/LPVRendererTest.h"
+#include "Renderer/YumeLPVCamera.h"
 
 namespace YumeEngine
 {
@@ -670,7 +672,7 @@ namespace YumeEngine
 		{
 		case SDL_SYSWMEVENT:
 		{
-			UINT message = evt.syswm.msg->msg.win.msg;
+			gYume->pRenderer->lpvRenderer_->camera_.HandleMessages(evt.syswm.msg->msg.win.hwnd,evt.syswm.msg->msg.win.msg,evt.syswm.msg->msg.win.wParam,evt.syswm.msg->msg.win.lParam);
 			break;
 		}
 		break;

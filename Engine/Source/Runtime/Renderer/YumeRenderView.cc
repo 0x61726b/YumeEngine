@@ -2999,7 +2999,7 @@ namespace YumeEngine
 
 		graphics_->SetScissorTest(false);
 		if(!noStencil_)
-			graphics_->SetStencilTest(true,CMP_NOTEQUAL,OP_KEEP,OP_KEEP,OP_KEEP,0,light->GetLightMask());
+			graphics_->SetStencilTest(true,CMP_NOTEQUAL,OP_KEEP,OP_KEEP,OP_KEEP,OP_KEEP,0,light->GetLightMask());
 		else
 			graphics_->SetStencilTest(false);
 	}

@@ -66,31 +66,33 @@ namespace YumeEngine
 		if(file.GetName() != GetName())
 			rm_->StoreResourceDependency(this,file.GetName());
 
-		while(!file.Eof())
-		{
-			YumeString line = file.ReadLine();
+		code = file.ReadString();
 
-			if(line.empty())
-				continue;
+		//while(!file.Eof())
+		//{
+		//	YumeString line = file.ReadLine();
 
-			if(line.StartsWith("#include"))
-			{
-				String includeFileName = GetPath(file.GetName()) + line.substr(9).Replaced("\"","").Trimmed();
+		//	if(line.empty())
+		//		continue;
 
-				SharedPtr<YumeFile> file_ = rm_->GetFile(includeFileName);
+		//	if(line.StartsWith("#include"))
+		//	{
+		//		String includeFileName = GetPath(file.GetName()) + line.substr(9).Replaced("\"","").Trimmed();
 
-				if(!file_)
-					return false;
+		//		SharedPtr<YumeFile> file_ = rm_->GetFile(includeFileName);
 
-				if(!ProcessSource(code,*file_))
-					return false;
-			}
-			else
-			{
-				code += line;
-				code += "\n";
-			}
-		}
+		//		if(!file_)
+		//			return false;
+
+		//		if(!ProcessSource(code,*file_))
+		//			return false;
+		//	}
+		//	else
+		//	{
+		//		code += line;
+		//		code += "\n";
+		//	}
+		//}
 
 		return true;
 	}

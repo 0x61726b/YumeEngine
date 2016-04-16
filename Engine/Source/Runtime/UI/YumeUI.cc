@@ -41,7 +41,7 @@ namespace YumeEngine
 {
 	YumeUI::YumeUI()
 		: cef3d_(0),
-		renderUI_(true),
+		renderUI_(false),
 		mouseX_(0),
 		mouseY_(0),
 		lastTimeStep_(0.0f)

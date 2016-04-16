@@ -35,6 +35,8 @@ ADD_SUBDIRECTORY(pugixml/scripts)
 
 ADD_SUBDIRECTORY(STB)
 
+ADD_SUBDIRECTORY(assimp)
+
 if(YUME_BUILD_OPENGL)
   ADD_SUBDIRECTORY(GLEW)
 endif()
@@ -62,6 +64,7 @@ set_target_properties(JO PROPERTIES FOLDER "3rdParty" )
 
 setup_lib("pugixml")
 setup_lib("STB")
+setup_lib("assimp")
 
 if(OS_LINUX)
   target_compile_options(boost_system PUBLIC "-fPIC")

@@ -82,6 +82,7 @@ namespace YumeEngine
 	YumeD3D11Texture2D::YumeD3D11Texture2D()
 	{
 		format_ = (DXGI_FORMAT_UNKNOWN);
+		mips_ = 1;
 	}
 
 	YumeD3D11Texture2D::~YumeD3D11Texture2D()
@@ -111,7 +112,7 @@ namespace YumeEngine
 
 
 
-	bool YumeD3D11Texture2D::SetSize(int width,int height,unsigned format,TextureUsage usage)
+	bool YumeD3D11Texture2D::SetSize(int width,int height,unsigned format,TextureUsage usage,int arraySize,int mips)
 	{
 		if(width <= 0 || height <= 0)
 		{
@@ -122,6 +123,8 @@ namespace YumeEngine
 		// Delete the old rendersurface if any
 		renderSurface_.Reset();
 		usage_ = usage;
+		arraySize_ = arraySize;
+		mips_ = mips;
 
 		if(usage_ == TEXTURE_RENDERTARGET || usage_ == TEXTURE_DEPTHSTENCIL)
 		{
@@ -395,6 +398,8 @@ namespace YumeEngine
 		textureDesc.Usage = D3D11_USAGE_STAGING;
 		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 
+
+
 		ID3D11Texture2D* stagingTexture = 0;
 		HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateTexture2D(&textureDesc,0,&stagingTexture);
 		if(FAILED(hr))
@@ -446,17 +451,23 @@ namespace YumeEngine
 
 		levels_ = CheckMaxLevels(width_,height_,requestedLevels_);
 
+		if(mips_ != 1)
+			levels_ = mips_;
+
 		D3D11_TEXTURE2D_DESC textureDesc;
 		memset(&textureDesc,0,sizeof textureDesc);
 		textureDesc.Width = (UINT)width_;
 		textureDesc.Height = (UINT)height_;
 		textureDesc.MipLevels = levels_;
-		textureDesc.ArraySize = 1;
+		textureDesc.ArraySize = arraySize_;
 		textureDesc.Format = (DXGI_FORMAT)(sRGB_ ? GetSRGBFormat(format_) : format_);
 		textureDesc.SampleDesc.Count = 1;
 		textureDesc.SampleDesc.Quality = 0;
 		textureDesc.Usage = usage_ == TEXTURE_DYNAMIC ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+		if(mips_ != 1 && mips_ != 0)
+			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 		if(usage_ == TEXTURE_RENDERTARGET)
 			textureDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 		else if(usage_ == TEXTURE_DEPTHSTENCIL)
@@ -477,6 +488,26 @@ namespace YumeEngine
 		resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		resourceViewDesc.Texture2D.MipLevels = (UINT)levels_;
 
+		if(textureDesc.Format == DXGI_FORMAT_R32_TYPELESS)
+			resourceViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
+		else
+			resourceViewDesc.Format = textureDesc.Format;
+
+		if(textureDesc.ArraySize > 1)
+		{
+			resourceViewDesc.Texture2DArray.ArraySize = textureDesc.ArraySize;
+			resourceViewDesc.Texture2DArray.MipLevels = textureDesc.MipLevels;
+			resourceViewDesc.Texture2DArray.FirstArraySlice = 0;
+			resourceViewDesc.Texture2DArray.MostDetailedMip = 0;
+			resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+		}
+		else
+		{
+			resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			resourceViewDesc.Texture2D.MostDetailedMip = 0;
+			resourceViewDesc.Texture2D.MipLevels = (textureDesc.MipLevels == 0) ? 6 : textureDesc.MipLevels;
+		}
+
 		hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateShaderResourceView((ID3D11Resource*)object_,&resourceViewDesc,
 			(ID3D11ShaderResourceView**)&shaderResourceView_);
 		if(FAILED(hr))
@@ -493,7 +524,18 @@ namespace YumeEngine
 			renderTargetViewDesc.Format = textureDesc.Format;
 			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 
-			hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Resource*)object_,&renderTargetViewDesc,
+			if(textureDesc.ArraySize > 1)
+			{
+				renderTargetViewDesc.Texture2DArray.ArraySize = textureDesc.ArraySize;
+				renderTargetViewDesc.Texture2DArray.FirstArraySlice = 0;
+				renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+			}
+			else
+			{
+				renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+			}
+
+			hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateRenderTargetView((ID3D11Resource*)object_,nullptr,
 				(ID3D11RenderTargetView**)&renderSurface_->renderTargetView_);
 			if(FAILED(hr))
 			{
@@ -501,6 +543,8 @@ namespace YumeEngine
 				YUMELOG_ERROR("Failed to create rendertarget view for texture",hr);
 				return false;
 			}
+
+			((ID3D11RenderTargetView*)renderSurface_->renderTargetView_)->SetPrivateData(WKPDID_D3DDebugObjectName,GetName().length(),GetName().c_str());
 		}
 		else if(usage_ == TEXTURE_DEPTHSTENCIL)
 		{
@@ -517,6 +561,7 @@ namespace YumeEngine
 				YUMELOG_ERROR("Failed to create depth-stencil view for texture",hr);
 				return false;
 			}
+			((ID3D11RenderTargetView*)renderSurface_->renderTargetView_)->SetPrivateData(WKPDID_D3DDebugObjectName,GetName().length(),GetName().c_str());
 
 			// Create also a read-only version of the view for simultaneous depth testing and sampling in shader
 			depthStencilViewDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH;
@@ -527,6 +572,10 @@ namespace YumeEngine
 				D3D_SAFE_RELEASE(renderSurface_->readOnlyView_);
 				YUMELOG_ERROR("Failed to create read-only depth-stencil view for texture" << hr);
 			}
+
+			YumeString newName = "ReadOnly";
+			newName.append(GetName());
+			((ID3D11DepthStencilView*)renderSurface_->readOnlyView_)->SetPrivateData(WKPDID_D3DDebugObjectName,newName.length(),newName.c_str());
 		}
 
 		return true;

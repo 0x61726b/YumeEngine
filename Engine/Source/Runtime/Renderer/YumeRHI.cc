@@ -68,7 +68,7 @@ namespace YumeEngine
 		windowHeight_(0),
 		windowTitle_("Yume Engine"),
 		windowPos_(SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED),
-		sRGB_(false),
+		sRGB_(true),
 		lightPrepassSupport_(false),
 		deferredSupport_(false),
 		instancingSupport_(false),

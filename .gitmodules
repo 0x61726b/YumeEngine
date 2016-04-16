@@ -21,3 +21,7 @@
 	path = Engine/Source/3rdParty/cef3d
 	url = https://github.com/arkenthera/cef3d
 	branch = master
+[submodule "Engine/Source/3rdParty/assimp"]
+	path = Engine/Source/3rdParty/assimp
+	url = https://github.com/assimp/assimp
+	branch = master

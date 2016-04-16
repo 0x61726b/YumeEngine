@@ -862,7 +862,7 @@ namespace YumeEngine
 		{
 			BatchGroup* group = *i;
 			if(markToStencil)
-				graphics->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,group->lightMask_);
+				graphics->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,OP_KEEP,group->lightMask_);
 
 			group->Draw(view,camera,allowDepthWrite);
 		}
@@ -871,7 +871,7 @@ namespace YumeEngine
 		{
 			Batch* batch = *i;
 			if(markToStencil)
-				graphics->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,batch->lightMask_);
+				graphics->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,OP_KEEP,batch->lightMask_);
 			if(!usingLightOptimization)
 			{
 				// If drawing an alpha batch, we can optimize fillrate by scissor test

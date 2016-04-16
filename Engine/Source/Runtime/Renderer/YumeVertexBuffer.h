@@ -48,6 +48,7 @@ namespace YumeEngine
 		virtual void* Lock(unsigned start,unsigned count,bool discard = false) = 0;
 		virtual void Unlock() = 0;
 
+		void SetVertexSize(unsigned size) { vertexSize_ = size;}
 
 		bool IsShadowed() const { return shadowed_; }
 		bool IsDynamic() const { return dynamic_; }

@@ -79,6 +79,7 @@ namespace YumeEngine
 			const YumeMap<YumeHash,ShaderParameter>::type& vsParams = static_cast<YumeD3D11ShaderVariation*>(vertexShader)->GetParameters();
 			for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = vsParams.begin(); i != vsParams.end(); ++i)
 			{
+				ShaderParameter ss = i->second;
 				parameters_[i->first] = i->second;
 				parameters_[i->first].bufferPtr_ = vsConstantBuffers_[i->second.buffer_];
 			}

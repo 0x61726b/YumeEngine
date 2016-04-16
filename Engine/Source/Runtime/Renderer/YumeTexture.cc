@@ -63,7 +63,8 @@ namespace YumeEngine
 		shadowCompare_(false),
 		filterMode_(FILTER_DEFAULT),
 		sRGB_(false),
-		parametersDirty_(true)
+		parametersDirty_(true),
+		arraySize_(1)
 	{
 		for(int i = 0; i < MAX_COORDS; ++i)
 			addressMode_[i] = ADDRESS_WRAP;

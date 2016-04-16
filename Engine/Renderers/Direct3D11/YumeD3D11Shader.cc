@@ -120,41 +120,94 @@ namespace YumeEngine
 		YumeHash definesHash = (defines);
 		typedef YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> > ShaderMap;
 
-		ShaderMap::type& variations = (type == VS ? vsVariations_ : psVariations_);
-		if(type == GS)
-			variations = gsVariations_;
 
-		ShaderMap::iterator i = variations.find(definesHash);
-
-		if(i == variations.end())
+		if(type == VS)
 		{
-			// If shader not found, normalize the defines (to prevent duplicates) and check again. In that case make an alias
-			// so that further queries are faster
-			YumeString normalizedDefines = NormalizeDefines(defines);
-			YumeHash normalizedHash = (normalizedDefines);
-
-			i = variations.find(normalizedHash);
-			if(i != variations.end())
-				variations.insert(MakePair(definesHash,i->second));
-			else
+			ShaderMap::iterator i = vsVariations_.find(definesHash);
+			if(i == vsVariations_.end())
 			{
-				// No shader variation found. Create new
-				YumeD3D11ShaderVariation* shr_ = YumeAPINew YumeD3D11ShaderVariation(this,type);
-				i = variations.insert(MakePair(normalizedHash,SharedPtr<YumeD3D11ShaderVariation>(shr_)));
-				if(definesHash != normalizedHash)
-					variations.insert(MakePair(definesHash,i->second));
-				
+				YumeString normalizedDefines = NormalizeDefines(defines);
+				YumeHash normalizedHash = (normalizedDefines);
 
-				
-				i->second->SetName(GetFileName(GetName()));
-				i->second->SetDefines(normalizedDefines);
-				++numVariations_;
-				RefreshMemoryUse();
+				i = vsVariations_.find(normalizedHash);
+				if(i != vsVariations_.end())
+					vsVariations_.insert(MakePair(definesHash,i->second));
+				else
+				{
+					YumeD3D11ShaderVariation* shr = (YumeAPINew YumeD3D11ShaderVariation(this,type));
+					i = vsVariations_.insert(MakePair(normalizedHash,SharedPtr<YumeD3D11ShaderVariation>(shr)));
+					if(definesHash != normalizedHash)
+						vsVariations_.insert(MakePair(definesHash,i->second));
 
-				return StaticCast<YumeShaderVariation>(i->second);
+					i->second->SetName(GetFileName(GetName()));
+					i->second->SetDefines(normalizedDefines);
+					++numVariations_;
+					RefreshMemoryUse();
+
+					return StaticCast<YumeShaderVariation>(i->second);
+				}
 			}
+			else
+				return (YumeShaderVariation*)i->second;
 		}
-		return (YumeShaderVariation*)i->second;
+		if(type == PS)
+		{
+			ShaderMap::iterator i = psVariations_.find(definesHash);
+			if(i == psVariations_.end())
+			{
+				YumeString normalizedDefines = NormalizeDefines(defines);
+				YumeHash normalizedHash = (normalizedDefines);
+
+				i = psVariations_.find(normalizedHash);
+				if(i != psVariations_.end())
+					psVariations_.insert(MakePair(definesHash,i->second));
+				else
+				{
+					YumeD3D11ShaderVariation* shr = (YumeAPINew YumeD3D11ShaderVariation(this,type));
+					i = psVariations_.insert(MakePair(normalizedHash,SharedPtr<YumeD3D11ShaderVariation>(shr)));
+					if(definesHash != normalizedHash)
+						psVariations_.insert(MakePair(definesHash,i->second));
+
+					i->second->SetName(GetFileName(GetName()));
+					i->second->SetDefines(normalizedDefines);
+					++numVariations_;
+					RefreshMemoryUse();
+
+					return StaticCast<YumeShaderVariation>(i->second);
+				}
+			}
+			else
+				return (YumeShaderVariation*)i->second;
+		}
+		if(type == GS)
+		{
+			ShaderMap::iterator i = gsVariations_.find(definesHash);
+			if(i == gsVariations_.end())
+			{
+				YumeString normalizedDefines = NormalizeDefines(defines);
+				YumeHash normalizedHash = (normalizedDefines);
+
+				i = gsVariations_.find(normalizedHash);
+				if(i != gsVariations_.end())
+					gsVariations_.insert(MakePair(definesHash,i->second));
+				else
+				{
+					YumeD3D11ShaderVariation* shr = (YumeAPINew YumeD3D11ShaderVariation(this,type));
+					i = gsVariations_.insert(MakePair(normalizedHash,SharedPtr<YumeD3D11ShaderVariation>(shr)));
+					if(definesHash != normalizedHash)
+						gsVariations_.insert(MakePair(definesHash,i->second));
+
+					i->second->SetName(GetFileName(GetName()));
+					i->second->SetDefines(normalizedDefines);
+					++numVariations_;
+					RefreshMemoryUse();
+
+					return StaticCast<YumeShaderVariation>(i->second);
+				}
+			}
+			else
+				return (YumeShaderVariation*)i->second;
+		}
 	}
 
 	void YumeD3D11Shader::RefreshMemoryUse()

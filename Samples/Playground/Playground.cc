@@ -53,6 +53,7 @@ YUME_DEFINE_ENTRY_POINT(YumeEngine::PlaygroundDemo);
 #define NO_SKYBOX
 #define NO_PLANE
 #define CORNELL
+#define DISABLE_EVERYTHING
 
 namespace YumeEngine
 {
@@ -82,12 +83,20 @@ namespace YumeEngine
 		scene_->CreateComponent<Octree>();
 		scene_->CreateComponent<YumeDebugRenderer>();
 
+		gYume->pInput->AddListener(this);
+
+#ifndef DISABLE_CEF
+		overlay_ = new YumeDebugOverlay;
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);
+#endif
 		//dirLightNode_ = scene_->CreateChild("DirectionalLight");
 		//dirLightNode_->SetDirection(Vector3(-2,-5,-2).Normalized()); // The direction vector does not need to be normalized
 		//YumeLight* light = dirLightNode_->CreateComponent<YumeLight>();
 		//light->SetLightType(LIGHT_DIRECTIONAL);
 		//light->SetShadowBias(BiasParameters(0.00025f,0.5f));
 		//light->SetCastShadows(true);
+#ifndef DISABLE_EVERYTHING
 
 #ifdef CORNELL
 		//Bottom
@@ -209,6 +218,7 @@ namespace YumeEngine
 #ifndef DISABLE_CEF
 		overlay_->GetBinding("SampleName")->SetValue("Playground");
 		gYume->pUI->SetUIEnabled(false);
+#endif
 #endif
 	}
 
@@ -383,16 +393,20 @@ namespace YumeEngine
 
 	void PlaygroundDemo::HandleUpdate(float timeStep)
 	{
+#ifndef DISABLE_EVERYTHING
 		MoveCamera(timeStep);
+#endif
 	}
 	void PlaygroundDemo::HandleRenderUpdate(float timeStep)
 	{
+#ifndef DISABLE_EVERYTHING
 		YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
 		YumeRenderPipeline* fx = viewport->GetRenderPath();
 		YumeCamera* cam = viewport->GetCamera();
 
 
 		fx->SetShaderParameter("ViewThree",cam->GetView().ToMatrix3());
+#endif
 	}
 
 	void PlaygroundDemo::Setup()
@@ -402,4 +416,4 @@ namespace YumeEngine
 		engineVariants_["WindowWidth"] = 1600;
 		engineVariants_["WindowHeight"] = 900;
 	}
-}
+	}

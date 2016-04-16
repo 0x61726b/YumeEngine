@@ -304,20 +304,20 @@ namespace YumeEngine
 		{
 			entryPoint = "VS";
 			defines.push_back("COMPILEVS");
-			profile = "vs_4_0";
+			profile = "vs_5_0";
 		}
 		else if(type_ == PS)
 		{
 			entryPoint = "PS";
 			defines.push_back("COMPILEPS");
-			profile = "ps_4_0";
+			profile = "ps_5_0";
 			flags |= 0;
 		}
 		else if(type_ == GS)
 		{
 			entryPoint = "GS";
 			defines.push_back("COMPILEGS");
-			profile = "gs_4_0";
+			profile = "gs_5_0";
 			flags |= 0;
 		}
 
@@ -433,10 +433,10 @@ namespace YumeEngine
 					{
 						elementMask_ |= (1 << j);
 						break;
+					}
+				}
 			}
 		}
-	}
-}
 
 		YumeMap<YumeString,unsigned>::type cbRegisterMap;
 

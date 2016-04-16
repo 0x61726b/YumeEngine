@@ -54,6 +54,7 @@
 
 #include "LPVRendererTest.h"
 
+
 namespace YumeEngine
 {
 	struct Vertex32
@@ -61,6 +62,10 @@ namespace YumeEngine
 		Vector3 Pos;
 		Vector3 Normal;
 		Vector2 Tex;
+	};
+	struct SimpleVertex
+	{
+		DirectX::XMFLOAT3 V;
 	};
 	static const float dirLightVertexData[] =
 	{
@@ -699,7 +704,7 @@ namespace YumeEngine
 
 		FireEvent(R_RENDERTARGETUPDATE);
 
-		lpvRenderer_->Update();
+		lpvRenderer_->Update(timeStep);
 
 		// Process gathered views. This may queue further views (render surfaces that are only updated when visible)
 		for(unsigned i = 0; i < queuedViewports_.size(); ++i)
@@ -896,10 +901,17 @@ namespace YumeEngine
 	{
 		return dirLightGeometry_;
 	}
+
 	YumeGeometry* YumeRenderer::GetTexturedQuadGeometry()
 	{
 		return texturedQuadGeometry;
 	}
+
+	YumeGeometry* YumeRenderer::GetFsTriangle()
+	{
+		return fullScreenTriangleGeometry_;
+	}
+
 	YumeGeometry* YumeRenderer::GetSSAOQuadGeometry()
 	{
 		return ssaoQuad_;
@@ -1496,7 +1508,7 @@ namespace YumeEngine
 
 			gYume->pRHI->SetColorWrite(false);
 			gYume->pRHI->SetDepthWrite(false);
-			gYume->pRHI->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,lightStencilValue_);
+			gYume->pRHI->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,OP_KEEP,lightStencilValue_);
 			gYume->pRHI->SetShaders(gYume->pRHI->GetShader(VS,"Stencil"),gYume->pRHI->GetShader(PS,"Stencil"));
 			gYume->pRHI->SetShaderParameter(VSP_VIEW,view);
 			gYume->pRHI->SetShaderParameter(VSP_VIEWINV,camera->GetEffectiveWorldTransform());
@@ -1507,7 +1519,7 @@ namespace YumeEngine
 
 			gYume->pRHI->ClearTransformSources();
 			gYume->pRHI->SetColorWrite(true);
-			gYume->pRHI->SetStencilTest(true,CMP_EQUAL,OP_KEEP,OP_KEEP,OP_KEEP,lightStencilValue_);
+			gYume->pRHI->SetStencilTest(true,CMP_EQUAL,OP_KEEP,OP_KEEP,OP_KEEP,OP_KEEP,lightStencilValue_);
 
 			// Increase stencil value for next light
 			++lightStencilValue_;
@@ -1838,6 +1850,23 @@ namespace YumeEngine
 		texturedQuadGeometry->SetIndexBuffer(spib);
 		texturedQuadGeometry->SetDrawRange(TRIANGLE_LIST,0,spib->GetIndexCount());
 
+		//Fs triangle
+		SharedPtr<YumeVertexBuffer> triangleVb(gYume->pRHI->CreateVertexBuffer());
+
+		SimpleVertex v1 ={DirectX::XMFLOAT3(-1.f,-3.f,1.f)};
+		SimpleVertex v2 ={DirectX::XMFLOAT3(-1.f,1.f,1.f)};
+		SimpleVertex v3 ={DirectX::XMFLOAT3(3.f,1.f,1.f)};
+
+		SimpleVertex vertices[3] ={v1,v2,v3};
+		triangleVb->SetShadowed(true);
+		triangleVb->SetSize(3,MASK_POSITION);
+		triangleVb->SetData(vertices);
+
+		fullScreenTriangleGeometry_ = SharedPtr<YumeGeometry>(new YumeGeometry);
+		fullScreenTriangleGeometry_->SetVertexBuffer(0,triangleVb);
+		fullScreenTriangleGeometry_->SetDrawRange(TRIANGLE_LIST,0,0,0,3);
+
+
 		//SSAO Quad
 		Vertex32 v[4];
 
@@ -1987,7 +2016,7 @@ namespace YumeEngine
 			data[2] = (unsigned char)((axis == 2) ? 255 : 0);
 			data[3] = 0;
 			faceSelectCubeMap_->SetData((CubeMapFace)i,0,0,0,1,1,data);
-		}
+	}
 
 		for(unsigned i = 0; i < MAX_CUBEMAP_FACES; ++i)
 		{
@@ -2010,15 +2039,15 @@ namespace YumeEngine
 					dest[3] = faceY;
 #endif
 					dest += 4;
-		}
-	}
+				}
+			}
 
 			indirectionCubeMap_->SetData((CubeMapFace)i,0,0,0,256,256,data);
-}
+		}
 
 		faceSelectCubeMap_->ClearDataLost();
 		indirectionCubeMap_->ClearDataLost();
-	}
+}
 
 	void YumeRenderer::CreateInstancingBuffer()
 	{
@@ -2082,7 +2111,7 @@ namespace YumeEngine
 			return "VSM_SHADOW ";
 		case SHADOWQUALITY_BLUR_VSM:
 			return "VSM_SHADOW ";
-	}
+		}
 		return "";
 	};
 
@@ -2138,4 +2167,4 @@ namespace YumeEngine
 		view->DrawFullscreenQuad(false);
 	}
 
-}
+	}

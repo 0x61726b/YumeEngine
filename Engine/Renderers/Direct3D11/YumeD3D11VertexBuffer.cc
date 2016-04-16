@@ -48,7 +48,8 @@ namespace YumeEngine
 		"TEXCOORD",
 		"TEXCOORD",
 		"TEXCOORD",
-		"OBJECTINDEX"
+		"OBJECTINDEX",
+		"TEXCOORD"
 	};
 
 	const unsigned YumeD3D11VertexBuffer::elementSemanticIndices[] =
@@ -57,7 +58,7 @@ namespace YumeEngine
 		0,
 		0,
 		0,
-		1,
+		1, //1
 		0,
 		1,
 		0,
@@ -66,6 +67,7 @@ namespace YumeEngine
 		2,
 		3,
 		4,
+		0,
 		0
 	};
 
@@ -75,7 +77,7 @@ namespace YumeEngine
 		DXGI_FORMAT_R32G32B32_FLOAT,
 		DXGI_FORMAT_R8G8B8A8_UNORM,
 		DXGI_FORMAT_R32G32_FLOAT,
-		DXGI_FORMAT_R32G32_FLOAT,
+		DXGI_FORMAT_R32G32_FLOAT,//changed this from upper one
 		DXGI_FORMAT_R32G32B32_FLOAT,
 		DXGI_FORMAT_R32G32B32_FLOAT,
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
@@ -84,7 +86,8 @@ namespace YumeEngine
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
 		DXGI_FORMAT_R32G32B32A32_FLOAT,
-		DXGI_FORMAT_R32_SINT
+		DXGI_FORMAT_R32_SINT,
+		DXGI_FORMAT_R32G32B32_FLOAT
 	};
 
 

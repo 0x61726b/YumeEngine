@@ -232,7 +232,7 @@ namespace YumeEngine
 		unsigned GetNumLights(bool allViews = false) const;
 		unsigned GetNumShadowMaps(bool allViews = false) const;
 		unsigned GetNumOccluders(bool allViews = false) const;
-		
+
 		Vector4* GetFrustumCorners() { return frustumCorners_; };
 		Vector4* GetSSAOVectorOffsets() { return vectorOffsets_; }
 
@@ -257,6 +257,7 @@ namespace YumeEngine
 		YumeGeometry* GetQuadGeometry();
 		YumeGeometry* GetSSAOQuadGeometry();
 		YumeGeometry* GetTexturedQuadGeometry();
+		YumeGeometry* GetFsTriangle();
 		YumeTexture2D* GetShadowMap(YumeLight* light,YumeCamera* camera,unsigned viewWidth,unsigned viewHeight);
 		YumeTexture* GetScreenBuffer(int width,int height,unsigned format,bool cubemap,bool filtered,bool srgb,unsigned persistentKey = 0);
 		YumeRenderable* GetDepthStencil(int width,int height);
@@ -319,6 +320,7 @@ namespace YumeEngine
 		SharedPtr<YumeRenderPipeline> defaultPipeline_;
 		SharedPtr<YumeRendererEnvironment> defaultZone_;
 		SharedPtr<YumeGeometry> dirLightGeometry_;
+		SharedPtr<YumeGeometry> fullScreenTriangleGeometry_;
 		SharedPtr<YumeGeometry> texturedQuadGeometry;
 		SharedPtr<YumeGeometry> ssaoQuad_;
 		SharedPtr<YumeGeometry> spotLightGeometry_;
@@ -331,8 +333,9 @@ namespace YumeEngine
 		SharedPtr<YumeTextureCube> faceSelectCubeMap_;
 		SharedPtr<YumeTextureCube> indirectionCubeMap_;
 
+	public:
 		LPVRenderer* lpvRenderer_;
-
+	private:
 
 		YumeVector<SharedPtr<YumeSceneNode> >::type shadowCameraNodes_;
 		YumeVector<SharedPtr<OcclusionBuffer> >::type occlusionBuffers_;

@@ -123,6 +123,7 @@ namespace YumeEngine
 		ELEMENT_COLOR,
 		ELEMENT_TEXCOORD1,
 		ELEMENT_TEXCOORD2,
+		ELEMENT_TEXCOORD3,
 		ELEMENT_CUBETEXCOORD1,
 		ELEMENT_CUBETEXCOORD2,
 		ELEMENT_TANGENT,
@@ -223,6 +224,8 @@ namespace YumeEngine
 		SP_MATERIAL,
 		SP_OBJECT,
 		SP_CUSTOM,
+		SP_CUSTOM1,
+		SP_CUSTOM2,
 		MAX_SHADER_PARAMETER_GROUPS
 	};
 
@@ -359,10 +362,11 @@ namespace YumeEngine
 	static const unsigned MASK_INSTANCEMATRIX2 = 0x800;
 	static const unsigned MASK_INSTANCEMATRIX3 = 0x1000;
 	static const unsigned MASK_OBJECTINDEX = 0x2000;
+	static const unsigned MASK_TEXCOORD3 = 0x4000;
 	static const unsigned MASK_DEFAULT = 0xffffffff;
 	static const unsigned NO_ELEMENT = 0xffffffff;
 
-	static const int MAX_RENDERTARGETS = 4;
+	static const int MAX_RENDERTARGETS = 6;
 	static const int MAX_VERTEX_STREAMS = 4;
 	static const int MAX_CONSTANT_REGISTERS = 256;
 

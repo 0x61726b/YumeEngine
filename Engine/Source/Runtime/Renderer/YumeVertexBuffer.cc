@@ -37,13 +37,14 @@ namespace YumeEngine
 		2 * sizeof(float), // Texcoord2
 		3 * sizeof(float), // Cubetexcoord1
 		3 * sizeof(float), // Cubetexcoord2
-		4 * sizeof(float), // Tangent
+		3 * sizeof(float), // Tangent
 		4 * sizeof(float), // Blendweights
 		4 * sizeof(unsigned char), // Blendindices
 		4 * sizeof(float), // Instancematrix1
 		4 * sizeof(float), // Instancematrix2
 		4 * sizeof(float), // Instancematrix3
-		sizeof(int) // Objectindex
+		sizeof(int), // Objectindex
+		3 * sizeof(float) // Instancematrix3
 	};
 
 	YumeVertexBuffer::YumeVertexBuffer():

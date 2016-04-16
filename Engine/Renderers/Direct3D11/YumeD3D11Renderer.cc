@@ -281,6 +281,7 @@ namespace YumeEngine
 		stencilPass_ = OP_KEEP;
 		stencilFail_ = OP_KEEP;
 		stencilZFail_ = OP_KEEP;
+		stencilZFailBack_ = OP_KEEP;
 		stencilRef_ = 0;
 		stencilCompareMask_ = M_MAX_UNSIGNED;
 		stencilWriteMask_ = M_MAX_UNSIGNED;
@@ -301,6 +302,20 @@ namespace YumeEngine
 		dirtyConstantBuffers_.clear();
 	}
 
+	void YumeD3D11Renderer::ClearDepthStencil(unsigned flags,float depth,unsigned stencil)
+	{
+		unsigned depthClearFlags = 0;
+		if(flags & CLEAR_DEPTH)
+			depthClearFlags |= D3D11_CLEAR_DEPTH;
+		if(flags & CLEAR_STENCIL)
+			depthClearFlags |= D3D11_CLEAR_STENCIL;
+
+		if(depthStencil_)
+			impl_->deviceContext_->ClearDepthStencilView((ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView(),depthClearFlags,depth,(UINT8)stencil);
+		else
+			impl_->deviceContext_->ClearDepthStencilView(impl_->depthStencilView_,depthClearFlags,depth,(UINT8)stencil);
+	}
+
 	void YumeD3D11Renderer::Clear(unsigned flags,const YumeColor& color,float depth,unsigned stencil)
 	{
 		IntVector2 rtSize = GetRenderTargetDimensions();
@@ -308,55 +323,57 @@ namespace YumeEngine
 		bool oldColorWrite = colorWrite_;
 		bool oldDepthWrite = depthWrite_;
 
-		// D3D11 clear always clears the whole target regardless of viewport or scissor test settings
-		// Emulate partial clear by rendering a quad
-		if(!viewport_.left_ && !viewport_.top_ && viewport_.right_ == rtSize.x_ && viewport_.bottom_ == rtSize.y_)
+		// Make sure we use the read-write version of the depth stencil
+		SetDepthWrite(true);
+		PreDraw();
+
+		if((flags & CLEAR_COLOR) && impl_->renderTargetViews_[0])
+			impl_->deviceContext_->ClearRenderTargetView(impl_->renderTargetViews_[0],color.Data());
+
+		if((flags & (CLEAR_DEPTH | CLEAR_STENCIL)) && impl_->depthStencilView_)
 		{
-			// Make sure we use the read-write version of the depth stencil
-			SetDepthWrite(true);
-			PreDraw();
-
-			if((flags & CLEAR_COLOR) && impl_->renderTargetViews_[0])
-				impl_->deviceContext_->ClearRenderTargetView(impl_->renderTargetViews_[0],color.Data());
-
-			if((flags & (CLEAR_DEPTH | CLEAR_STENCIL)) && impl_->depthStencilView_)
-			{
-				unsigned depthClearFlags = 0;
-				if(flags & CLEAR_DEPTH)
-					depthClearFlags |= D3D11_CLEAR_DEPTH;
-				if(flags & CLEAR_STENCIL)
-					depthClearFlags |= D3D11_CLEAR_STENCIL;
-				impl_->deviceContext_->ClearDepthStencilView(impl_->depthStencilView_,depthClearFlags,depth,(UINT8)stencil);
-			}
+			unsigned depthClearFlags = 0;
+			if(flags & CLEAR_DEPTH)
+				depthClearFlags |= D3D11_CLEAR_DEPTH;
+			if(flags & CLEAR_STENCIL)
+				depthClearFlags |= D3D11_CLEAR_STENCIL;
+			impl_->deviceContext_->ClearDepthStencilView(impl_->depthStencilView_,depthClearFlags,depth,(UINT8)stencil);
 		}
-		else
+
+		//// D3D11 clear always clears the whole target regardless of viewport or scissor test settings
+		//// Emulate partial clear by rendering a quad
+		//if(!viewport_.left_ && !viewport_.top_ && viewport_.right_ == rtSize.x_ && viewport_.bottom_ == rtSize.y_)
+		//{
+
+		//}
+		/*else
 		{
-			YumeRenderer* renderer = gYume->pRenderer;
+		YumeRenderer* renderer = gYume->pRenderer;
 
-			YumeGeometry* geometry = renderer->GetQuadGeometry();
+		YumeGeometry* geometry = renderer->GetQuadGeometry();
 
-			Matrix3x4 model = Matrix3x4::IDENTITY;
-			Matrix4 projection = Matrix4::IDENTITY;
-			model.m23_ = Clamp(depth,0.0f,1.0f);
+		Matrix3x4 model = Matrix3x4::IDENTITY;
+		Matrix4 projection = Matrix4::IDENTITY;
+		model.m23_ = Clamp(depth,0.0f,1.0f);
 
-			SetBlendMode(BLEND_REPLACE);
-			SetColorWrite((flags & CLEAR_COLOR) != 0);
-			SetCullMode(CULL_NONE);
-			SetDepthTest(CMP_ALWAYS);
-			SetDepthWrite((flags & CLEAR_DEPTH) != 0);
-			SetFillMode(FILL_SOLID);
-			SetScissorTest(false);
-			SetStencilTest((flags & CLEAR_STENCIL) != 0,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,stencil);
-			SetShaders(GetShader(VS,"ClearFramebuffer"),GetShader(PS,"ClearFramebuffer"),0);
-			SetShaderParameter(VSP_MODEL,model);
-			SetShaderParameter(VSP_VIEWPROJ,projection);
-			SetShaderParameter(PSP_MATDIFFCOLOR,color);
+		SetBlendMode(BLEND_REPLACE);
+		SetColorWrite((flags & CLEAR_COLOR) != 0);
+		SetCullMode(CULL_NONE);
+		SetDepthTest(CMP_ALWAYS);
+		SetDepthWrite((flags & CLEAR_DEPTH) != 0);
+		SetFillMode(FILL_SOLID);
+		SetScissorTest(false);
+		SetStencilTest((flags & CLEAR_STENCIL) != 0,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,OP_KEEP,stencil);
+		SetShaders(GetShader(VS,"ClearFramebuffer"),GetShader(PS,"ClearFramebuffer"),0);
+		SetShaderParameter(VSP_MODEL,model);
+		SetShaderParameter(VSP_VIEWPROJ,projection);
+		SetShaderParameter(PSP_MATDIFFCOLOR,color);
 
-			geometry->Draw(this);
+		geometry->Draw(this);
 
-			SetStencilTest(false);
-			ClearParameterSources();
-		}
+		SetStencilTest(false);
+		ClearParameterSources();
+		}*/
 
 		// Restore color & depth write state now
 		SetColorWrite(oldColorWrite);
@@ -365,13 +382,7 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::ClearRenderTarget(unsigned index,unsigned flags,const YumeColor& color,float depth,unsigned stencil)
 	{
-		if(flags & CLEAR_COLOR)
-		{
-			if(!renderTargets_[index])
-				return;
-
-			impl_->deviceContext_->ClearRenderTargetView((ID3D11RenderTargetView*)renderTargets_[index]->GetRenderTargetView(),color.Data());
-		}
+		impl_->deviceContext_->ClearRenderTargetView((ID3D11RenderTargetView*)renderTargets_[index]->GetRenderTargetView(),color.Data());
 	}
 
 	void YumeD3D11Renderer::CreateRendererCapabilities()
@@ -665,6 +676,7 @@ namespace YumeEngine
 		int multiSample)
 	{
 		bool maximize = false;
+
 
 		// Find out the full screen mode display format (match desktop color depth)
 		SDL_DisplayMode mode;
@@ -1090,7 +1102,7 @@ namespace YumeEngine
 			impl_->deviceContext_->GSSetShader((ID3D11GeometryShader*)(gsVar_ ? gsVar_->GetGPUObject() : 0),0,0);
 			geometryShader_ = gs;
 		}
-		else
+		else if(!gs)
 		{
 			if(geometryShader_)
 				impl_->deviceContext_->GSSetShader(NULL,0,0);
@@ -1111,6 +1123,7 @@ namespace YumeEngine
 
 			bool vsBuffersChanged = false;
 			bool psBuffersChanged = false;
+			bool gsBuffersChanged = false;
 
 			for(unsigned i = 0; i < MAX_SHADER_PARAMETER_GROUPS; ++i)
 			{
@@ -1131,12 +1144,26 @@ namespace YumeEngine
 					shaderParameterSources_[i] = (const void*)0xffffffff;
 					psBuffersChanged = true;
 				}
+
+				if(geometryShader_)
+				{
+					ID3D11Buffer* gsBuffer = shaderProgram_->gsConstantBuffers_[i] ? (ID3D11Buffer*)static_cast<YumeD3D11ConstantBuffer*>(shaderProgram_->gsConstantBuffers_[i])->
+						GetGPUObject() : 0;
+					if(gsBuffer != impl_->constantBuffers_[GS][i])
+					{
+						impl_->constantBuffers_[GS][i] = gsBuffer;
+						shaderParameterSources_[i] = (const void*)0xffffffff;
+						gsBuffersChanged = true;
+					}
+				}
 			}
 
 			if(vsBuffersChanged)
 				impl_->deviceContext_->VSSetConstantBuffers(0,MAX_SHADER_PARAMETER_GROUPS,&impl_->constantBuffers_[VS][0]);
 			if(psBuffersChanged)
 				impl_->deviceContext_->PSSetConstantBuffers(0,MAX_SHADER_PARAMETER_GROUPS,&impl_->constantBuffers_[PS][0]);
+			if(gsBuffersChanged)
+				impl_->deviceContext_->GSSetConstantBuffers(0,MAX_SHADER_PARAMETER_GROUPS,&impl_->constantBuffers_[GS][0]);
 		}
 		else
 			shaderProgram_ = 0;
@@ -1148,6 +1175,42 @@ namespace YumeEngine
 		// Update clip plane parameter if necessary
 		if(useClipPlane_)
 			SetShaderParameter(VSP_CLIPPLANE,clipPlane_);
+	}
+
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const DirectX::XMMATRIX& matrix)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		ShaderParameter ss = i->second;
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(DirectX::XMMATRIX),&matrix);
+	}
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const DirectX::XMFLOAT3& vector)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(DirectX::XMFLOAT3),&vector);
+	}
+
+	void YumeD3D11Renderer::SetShaderParameter(YumeHash param,const DirectX::XMFLOAT4& vector)
+	{
+		YumeMap<YumeHash,ShaderParameter>::iterator i;
+		if(!shaderProgram_ || (i = shaderProgram_->parameters_.find(param)) == shaderProgram_->parameters_.end())
+			return;
+
+		YumeConstantBuffer* buffer = i->second.bufferPtr_;
+		if(!buffer->IsDirty())
+			dirtyConstantBuffers_.push_back(buffer);
+		buffer->SetParameter(i->second.offset_,sizeof(DirectX::XMFLOAT4),&vector);
 	}
 
 	void YumeD3D11Renderer::SetShaderParameter(YumeHash  param,const float* data,unsigned count)
@@ -1349,6 +1412,226 @@ namespace YumeEngine
 		}
 	}
 
+	void YumeD3D11Renderer::CreateStandardSampler()
+	{
+		D3D11_SAMPLER_DESC sd;
+		ZeroMemory(&sd,sizeof(sd));
+		sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		sd.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sd.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		sd.MaxLOD = D3D11_FLOAT32_MAX;
+		HRESULT hr = impl_->device_->CreateSamplerState(&sd,&shadowFilter_);
+
+		sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		sd.BorderColor[0] = sd.BorderColor[1] = sd.BorderColor[2] = sd.BorderColor[3] = 0.f;
+		sd.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		sd.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		sd.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		sd.MaxAnisotropy = 1;
+
+		hr = impl_->device_->CreateSamplerState(&sd,&lpvFilter_);
+
+		ZeroMemory(&sd,sizeof(sd));
+		sd.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sd.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		sd.MaxAnisotropy = 1;
+		sd.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+		sd.MaxLOD = D3D11_FLOAT32_MAX;
+
+		hr = impl_->device_->CreateSamplerState(&sd,&vplFilter_);
+
+
+		ZeroMemory(&sd,sizeof(sd));
+		sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		sd.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		sd.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		sd.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		sd.MaxLOD = D3D11_FLOAT32_MAX;
+
+		hr = impl_->device_->CreateSamplerState(&sd,&standardFilter_);
+
+		if(FAILED(hr))
+		{
+			YUMELOG_ERROR("Could not create standard filter");
+		}
+
+
+
+		if(FAILED(hr))
+		{
+			YUMELOG_ERROR("Could not create LPV filter");
+		}
+
+		D3D11_BLEND_DESC bld;
+		ZeroMemory(&bld,sizeof(D3D11_BLEND_DESC));
+
+		bld.IndependentBlendEnable = TRUE;
+
+		for(size_t i = 0; i < 6; ++i)
+		{
+			bld.RenderTarget[i].BlendEnable =    TRUE;
+			bld.RenderTarget[i].SrcBlend =       D3D11_BLEND_ONE;
+			bld.RenderTarget[i].DestBlend =      D3D11_BLEND_ONE;
+			bld.RenderTarget[i].SrcBlendAlpha =  D3D11_BLEND_ONE;
+			bld.RenderTarget[i].DestBlendAlpha = D3D11_BLEND_ONE;
+			bld.RenderTarget[i].BlendOp =        D3D11_BLEND_OP_ADD;
+			bld.RenderTarget[i].BlendOpAlpha =   D3D11_BLEND_OP_ADD;
+			bld.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+		}
+
+		hr = impl_->device_->CreateBlendState(&bld,&bsInject_);
+
+		if(FAILED(hr))
+		{
+			YUMELOG_ERROR("Could not create blend state of injection");
+		}
+
+		for(size_t i = 0; i < 3; ++i)
+			bld.RenderTarget[i].BlendEnable = FALSE;
+
+		hr = impl_->device_->CreateBlendState(&bld,&bsPropogate_);
+
+		impl_->samplers_[0] = standardFilter_;
+		impl_->samplers_[1] = vplFilter_;
+		impl_->samplers_[2] = shadowFilter_;
+		impl_->samplers_[3] = lpvFilter_;
+	}
+
+	void YumeD3D11Renderer::GenerateMips(YumeTexture2D* texture)
+	{
+		impl_->deviceContext_->GenerateMips((ID3D11ShaderResourceView*)texture->GetShaderResourceView());
+	}
+
+	void YumeD3D11Renderer::BindDefaultDepthStencil()
+	{
+		depthStencil_ = 0;
+		impl_->depthStencilView_ = impl_->defaultDepthStencilView_;
+		rasterizerStateDirty_ = true;
+	}
+
+	void YumeD3D11Renderer::BindPsuedoBuffer()
+	{
+		unsigned int stride = 0;
+		unsigned int offset = 0;
+		ID3D11Buffer* buffer[] ={nullptr};
+
+		impl_->deviceContext_->IASetVertexBuffers(0,1,buffer,&stride,&offset);
+		impl_->deviceContext_->IASetInputLayout(nullptr);
+
+		vertexDeclarationDirty_ = false;
+
+		for(int i=0; i < 4; ++i)
+			vertexBuffers_[i] = 0;
+	}
+	void YumeD3D11Renderer::BindNullIndexBuffer()
+	{
+		impl_->deviceContext_->IASetIndexBuffer(nullptr,DXGI_FORMAT_R32_UINT,0);
+		indexBuffer_ = 0;
+	}
+
+	void YumeD3D11Renderer::BindLPVSampler()
+	{
+		impl_->samplers_[1] = lpvFilter_;
+		texturesDirty_ = true;
+		firstDirtyTexture_ = -1;
+		lastDirtyTexture_ = -1;
+	}
+
+	void YumeD3D11Renderer::BindShadowsSampler()
+	{
+		impl_->samplers_[2] = shadowFilter_;
+		texturesDirty_ = true;
+		firstDirtyTexture_ = -1;
+		lastDirtyTexture_ = -1;
+	}
+
+	void YumeD3D11Renderer::BindStandardSampler()
+	{
+		impl_->samplers_[0] = standardFilter_;
+		impl_->deviceContext_->VSSetSamplers(0,1,
+			&impl_->samplers_[0]);
+	}
+
+	void YumeD3D11Renderer::BindSampler(ShaderType type,unsigned samplerStartSlot,unsigned samplerCount,unsigned internalIndex)
+	{
+		if(type == VS)
+			impl_->deviceContext_->VSSetSamplers(samplerStartSlot,samplerCount,
+			&impl_->samplers_[internalIndex]);
+		else if(type == PS)
+			impl_->deviceContext_->PSSetSamplers(samplerStartSlot,samplerCount,
+			&impl_->samplers_[internalIndex]);
+	}
+
+	void YumeD3D11Renderer::BindResetTextures(int start,int count,bool ps)
+	{
+		std::vector<ID3D11ShaderResourceView*> null_srv;
+
+		for(int i=0; i < count; ++i)
+			null_srv.push_back(nullptr);
+
+		if(ps)
+		{
+			impl_->deviceContext_->PSSetShaderResources(start,count,&null_srv[0]);
+			return;
+		}
+		else
+			impl_->deviceContext_->PSSetShaderResources(start,count,&null_srv[0]);
+
+		impl_->deviceContext_->VSSetShaderResources(start,count,&null_srv[0]);
+		impl_->deviceContext_->GSSetShaderResources(start,count,&null_srv[0]);
+
+		for(int i=start; i < start + count; ++i)
+		{
+			textures_[i] = 0;
+			impl_->shaderResourceViews_[i] = 0;
+		}
+	}
+
+	void YumeD3D11Renderer::BindBackbuffer()
+	{
+		impl_->renderTargetViews_[0] = impl_->defaultRenderTargetView_;
+		impl_->deviceContext_->OMSetRenderTargets(1,&impl_->defaultRenderTargetView_,nullptr);
+	}
+
+	void YumeD3D11Renderer::BindResetRenderTargets(int count)
+	{
+		std::vector<ID3D11RenderTargetView*> null_views;
+
+		for(int i=0; i < count; ++i)
+			null_views.push_back(nullptr);
+
+		impl_->deviceContext_->OMSetRenderTargets(count,&null_views[0],nullptr);
+
+		for(int i=0; i < count ; ++i)
+		{
+			renderTargets_[i] = 0;
+			impl_->renderTargetViews_[i] = 0;
+		}
+	}
+
+	void YumeD3D11Renderer::BindInjectBlendState()
+	{
+		FLOAT factors[4] ={1.0f,1.0f,1.0f,1.0f};
+		impl_->deviceContext_->OMSetBlendState(bsInject_,factors,0xffffffff);
+
+	}
+
+	void YumeD3D11Renderer::BindPropogateBlendState()
+	{
+		FLOAT factors[4] ={1.0f,1.0f,1.0f,1.0f};
+		impl_->deviceContext_->OMSetBlendState(bsPropogate_,factors,0xffffffff);
+	}
+
+	void YumeD3D11Renderer::BindNullBlendState()
+	{
+		impl_->deviceContext_->OMSetBlendState(nullptr,nullptr,0xffffffff);
+	}
+
 	void YumeD3D11Renderer::SetTexture(unsigned index,YumeTexture* texture)
 	{
 		if(index >= MAX_TEXTURE_UNITS)
@@ -1381,7 +1664,7 @@ namespace YumeEngine
 
 			textures_[index] = texture;
 			impl_->shaderResourceViews_[index] = texture ? (ID3D11ShaderResourceView*)texture->GetShaderResourceView() : 0;
-			impl_->samplers_[index] = texture ? (ID3D11SamplerState*)texture->GetSampler() : 0;
+			/*impl_->samplers_[index] = texture ? (ID3D11SamplerState*)texture->GetSampler() : 0;*/
 			texturesDirty_ = true;
 		}
 	}
@@ -1415,6 +1698,11 @@ namespace YumeEngine
 		{
 			depthStencil_ = depthStencil;
 			renderTargetsDirty_ = true;
+
+			if(depthStencil_)
+				impl_->depthStencilView_ = (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView();
+			else
+				impl_->depthStencilView_ = 0;
 		}
 	}
 	void YumeD3D11Renderer::SetDepthStencil(YumeTexture2D* texture)
@@ -1572,7 +1860,7 @@ namespace YumeEngine
 		}
 	}
 
-	void YumeD3D11Renderer::SetStencilTest(bool enable,CompareMode mode,StencilOp pass,StencilOp fail,StencilOp zFail,unsigned stencilRef,
+	void YumeD3D11Renderer::SetStencilTest(bool enable,CompareMode mode,StencilOp pass,StencilOp fail,StencilOp zFail,StencilOp zFailBack,unsigned stencilRef,
 		unsigned compareMask,unsigned writeMask)
 	{
 		if(enable != stencilTest_)
@@ -1601,6 +1889,11 @@ namespace YumeEngine
 			if(zFail != stencilZFail_)
 			{
 				stencilZFail_ = zFail;
+				depthStateDirty_ = true;
+			}
+			if(zFailBack != stencilZFailBack_)
+			{
+				stencilZFailBack_= zFailBack;
 				depthStateDirty_ = true;
 			}
 			if(compareMask != stencilCompareMask_)
@@ -1875,8 +2168,8 @@ namespace YumeEngine
 	{
 		if(renderTargetsDirty_)
 		{
-			impl_->depthStencilView_ =
-				depthStencil_ ? (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView() : impl_->defaultDepthStencilView_;
+			/*impl_->depthStencilView_ =
+				depthStencil_ ? (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView() : impl_->defaultDepthStencilView_;*/
 
 			// If possible, bind a read-only depth stencil view to allow reading depth in shader
 			if(!depthWrite_ && depthStencil_ && depthStencil_->GetReadOnlyView())
@@ -1900,17 +2193,17 @@ namespace YumeEngine
 			// Set also VS textures to enable vertex texture fetch to work the same way as on OpenGL
 			impl_->deviceContext_->VSSetShaderResources(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
 				&impl_->shaderResourceViews_[firstDirtyTexture_]);
-			impl_->deviceContext_->VSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
-				&impl_->samplers_[firstDirtyTexture_]);
+			/*impl_->deviceContext_->VSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
+				&impl_->samplers_[firstDirtyTexture_]);*/
 			impl_->deviceContext_->PSSetShaderResources(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
 				&impl_->shaderResourceViews_[firstDirtyTexture_]);
-			impl_->deviceContext_->PSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
-				&impl_->samplers_[firstDirtyTexture_]);
+			/*impl_->deviceContext_->PSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
+				&impl_->samplers_[firstDirtyTexture_]);*/
 
 			impl_->deviceContext_->GSSetShaderResources(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
 				&impl_->shaderResourceViews_[firstDirtyTexture_]);
-			impl_->deviceContext_->GSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
-				&impl_->samplers_[firstDirtyTexture_]);
+			/*impl_->deviceContext_->GSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
+				&impl_->samplers_[firstDirtyTexture_]);*/
 
 			firstDirtyTexture_ = lastDirtyTexture_ = M_MAX_UNSIGNED;
 			texturesDirty_ = false;
@@ -1985,8 +2278,8 @@ namespace YumeEngine
 
 					i = impl_->blendStates_.insert(MakePair(newBlendStateHash,newBlendState));
 				}
-
-				impl_->deviceContext_->OMSetBlendState(i->second,0,M_MAX_UNSIGNED);
+				FLOAT factors[4] ={1.0f,1.0f,1.0f,1.0f};
+				impl_->deviceContext_->OMSetBlendState(i->second,factors,M_MAX_UNSIGNED);
 				blendStateHash_ = newBlendStateHash;
 			}
 
@@ -2017,7 +2310,7 @@ namespace YumeEngine
 					stateDesc.FrontFace.StencilPassOp = d3dStencilOp[stencilPass_];
 					stateDesc.FrontFace.StencilFunc = d3dCmpFunc[stencilTestMode_];
 					stateDesc.BackFace.StencilFailOp = d3dStencilOp[stencilFail_];
-					stateDesc.BackFace.StencilDepthFailOp = d3dStencilOp[stencilZFail_];
+					stateDesc.BackFace.StencilDepthFailOp = d3dStencilOp[stencilZFailBack_];
 					stateDesc.BackFace.StencilPassOp = d3dStencilOp[stencilPass_];
 					stateDesc.BackFace.StencilFunc = d3dCmpFunc[stencilTestMode_];
 
@@ -2060,8 +2353,8 @@ namespace YumeEngine
 					stateDesc.CullMode = d3dCullMode[cullMode_];
 					stateDesc.FrontCounterClockwise = FALSE;
 					stateDesc.DepthBias = scaledDepthBias;
-					stateDesc.DepthBiasClamp = M_INFINITY;
-					stateDesc.SlopeScaledDepthBias = slopeScaledDepthBias_;
+					stateDesc.DepthBiasClamp = 0;
+					stateDesc.SlopeScaledDepthBias = 0;
 					stateDesc.DepthClipEnable = TRUE;
 					stateDesc.ScissorEnable = scissorTest_ ? TRUE : FALSE;
 					stateDesc.MultisampleEnable = TRUE;
@@ -2087,12 +2380,12 @@ namespace YumeEngine
 
 		if(scissorRectDirty_)
 		{
-			D3D11_RECT d3dRect;
+			/*D3D11_RECT d3dRect;
 			d3dRect.left = scissorRect_.left_;
 			d3dRect.top = scissorRect_.top_;
 			d3dRect.right = scissorRect_.right_;
 			d3dRect.bottom = scissorRect_.bottom_;
-			impl_->deviceContext_->RSSetScissorRects(1,&d3dRect);
+			impl_->deviceContext_->RSSetScissorRects(1,&d3dRect);*/
 			scissorRectDirty_ = false;
 		}
 
