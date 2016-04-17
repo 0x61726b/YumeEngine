@@ -109,6 +109,10 @@ set(SRC_RENDERER
 	Renderer/YumeCompositeMesh.cc
 	Renderer/YumeLPVCamera.h
 	Renderer/YumeLPVCamera.cc
+	Renderer/YumeSkydome.h
+	Renderer/YumeSkydome.cc
+	Renderer/YumeMiscRenderer.h
+	Renderer/YumeMiscRenderer.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

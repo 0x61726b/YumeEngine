@@ -52,7 +52,7 @@
 
 #include "Logging/logging.h"
 
-#include "LPVRendererTest.h"
+#include "YumeMiscRenderer.h"
 
 
 namespace YumeEngine
@@ -63,10 +63,7 @@ namespace YumeEngine
 		Vector3 Normal;
 		Vector2 Tex;
 	};
-	struct SimpleVertex
-	{
-		DirectX::XMFLOAT3 V;
-	};
+
 	static const float dirLightVertexData[] =
 	{
 		-1,1,0,
@@ -310,7 +307,7 @@ namespace YumeEngine
 		initialized_(false),
 		resetViews_(false),
 		randomVectorMap_(0),
-		lpvRenderer_(0)
+		miscRenderer_(0)
 	{
 		REGISTER_ENGINE_LISTENER;
 	}
@@ -704,7 +701,7 @@ namespace YumeEngine
 
 		FireEvent(R_RENDERTARGETUPDATE);
 
-		lpvRenderer_->Update(timeStep);
+		miscRenderer_->Update(timeStep);
 
 		// Process gathered views. This may queue further views (render surfaces that are only updated when visible)
 		for(unsigned i = 0; i < queuedViewports_.size(); ++i)
@@ -767,7 +764,7 @@ namespace YumeEngine
 		// Engine does not render when window is closed or device is lost
 		assert(gYume->pRHI && gYume->pRHI->IsInitialized() && !gYume->pRHI->IsDeviceLost());
 
-		lpvRenderer_->Render();
+		miscRenderer_->Render();
 
 		//// If the indirection textures have lost content (OpenGL mode only), restore them now
 		//if(faceSelectCubeMap_ && faceSelectCubeMap_->IsDataLost())
@@ -907,10 +904,6 @@ namespace YumeEngine
 		return texturedQuadGeometry;
 	}
 
-	YumeGeometry* YumeRenderer::GetFsTriangle()
-	{
-		return fullScreenTriangleGeometry_;
-	}
 
 	YumeGeometry* YumeRenderer::GetSSAOQuadGeometry()
 	{
@@ -1634,8 +1627,8 @@ namespace YumeEngine
 		ResetBuffers();
 
 
-		lpvRenderer_ = new LPVRenderer;
-		lpvRenderer_->Setup();
+		miscRenderer_ = new YumeMiscRenderer;
+		miscRenderer_->Setup();
 
 
 
@@ -1851,20 +1844,7 @@ namespace YumeEngine
 		texturedQuadGeometry->SetDrawRange(TRIANGLE_LIST,0,spib->GetIndexCount());
 
 		//Fs triangle
-		SharedPtr<YumeVertexBuffer> triangleVb(gYume->pRHI->CreateVertexBuffer());
 
-		SimpleVertex v1 ={DirectX::XMFLOAT3(-1.f,-3.f,1.f)};
-		SimpleVertex v2 ={DirectX::XMFLOAT3(-1.f,1.f,1.f)};
-		SimpleVertex v3 ={DirectX::XMFLOAT3(3.f,1.f,1.f)};
-
-		SimpleVertex vertices[3] ={v1,v2,v3};
-		triangleVb->SetShadowed(true);
-		triangleVb->SetSize(3,MASK_POSITION);
-		triangleVb->SetData(vertices);
-
-		fullScreenTriangleGeometry_ = SharedPtr<YumeGeometry>(new YumeGeometry);
-		fullScreenTriangleGeometry_->SetVertexBuffer(0,triangleVb);
-		fullScreenTriangleGeometry_->SetDrawRange(TRIANGLE_LIST,0,0,0,3);
 
 
 		//SSAO Quad

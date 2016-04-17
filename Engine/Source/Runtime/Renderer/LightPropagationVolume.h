@@ -54,6 +54,10 @@ namespace YumeEngine
 
 		void BindLPVTextures();
 
+		SharedPtr<YumeTexture2D> GetLPVAccumR() const { return lpv_accum_r_; }
+		SharedPtr<YumeTexture2D> GetLPVAccumG() const { return lpv_accum_g_; }
+		SharedPtr<YumeTexture2D> GetLPVAccumB() const { return lpv_accum_b_; }
+
 	private:
 		unsigned volume_size_;
 		unsigned curr_;

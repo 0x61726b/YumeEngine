@@ -387,9 +387,9 @@ namespace YumeEngine
 
 
 
-		YumeGeometry* geometry = gYume->pRenderer->GetFsTriangle();
+		/*YumeGeometry* geometry = gYume->pRenderer->GetFsTriangle();*/
 
-		geometry->Draw(gYume->pRHI);
+		/*geometry->Draw(gYume->pRHI);*/
 	}
 
 	void YumeDebugRenderer::Render()

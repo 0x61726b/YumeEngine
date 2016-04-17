@@ -35,7 +35,7 @@
 
 #include <SDL_syswm.h>
 
-
+#include "Renderer/YumeMiscRenderer.h"
 
 namespace YumeEngine
 {
@@ -129,7 +129,7 @@ namespace YumeEngine
 		for(;It != uiElements_.end(); ++It)
 		{
 			if((*It)->GetVisible())
-				gYume->pDebugRenderer->RenderInternalTexture((*It)->GetRect(),(*It)->GetTexture());
+				gYume->pRenderer->miscRenderer_->RenderFullScreenTexture((*It)->GetRect(),(*It)->GetTexture());
 		}
 	}
 

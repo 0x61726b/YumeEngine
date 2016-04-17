@@ -638,6 +638,15 @@ namespace YumeEngine
 			D3D_SAFE_RELEASE(rasterizerIt->second);
 		impl_->rasterizerStates_.clear();
 
+		D3D_SAFE_RELEASE(standardFilter_);
+		D3D_SAFE_RELEASE(lpvFilter_);
+		D3D_SAFE_RELEASE(vplFilter_);
+		D3D_SAFE_RELEASE(shadowFilter_);
+		D3D_SAFE_RELEASE(bsInject_);
+		D3D_SAFE_RELEASE(bsPropogate_);
+		D3D_SAFE_RELEASE(dss_disableDepthTest_);
+		D3D_SAFE_RELEASE(dss_enableDepthTest_);
+
 		D3D_SAFE_RELEASE(impl_->defaultRenderTargetView_);
 		D3D_SAFE_RELEASE(impl_->defaultDepthStencilView_);
 		D3D_SAFE_RELEASE(impl_->defaultDepthTexture_);
@@ -1500,6 +1509,28 @@ namespace YumeEngine
 		impl_->samplers_[1] = vplFilter_;
 		impl_->samplers_[2] = shadowFilter_;
 		impl_->samplers_[3] = lpvFilter_;
+
+
+		D3D11_DEPTH_STENCIL_DESC dsd;
+		dsd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		dsd.DepthFunc = D3D11_COMPARISON_LESS;
+		dsd.StencilEnable = true;
+		dsd.StencilReadMask = 0xFF;
+		dsd.StencilWriteMask = 0xFF;
+		dsd.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsd.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+		dsd.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsd.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		dsd.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsd.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+		dsd.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsd.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+		dsd.DepthEnable = FALSE;
+		impl_->device_->CreateDepthStencilState(&dsd,&dss_disableDepthTest_);
+
+		dsd.DepthEnable = TRUE;
+		impl_->device_->CreateDepthStencilState(&dsd,&dss_enableDepthTest_);
 	}
 
 	void YumeD3D11Renderer::GenerateMips(YumeTexture2D* texture)
@@ -1512,6 +1543,16 @@ namespace YumeEngine
 		depthStencil_ = 0;
 		impl_->depthStencilView_ = impl_->defaultDepthStencilView_;
 		rasterizerStateDirty_ = true;
+	}
+
+	void YumeD3D11Renderer::BindDepthStateEnable()
+	{
+		impl_->deviceContext_->OMSetDepthStencilState(dss_enableDepthTest_,0);
+	}
+
+	void YumeD3D11Renderer::BindDepthStateDisable()
+	{
+		impl_->deviceContext_->OMSetDepthStencilState(dss_disableDepthTest_,0);
 	}
 
 	void YumeD3D11Renderer::BindPsuedoBuffer()
@@ -1567,6 +1608,31 @@ namespace YumeEngine
 			&impl_->samplers_[internalIndex]);
 	}
 
+	void YumeD3D11Renderer::PSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures)
+	{
+		std::vector<ID3D11ShaderResourceView*> srvs;
+
+		for(int i=0; i < count; ++i)
+		{
+			srvs.push_back((ID3D11ShaderResourceView*)(*textures)->GetShaderResourceView());
+			textures++;
+		}
+		impl_->deviceContext_->PSSetShaderResources(start,count,&srvs[0]);
+	}
+
+	void YumeD3D11Renderer::VSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures)
+	{
+		std::vector<ID3D11ShaderResourceView*> srvs;
+
+		for(int i=0; i < count; ++i)
+		{
+			srvs.push_back((ID3D11ShaderResourceView*)(*textures)->GetShaderResourceView());
+			textures++;
+		}
+		impl_->deviceContext_->VSSetShaderResources(start,count,&srvs[0]);
+	}
+
+
 	void YumeD3D11Renderer::BindResetTextures(int start,int count,bool ps)
 	{
 		std::vector<ID3D11ShaderResourceView*> null_srv;
@@ -1583,7 +1649,6 @@ namespace YumeEngine
 			impl_->deviceContext_->PSSetShaderResources(start,count,&null_srv[0]);
 
 		impl_->deviceContext_->VSSetShaderResources(start,count,&null_srv[0]);
-		impl_->deviceContext_->GSSetShaderResources(start,count,&null_srv[0]);
 
 		for(int i=start; i < start + count; ++i)
 		{
@@ -2186,27 +2251,6 @@ namespace YumeEngine
 				impl_->renderTargetViews_[0] = impl_->defaultRenderTargetView_;
 			impl_->deviceContext_->OMSetRenderTargets(MAX_RENDERTARGETS,&impl_->renderTargetViews_[0],impl_->depthStencilView_);
 			renderTargetsDirty_ = false;
-		}
-
-		if(texturesDirty_ && firstDirtyTexture_ < M_MAX_UNSIGNED)
-		{
-			// Set also VS textures to enable vertex texture fetch to work the same way as on OpenGL
-			impl_->deviceContext_->VSSetShaderResources(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
-				&impl_->shaderResourceViews_[firstDirtyTexture_]);
-			/*impl_->deviceContext_->VSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
-				&impl_->samplers_[firstDirtyTexture_]);*/
-			impl_->deviceContext_->PSSetShaderResources(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
-				&impl_->shaderResourceViews_[firstDirtyTexture_]);
-			/*impl_->deviceContext_->PSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
-				&impl_->samplers_[firstDirtyTexture_]);*/
-
-			impl_->deviceContext_->GSSetShaderResources(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
-				&impl_->shaderResourceViews_[firstDirtyTexture_]);
-			/*impl_->deviceContext_->GSSetSamplers(firstDirtyTexture_,lastDirtyTexture_ - firstDirtyTexture_ + 1,
-				&impl_->samplers_[firstDirtyTexture_]);*/
-
-			firstDirtyTexture_ = lastDirtyTexture_ = M_MAX_UNSIGNED;
-			texturesDirty_ = false;
 		}
 
 		if(vertexDeclarationDirty_ && vertexShader_ && vertexShader_->GetByteCode().size())

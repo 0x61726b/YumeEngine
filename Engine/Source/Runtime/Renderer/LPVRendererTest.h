@@ -24,6 +24,7 @@
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 #include "LightPropagationVolume.h"
+#include "YumeSkydome.h"
 
 #include <DirectXMath.h>
 
@@ -41,11 +42,13 @@ namespace YumeEngine
 	class YumeModel;
 	class YumeStaticModel;
 	class YumeMesh;
+	class YumeSkydome;
+	class YumeMiscRenderer;
 
 	class YumeAPIExport LPVRenderer : public YumeBase
 	{
 	public:
-		LPVRenderer();
+		LPVRenderer(YumeMiscRenderer* m);
 
 		virtual ~LPVRenderer();
 
@@ -68,21 +71,25 @@ namespace YumeEngine
 
 		void UpdateMeshBb(YumeMesh& mesh);
 
-		YumeLPVCamera camera_;
-	private:
+	public:
+		bool GetGIDebug() const { return debug_gi; }
 		
+		void SetGIDebug(bool enabled) { debug_gi = enabled; }
+		void SetGIScale(float f) { gi_scale = f;}
+		void SetLPVFlux(float f) { lpv_flux_amplifier = f; updateRsm_ = true;}
+		void SetNumIterations(int num) { number_it = num; updateRsm_ = true;}
+		void SetLPVPos(float x,float y,float z);
+		void SetLightFlux(float f);
+		YumeMiscRenderer* misc_;
+	private:
 		DirectX::XMMATRIX MakeProjection(float,float);
 
-		void DrawBox(const DirectX::XMVECTOR& pos,const DirectX::XMVECTOR& scale);
-		void DrawPlane(const DirectX::XMVECTOR& pos,const DirectX::XMVECTOR& scale,const DirectX::XMVECTOR& color);
 		void DrawScene(bool shadowPass);
 
 		bool updateRsm_;
 
 		directional_light dir_light_;
 
-		DirectX::XMFLOAT3 bbMin;
-		DirectX::XMFLOAT3 bbMax;
 
 		float zNear;
 		float zFar;
@@ -111,7 +118,7 @@ namespace YumeEngine
 		YumeStaticModel* model_;
 		YumeVector<YumeMaterial*>::type materials_;
 
-		YumeMesh* mesh_;
+
 
 		YumeGeometry* triangle_;
 

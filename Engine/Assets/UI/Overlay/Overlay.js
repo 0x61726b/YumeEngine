@@ -30,8 +30,7 @@ var MemoryUsagePanel = React.createClass({
     };
   },
   render: function() {
-    return (
-      <div className="memoryUsagePanel">Yume Engine Alpha</div>
+    return (<div className="memoryUsagePanel">Yume Engine Alpha</div>
     );
   }
 });
@@ -117,24 +116,21 @@ var Overlay = React.createClass( {
         <div id="batchCount">
           Total Batches: <p>{this.state.batchCount}</p>
         </div>
-        <div id="lightCount">
-          Light Count: <p>{this.state.lightCount}</p>
-        </div>
-        <div id="shadows">
-          Shadows: <p>{this.state.shadowInfo}</p>
-        </div>
-        <div id="shadowMapCount">
-          ShadowMaps: <p>{this.state.shadowMaps}</p>
-        </div>
-        <div id="occluders">
-          Occluders: <p>{this.state.occluders}</p>
-        </div>
       </div>
     );
   }
 });
 
 var PostFxPanel = React.createClass({
+  componentDidMount: function() {
+    $("#iGiScale").prop("value","2");
+    $("#iGiLPVFlux").prop("value","4");
+    $("#iLpvX").prop("value","0");
+    $("#iLpvY").prop("value","20");
+    $("#iLpvZ").prop("value","0");
+    $("#iGiPropagations").prop("value","64");
+    $("#iGiLightFlux").prop("value","1");
+  },
   getInitialState: function() {
     return { bloomOn:false,bloomHDROn:false,fxaaOn:false,blurOn:false,autoExposureOn:false };
   },
@@ -198,18 +194,6 @@ var PostFxPanel = React.createClass({
             </label>
           </div>
 
-          <div id="blur">
-            <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="blurSwitch">
-              <span className="mdl-switch__label">Blur</span>
-              <input type="checkbox" id="blurSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
-            </label>
-            <div className="blurSwitchOptions">
-              <p style={{width:"300px"}}>
-                <span>Sigma</span><input className="mdl-slider mdl-js-slider" type="range" id="blurSigma" min="0" max="10" onChange={this.onSliderChange} />
-              </p>
-            </div>
-          </div>
-
           <div id="autoexposure">
             <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="autoexposureSwitch">
               <span className="mdl-switch__label">Auto Exposure</span>
@@ -238,14 +222,20 @@ var PostFxPanel = React.createClass({
           </div>
         </div>
         <div className="advancedOptsPanel">
-          <div> Advanced Options</div>
+          <div>LPV Options</div>
           <div className="ssaoOptions">
-            <label className="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" htmlFor="ssaoInput">
-              <input type="checkbox" id="ssaoInput" className="mdl-checkbox__input" onChange={this.onCheckboxChange} />
-              <span className="mdl-checkbox__label">SSAO</span>
+            <label className="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" htmlFor="debugIndirect">
+              <input type="checkbox" id="debugIndirect" className="mdl-checkbox__input" onChange={this.onCheckboxChange} />
+              <span className="mdl-checkbox__label">Show Indirect Term</span>
             </label>
+            <span>GI Scale</span><input className="mdl-slider mdl-js-slider" type="range" id="iGiScale" min="0" max="10" step="0.2" onChange={this.onSliderChange} />
+            <span>LPV Flux Amp</span><input className="mdl-slider mdl-js-slider" type="range" id="iGiLPVFlux" min="0" max="5" step="0.25" onChange={this.onSliderChange} />
+            <span>Number of Propagations</span><input className="mdl-slider mdl-js-slider" type="range" id="iGiPropagations" min="0" max="64" step="1" onChange={this.onSliderChange} />
+            <span>Light Flux</span><input className="mdl-slider mdl-js-slider" type="range" id="iGiLightFlux" min="1" max="5" step="0.25" onChange={this.onSliderChange} />
             <div className="ssaoAdditional">
-              <span>Radius</span><input className="mdl-slider mdl-js-slider" type="range" id="ssaoRadius" min="0" max="2" step="0.1" onChange={this.onSliderChange} />
+              <span>LPV Pos X</span><input className="mdl-slider mdl-js-slider" type="range" id="iLpvX" min="0" max="50" step="1" onChange={this.onSliderChange} />
+              <span>LPV Pos Y</span><input className="mdl-slider mdl-js-slider" type="range" id="iLpvY" min="0" max="50" step="1" onChange={this.onSliderChange} />
+              <span>LPV Pos Z</span><input className="mdl-slider mdl-js-slider" type="range" id="iLpvZ" min="0" max="50" step="1" onChange={this.onSliderChange} />
             </div>
           </div>
         </div>

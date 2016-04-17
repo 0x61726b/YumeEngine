@@ -79,6 +79,8 @@ namespace YumeEngine
 		/* */
 
 		virtual void							BindSampler(ShaderType type,unsigned samplerStartSlot,unsigned samplerCount,unsigned internalIndex);
+		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures);
+		virtual void							VSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures);
 		virtual void							BindBackbuffer();
 		virtual void							CreateStandardSampler();
 		virtual void							BindStandardSampler();
@@ -92,6 +94,8 @@ namespace YumeEngine
 		virtual void							BindNullIndexBuffer();
 		virtual void							BindDefaultDepthStencil();
 		virtual void							BindNullBlendState();
+		virtual void							BindDepthStateEnable();
+		virtual void							BindDepthStateDisable();
 		virtual void							GenerateMips(YumeTexture2D*);
 
 		virtual IntVector2						GetRenderTargetDimensions() const;
@@ -251,6 +255,9 @@ namespace YumeEngine
 		ID3D11SamplerState*						lpvFilter_;
 		ID3D11SamplerState*						vplFilter_;
 		ID3D11SamplerState*						shadowFilter_;
+
+		ID3D11DepthStencilState*				dss_disableDepthTest_;
+		ID3D11DepthStencilState*				dss_enableDepthTest_;
 
 		ID3D11BlendState*						bsInject_;
 		ID3D11BlendState*						bsPropogate_;

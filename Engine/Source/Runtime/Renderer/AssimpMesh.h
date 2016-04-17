@@ -165,7 +165,7 @@ namespace YumeEngine
 			float refractive_index;
 		};
 
-	private:
+	protected:
 		YumeVector<YumeVertex>::type vertices_;
 		YumeVector<mesh_data>::type meshes_;
 		YumeVector<SharedPtr<YumeGeometry> >::type geometries_;

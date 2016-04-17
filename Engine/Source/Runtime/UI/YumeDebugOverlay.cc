@@ -30,7 +30,7 @@
 #include "Renderer/YumeRenderPipeline.h"
 #include "Scene/YumeSceneNode.h"
 
-#include "Renderer/LPVRendererTest.h"
+#include "Renderer/YumeMiscRenderer.h"
 #include "Renderer/YumeLPVCamera.h"
 
 static const char* qualityTexts[] =
@@ -142,6 +142,18 @@ namespace YumeEngine
 					gYume->pPostFx->SetEnableLightScattering(false);
 				}
 			}
+			if(domElement == "debugIndirect")
+			{
+				if(data == "true")
+				{
+					gYume->pRenderer->GetMiscRenderer()->SetGIDebug(true);
+				}
+				else
+				{
+					gYume->pRenderer->GetMiscRenderer()->SetGIDebug(false);
+				}
+			}
+
 		}
 		break;
 		case DOMEvents::InputValueChanged:
@@ -201,6 +213,50 @@ namespace YumeEngine
 				gYume->pPostFx->SetLightScatteringParameter(LS_EXPOSURE,(float)atof(data.c_str()));
 			}
 
+
+
+
+
+			if(domElement == "iGiScale")
+			{
+				float value = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->SetGIScale(value);
+			}
+			if(domElement == "iGiLPVFlux")
+			{
+				float value = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->SetGIScale(value);
+			}
+
+			if(domElement == "iLpvX")
+			{
+				float value = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->SetLPVPos(value,-1,-1);
+			}
+			if(domElement == "iLpvY")
+			{
+				float value = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->SetLPVPos(-1,value,-1);
+			}
+			if(domElement == "iLpvZ")
+			{
+				float value = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->SetLPVPos(-1,-1,value);
+			}
+
+			if(domElement == "iGiLightFlux")
+			{
+				float value = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->SetLightFlux(value);
+			}
+
+			if(domElement == "iGiPropagations")
+			{
+				int value = atoi(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->SetLPVNumberIterations(value);
+			}
+
+
 		}
 		break;
 		default:
@@ -218,6 +274,7 @@ namespace YumeEngine
 		overlayPath.append("/Engine/Assets/UI/Overlay/Overlay.html");
 
 		SetURL(overlayPath.c_str());
+
 
 
 		elapsedTime_ = new YumeUIBinding(this,"ElapsedTime",0.0f,BINDING_DYNAMIC);
@@ -288,11 +345,11 @@ namespace YumeEngine
 		camera.append("}");
 		gYume->pUI->SendEvent("setCameraInfo",camera);
 #else
-		YumeLPVCamera cam = gYume->pRenderer->lpvRenderer_->camera_;
-		
+		YumeLPVCamera* cam = gYume->pRenderer->miscRenderer_->GetCamera();
+
 		YumeString camera;
 		camera.append("{");
-		camera.AppendWithFormat("\"CameraPos\": \"%s\",",XMVectorToString(cam.GetEyePt()).c_str());
+		camera.AppendWithFormat("\"CameraPos\": \"%s\",",XMVectorToString(cam->GetEyePt()).c_str());
 		/*camera.AppendWithFormat("\"CameraRot\": \"%s\",",cam->GetNode()->GetWorldRotation().ToString().c_str());*/
 		camera.AppendWithFormat("\"CameraFov\": \"%f\"",45.0f);
 		camera.append("}");

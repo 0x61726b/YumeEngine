@@ -33,6 +33,7 @@
 #include "Core/YumeFile.h"
 
 #include "YumeStaticModel.h"
+#include "YumeMiscRenderer.h"
 
 #include "AssimpMesh.h"
 
@@ -46,7 +47,7 @@ using namespace DirectX;
 
 namespace YumeEngine
 {
-	LPVRenderer::LPVRenderer()
+	LPVRenderer::LPVRenderer(YumeMiscRenderer* mi)
 		: cornell_(0),
 		meshVs_(0),
 		meshPs_(0),
@@ -57,7 +58,8 @@ namespace YumeEngine
 		lpv_flux_amplifier(4),
 		debug_gi(false),
 		number_it(64),
-		moveScale(2)
+		moveScale(0.2f),
+		misc_(mi)
 	{
 		rhi_ = gYume->pRHI;
 		renderer_ = gYume->pRenderer;
@@ -76,17 +78,6 @@ namespace YumeEngine
 	void LPVRenderer::Setup()
 	{
 
-		mesh_ = new YumeMesh;
-		mesh_->Load(gYume->pResourceManager->GetFullPath("Models/Cornell/cornellbox.obj"));
-
-
-		XMMATRIX I = DirectX::XMMatrixIdentity();
-		XMFLOAT4X4 sceneWorld;
-		XMStoreFloat4x4(&sceneWorld,I);
-
-		mesh_->set_world(sceneWorld);
-
-
 
 		updateRsm_ = true;
 
@@ -95,14 +86,14 @@ namespace YumeEngine
 
 		int sceneWidth = gYume->pRHI->GetWidth();
 		int sceneHeight = gYume->pRHI->GetHeight();
-		camera_.SetViewParams(XMVectorSet(0,5,-10,0),XMVectorSet(0,0,0,0));
+		misc_->GetCamera()->SetViewParams(XMVectorSet(0,5,-10,0),XMVectorSet(0,0,0,0));
 		FLOAT aspect_ratio = static_cast<FLOAT>(gYume->pRHI->GetWidth()) / static_cast<FLOAT>(gYume->pRHI->GetHeight());
-		camera_.SetProjParams(static_cast<FLOAT>(DirectX::XM_PI / 4),aspect_ratio,zNear,zFar);
+		misc_->GetCamera()->SetProjParams(static_cast<FLOAT>(DirectX::XM_PI / 4),aspect_ratio,zNear,zFar);
 
 
-		XMMATRIX view = camera_.GetViewMatrix();
+		XMMATRIX view = misc_->GetCamera()->GetViewMatrix();
 		XMStoreFloat4x4(&view_,view);
-		XMMATRIX proj = camera_.GetProjMatrix();
+		XMMATRIX proj = misc_->GetCamera()->GetProjMatrix();
 		XMStoreFloat4x4(&proj_,proj);
 
 #ifdef RENDER_RSM_TO_BACKBUFFER
@@ -144,18 +135,15 @@ namespace YumeEngine
 		gYume->pRHI->CreateStandardSampler();
 
 
-		bbMin = mesh_->bb_min();
-		bbMax = mesh_->bb_max();
-
-
-
 		lpv_.Create(32);
 		lpv_.SetLPVRenderer(this);
 		dirLightUp = XMVectorSet(-1,0,0,0);
 
-		dir_light_.position = XMFLOAT4(0,20,0,1);
+		dir_light_.position = XMFLOAT4(90,2000,90,1);
+		XMVECTOR dir = XMVectorSet(0.557f,0.557f,0.557f,0.557f);
+
 		dir_light_.normal = XMFLOAT4(0,-1,0,0);
-		dir_light_.color = XMFLOAT4(1,1,1,1);
+		dir_light_.color = XMFLOAT4(0.4f,0.4f,0.4f,1);
 
 		{
 			SceneColors_ = gYume->pRHI->CreateTexture2D();
@@ -180,9 +168,9 @@ namespace YumeEngine
 
 		materialDiffuse_ = XMVectorSet(0.8353f,0.60f,0.89f,1.0f);
 
-		triangle_ = gYume->pRenderer->GetFsTriangle();
+		triangle_ = misc_->GetFsTriangle();
 
-		UpdateMeshBb(*mesh_);
+		
 	}
 
 	void LPVRenderer::SetCameraParameters(bool shadowPass)
@@ -199,7 +187,7 @@ namespace YumeEngine
 		if(shadowPass)
 			XMStoreFloat4(&cameraPos,XMLoadFloat4(&dir_light_.position));
 		else
-			XMStoreFloat4(&cameraPos,camera_.GetEyePt());
+			XMStoreFloat4(&cameraPos,misc_->GetCamera()->GetEyePt());
 
 		gYume->pRHI->SetShaderParameter("vp",vp);
 		gYume->pRHI->SetShaderParameter("vp_inv",vpInv);
@@ -238,21 +226,10 @@ namespace YumeEngine
 	{
 		YumeInput* input = gYume->pInput;
 
-		DirectX::XMVECTOR d = DirectX::XMVectorSubtract(
-			XMLoadFloat3(&bbMax),XMLoadFloat3(&bbMin));
 
-		FLOAT s;
-		DirectX::XMStoreFloat(&s,DirectX::XMVector3Length(d));
-		s /= 100.f;
-
-		
-
-		camera_.FrameMove(timeStep);
 
 		float lightMove = 2 * timeStep;
 		float gi = 1;
-
-		camera_.SetScalers(0.0099f,moveScale);
 
 		if(input->GetKeyDown(KEY_SHIFT))
 		{
@@ -263,11 +240,22 @@ namespace YumeEngine
 		}
 
 		if(input->GetKeyDown(KEY_I))
+		{
 			dir_light_.position.x += lightMove;
+			updateRsm_ = true;
+		}
 		if(input->GetKeyDown(KEY_O))
+		{
 			dir_light_.position.y += lightMove;
+			updateRsm_ = true;
+		}
 		if(input->GetKeyDown(KEY_P))
+		{
 			dir_light_.position.z += lightMove;
+			updateRsm_ = true;
+		}
+
+
 
 		if(input->GetKeyPress(KEY_J))
 		{
@@ -304,7 +292,7 @@ namespace YumeEngine
 
 #ifndef RENDER_RSM_TO_BACKBUFFER
 
-			lpv_.Inject(bbMin,bbMax);
+			lpv_.Inject(misc_->GetMinBb(),misc_->GetMaxBb());
 
 			lpv_.Normalize();
 
@@ -316,8 +304,6 @@ namespace YumeEngine
 #ifndef INJECT_ONLY
 		//
 		RenderSceneToGBuffer();
-
-		lpv_.BindLPVTextures();
 
 
 		{
@@ -338,27 +324,28 @@ namespace YumeEngine
 
 			rhi_->SetShaders(triangleVs_,deferredLpvPs_,0);
 
-			rhi_->SetTexture(2,SceneColors_);
-			rhi_->SetTexture(3,SceneSpecular_);
-			rhi_->SetTexture(4,SceneNormals_);
-			rhi_->SetTexture(5,SceneLinearDepth_);
-			rhi_->SetTexture(6,RsmLinearDepth_);
-			rhi_->SetTexture(14,noiseTex_);
+			SharedPtr<YumeTexture2D> accumr = lpv_.GetLPVAccumR();
+			SharedPtr<YumeTexture2D> accumg = lpv_.GetLPVAccumG();
+			SharedPtr<YumeTexture2D> accumb = lpv_.GetLPVAccumB();
+			YumeTexture2D* textures[8] = { SceneColors_,SceneSpecular_,SceneNormals_,SceneLinearDepth_,RsmLinearDepth_,accumr,accumg,accumb };
+
+			rhi_->PSBindSRV(2,8,textures);
+			
 
 
 			//lpv_parameters
 			DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
 			DirectX::XMFLOAT4X4 i;
 			DirectX::XMStoreFloat4x4(&i,I);
-			lpv_.SetModelMatrix(i,bbMin,bbMax);
+			lpv_.SetModelMatrix(i,misc_->GetMinBb(),misc_->GetMaxBb());
 			//Future me : this line crashes because constant buffer layout is being read wrong. FIX!1
 
 			//light_ps
 			SetDeferredLightParameters();
 			SetGIParameters();
 
-			rhi_->SetShaderParameter("scene_dim_max",XMFLOAT4(bbMax.x,bbMax.y,bbMax.z,1.0f));
-			rhi_->SetShaderParameter("scene_dim_min",XMFLOAT4(bbMin.x,bbMin.y,bbMin.z,1.0f));
+			rhi_->SetShaderParameter("scene_dim_max",XMFLOAT4(misc_->GetMaxBb().x,misc_->GetMaxBb().y,misc_->GetMaxBb().z,1.0f));
+			rhi_->SetShaderParameter("scene_dim_min",XMFLOAT4(misc_->GetMinBb().x,misc_->GetMinBb().y,misc_->GetMinBb().z,1.0f));
 
 			UpdateCameraParameters();
 			SetCameraParameters(false);
@@ -396,6 +383,11 @@ namespace YumeEngine
 		rhi_->ClearRenderTarget(2,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,1));
 		rhi_->ClearRenderTarget(3,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,1));
 
+		rhi_->SetBlendMode(BLEND_REPLACE);
+
+		//Render sky first xD
+		misc_->RenderSky();
+
 		rhi_->SetShaders(meshVs_,meshPs_);
 
 		rhi_->BindSampler(PS,0,1,0); //0 is standard filter
@@ -409,17 +401,18 @@ namespace YumeEngine
 
 	void LPVRenderer::UpdateCameraParameters()
 	{
-		XMMATRIX view = camera_.GetViewMatrix();
+		XMMATRIX view = misc_->GetCamera()->GetViewMatrix();
+		XMMATRIX proj = misc_->GetCamera()->GetProjMatrix();
 
 		XMStoreFloat4x4(&view_,view);
+		XMStoreFloat4x4(&proj_,proj);
 	}
 
 	void LPVRenderer::SetInjectStageTextures()
 	{
-		//Bind RSM to inject
-		gYume->pRHI->SetTexture(6,RsmLinearDepth_);
-		gYume->pRHI->SetTexture(7,RsmColors_);
-		gYume->pRHI->SetTexture(8,RsmNormals_);
+		YumeTexture2D* textures[3] = { RsmLinearDepth_,RsmColors_,RsmNormals_ };
+
+		gYume->pRHI->VSBindSRV(6,3,textures);
 	}
 
 	void LPVRenderer::RenderLPV()
@@ -528,92 +521,34 @@ namespace YumeEngine
 	void LPVRenderer::DrawScene(bool shadowPass)
 	{
 		SetCameraParameters(shadowPass);
-		mesh_->Render();
+		misc_->RenderScene();
 	}
 
-	void LPVRenderer::DrawPlane(const XMVECTOR& Pos,const XMVECTOR& Scale,const XMVECTOR& color)
+	void LPVRenderer::SetLPVPos(float x,float y,float z)
 	{
-		XMMATRIX world = DirectX::XMMatrixIdentity();
-		XMMATRIX translate = XMMatrixTranslationFromVector(Pos);
-		XMMATRIX scale = XMMatrixScalingFromVector(Scale);
-		world = world * translate * scale;
+		if(dir_light_.position.x != -1)
+			dir_light_.position.x = x;
 
-		XMStoreFloat4x4(&world_,world);
+		if(dir_light_.position.y != 1)
+			dir_light_.position.y = y;
 
+		if(dir_light_.position.z != 1)
+			dir_light_.position.z = z;
 
-		materialDiffuse_ = color;
-		SetMaterialParameters();
+		updateRsm_ = true;
 
-		gYume->pRHI->SetShaderParameter("world",world);
-
-		cornell_->Draw(gYume->pRHI);
 	}
 
-	void LPVRenderer::LoadMaterials(const YumeString& fileName)
+	void LPVRenderer::SetLightFlux(float f)
 	{
-		String useFileName = fileName;
-		if(useFileName.Trimmed().empty() && model_)
-		{
-			String path,file,extension;
-			SplitPath(model_->GetModel()->GetName(),path,file,extension);
-			useFileName = path + file + ".txt";
-		}
-
-
-		SharedPtr<YumeFile> file = gYume->pResourceManager->GetFile(useFileName);
-		if(!file)
+		if(f < 1)
 			return;
 
-		unsigned index = 0;
-		while(!file->Eof() && index < model_->GetNumGeometries())
-		{
-			YumeMaterial* material = gYume->pResourceManager->PrepareResource<YumeMaterial>(file->ReadLine());
-			if(material)
-				materials_.push_back(material);
-
-			++index;
-		}
+		dir_light_.color = XMFLOAT4(dir_light_.color.x * f,dir_light_.color.y * f,dir_light_.color.z * f,1.0f);
+		updateRsm_ = true;
 	}
 
-	void LPVRenderer::DrawBox(const XMVECTOR& Pos,const XMVECTOR& Scale)
-	{
-		XMMATRIX world = DirectX::XMMatrixIdentity();
-		XMMATRIX translate = XMMatrixTranslationFromVector(Pos);
-		XMMATRIX scale = XMMatrixScalingFromVector(Scale);
-		world = world * translate * scale;
 
-		XMStoreFloat4x4(&world_,world);
-
-
-		materialDiffuse_ = XMVectorSet(1,0,0,1);
-		SetMaterialParameters();
-
-		gYume->pRHI->SetShaderParameter("world",world);
-		plane_->Draw(gYume->pRHI);
-	}
-
-	void LPVRenderer::UpdateMeshBb(YumeMesh& mesh)
-	{
-		DirectX::XMVECTOR v_bb_min = XMLoadFloat3(&mesh.bb_min());
-		DirectX::XMVECTOR v_bb_max = XMLoadFloat3(&mesh.bb_max());
-
-		DirectX::XMVECTOR v_diag = DirectX::XMVectorSubtract(v_bb_max,v_bb_min);
-
-		DirectX::XMVECTOR delta = DirectX::XMVectorScale(v_diag,0.05f);
-
-		v_bb_min = DirectX::XMVectorSubtract(v_bb_min,delta);
-		v_bb_max = DirectX::XMVectorAdd(v_bb_max,delta);
-
-		v_bb_min = DirectX::XMVectorSetW(v_bb_min,1.f);
-		v_bb_max = DirectX::XMVectorSetW(v_bb_max,1.f);
-
-		auto world = DirectX::XMLoadFloat4x4(&mesh.world());
-		v_bb_min = DirectX::XMVector4Transform(v_bb_min,world);
-		v_bb_max = DirectX::XMVector4Transform(v_bb_max,world);
-
-		DirectX::XMStoreFloat3(&bbMin,v_bb_min);
-		DirectX::XMStoreFloat3(&bbMax,v_bb_max);
-	}
 
 	DirectX::XMMATRIX LPVRenderer::MakeProjection(float z_near,float z_far)
 	{

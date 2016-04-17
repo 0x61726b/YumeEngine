@@ -19,23 +19,27 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeLPVCamera_h__
-#define __YumeLPVCamera_h__
+#ifndef __YumeSkydome_h__
+#define __YumeSkydome_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-
-#include <DirectXMath.h>
-#include <DXUT.h>
-#include <DXUTcamera.h>
+#include "AssimpMesh.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeAPIExport YumeLPVCamera
-		: public CFirstPersonCamera,
-		public YumeBase
+	class YumeAPIExport YumeSkydome : public YumeMesh
 	{
 	public:
-		void Update(float z_far);
+		YumeSkydome();
+		virtual ~YumeSkydome();
+
+		void Setup(const YumeString& mesh);
+		void Render();
+
+		SharedPtr<YumeTexture2D> skyMap_;
+
+		YumeShaderVariation* skyVs_;
+		YumeShaderVariation* skyPs_;
 	};
 }
 

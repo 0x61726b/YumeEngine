@@ -220,10 +220,12 @@ namespace YumeEngine
 
 		lpvRenderer_->SetGIParameters();
 
-		gYume->pRHI->SetTexture(7,lpv_r_[curr_]);
+		YumeTexture2D* textures[4] = { lpv_r_[curr_],lpv_g_[curr_],lpv_b_[curr_],lpv_inject_counter_ };
+		gYume->pRHI->PSBindSRV(7,4,textures);
+		/*gYume->pRHI->SetTexture(7,lpv_r_[curr_]);
 		gYume->pRHI->SetTexture(8,lpv_g_[curr_]);
 		gYume->pRHI->SetTexture(9,lpv_b_[curr_]);
-		gYume->pRHI->SetTexture(10,lpv_inject_counter_);
+		gYume->pRHI->SetTexture(10,lpv_inject_counter_);*/
 
 
 		static YumeVector<YumeVertexBuffer*>::type vertexBuffers(1);
@@ -237,7 +239,7 @@ namespace YumeEngine
 		gYume->pRHI->Draw(TRIANGLE_LIST,0,6 * volume_size_);
 
 		gYume->pRHI->BindResetRenderTargets(3);
-		gYume->pRHI->BindResetTextures(7,4);
+		gYume->pRHI->BindResetTextures(7,4,true);
 
 	}
 
@@ -258,9 +260,14 @@ namespace YumeEngine
 		gYume->pRHI->ClearRenderTarget(1,CLEAR_COLOR);
 		gYume->pRHI->ClearRenderTarget(2,CLEAR_COLOR);
 
-		gYume->pRHI->SetTexture(7,lpv_r_[curr_]);
+
+		YumeTexture2D* textures[4] = { lpv_r_[curr_],lpv_g_[curr_],lpv_b_[curr_] };
+		gYume->pRHI->PSBindSRV(7,3,textures);
+
+
+		/*gYume->pRHI->SetTexture(7,lpv_r_[curr_]);
 		gYume->pRHI->SetTexture(8,lpv_g_[curr_]);
-		gYume->pRHI->SetTexture(9,lpv_b_[curr_]);
+		gYume->pRHI->SetTexture(9,lpv_b_[curr_]);*/
 
 		lpvRenderer_->SetGIParameters();
 
@@ -269,7 +276,7 @@ namespace YumeEngine
 		lpv_volume_geo_->Draw(gYume->pRHI);
 
 		gYume->pRHI->BindResetRenderTargets(6);
-		gYume->pRHI->BindResetTextures(7,3);
+		gYume->pRHI->BindResetTextures(7,3,true);
 
 	}
 

@@ -348,6 +348,7 @@ namespace YumeEngine
 
 			aiString str;
 
+
 			str.Clear();
 			if(mat->Get(AI_MATKEY_TEXTURE_DIFFUSE(0),str) == AI_SUCCESS)
 				mesh.diffuse_tex = gYume->pResourceManager->PrepareResource<YumeTexture2D>(YumeString(str.C_Str()));
@@ -424,16 +425,28 @@ namespace YumeEngine
 
 
 				if(has_diffuse_tex)
-					gYume->pRHI->SetTexture(0,data->diffuse_tex);
+				{
+					YumeTexture2D* texture[] = { data->diffuse_tex.Get() };
+					gYume->pRHI->PSBindSRV(0,1,texture);
+				}
 
 				if(has_normal_tex)
-					gYume->pRHI->SetTexture(1,data->normal_tex);
+				{
+					YumeTexture2D* texture[] = { data->normal_tex.Get() };
+					gYume->pRHI->PSBindSRV(1,1,texture);
+				}
 
 				if(has_specular_tex)
-					gYume->pRHI->SetTexture(2,data->specular_tex);
+				{
+					YumeTexture2D* texture[] = { data->specular_tex.Get() };
+					gYume->pRHI->PSBindSRV(2,1,texture);
+				}
 
 				if(has_alpha_tex)
-					gYume->pRHI->SetTexture(3,data->alpha_tex);
+				{
+					YumeTexture2D* texture[] = { data->alpha_tex.Get() };
+					gYume->pRHI->PSBindSRV(3,1,texture);
+				}
 			}
 
 			geometries_[m]->Draw(gYume->pRHI);

@@ -51,6 +51,7 @@ namespace YumeEngine
 	class YumeRenderView;
 	class YumeRendererEnvironment;
 	class LPVRenderer;
+	class YumeMiscRenderer;
 
 
 	static const int SHADOW_MIN_PIXELS = 64;
@@ -246,6 +247,8 @@ namespace YumeEngine
 		YumeTextureCube* GetIndirectionCubeMap() const { return indirectionCubeMap_; }
 		YumeVertexBuffer* GetInstancingBuffer() const { return dynamicInstancing_ ? instancingBuffer_.Get() : 0; }
 
+		YumeMiscRenderer* GetMiscRenderer() const { return miscRenderer_; }
+
 
 		const FrameInfo& GetFrameInfo() const { return frame_; }
 		void Update(float timeStep);
@@ -257,7 +260,6 @@ namespace YumeEngine
 		YumeGeometry* GetQuadGeometry();
 		YumeGeometry* GetSSAOQuadGeometry();
 		YumeGeometry* GetTexturedQuadGeometry();
-		YumeGeometry* GetFsTriangle();
 		YumeTexture2D* GetShadowMap(YumeLight* light,YumeCamera* camera,unsigned viewWidth,unsigned viewHeight);
 		YumeTexture* GetScreenBuffer(int width,int height,unsigned format,bool cubemap,bool filtered,bool srgb,unsigned persistentKey = 0);
 		YumeRenderable* GetDepthStencil(int width,int height);
@@ -320,7 +322,6 @@ namespace YumeEngine
 		SharedPtr<YumeRenderPipeline> defaultPipeline_;
 		SharedPtr<YumeRendererEnvironment> defaultZone_;
 		SharedPtr<YumeGeometry> dirLightGeometry_;
-		SharedPtr<YumeGeometry> fullScreenTriangleGeometry_;
 		SharedPtr<YumeGeometry> texturedQuadGeometry;
 		SharedPtr<YumeGeometry> ssaoQuad_;
 		SharedPtr<YumeGeometry> spotLightGeometry_;
@@ -334,7 +335,7 @@ namespace YumeEngine
 		SharedPtr<YumeTextureCube> indirectionCubeMap_;
 
 	public:
-		LPVRenderer* lpvRenderer_;
+		SharedPtr<YumeMiscRenderer> miscRenderer_;
 	private:
 
 		YumeVector<SharedPtr<YumeSceneNode> >::type shadowCameraNodes_;
