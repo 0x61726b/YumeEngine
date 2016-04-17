@@ -58,9 +58,6 @@ namespace YumeEngine
 
 		void RenderSceneToGBuffer();
 
-		void SetCameraParameters(bool shadowPass);
-		void UpdateCameraParameters();
-
 		void LoadMaterials(const YumeString&);
 
 		void SetLightParameters();
@@ -82,18 +79,14 @@ namespace YumeEngine
 		void SetLightFlux(float f);
 		YumeMiscRenderer* misc_;
 	private:
-		DirectX::XMMATRIX MakeProjection(float,float);
-
 		void DrawScene(bool shadowPass);
 
 		bool updateRsm_;
-
+	public:
 		directional_light dir_light_;
 
 
-		float zNear;
-		float zFar;
-
+	private:
 		float moveScale;
 
 		void RenderRSM();
@@ -101,9 +94,10 @@ namespace YumeEngine
 
 		void RenderLPV();
 
+	public:
 		DirectX::XMVECTOR dirLightUp;
 		DirectX::XMVECTOR dirLightFlux;
-
+	private:
 		float gi_scale;
 		float lpv_flux_amplifier;
 		bool debug_gi;

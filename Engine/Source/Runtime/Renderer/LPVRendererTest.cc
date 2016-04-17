@@ -81,14 +81,12 @@ namespace YumeEngine
 
 		updateRsm_ = true;
 
-		zNear = .2f;
-		zFar = 100000.f;
 
 		int sceneWidth = gYume->pRHI->GetWidth();
 		int sceneHeight = gYume->pRHI->GetHeight();
 		misc_->GetCamera()->SetViewParams(XMVectorSet(0,5,-10,0),XMVectorSet(0,0,0,0));
 		FLOAT aspect_ratio = static_cast<FLOAT>(gYume->pRHI->GetWidth()) / static_cast<FLOAT>(gYume->pRHI->GetHeight());
-		misc_->GetCamera()->SetProjParams(static_cast<FLOAT>(DirectX::XM_PI / 4),aspect_ratio,zNear,zFar);
+		misc_->GetCamera()->SetProjParams(static_cast<FLOAT>(DirectX::XM_PI / 4),aspect_ratio,misc_->zNear,misc_->zFar);
 
 
 		XMMATRIX view = misc_->GetCamera()->GetViewMatrix();
@@ -139,7 +137,7 @@ namespace YumeEngine
 		lpv_.SetLPVRenderer(this);
 		dirLightUp = XMVectorSet(-1,0,0,0);
 
-		dir_light_.position = XMFLOAT4(90,2000,90,1);
+		dir_light_.position = XMFLOAT4(0,20,0,1);
 		XMVECTOR dir = XMVectorSet(0.557f,0.557f,0.557f,0.557f);
 
 		dir_light_.normal = XMFLOAT4(0,-1,0,0);
@@ -171,28 +169,6 @@ namespace YumeEngine
 		triangle_ = misc_->GetFsTriangle();
 
 		
-	}
-
-	void LPVRenderer::SetCameraParameters(bool shadowPass)
-	{
-		XMMATRIX view = XMLoadFloat4x4(&view_);
-		XMMATRIX proj = XMLoadFloat4x4(&proj_);
-		XMMATRIX world = XMLoadFloat4x4(&world_);
-
-		XMMATRIX vp = view * proj;
-		XMMATRIX vpInv = XMMatrixInverse(nullptr,vp);
-
-		XMFLOAT4 cameraPos;
-
-		if(shadowPass)
-			XMStoreFloat4(&cameraPos,XMLoadFloat4(&dir_light_.position));
-		else
-			XMStoreFloat4(&cameraPos,misc_->GetCamera()->GetEyePt());
-
-		gYume->pRHI->SetShaderParameter("vp",vp);
-		gYume->pRHI->SetShaderParameter("vp_inv",vpInv);
-		gYume->pRHI->SetShaderParameter("camera_pos",cameraPos);
-		gYume->pRHI->SetShaderParameter("z_far",zFar);
 	}
 
 	void LPVRenderer::SetGIParameters()
@@ -347,13 +323,15 @@ namespace YumeEngine
 			rhi_->SetShaderParameter("scene_dim_max",XMFLOAT4(misc_->GetMaxBb().x,misc_->GetMaxBb().y,misc_->GetMaxBb().z,1.0f));
 			rhi_->SetShaderParameter("scene_dim_min",XMFLOAT4(misc_->GetMinBb().x,misc_->GetMinBb().y,misc_->GetMinBb().z,1.0f));
 
-			UpdateCameraParameters();
-			SetCameraParameters(false);
+			misc_->SetCameraParameters(false);
 
 			rhi_->BindResetRenderTargets(6);
+			
+			/*rhi_->SetRenderTarget(0,misc_->GetRenderTarget());*/
+			/*rhi_->ClearRenderTarget(0,CLEAR_COLOR);*/
 			rhi_->BindBackbuffer();
-
 			rhi_->Clear(CLEAR_COLOR);
+			
 
 			triangle_->Draw(gYume->pRHI);
 
@@ -392,21 +370,12 @@ namespace YumeEngine
 
 		rhi_->BindSampler(PS,0,1,0); //0 is standard filter
 
-		UpdateCameraParameters();
-
 		DrawScene(false);
 
 		rhi_->BindResetRenderTargets(4);
 	}
 
-	void LPVRenderer::UpdateCameraParameters()
-	{
-		XMMATRIX view = misc_->GetCamera()->GetViewMatrix();
-		XMMATRIX proj = misc_->GetCamera()->GetProjMatrix();
 
-		XMStoreFloat4x4(&view_,view);
-		XMStoreFloat4x4(&proj_,proj);
-	}
 
 	void LPVRenderer::SetInjectStageTextures()
 	{
@@ -462,7 +431,7 @@ namespace YumeEngine
 	void LPVRenderer::SetLightParameters()
 	{
 		XMMATRIX lightView = XMMatrixLookToLH(XMLoadFloat4(&dir_light_.position),XMLoadFloat4(&dir_light_.normal),dirLightUp);
-		XMMATRIX lightProj = MakeProjection(zNear,zFar);
+		XMMATRIX lightProj = misc_->MakeProjection();
 
 		XMMATRIX light_vp = lightView * lightProj;
 
@@ -477,7 +446,7 @@ namespace YumeEngine
 	void LPVRenderer::SetDeferredLightParameters()
 	{
 		XMMATRIX lightView = XMMatrixLookToLH(XMLoadFloat4(&dir_light_.position),XMLoadFloat4(&dir_light_.normal),dirLightUp);
-		XMMATRIX lightProj = MakeProjection(zNear,zFar);
+		XMMATRIX lightProj = misc_->MakeProjection();
 
 		XMMATRIX light_vp = lightView * lightProj;
 
@@ -511,16 +480,13 @@ namespace YumeEngine
 
 	void LPVRenderer::SetRSMCamera()
 	{
-		XMMATRIX lightView = XMMatrixLookToLH(XMLoadFloat4(&dir_light_.position),XMLoadFloat4(&dir_light_.normal),dirLightUp);
-
-		XMStoreFloat4x4(&view_,lightView);
-		XMStoreFloat4x4(&proj_,MakeProjection(zNear,zFar));
+		
 
 	}
 
 	void LPVRenderer::DrawScene(bool shadowPass)
 	{
-		SetCameraParameters(shadowPass);
+		misc_->SetCameraParameters(shadowPass);
 		misc_->RenderScene();
 	}
 
@@ -546,24 +512,6 @@ namespace YumeEngine
 
 		dir_light_.color = XMFLOAT4(dir_light_.color.x * f,dir_light_.color.y * f,dir_light_.color.z * f,1.0f);
 		updateRsm_ = true;
-	}
-
-
-
-	DirectX::XMMATRIX LPVRenderer::MakeProjection(float z_near,float z_far)
-	{
-		float n = z_near;
-		float f = z_far;
-
-		float q = f/(f-n);
-
-		return DirectX::XMMATRIX
-			(
-			1.f,0.f,0.f,0.f,
-			0.f,1.f,0.f,0.f,
-			0.f,0.f,q,1.f,
-			0.f,0.f,-q*n,0.f
-			);
 	}
 
 }

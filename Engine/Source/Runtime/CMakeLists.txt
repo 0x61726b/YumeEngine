@@ -113,6 +113,8 @@ set(SRC_RENDERER
 	Renderer/YumeSkydome.cc
 	Renderer/YumeMiscRenderer.h
 	Renderer/YumeMiscRenderer.cc
+	Renderer/YumePostProcess.h
+	Renderer/YumePostProcess.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

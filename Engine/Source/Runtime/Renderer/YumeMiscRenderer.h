@@ -45,12 +45,16 @@ namespace YumeEngine
 
 		void RenderFullScreenTexture(const IntRect& rect,YumeTexture2D*);
 
+		void SetCameraParameters(bool shadowPass);
+
 		void Update(float timeStep);
 
 		YumeLPVCamera* GetCamera() const { return camera_; }
 
 		const DirectX::XMFLOAT3& GetMinBb() const { return bbMin; }
 		const DirectX::XMFLOAT3& GetMaxBb() const { return bbMax; }
+
+		YumeTexture2D* GetRenderTarget() const { return renderTarget_; }
 
 		YumeGeometry* GetFsTriangle() const { return fullscreenTriangle_; };
 
@@ -82,7 +86,13 @@ namespace YumeEngine
 	private: //Renderer stuff
 		YumeRHI* rhi_;
 		SharedPtr<LPVRenderer> lpv_;
+		SharedPtr<YumeTexture2D> renderTarget_;
 
+	public:
+		float zNear;
+		float zFar;
+		DirectX::XMMATRIX MakeProjection();
+	private:
 		YumeShaderVariation* overlayPs_;
 
 	private: //Textures
