@@ -999,26 +999,27 @@ namespace YumeEngine
 		return success;
 	}
 
-	YumeShaderVariation* YumeD3D11Renderer::GetShader(ShaderType type,const YumeString& name,const YumeString& defines) const
+	YumeShaderVariation* YumeD3D11Renderer::GetShader(ShaderType type,const YumeString& name,const YumeString& defines,const YumeString& entryPoint) const
 	{
-		return GetShader(type,name.c_str(),defines.c_str());
+		return GetShader(type,name.c_str(),defines.c_str(),entryPoint);
 	}
 
-	YumeShaderVariation* YumeD3D11Renderer::GetShader(ShaderType type,const char* name,const char* defines) const
+	YumeShaderVariation* YumeD3D11Renderer::GetShader(ShaderType type,const char* name,const char* defines,const YumeString& entryPoint) const
 	{
-		if(lastShaderName_ != name || !lastShader_)
+		if(lastEntryPoint != entryPoint || lastShaderName_ != name || !lastShader_ )
 		{
 			YumeResourceManager* resource_ = gYume->pResourceManager;
 			YumeString fullShaderName = shaderPath_ + name + shaderExtension_;
 			// Try to reduce repeated error log prints because of missing shaders
-			if(lastShaderName_ == name && !resource_->Exists(fullShaderName))
+			if(lastShaderName_ == name && lastEntryPoint == entryPoint && !resource_->Exists(fullShaderName))
 				return 0;
 
 			lastShader_ = resource_->PrepareResource<YumeD3D11Shader>(fullShaderName);
 			lastShaderName_ = name;
+			lastEntryPoint = entryPoint;
 		}
 
-		return lastShader_ ? lastShader_->GetVariation(type,defines) : (YumeD3D11ShaderVariation*)0;
+		return lastShader_ ? lastShader_->GetVariation(type,defines,entryPoint) : (YumeD3D11ShaderVariation*)0;
 	}
 
 	bool YumeD3D11Renderer::HasShaderParameter(YumeHash param)
@@ -1614,7 +1615,25 @@ namespace YumeEngine
 
 		for(int i=0; i < count; ++i)
 		{
-			srvs.push_back((ID3D11ShaderResourceView*)(*textures)->GetShaderResourceView());
+			if(*textures)
+				srvs.push_back((ID3D11ShaderResourceView*)(*textures)->GetShaderResourceView());
+			else
+				srvs.push_back(nullptr);
+			textures++;
+		}
+		impl_->deviceContext_->PSSetShaderResources(start,count,&srvs[0]);
+	}
+
+	void YumeD3D11Renderer::PSBindSRV(unsigned start,unsigned count,YumeTexture3D** textures)
+	{
+		std::vector<ID3D11ShaderResourceView*> srvs;
+
+		for(int i=0; i < count; ++i)
+		{
+			if(*textures)
+				srvs.push_back((ID3D11ShaderResourceView*)(*textures)->GetShaderResourceView());
+			else
+				srvs.push_back(nullptr);
 			textures++;
 		}
 		impl_->deviceContext_->PSSetShaderResources(start,count,&srvs[0]);
@@ -1759,16 +1778,13 @@ namespace YumeEngine
 	}
 	void YumeD3D11Renderer::SetDepthStencil(YumeRenderable* depthStencil)
 	{
-		if(depthStencil != depthStencil_)
-		{
-			depthStencil_ = depthStencil;
-			renderTargetsDirty_ = true;
+		depthStencil_ = depthStencil;
+		renderTargetsDirty_ = true;
 
-			if(depthStencil_)
-				impl_->depthStencilView_ = (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView();
-			else
-				impl_->depthStencilView_ = 0;
-		}
+		if(depthStencil_)
+			impl_->depthStencilView_ = (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView();
+		else
+			impl_->depthStencilView_ = 0;
 	}
 	void YumeD3D11Renderer::SetDepthStencil(YumeTexture2D* texture)
 	{

@@ -130,7 +130,7 @@ namespace YumeEngine
 		YumeShaderVariation* triangleVs_;
 		YumeShaderVariation* deferredLpvPs_;
 
-		SharedPtr<YumeTexture2D> noiseTex_;
+		
 
 		//RSM Render Targets
 		SharedPtr<YumeTexture2D> RsmColors_;

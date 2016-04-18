@@ -77,51 +77,35 @@ namespace YumeEngine
 	class YumeD3DExport YumeD3D11ShaderVariation : public YumeShaderVariation,public YumeD3D11Resource
 	{
 	public:
-		/// Construct.
 		YumeD3D11ShaderVariation (YumeShader* owner,ShaderType type);
-		/// Destruct.
 		virtual ~YumeD3D11ShaderVariation ();
-
-		/// Release the shader.
 		virtual void Release();
 
-		/// Compile the shader. Return true if successful.
 		virtual bool Create();
 
-		/// Return shader type.
 		ShaderType GetShaderType() const { return type_; }
 
-		/// Return shader name.
 		const YumeString& GetName() const { return name_; }
 
-		/// Return full shader name.
 		YumeString GetFullName() const { return name_ + "(" + defines_ + ")"; }
 
-		/// Return whether uses a parameter.
 		bool HasParameter(YumeHash param) const {
 			return parameters_.find(param) != parameters_.end() ? true : false;
 		}
-
-		/// Return all parameter definitions.
 		const YumeMap<YumeHash,ShaderParameter>::type& GetParameters() const { return parameters_; }
-
-		/// Return constant buffer data sizes.
 		const unsigned* GetConstantBufferSizes() const { return &constantBufferSizes_[0]; }
 
+		void SetEntryPoint(const YumeString& entry) { shaderEntry = entry;}
 	private:
-		/// Load bytecode from a file. Return true if successful.
 		bool LoadByteCode(const YumeString& binaryShaderName);
-		/// Compile from source. Return true if successful.
 		bool Compile();
-		/// Inspect the constant parameters and input layout (if applicable) from the shader bytecode.
 		void ParseParameters(unsigned char* bufData,unsigned bufSize);
-		/// Save bytecode to a file.
 		void SaveByteCode(const YumeString& binaryShaderName);
-		/// Calculate constant buffer sizes from parameters.
 		void CalculateConstantBufferSizes();
 
+		YumeString shaderEntry;
+
 		YumeMap<YumeHash,ShaderParameter>::type parameters_;
-		/// Constant buffer sizes. 0 if a constant buffer slot is not in use.
 		unsigned constantBufferSizes_[MAX_SHADER_PARAMETER_GROUPS];
 
 	};

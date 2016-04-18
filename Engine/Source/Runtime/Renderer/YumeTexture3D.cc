@@ -53,64 +53,15 @@ namespace YumeEngine
 
 		rm_->ResetDependencies(this);
 
-		loadParameters_ = SharedPtr<YumeXmlFile>(YumeAPINew YumeXmlFile());
-		if(!loadParameters_->Load(source))
+		SharedPtr<YumeFile> file = rm_->GetFile(GetName());
+		loadImage_ = SharedPtr<YumeImage>(YumeAPINew YumeImage);
+		if(!loadImage_->Load(*(file)))
 		{
 			loadParameters_.Reset();
+			loadImage_.Reset();
 			return false;
 		}
-
-		YumeString xmlData = loadParameters_->GetXml();
-		pugi::xml_document xmlDoc;
-		xmlDoc.load(xmlData.c_str());
-
-		XmlNode textureElem = xmlDoc.child("texture3d");
-		XmlNode volumeElem = textureElem.child("volume");
-		XmlNode colorlutElem = textureElem.child("colorlut");
-
-		if(!volumeElem.empty())
-		{
-			YumeString name = volumeElem.attribute("name").as_string();
-
-			YumeString volumeTexPath,volumeTexName,volumeTexExt;
-			SplitPath(name,volumeTexPath,volumeTexName,volumeTexExt);
-			// If path is empty, add the XML file path
-			if(volumeTexPath.empty())
-				name = texPath + name;
-
-			loadImage_ = rm_->GetTempResource<YumeImage>(name);
-			// Precalculate mip levels if async loading
-			if(loadImage_ && GetAsyncLoadState() == ASYNC_LOADING)
-				loadImage_->PrecalculateLevels();
-			rm_->StoreResourceDependency(this,name);
-			return true;
-		}
-		else if(!colorlutElem.empty())
-		{
-			YumeString name = colorlutElem.attribute("name").as_string();
-
-			YumeString colorlutTexPath,colorlutTexName,colorlutTexExt;
-			SplitPath(name,colorlutTexPath,colorlutTexName,colorlutTexExt);
-			// If path is empty, add the XML file path
-			if(colorlutTexPath.empty())
-				name = texPath + name;
-
-			SharedPtr<YumeFile> file = rm_->GetFile(name);
-			loadImage_ = SharedPtr<YumeImage>(YumeAPINew YumeImage);
-			if(!loadImage_->LoadColorLUT(*(file)))
-			{
-				loadParameters_.Reset();
-				loadImage_.Reset();
-				return false;
-			}
-			// Precalculate mip levels if async loading
-			if(loadImage_ && GetAsyncLoadState() == ASYNC_LOADING)
-				loadImage_->PrecalculateLevels();
-			rm_->StoreResourceDependency(this,name);
-			return true;
-		}
-
-		YUMELOG_ERROR("Texture3D XML data for " << GetName().c_str() << " did not contain either volume or colorlut element");
+		return true;
 	}
 
 	bool YumeTexture3D::EndLoad()

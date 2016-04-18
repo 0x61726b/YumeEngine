@@ -110,14 +110,14 @@ namespace YumeEngine
 		return true;
 	}
 
-	YumeShaderVariation* YumeD3D11Shader::GetVariation(ShaderType type,const YumeString& defines)
+	YumeShaderVariation* YumeD3D11Shader::GetVariation(ShaderType type,const YumeString& defines,const YumeString& entryPoint)
 	{
-		return GetVariation(type,defines.c_str());
+		return GetVariation(type,defines.c_str(),entryPoint);
 	}
 
-	YumeShaderVariation* YumeD3D11Shader::GetVariation(ShaderType type,const char* defines)
+	YumeShaderVariation* YumeD3D11Shader::GetVariation(ShaderType type,const char* defines,const YumeString& entryPoint)
 	{
-		YumeHash definesHash = (defines);
+		YumeHash definesHash = defines;
 		typedef YumeMap<YumeHash,SharedPtr<YumeD3D11ShaderVariation> > ShaderMap;
 
 
@@ -141,6 +141,7 @@ namespace YumeEngine
 
 					i->second->SetName(GetFileName(GetName()));
 					i->second->SetDefines(normalizedDefines);
+					i->second->SetEntryPoint(entryPoint);
 					++numVariations_;
 					RefreshMemoryUse();
 
@@ -170,6 +171,7 @@ namespace YumeEngine
 
 					i->second->SetName(GetFileName(GetName()));
 					i->second->SetDefines(normalizedDefines);
+					i->second->SetEntryPoint(entryPoint);
 					++numVariations_;
 					RefreshMemoryUse();
 
@@ -199,6 +201,7 @@ namespace YumeEngine
 
 					i->second->SetName(GetFileName(GetName()));
 					i->second->SetDefines(normalizedDefines);
+					i->second->SetEntryPoint(entryPoint);
 					++numVariations_;
 					RefreshMemoryUse();
 

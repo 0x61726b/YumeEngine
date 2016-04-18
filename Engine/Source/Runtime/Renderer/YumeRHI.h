@@ -101,6 +101,7 @@ namespace YumeEngine
 		//
 		virtual void							BindSampler(ShaderType type,unsigned samplerStartSlot,unsigned samplerCount,unsigned internalIndex) { };
 		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures) {};
+		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture3D** textures) {};
 		virtual void							VSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures) {};
 		virtual void							BindBackbuffer() { };
 		virtual void							CreateStandardSampler() { };
@@ -162,8 +163,8 @@ namespace YumeEngine
 		YumeVertexBuffer* 					    GetVertexBuffer(unsigned index) const;
 		YumeIndexBuffer* 				        GetIndexBuffer() const { return indexBuffer_; }
 
-		virtual YumeShaderVariation* 			GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const = 0;
-		virtual YumeShaderVariation* 			GetShader(ShaderType type,const char* name,const char* defines) const = 0;
+		virtual YumeShaderVariation* 			GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "",const YumeString& entryPoint = "") const = 0;
+		virtual YumeShaderVariation* 			GetShader(ShaderType type,const char* name,const char* defines,const YumeString& entryPoint = "") const = 0;
 
 		TextureFilterMode 						GetDefaultTextureFilterMode() const { return defaultTextureFilterMode_; }
 		unsigned GetTextureAnisotropy()			const { return textureAnisotropy_; }
@@ -419,6 +420,7 @@ namespace YumeEngine
 		YumeString shaderExtension_;
 		mutable SharedPtr<YumeShader> lastShader_;
 		mutable YumeString lastShaderName_;
+		mutable YumeString lastEntryPoint;
 		//SharedPtr<ShaderPrecache> shaderPrecache_;
 		YumeString orientations_;
 		YumeString apiName_;

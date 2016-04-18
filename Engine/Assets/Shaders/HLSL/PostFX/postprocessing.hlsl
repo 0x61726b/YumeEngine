@@ -1,16 +1,16 @@
-/* 
+/*
  * postprocessing.hlsl by Tobias Alexander Franke (tob@cyberhead.de) 2012
  * For copyright and license see LICENSE
  * http://www.tobias-franke.eu
  */
 
-#include "common.h"
-#include "tools.hlsl"
+#include "../LPV/common.h"
+#include "../LPV/tools.hlsl"
 
 SamplerState StandardFilter	        : register(s0);
 SamplerState ShadowFilter	        : register(s1);
 
-struct PS_INPUT 
+struct PS_INPUT
 {
 	float4 position	                : SV_POSITION;
 	float2 tex_coord                : TEXCOORD0;
@@ -51,17 +51,17 @@ cbuffer postprocessing_parameters_ps : register(b4)
     bool  dof_enabled			    : packoffset(c1.x);
     float dof_focal_plane		    : packoffset(c1.y);
     float dof_coc_scale			    : packoffset(c1.z);
-    
+
     bool  bloom_enabled			    : packoffset(c1.w);
     float bloom_sigma			    : packoffset(c2.x);
     float bloom_treshold		    : packoffset(c2.y);
 
     bool  fxaa_enabled			    : packoffset(c2.z);
-    
+
     bool  exposure_adapt		    : packoffset(c2.w);
     float exposure_key			    : packoffset(c3.x);
     float exposure_speed		    : packoffset(c3.y);
-    
+
     bool crt_enabled			    : packoffset(c3.z);
     bool film_grain_enabled         : packoffset(c3.w);
 }
@@ -88,4 +88,3 @@ Texture2D bloom_buffer			    : register(t12);
 Texture2D frontbuffer_blurred       : register(t13);
 
 Texture3D<float> noise_tex		    : register(t14);
-

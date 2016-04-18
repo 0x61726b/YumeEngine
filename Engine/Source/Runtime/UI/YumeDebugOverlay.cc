@@ -32,6 +32,7 @@
 
 #include "Renderer/YumeMiscRenderer.h"
 #include "Renderer/YumeLPVCamera.h"
+#include "Renderer/YumePostProcess.h"
 
 static const char* qualityTexts[] =
 {
@@ -73,75 +74,53 @@ namespace YumeEngine
 		{
 			if(domElement == ("bloomSwitch"))
 			{
-				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
-
 				if(data == ("true"))
-					fx->SetEnabled("Bloom",true);
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetBloomEnabled(true);
 				else
-					fx->SetEnabled("Bloom",false);
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetBloomEnabled(false);
 			}
-			if(domElement == ("bloomHDRSwitch"))
-			{
-				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
 
-				if(data == ("true"))
-					fx->SetEnabled("BloomHDR",true);
-				else
-					fx->SetEnabled("BloomHDR",false);
-			}
-			if(domElement == ("blurSwitch"))
-			{
-				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
-
-				if(data == ("true"))
-					fx->SetEnabled("Blur",true);
-				else
-					fx->SetEnabled("Blur",false);
-			}
 			if(domElement == ("fxaaSwitch"))
 			{
-				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
-
 				if(data == ("true"))
-					fx->SetEnabled("FXAA2",true);
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetFxaaEnabled(true);
 				else
-					fx->SetEnabled("FXAA2",false);
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetFxaaEnabled(false);
 			}
-			if(domElement == "autoexposureSwitch")
+
+			if(domElement == ("dofSwitch"))
 			{
-				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
-
 				if(data == ("true"))
-					fx->SetEnabled("AutoExposure",true);
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetDofEnabled(true);
 				else
-					fx->SetEnabled("AutoExposure",false);
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetDofEnabled(false);
 			}
-			if(domElement == "ssaoInput")
+
+
+			if(domElement == "ssaoSwitch")
 			{
-				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
-
 				if(data == ("true"))
-				{
-					fx->SetEnabled("LinearDepthSSAO",true);
-					fx->SetEnabled("BlurGaussianDepth",true);
-				}
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetSSAOEnabled(true);
 				else
-				{
-					fx->SetEnabled("LinearDepthSSAO",false);
-					fx->SetEnabled("BlurGaussianDepth",false);
-				}
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetSSAOEnabled(false);
 			}
+
 			if(domElement == "godraysSwitch")
 			{
-				if(data == "true")
-				{
-					gYume->pPostFx->SetEnableLightScattering(true);
-				}
+				if(data == ("true"))
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetGodraysEnabled(true);
 				else
-				{
-					gYume->pPostFx->SetEnableLightScattering(false);
-				}
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetGodraysEnabled(false);
 			}
+
+			if(domElement == "autoexposureSwitch")
+			{
+				if(data == ("true"))
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetExposureAdapt(true);
+				else
+					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetExposureAdapt(false);
+			}
+
 			if(domElement == "debugIndirect")
 			{
 				if(data == "true")
@@ -158,64 +137,60 @@ namespace YumeEngine
 		break;
 		case DOMEvents::InputValueChanged:
 		{
-			if(domElement == "bloomHDRThreshold")
-			{
-				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
-				float threshold = atof(data.c_str());
-				threshold = threshold / 10.0f;
-				fxBloom->SetShaderParameter("BloomHDRThreshold",threshold);
-			}
 			if(domElement == "bloomThreshold")
 			{
-				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
 				float threshold = atof(data.c_str());
-				threshold = threshold / 10.0f;
-				fxBloom->SetShaderParameter("BloomThreshold",threshold);
+				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetBloomThreshold(threshold);
+
 			}
-			if(domElement == "blurSigma")
+			if(domElement == "bloomSigma")
 			{
-				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
-				float sigma = atof(data.c_str());
-				fxBloom->SetShaderParameter("BlurSigma",sigma);
+				float bloomSigma = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetBloomSigma(bloomSigma);
 			}
-			if(domElement == "AEadaptRate")
+
+
+			if(domElement == "ssaoScale")
 			{
-				YumeRenderPipeline* fxBloom = gYume->pRenderer->GetViewport(0)->GetRenderPath();
-				float threshold = atof(data.c_str());
-				threshold = threshold / 10.0f;
-				fxBloom->SetShaderParameter("AutoExposureAdaptRate",threshold);
+				float ssaoScale = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetSSAOScale(ssaoScale);
 			}
-			if(domElement == "ssaoRadius")
+
+
+			if(domElement == "aeExposureKey")
 			{
-				YumeRenderPipeline* fx = gYume->pRenderer->GetViewport(0)->GetRenderPath();
-				float value = atof(data.c_str());
-				fx->SetShaderParameter("Radius",value);
+				float aeExposureKey = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetAutoExposureKey(aeExposureKey);
 			}
 
-
-			if(domElement == "lsSampleCount")
+			if(domElement == "aeAdaptSpeed")
 			{
-				gYume->pPostFx->SetLightScatteringParameter(LS_SAMPLECOUNT,(float)atof(data.c_str()));
+				float aeAdaptSpeed = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetAutoExposureSpeed(aeAdaptSpeed);
 			}
 
-			if(domElement == "lsWeight")
+
+			if(domElement == "dofCocScale")
 			{
-				gYume->pPostFx->SetLightScatteringParameter(LS_WEIGHT,(float)atof(data.c_str()));
+				float dofCocScale = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetDoFCoCScale(dofCocScale);
 			}
 
-			if(domElement == "lsDecay")
+			if(domElement == "dofFocalPlane")
 			{
-				gYume->pPostFx->SetLightScatteringParameter(LS_DECAY,(float)atof(data.c_str()));
+				float dofFocalPlane = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetDoFFocalPlane(dofFocalPlane);
 			}
-
-			if(domElement == "lsExposure")
+			if(domElement == "gTau")
 			{
-				gYume->pPostFx->SetLightScatteringParameter(LS_EXPOSURE,(float)atof(data.c_str()));
+				float gTau = atof(data.c_str());
+				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetGodraysTAU(gTau);
 			}
 
 
+			/* End Post Process Parameters */
 
-
+			/* LPV GI Parameters */
 
 			if(domElement == "iGiScale")
 			{

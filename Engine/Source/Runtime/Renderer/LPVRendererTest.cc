@@ -104,7 +104,7 @@ namespace YumeEngine
 		triangleVs_ = gYume->pRHI->GetShader(VS,"LPV/fs_triangle");
 		deferredLpvPs_ = gYume->pRHI->GetShader(PS,"LPV/deferred_lpv");
 
-		noiseTex_ = gYume->pResourceManager->PrepareResource<YumeTexture2D>("Textures/noise.dds");
+		
 #endif
 
 		RsmColors_ = gYume->pRHI->CreateTexture2D();
@@ -326,16 +326,17 @@ namespace YumeEngine
 			misc_->SetCameraParameters(false);
 
 			rhi_->BindResetRenderTargets(6);
-			
-			/*rhi_->SetRenderTarget(0,misc_->GetRenderTarget());*/
-			/*rhi_->ClearRenderTarget(0,CLEAR_COLOR);*/
-			rhi_->BindBackbuffer();
-			rhi_->Clear(CLEAR_COLOR);
+			rhi_->SetDepthStencil((YumeTexture2D*)0);
+			rhi_->SetRenderTarget(0,misc_->GetRenderTarget());
+			rhi_->ClearRenderTarget(0,CLEAR_COLOR);
+			/*rhi_->BindBackbuffer();
+			rhi_->Clear(CLEAR_COLOR);*/
 			
 
 			triangle_->Draw(gYume->pRHI);
 
-			rhi_->BindResetTextures(0,13);
+			rhi_->BindResetRenderTargets(1);
+			/*rhi_->BindResetTextures(0,13);*/
 
 		}
 

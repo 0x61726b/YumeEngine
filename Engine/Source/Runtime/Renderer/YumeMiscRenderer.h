@@ -30,6 +30,7 @@
 namespace YumeEngine
 {
 	class LPVRenderer;
+	class YumePostProcess;
 
 	class YumeAPIExport YumeMiscRenderer : public YumeBase
 	{
@@ -46,16 +47,20 @@ namespace YumeEngine
 		void RenderFullScreenTexture(const IntRect& rect,YumeTexture2D*);
 
 		void SetCameraParameters(bool shadowPass);
+		void SetPerFrameConstants();
 
 		void Update(float timeStep);
 
 		YumeLPVCamera* GetCamera() const { return camera_; }
 
+
+		LPVRenderer* GetLPVRenderer() const {return lpv_;}
+		YumePostProcess* GetPP() const {return pp_; }
+
 		const DirectX::XMFLOAT3& GetMinBb() const { return bbMin; }
 		const DirectX::XMFLOAT3& GetMaxBb() const { return bbMax; }
 
 		YumeTexture2D* GetRenderTarget() const { return renderTarget_; }
-
 		YumeGeometry* GetFsTriangle() const { return fullscreenTriangle_; };
 
 	public:
@@ -85,6 +90,7 @@ namespace YumeEngine
 
 	private: //Renderer stuff
 		YumeRHI* rhi_;
+		SharedPtr<YumePostProcess> pp_;
 		SharedPtr<LPVRenderer> lpv_;
 		SharedPtr<YumeTexture2D> renderTarget_;
 

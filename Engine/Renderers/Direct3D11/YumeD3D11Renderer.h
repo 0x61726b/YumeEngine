@@ -80,6 +80,7 @@ namespace YumeEngine
 
 		virtual void							BindSampler(ShaderType type,unsigned samplerStartSlot,unsigned samplerCount,unsigned internalIndex);
 		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures);
+		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture3D** textures);
 		virtual void							VSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures);
 		virtual void							BindBackbuffer();
 		virtual void							CreateStandardSampler();
@@ -133,8 +134,8 @@ namespace YumeEngine
 		virtual void							EndEvent();
 
 
-		virtual YumeShaderVariation* 			GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "") const;
-		virtual YumeShaderVariation* 			GetShader(ShaderType type,const char* name,const char* defines) const;
+		virtual YumeShaderVariation* 			GetShader(ShaderType type,const YumeString& name,const YumeString& defines = "",const YumeString& entryPoint = "") const;
+		virtual YumeShaderVariation* 			GetShader(ShaderType type,const char* name,const char* defines,const YumeString& entryPoint = "") const;
 
 		virtual unsigned						GetFormat(CompressedFormat format) const;
 

@@ -130,6 +130,24 @@ var PostFxPanel = React.createClass({
     $("#iLpvZ").prop("value","0");
     $("#iGiPropagations").prop("value","64");
     $("#iGiLightFlux").prop("value","1");
+
+    //Post FX
+    this.setDefaultValue("bloomThreshold","0.5");
+    this.setDefaultValue("bloomSigma","0.5");
+
+    this.setDefaultValue("ssaoScale","0.1");
+
+    this.setDefaultValue("aeExposureKey","0.05");
+    this.setDefaultValue("aeAdaptSpeed","0.4");
+
+    this.setDefaultValue("dofCocScale","0.8");
+    this.setDefaultValue("dofFocalPlane","2000");
+
+    this.setDefaultValue("gTau","0.0005");
+
+  },
+  setDefaultValue: function(element,value) {
+    $("#" + element).prop("value",value);
   },
   getInitialState: function() {
     return { bloomOn:false,bloomHDROn:false,fxaaOn:false,blurOn:false,autoExposureOn:false };
@@ -171,19 +189,8 @@ var PostFxPanel = React.createClass({
               <input type="checkbox" id="bloomSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
             </label>
             <div className="bloomSwitchOptions">
-                <span>Threshold</span><input className="mdl-slider mdl-js-slider" type="range" id="bloomThreshold" min="0" max="10" onChange={this.onSliderChange} />
-            </div>
-          </div>
-
-          <div id="bloomHDR">
-            <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="bloomHDRSwitch">
-              <span className="mdl-switch__label">Bloom HDR</span>
-              <input type="checkbox" id="bloomHDRSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
-            </label>
-            <div className="bloomHDRSwitchOptions">
-              <p style={{width:"300px"}}>
-                <span>Threshold</span><input className="mdl-slider mdl-js-slider" type="range" id="bloomHDRThreshold" min="0" max="10" onChange={this.onSliderChange} />
-              </p>
+                <span>Threshold</span><input className="mdl-slider mdl-js-slider" type="range" id="bloomThreshold" min="0" max="1" step="0.1" onChange={this.onSliderChange} />
+                <span>Sigma</span><input className="mdl-slider mdl-js-slider" type="range" id="bloomSigma" min="0" max="1" step="0.1" onChange={this.onSliderChange} />
             </div>
           </div>
 
@@ -194,6 +201,18 @@ var PostFxPanel = React.createClass({
             </label>
           </div>
 
+          <div id="ssao">
+            <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="ssaoSwitch">
+              <span className="mdl-switch__label">SSAO</span>
+              <input type="checkbox" id="ssaoSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
+            </label>
+            <div className="ssaoSwitchOptions">
+              <p style={{width:"300px"}}>
+                <span>Scale</span><input className="mdl-slider mdl-js-slider" type="range" id="ssaoScale" min="0" max="1" step="0.1" onChange={this.onSliderChange} />
+              </p>
+            </div>
+          </div>
+
           <div id="autoexposure">
             <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="autoexposureSwitch">
               <span className="mdl-switch__label">Auto Exposure</span>
@@ -201,7 +220,21 @@ var PostFxPanel = React.createClass({
             </label>
             <div className="autoexposureSwitchOptions">
               <p style={{width:"300px"}}>
-                <span>Adapt Rate</span><input className="mdl-slider mdl-js-slider" type="range" id="AEadaptRate" min="0" max="10" onChange={this.onSliderChange} />
+                <span>Exposure Key</span><input className="mdl-slider mdl-js-slider" type="range" id="aeExposureKey" min="0" max="0.2" step="0.01" onChange={this.onSliderChange} />
+                <span>Adapt Speed</span><input className="mdl-slider mdl-js-slider" type="range" id="aeAdaptSpeed" min="0" max="1" step="0.1" onChange={this.onSliderChange} />
+              </p>
+            </div>
+          </div>
+
+          <div id="depthOfField">
+            <label className="mdl-switch mdl-js-switch mdl-js-ripple-effect" htmlFor="dofSwitch">
+              <span className="mdl-switch__label">Bokeh DoF</span>
+              <input type="checkbox" id="dofSwitch" className="mdl-switch__input" onChange={this.onSwitchChange} />
+            </label>
+            <div className="dofSwitchOptions">
+              <p style={{width:"300px"}}>
+                <span>CoC Scale</span><input className="mdl-slider mdl-js-slider" type="range" id="dofCocScale" min="0" max="2" step="0.1" onChange={this.onSliderChange} />
+                <span>Focal Plane</span><input className="mdl-slider mdl-js-slider" type="range" id="dofFocalPlane" min="1000" max="3000" step="100" onChange={this.onSliderChange} />
               </p>
             </div>
           </div>
@@ -213,10 +246,7 @@ var PostFxPanel = React.createClass({
             </label>
             <div className="godraysSwitchOptions">
               <p style={{width:"300px"}}>
-                <span>Sample Count</span><input className="mdl-slider mdl-js-slider" type="range" id="lsSampleCount" min="0" max="100" step="1" onChange={this.onSliderChange} />
-                <span>Weight</span><input className="mdl-slider mdl-js-slider" type="range" id="lsWeight" min="0" max="1" step="0.01" onChange={this.onSliderChange} />
-                <span>Decay</span><input className="mdl-slider mdl-js-slider" type="range" id="lsDecay" min="0" max="1" step="0.05" onChange={this.onSliderChange} />
-                <span>Exposure</span><input className="mdl-slider mdl-js-slider" type="range" id="lsExposure" min="0" max="1" step="0.05" onChange={this.onSliderChange} />
+                <span>TAU</span><input className="mdl-slider mdl-js-slider" type="range" id="gTau" min="0" max="0.01" step="0.0005" onChange={this.onSliderChange} />
               </p>
             </div>
           </div>

@@ -44,8 +44,8 @@ namespace YumeEngine
 		virtual bool BeginLoad(YumeFile& source) = 0;
 		virtual bool EndLoad() = 0;
 
-		virtual YumeShaderVariation* GetVariation(ShaderType type,const YumeString& defines) = 0;
-		virtual YumeShaderVariation* GetVariation(ShaderType type,const char* defines) = 0;
+		virtual YumeShaderVariation* GetVariation(ShaderType type,const YumeString& defines,const YumeString& entryPoint = "") = 0;
+		virtual YumeShaderVariation* GetVariation(ShaderType type,const char* defines,const YumeString& entryPoint = "") = 0;
 		virtual void RefreshMemoryUse() = 0;
 
 		const YumeString& GetSourceCode(ShaderType type) const

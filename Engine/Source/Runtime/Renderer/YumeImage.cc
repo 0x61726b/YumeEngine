@@ -80,14 +80,14 @@ static const unsigned DDS_DXGI_FORMAT_BC3_UNORM_SRGB = 78;
 
 namespace YumeEngine
 {
-	
+
 	struct DDColorKey
 	{
 		unsigned dwColorSpaceLowValue_;
 		unsigned dwColorSpaceHighValue_;
 	};
 
-	
+
 	struct DDPixelFormat
 	{
 		unsigned dwSize_;
@@ -141,7 +141,7 @@ namespace YumeEngine
 		};
 	};
 
-	
+
 	struct DDSCaps2
 	{
 		unsigned dwCaps_;
@@ -163,7 +163,7 @@ namespace YumeEngine
 		unsigned reserved;
 	};
 
-	
+
 	struct DDSurfaceDesc2
 	{
 		unsigned dwSize_;
@@ -428,15 +428,15 @@ namespace YumeEngine
 
 #define ADJUSTSHIFT(mask, l, r) \
                 if (mask && mask >= 0x100) \
-								                { \
-																				                    while ((mask >> r) >= 0x100) \
+												                { \
+																																				                    while ((mask >> r) >= 0x100) \
                     ++r; \
-								                } \
-						                else if (mask && mask < 0x80) \
-										                { \
-																							                    while ((mask << l) < 0x80) \
+												                } \
+									                else if (mask && mask < 0x80) \
+															                { \
+																																										                    while ((mask << l) < 0x80) \
                     ++l; \
-										                }
+															                }
 
 					unsigned rShiftL = 0,gShiftL = 0,bShiftL = 0,aShiftL = 0;
 					unsigned rShiftR = 0,gShiftR = 0,bShiftR = 0,aShiftR = 0;
@@ -633,12 +633,12 @@ namespace YumeEngine
 
 	bool YumeImage::LoadColorLUT(YumeFile& source)
 	{
-		/*String fileID = source.ReadFileID();
+		String fileID = source.GetFileExtension();
 
 		if(fileID == "DDS " || fileID == "\253KTX" || fileID == "PVR\3")
 		{
-		URHO3D_LOGERROR("Invalid image format, can not load image");
-		return false;
+			YUMELOG_ERROR("Invalid image format, can not load image");
+			return false;
 		}
 
 		source.Seek(0);
@@ -647,38 +647,38 @@ namespace YumeEngine
 		unsigned char* pixelDataIn = GetImageData(source,width,height,components);
 		if(!pixelDataIn)
 		{
-		URHO3D_LOGERROR("Could not load image " + source.GetName() + ": " + String(stbi_failure_reason()));
-		return false;
+			YUMELOG_ERROR("Could not load image " << source.GetName().c_str() << ": " << String(stbi_failure_reason()).c_str());
+			return false;
 		}
 		if(components != 3)
 		{
-		URHO3D_LOGERROR("Invalid image format, can not load image");
-		return false;
+			YUMELOG_ERROR("Invalid image format, can not load image");
+			return false;
 		}
 
 		SetSize(COLOR_LUT_SIZE,COLOR_LUT_SIZE,COLOR_LUT_SIZE,components);
-		SetMemoryUse(width_ * height_ * depth_ * components);
+		SetMemoryUsage(width_ * height_ * depth_ * components);
 
 		unsigned char* pixelDataOut = GetData();
 
 		for(int z = 0; z < depth_; ++z)
 		{
-		for(int y = 0; y < height_; ++y)
-		{
-		unsigned char* in = &pixelDataIn[z * width_ * 3 + y * width * 3];
-		unsigned char* out = &pixelDataOut[z * width_ * height_ * 3 + y * width_ * 3];
+			for(int y = 0; y < height_; ++y)
+			{
+				unsigned char* in = &pixelDataIn[z * width_ * 3 + y * width * 3];
+				unsigned char* out = &pixelDataOut[z * width_ * height_ * 3 + y * width_ * 3];
 
-		for(int x = 0; x < width_ * 3; x += 3)
-		{
-		out[x] = in[x];
-		out[x + 1] = in[x + 1];
-		out[x + 2] = in[x + 2];
-		}
-		}
+				for(int x = 0; x < width_ * 3; x += 3)
+				{
+					out[x] = in[x];
+					out[x + 1] = in[x + 1];
+					out[x + 2] = in[x + 2];
+				}
+			}
 		}
 
 		FreeImageData(pixelDataIn);
-		*/
+
 		return true;
 	}
 

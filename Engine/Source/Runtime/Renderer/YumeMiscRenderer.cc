@@ -28,6 +28,9 @@
 #include "YumeVertexBuffer.h"
 #include "YumeIndexBuffer.h"
 
+#include "YumePostProcess.h"
+#include "YumeTimer.h"
+
 using namespace DirectX;
 
 namespace YumeEngine
@@ -53,12 +56,15 @@ namespace YumeEngine
 	void YumeMiscRenderer::Setup()
 	{
 		mesh_ = new YumeMesh;
-		mesh_->Load(gYume->pResourceManager->GetFullPath("Models/Cornell/cornellbox.obj"));
+		mesh_->Load(gYume->pResourceManager->GetFullPath("Models/Sponza/sponza.obj"));
 
 		sky_.Setup(gYume->pResourceManager->GetFullPath("Models/Skydome/skydome_sphere.obj"));
 
 		renderTarget_ = rhi_->CreateTexture2D();
 		renderTarget_->SetSize(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,10);
+
+		pp_ = new YumePostProcess(this);
+		pp_->Setup();
 
 		//Geometry stuff
 		SharedPtr<YumeVertexBuffer> triangleVb(gYume->pRHI->CreateVertexBuffer());
@@ -99,6 +105,7 @@ namespace YumeEngine
 
 		overlayPs_ = rhi_->GetShader(PS,"LPV/Overlay");
 
+		lpv_->SetLPVPos(0,bbMax.y,0);
 	}
 
 	void YumeMiscRenderer::Update(float timeStep)
@@ -112,6 +119,8 @@ namespace YumeEngine
 	void YumeMiscRenderer::Render()
 	{
 		lpv_->Render();
+
+		pp_->Render();
 	}
 
 	void YumeMiscRenderer::RenderFullScreenTexture(const IntRect& rect,YumeTexture2D* overlaytexture)
@@ -126,6 +135,8 @@ namespace YumeEngine
 		rhi_->SetBlendMode(BLEND_PREMULALPHA);
 		rhi_->BindSampler(PS,0,1,0); //Standard
 		rhi_->SetShaders(triangle,overlayPs_,0);
+
+		rhi_->BindBackbuffer();
 
 		fullscreenTriangle_->Draw(rhi_);
 	}
@@ -170,6 +181,15 @@ namespace YumeEngine
 	void YumeMiscRenderer::SetLPVNumberIterations(int num)
 	{
 		lpv_->SetNumIterations(num);
+	}
+
+	void YumeMiscRenderer::SetPerFrameConstants()
+	{
+		float totalTime = gYume->pTimer->GetElapsedTime();
+		float timeStep = gYume->pTimer->GetTimeStep();
+
+		rhi_->SetShaderParameter("time_delta",timeStep);
+		rhi_->SetShaderParameter("time",totalTime);
 	}
 
 	void YumeMiscRenderer::UpdateMeshBb(YumeMesh& mesh)

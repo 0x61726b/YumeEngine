@@ -44,9 +44,9 @@ namespace YumeEngine
 		static YumeHash type_;
 
 		/// Return a variation with defines.
-		virtual YumeShaderVariation* GetVariation(ShaderType type,const YumeString& defines);
+		virtual YumeShaderVariation* GetVariation(ShaderType type,const YumeString& defines,const YumeString& entryPoint = "");
 		/// Return a variation with defines.
-		virtual YumeShaderVariation* GetVariation(ShaderType type,const char* defines);
+		virtual YumeShaderVariation* GetVariation(ShaderType type,const char* defines,const YumeString& entryPoint = "");
 
 		virtual void RefreshMemoryUse() ;
 

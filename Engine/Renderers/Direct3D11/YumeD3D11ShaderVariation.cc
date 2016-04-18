@@ -320,6 +320,9 @@ namespace YumeEngine
 			profile = "gs_5_0";
 			flags |= 0;
 		}
+		
+		if(shaderEntry.length() > 0)
+			entryPoint = shaderEntry.c_str();
 
 		flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 		YUMELOG_INFO("Compiling shader " << GetFullName().c_str());

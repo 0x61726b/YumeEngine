@@ -126,6 +126,11 @@ namespace YumeEngine
 		arraySize_ = arraySize;
 		mips_ = mips;
 
+		if(mips_ == 0)
+		{
+			double dim = std::max(width, height);
+            mips_ = static_cast<UINT>(std::log(dim) / std::log(2.0));
+		}
 		if(usage_ == TEXTURE_RENDERTARGET || usage_ == TEXTURE_DEPTHSTENCIL)
 		{
 			renderSurface_ = (new YumeD3D11Renderable(this));

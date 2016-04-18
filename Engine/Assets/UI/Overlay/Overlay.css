@@ -87,7 +87,7 @@ p {
 .bloomSwitchOptions {
   display:none;
 }
-.bloomHDRSwitchOptions {
+.ssaoSwitchOptions {
   display:none;
 }
 .blurSwitchOptions {
@@ -97,6 +97,9 @@ p {
   display: none;
 }
 .godraysSwitchOptions {
+  display: none;
+}
+.dofSwitchOptions {
   display: none;
 }
 .advancedOptsPanel {
