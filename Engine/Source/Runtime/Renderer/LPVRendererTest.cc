@@ -104,7 +104,7 @@ namespace YumeEngine
 		triangleVs_ = gYume->pRHI->GetShader(VS,"LPV/fs_triangle");
 		deferredLpvPs_ = gYume->pRHI->GetShader(PS,"LPV/deferred_lpv");
 
-		
+
 #endif
 
 		RsmColors_ = gYume->pRHI->CreateTexture2D();
@@ -137,11 +137,11 @@ namespace YumeEngine
 		lpv_.SetLPVRenderer(this);
 		dirLightUp = XMVectorSet(-1,0,0,0);
 
-		dir_light_.position = XMFLOAT4(0,20,0,1);
-		XMVECTOR dir = XMVectorSet(0.557f,0.557f,0.557f,0.557f);
+
+		initialLightPos = XMFLOAT3(0,0,0);
 
 		dir_light_.normal = XMFLOAT4(0,-1,0,0);
-		dir_light_.color = XMFLOAT4(0.4f,0.4f,0.4f,1);
+		dir_light_.color = XMFLOAT4(1,1,1,1);
 
 		{
 			SceneColors_ = gYume->pRHI->CreateTexture2D();
@@ -168,7 +168,7 @@ namespace YumeEngine
 
 		triangle_ = misc_->GetFsTriangle();
 
-		
+
 	}
 
 	void LPVRenderer::SetGIParameters()
@@ -212,7 +212,7 @@ namespace YumeEngine
 			lightMove *= -1;
 			gi *= -1;
 			moveScale = 5.5f;
-			
+
 		}
 
 		if(input->GetKeyDown(KEY_I))
@@ -303,10 +303,10 @@ namespace YumeEngine
 			SharedPtr<YumeTexture2D> accumr = lpv_.GetLPVAccumR();
 			SharedPtr<YumeTexture2D> accumg = lpv_.GetLPVAccumG();
 			SharedPtr<YumeTexture2D> accumb = lpv_.GetLPVAccumB();
-			YumeTexture2D* textures[8] = { SceneColors_,SceneSpecular_,SceneNormals_,SceneLinearDepth_,RsmLinearDepth_,accumr,accumg,accumb };
+			YumeTexture2D* textures[8] ={SceneColors_,SceneSpecular_,SceneNormals_,SceneLinearDepth_,RsmLinearDepth_,accumr,accumg,accumb};
 
 			rhi_->PSBindSRV(2,8,textures);
-			
+
 
 
 			//lpv_parameters
@@ -331,7 +331,7 @@ namespace YumeEngine
 			rhi_->ClearRenderTarget(0,CLEAR_COLOR);
 			/*rhi_->BindBackbuffer();
 			rhi_->Clear(CLEAR_COLOR);*/
-			
+
 
 			triangle_->Draw(gYume->pRHI);
 
@@ -380,7 +380,7 @@ namespace YumeEngine
 
 	void LPVRenderer::SetInjectStageTextures()
 	{
-		YumeTexture2D* textures[3] = { RsmLinearDepth_,RsmColors_,RsmNormals_ };
+		YumeTexture2D* textures[3] ={RsmLinearDepth_,RsmColors_,RsmNormals_};
 
 		gYume->pRHI->VSBindSRV(6,3,textures);
 	}
@@ -481,7 +481,7 @@ namespace YumeEngine
 
 	void LPVRenderer::SetRSMCamera()
 	{
-		
+
 
 	}
 
@@ -491,28 +491,32 @@ namespace YumeEngine
 		misc_->RenderScene();
 	}
 
+	void LPVRenderer::SetInitialLPVPos(float x,float y,float z)
+	{
+		initialLightPos = XMFLOAT3(x,y,z);
+	}
+
 	void LPVRenderer::SetLPVPos(float x,float y,float z)
 	{
-		if(dir_light_.position.x != -1)
-			dir_light_.position.x = x;
+		if(x != -1)
+			dir_light_.position.x = initialLightPos.x + x;
 
-		if(dir_light_.position.y != 1)
-			dir_light_.position.y = y;
+		if(y != -1)
+			dir_light_.position.y =  initialLightPos.y+ y;
 
-		if(dir_light_.position.z != 1)
-			dir_light_.position.z = z;
+		if(z != -1)
+			dir_light_.position.z = initialLightPos.z + z;
 
 		updateRsm_ = true;
-
 	}
 
 	void LPVRenderer::SetLightFlux(float f)
 	{
-		if(f < 1)
+		/*if(f < 1)
 			return;
 
-		dir_light_.color = XMFLOAT4(dir_light_.color.x * f,dir_light_.color.y * f,dir_light_.color.z * f,1.0f);
-		updateRsm_ = true;
+			dir_light_.color = XMFLOAT4(dir_light_.color.x * f,dir_light_.color.y * f,dir_light_.color.z * f,1.0f);
+			updateRsm_ = true;*/
 	}
 
 }

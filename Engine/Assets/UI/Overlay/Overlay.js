@@ -126,7 +126,7 @@ var PostFxPanel = React.createClass({
     $("#iGiScale").prop("value","2");
     $("#iGiLPVFlux").prop("value","4");
     $("#iLpvX").prop("value","0");
-    $("#iLpvY").prop("value","20");
+    $("#iLpvY").prop("value","0");
     $("#iLpvZ").prop("value","0");
     $("#iGiPropagations").prop("value","64");
     $("#iGiLightFlux").prop("value","1");
@@ -234,7 +234,7 @@ var PostFxPanel = React.createClass({
             <div className="dofSwitchOptions">
               <p style={{width:"300px"}}>
                 <span>CoC Scale</span><input className="mdl-slider mdl-js-slider" type="range" id="dofCocScale" min="0" max="2" step="0.1" onChange={this.onSliderChange} />
-                <span>Focal Plane</span><input className="mdl-slider mdl-js-slider" type="range" id="dofFocalPlane" min="1000" max="3000" step="100" onChange={this.onSliderChange} />
+                <span>Focal Plane</span><input className="mdl-slider mdl-js-slider" type="range" id="dofFocalPlane" min="0" max="3000" step="100" onChange={this.onSliderChange} />
               </p>
             </div>
           </div>
@@ -263,9 +263,9 @@ var PostFxPanel = React.createClass({
             <span>Number of Propagations</span><input className="mdl-slider mdl-js-slider" type="range" id="iGiPropagations" min="0" max="64" step="1" onChange={this.onSliderChange} />
             <span>Light Flux</span><input className="mdl-slider mdl-js-slider" type="range" id="iGiLightFlux" min="1" max="5" step="0.25" onChange={this.onSliderChange} />
             <div className="ssaoAdditional">
-              <span>LPV Pos X</span><input className="mdl-slider mdl-js-slider" type="range" id="iLpvX" min="0" max="50" step="1" onChange={this.onSliderChange} />
-              <span>LPV Pos Y</span><input className="mdl-slider mdl-js-slider" type="range" id="iLpvY" min="0" max="50" step="1" onChange={this.onSliderChange} />
-              <span>LPV Pos Z</span><input className="mdl-slider mdl-js-slider" type="range" id="iLpvZ" min="0" max="50" step="1" onChange={this.onSliderChange} />
+              <span>LPV Pos X</span><input className="mdl-slider mdl-js-slider" type="range" id="iLpvX" min="-1000" max="1000" step="10" onChange={this.onSliderChange} />
+              <span>LPV Pos Y</span><input className="mdl-slider mdl-js-slider" type="range" id="iLpvY" min="-1000" max="1000" step="10" onChange={this.onSliderChange} />
+              <span>LPV Pos Z</span><input className="mdl-slider mdl-js-slider" type="range" id="iLpvZ" min="-1000" max="1000" step="10" onChange={this.onSliderChange} />
             </div>
           </div>
         </div>

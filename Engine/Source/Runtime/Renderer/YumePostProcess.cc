@@ -38,8 +38,8 @@ namespace YumeEngine
 		godrays_enabled(false),
 		godrays_tau(0.0005f),
 		dof_enabled(false),
-		dof_focal_plane(2000),
-		dof_coc_scale(0.8f),
+		dof_focal_plane(2000.0f),
+		dof_coc_scale(1.5f),
 		bloom_enabled(false),
 		bloom_sigma(0.5f),
 		bloom_treshold(0.5f),
@@ -53,6 +53,8 @@ namespace YumeEngine
 
 	YumePostProcess::~YumePostProcess()
 	{
+
+
 
 	}
 
@@ -361,7 +363,7 @@ namespace YumeEngine
 		fs->Draw(gYume->pRHI);
 
 
-		gYume->pRHI->BindResetRenderTargets(1);
+		gYume->pRHI->BindResetRenderTargets(0);
 		gYume->pRHI->BindResetTextures(10,1);
 	}
 

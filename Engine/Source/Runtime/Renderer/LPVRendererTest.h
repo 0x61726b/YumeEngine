@@ -76,6 +76,7 @@ namespace YumeEngine
 		void SetLPVFlux(float f) { lpv_flux_amplifier = f; updateRsm_ = true;}
 		void SetNumIterations(int num) { number_it = num; updateRsm_ = true;}
 		void SetLPVPos(float x,float y,float z);
+		void SetInitialLPVPos(float x,float y,float z);
 		void SetLightFlux(float f);
 		YumeMiscRenderer* misc_;
 	private:
@@ -84,7 +85,7 @@ namespace YumeEngine
 		bool updateRsm_;
 	public:
 		directional_light dir_light_;
-
+		DirectX::XMFLOAT3 initialLightPos;
 
 	private:
 		float moveScale;

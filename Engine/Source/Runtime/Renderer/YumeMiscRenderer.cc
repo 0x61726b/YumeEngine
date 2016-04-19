@@ -106,6 +106,7 @@ namespace YumeEngine
 		overlayPs_ = rhi_->GetShader(PS,"LPV/Overlay");
 
 		lpv_->SetLPVPos(0,bbMax.y,0);
+		lpv_->SetInitialLPVPos(0,bbMax.y,0);
 	}
 
 	void YumeMiscRenderer::Update(float timeStep)

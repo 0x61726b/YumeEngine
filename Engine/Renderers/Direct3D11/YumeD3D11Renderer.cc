@@ -1006,7 +1006,7 @@ namespace YumeEngine
 
 	YumeShaderVariation* YumeD3D11Renderer::GetShader(ShaderType type,const char* name,const char* defines,const YumeString& entryPoint) const
 	{
-		if(lastEntryPoint != entryPoint || lastShaderName_ != name || !lastShader_ )
+		if(lastEntryPoint != entryPoint || lastShaderName_ != name || !lastShader_)
 		{
 			YumeResourceManager* resource_ = gYume->pResourceManager;
 			YumeString fullShaderName = shaderPath_ + name + shaderExtension_;
@@ -1684,6 +1684,18 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::BindResetRenderTargets(int count)
 	{
+
+		if(count == 0)
+		{
+			for(int i=0; i < MAX_RENDERTARGETS ; ++i)
+			{
+				renderTargets_[i] = 0;
+				impl_->renderTargetViews_[i] = 0;
+			}
+			impl_->deviceContext_->OMSetRenderTargets(0,nullptr,nullptr);
+			return;
+		}
+
 		std::vector<ID3D11RenderTargetView*> null_views;
 
 		for(int i=0; i < count; ++i)
