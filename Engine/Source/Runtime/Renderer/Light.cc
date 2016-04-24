@@ -20,68 +20,55 @@
 //
 //----------------------------------------------------------------------------
 #include "YumeHeaders.h"
-#include "YumeRenderable.h"
+#include "Light.h"
 #include "YumeRHI.h"
-#include "YumeTexture.h"
 
-#include "Engine/YumeEngine.h"
+#include "Scene.h"
+#include "Math/YumeColor.h"
+
+#include "RenderPass.h"
+
+using namespace DirectX;
 
 namespace YumeEngine
 {
-
-	YumeRenderable::YumeRenderable(YumeTexture* parentTexture):
-		parentTexture_(parentTexture),
-		renderTargetView_(0),
-		readOnlyView_(0),
-		updateMode_(SURFACE_UPDATEVISIBLE),
-		updateQueued_(false)
+	Light::Light():
+		SceneNode(GT_LIGHT),
+		color_(YumeColor(1,1,1,1))
 	{
 	}
 
-	YumeRenderable::~YumeRenderable()
+	Light::~Light()
 	{
-		
 	}
 
-	void YumeRenderable::SetUpdateMode(RenderSurfaceUpdateMode mode)
+	void Light::UpdateLightParameters()
 	{
-		updateMode_ = mode;
-	}
+		XMMATRIX lightView = XMMatrixLookToLH(XMLoadFloat4(&GetPosition()),XMLoadFloat4(&GetDirection()),XMLoadFloat4(&GetRotation()));
+		XMMATRIX lightProj = gYume->pRenderer->MakeProjection();
 
-	void YumeRenderable::SetLinkedRenderTarget(YumeRenderable* renderTarget)
-	{
-		if(renderTarget != this)
-			linkedRenderTarget_ = renderTarget;
-	}
+		XMMATRIX light_vp = lightView * lightProj;
 
-	void YumeRenderable::SetLinkedDepthStencil(YumeRenderable* depthStencil)
-	{
-		if(depthStencil != this)
-			linkedDepthStencil_ = depthStencil;
-	}
+		XMMATRIX lightViewProjInv = XMMatrixInverse(nullptr,light_vp);
 
-	void YumeRenderable::QueueUpdate()
-	{
-		updateQueued_ = true;
-	}
+		RenderPass* dp = gYume->pRenderer->GetDefaultPass();
 
-	void YumeRenderable::ResetUpdateQueued()
-	{
-		updateQueued_ = false;
-	}
+		dp->SetShaderParameter("main_light_pos",XMFLOAT3(GetPosition().x,GetPosition().y,GetPosition().z));
+		dp->SetShaderParameter("light_vp",light_vp);
+		dp->SetShaderParameter("light_vp_inv",lightViewProjInv);
+		dp->SetShaderParameter("light_mvp",light_vp);
 
-	int YumeRenderable::GetWidth() const
-	{
-		return parentTexture_->GetWidth();
-	}
 
-	int YumeRenderable::GetHeight() const
-	{
-		return parentTexture_->GetHeight();
-	}
+		DirectX::XMMATRIX tex
+			(
+			0.5f,0.0f,0.0f,0.0f,
+			0.0f,-0.5f,0.0f,0.0f,
+			0.f,0.f,0.5f,0.0f,
+			0.5f,0.5f,0.5f,1.0f
+			);
 
-	TextureUsage YumeRenderable::GetUsage() const
-	{
-		return parentTexture_->GetUsage();
+		dp->SetShaderParameter("light_vp_tex",light_vp * tex);
+
+
 	}
 }

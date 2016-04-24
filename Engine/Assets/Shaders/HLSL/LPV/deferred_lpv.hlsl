@@ -18,7 +18,7 @@ cbuffer gi_parameters_ps        : register(b3)
 
 Texture2D env_map               : register(t13);
 
-float4 PS(PS_INPUT inp) : SV_Target
+float4 deferred_lpv_ps(PS_INPUT inp) : SV_Target
 {
     gbuffer gb = unpack_gbuffer(inp.tex_coord);
 

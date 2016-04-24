@@ -48,7 +48,7 @@ namespace YumeEngine
 	static YumeString EmptyString = "";
 
 	class YumeEngine3D;
-	class YumeRenderer;
+	class YumeMiscRenderer;
 	class YumeRHI;
 	class YumeResourceManager;
 	class YumeIO;
@@ -67,6 +67,8 @@ namespace YumeEngine
 	class Matrix3;
 	class Matrix4;
 
+	class YumeShaderVariation;
+	class YumeUI;
 
 	class Quaternion;
 }

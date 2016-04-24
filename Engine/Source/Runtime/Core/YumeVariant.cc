@@ -115,7 +115,7 @@ namespace YumeEngine
 			break;
 
 		case VAR_MATRIX4:
-			*(reinterpret_cast<Matrix4*>(value_.ptr_)) = *(reinterpret_cast<const Matrix4*>(rhs.value_.ptr_));
+			*(reinterpret_cast<DirectX::XMMATRIX*>(value_.ptr_)) = *(reinterpret_cast<const DirectX::XMMATRIX*>(rhs.value_.ptr_));
 			break;
 
 		default:
@@ -154,9 +154,20 @@ namespace YumeEngine
 			return *(reinterpret_cast<const Vector2*>(&value_)) == *(reinterpret_cast<const Vector2*>(&rhs.value_));
 
 		case VAR_VECTOR3:
-			return *(reinterpret_cast<const Vector3*>(&value_)) == *(reinterpret_cast<const Vector3*>(&rhs.value_));
+		{
+			const DirectX::XMFLOAT3& value = *(reinterpret_cast<const DirectX::XMFLOAT3*>(&value_));
+			const DirectX::XMFLOAT3& rhsx = *(reinterpret_cast<const DirectX::XMFLOAT3*>(&rhs.value_));
+
+			return value.x == rhsx.x && value.y == rhsx.y && value.z == rhsx.z;
+		}
 
 		case VAR_VECTOR4:
+		{
+			const DirectX::XMFLOAT4& value = *(reinterpret_cast<const DirectX::XMFLOAT4*>(&value_));
+			const DirectX::XMFLOAT4& rhsx = *(reinterpret_cast<const DirectX::XMFLOAT4*>(&rhs.value_));
+
+			return value.x == rhsx.x && value.y == rhsx.y && value.z == rhsx.z && value.w == rhsx.w;
+		}
 		case VAR_QUATERNION:
 		case VAR_COLOR:
 			// Hack: use the Vector4 compare for all these classes, as they have the same memory structure
@@ -202,7 +213,7 @@ namespace YumeEngine
 			return *(reinterpret_cast<const Matrix3x4*>(value_.ptr_)) == *(reinterpret_cast<const Matrix3x4*>(rhs.value_.ptr_));
 
 		case VAR_MATRIX4:
-			return *(reinterpret_cast<const Matrix4*>(value_.ptr_)) == *(reinterpret_cast<const Matrix4*>(rhs.value_.ptr_));
+			return false;
 
 		case VAR_DOUBLE:
 			return *(reinterpret_cast<const double*>(&value_)) == *(reinterpret_cast<const double*>(&rhs.value_));
@@ -393,10 +404,10 @@ namespace YumeEngine
 			return (reinterpret_cast<const Vector2*>(&value_))->ToString();
 
 		case VAR_VECTOR3:
-			return (reinterpret_cast<const Vector3*>(&value_))->ToString();
+			return String::EMPTY;
 
 		case VAR_VECTOR4:
-			return (reinterpret_cast<const Vector4*>(&value_))->ToString();
+			return String::EMPTY;
 
 		case VAR_QUATERNION:
 			return (reinterpret_cast<const Quaternion*>(&value_))->ToString();
@@ -461,10 +472,25 @@ namespace YumeEngine
 			return *reinterpret_cast<const Vector2*>(&value_) == Vector2::ZERO;
 
 		case VAR_VECTOR3:
-			return *reinterpret_cast<const Vector3*>(&value_) == Vector3::ZERO;
+		{
+			const DirectX::XMFLOAT3& value = *reinterpret_cast<const DirectX::XMFLOAT3*>(&value_);
+
+			if(value.x == 0 && value.y == 0 && value.z == 0)
+				return true;
+			else
+				return false;
+		}
+
 
 		case VAR_VECTOR4:
-			return *reinterpret_cast<const Vector4*>(&value_) == Vector4::ZERO;
+		{
+			const DirectX::XMFLOAT4& value = *reinterpret_cast<const DirectX::XMFLOAT4*>(&value_);
+
+			if(value.x == 0 && value.y == 0 && value.z == 0 && value.w == 0)
+				return true;
+			else
+				return false;
+		}
 
 		case VAR_QUATERNION:
 			return *reinterpret_cast<const Quaternion*>(&value_) == Quaternion::IDENTITY;
@@ -669,12 +695,12 @@ namespace YumeEngine
 		return GetVector2();
 	}
 
-	template <> const Vector3& Variant::Get<const Vector3&>() const
+	template <> const DirectX::XMFLOAT3& Variant::Get<const DirectX::XMFLOAT3&>() const
 	{
 		return GetVector3();
 	}
 
-	template <> const Vector4& Variant::Get<const Vector4&>() const
+	template <> const DirectX::XMFLOAT4& Variant::Get<const DirectX::XMFLOAT4&>() const
 	{
 		return GetVector4();
 	}
@@ -725,7 +751,7 @@ namespace YumeEngine
 		return GetMatrix3x4();
 	}
 
-	template <> const Matrix4& Variant::Get<const Matrix4&>() const
+	template <> const DirectX::XMMATRIX& Variant::Get<const DirectX::XMMATRIX&>() const
 	{
 		return GetMatrix4();
 	}
@@ -760,12 +786,12 @@ namespace YumeEngine
 		return GetVector2();
 	}
 
-	template <> Vector3 Variant::Get<Vector3>() const
+	template <> DirectX::XMFLOAT3 Variant::Get<DirectX::XMFLOAT3>() const
 	{
 		return GetVector3();
 	}
 
-	template <> Vector4 Variant::Get<Vector4>() const
+	template <> DirectX::XMFLOAT4 Variant::Get<DirectX::XMFLOAT4>() const
 	{
 		return GetVector4();
 	}
@@ -810,7 +836,7 @@ namespace YumeEngine
 		return GetMatrix3x4();
 	}
 
-	template <> Matrix4 Variant::Get<Matrix4>() const
+	template <> DirectX::XMMATRIX Variant::Get<DirectX::XMMATRIX>() const
 	{
 		return GetMatrix4();
 	}

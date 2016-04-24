@@ -26,7 +26,6 @@
 #include "YumeD3D11Renderable.h"
 
 #include "Renderer/YumeImage.h"
-#include "Renderer/YumeRenderer.h"
 #include "Engine/YumeEngine.h"
 
 #include "Logging/logging.h"
@@ -195,9 +194,6 @@ namespace YumeEngine
 		unsigned memoryUse = sizeof(YumeD3D11Texture3D);
 
 		int quality = QUALITY_HIGH;
-		YumeRenderer* renderer = gYume->pRenderer;
-		if(renderer)
-			quality = renderer->GetTextureQuality();
 
 		if(!image->IsCompressed())
 		{

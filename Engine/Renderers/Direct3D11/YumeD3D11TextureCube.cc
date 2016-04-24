@@ -30,7 +30,6 @@
 #include "YumeD3D11Renderable.h"
 
 #include "Renderer/YumeImage.h"
-#include "Renderer/YumeRenderer.h"
 #include "Renderer/YumeRenderable.h"
 
 #include "Engine/YumeEngine.h"
@@ -104,11 +103,6 @@ namespace YumeEngine
 		}
 		else if(usage_ == TEXTURE_DYNAMIC)
 			requestedLevels_ = 1;
-
-		if(usage_ == TEXTURE_RENDERTARGET)
-			gYume->pRenderer->AddListener(this);
-		else
-			gYume->pRenderer->RemoveListener(this);
 
 		width_ = size;
 		height_ = size;
@@ -223,9 +217,6 @@ namespace YumeEngine
 		unsigned memoryUse = 0;
 
 		int quality = QUALITY_HIGH;
-		YumeRenderer* renderer = gYume->pRenderer;
-		if(renderer)
-			quality = renderer->GetTextureQuality();
 
 		if(!image->IsCompressed())
 		{
@@ -578,17 +569,7 @@ namespace YumeEngine
 
 	void YumeD3D11TextureCube::HandleRenderTargetUpdate()
 	{
-		YumeRenderer* renderer = gYume->pRenderer;
 
-		for(unsigned i = 0; i < MAX_CUBEMAP_FACES; ++i)
-		{
-			if(renderSurfaces_[i] && (renderSurfaces_[i]->GetUpdateMode() == SURFACE_UPDATEALWAYS || renderSurfaces_[i]->IsUpdateQueued()))
-			{
-				if(renderer)
-					renderer->QueueRenderable(renderSurfaces_[i]);
-				renderSurfaces_[i]->ResetUpdateQueued();
-			}
-		}
 	}
 
 	bool YumeD3D11TextureCube::IsCompressed() const

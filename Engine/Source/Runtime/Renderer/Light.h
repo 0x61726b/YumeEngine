@@ -19,35 +19,37 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeSkybox_h__
-#define __YumeSkybox_h__
+#ifndef __Light_h__
+#define __Light_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeStaticModel.h"
+#include "SceneNode.h"
+#include "Math/YumeColor.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeCamera;
+	enum LightType
+	{
+		LT_DIRECTIONAL = 0
+	};
 
-	class YumeAPIExport YumeSkybox: public YumeStaticModel
+	class YumeAPIExport Light : public SceneNode
 	{
 	public:
-		YumeSkybox();
-		virtual ~YumeSkybox();
+		Light();
+		virtual ~Light();
 
-		virtual void ProcessRayQuery(const RayOctreeQuery& query,YumeVector<RayQueryResult>::type& results);
-		virtual void UpdateBatches(const FrameInfo& frame);
+		void SetType(LightType type) {type_ = type;}
+		void SetColor(const YumeColor& color) { color_ = color; }
 
-		
-		static YumeHash GetTypeStatic() { return type_; };
-		virtual YumeHash GetType() { return type_; };
-		static YumeHash type_;
+		void UpdateLightParameters();
 
-	protected:
-		virtual void OnWorldBoundingBoxUpdate();
 
-		YumeMap<YumeCamera*,Matrix3x4>::type customWorldTransforms_;
-		unsigned lastFrame_;
+		LightType GetType() const { return type_; }
+		const YumeColor& GetColor() const { return color_; }
+	private:
+		LightType type_;
+		YumeColor color_;
 	};
 }
 

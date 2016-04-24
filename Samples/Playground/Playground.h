@@ -40,8 +40,6 @@ namespace YumeEngine
 		void CreatePyramid(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
 		void CreateCone(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
 
-		void CreateLight(LightType type,Vector3 Pos,Quaternion Rot,YumeColor color);
-
 		YumeSceneNode* cubeNode_;
 		YumeSceneNode* dirLightNode_;
 		Quaternion rot_;

@@ -23,7 +23,6 @@
 #define __SampleCommon_h__
 //----------------------------------------------------------------------------
 #include "Engine/YumeApplication.h"
-#include "Scene/YumeScene.h"
 #include "Core/YumeEventHub.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
@@ -57,7 +56,6 @@ namespace YumeEngine
 
 		void SetupWindowProperties();
 
-		SharedPtr<YumeScene> scene_;
 		YumeSceneNode* cameraNode_;
 		SharedPtr<YumeDebugOverlay> overlay_;
 

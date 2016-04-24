@@ -19,39 +19,54 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumePostProcessor_h__
-#define __YumePostProcessor_h__
-//----------------------------------------------------------------------------
-#include "YumeRequired.h"
-//----------------------------------------------------------------------------
+#include "YumeHeaders.h"
+#include "Scene.h"
+#include "SceneNode.h"
+#include "Light.h"
+
+
+
 namespace YumeEngine
 {
-	enum LightScatteringParams
+	Scene::Scene()
 	{
-		LS_SAMPLECOUNT,
-		LS_WEIGHT,
-		LS_DECAY,
-		LS_EXPOSURE
-	};
-	class YumeAPIExport YumePostProcessor : public YumeBase
+	}
+
+	Scene::~Scene()
 	{
-	public:
-		YumePostProcessor();
-		virtual ~YumePostProcessor();
+		nodes_.clear();
+	}
 
-		void SetDefaultParameters();
-		//Light scatter
-		void SetLightScatteringParameter(LightScatteringParams param,const Variant& var);
+	SceneNodes::type Scene::GetRenderables() 
+	{
+		renderables_.clear();
 
-		void ToggleLightScattering();
-		void SetEnableLightScattering(bool enabled);
+		for(int i=0; i < nodes_.size(); ++i)
+		{
+			if(nodes_[i]->GetType() == GT_STATIC)
+				renderables_.push_back(nodes_[i]);
+		}
+		return renderables_;
+	}
 
-		bool GetLightScatteringEnabled() const { return lightScattering_; }
+	SceneNode* Scene::GetDirectionalLight()
+	{
+		SceneNode* light = 0;
+		for(int i=0; i < nodes_.size(); ++i)
+		{
+			if(nodes_[i]->GetType() == GT_LIGHT)
+			{
+				Light* l = static_cast<Light*>(nodes_[i]);
 
-		bool lightScattering_;
-	};
+				if(l->GetType() == LT_DIRECTIONAL)
+					light = l;
+			}
+		}
+		return light;
+	}
+
+	void Scene::AddNode(SceneNode* node)
+	{
+		nodes_.push_back(node);
+	}
 }
-
-
-//----------------------------------------------------------------------------
-#endif

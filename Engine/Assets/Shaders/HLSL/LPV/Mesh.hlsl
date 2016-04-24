@@ -67,7 +67,7 @@ Texture2D normal_tex            : register(t1);
 Texture2D specular_tex          : register(t2);
 Texture2D alpha_tex             : register(t3);
 
-VS_MESH_OUTPUT VS(in VS_MESH_INPUT input)
+VS_MESH_OUTPUT MeshVs(in VS_MESH_INPUT input)
 {
 	VS_MESH_OUTPUT output;
 
@@ -96,7 +96,7 @@ float toksvig_ft(in float3 Na, in float roughness)
     return len/lerp(s, 1, len);
 }
 
-PS_MESH_OUTPUT PS(in VS_MESH_OUTPUT input)
+PS_MESH_OUTPUT MeshPs(in VS_MESH_OUTPUT input)
 {
 	PS_MESH_OUTPUT output;
 

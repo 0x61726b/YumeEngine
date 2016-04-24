@@ -19,56 +19,52 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeRenderable_h__
-#define __YumeRenderable_h__
+#ifndef __SceneNode_h__
+#define __SceneNode_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeTexture.h"
+#include <DirectXMath.h>
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-
-	class YumeAPIExport YumeRenderable : public YumeBase
+	enum GeometryType
 	{
-		friend class YumeTexture2D;
-		friend class YumeTextureCube;
-
+		GT_STATIC,
+		GT_LIGHT
+	};
+	class YumeAPIExport SceneNode : public YumeBase
+	{
 	public:
-		YumeRenderable(YumeTexture* parentTexture);
-		~YumeRenderable();
+		SceneNode(GeometryType type);
+		virtual ~SceneNode();
 
-		void SetUpdateMode(RenderSurfaceUpdateMode mode);
-		void SetLinkedRenderTarget(YumeRenderable* renderTarget);
-		void SetLinkedDepthStencil(YumeRenderable* depthStencil);
-		void QueueUpdate();
-		virtual void Release() = 0;
+		void SetPosition(const DirectX::XMVECTOR&);
+		void SetRotation(const DirectX::XMVECTOR&);
+		void SetDirection(const DirectX::XMVECTOR&);
 
-		YumeTexture* GetParentTexture() const { return parentTexture_; }
+		void SetName(const YumeString& name) { name_ = name; }
 
-		void* GetRenderTargetView() const { return renderTargetView_; }
+		void SetWorld(const DirectX::XMMATRIX& world);
 
-		void* GetReadOnlyView() const { return readOnlyView_; }
+		const DirectX::XMFLOAT4& GetPosition() const { return pos_; }
+		const DirectX::XMFLOAT4& GetRotation() const { return rot_; }
+		const DirectX::XMFLOAT4& GetDirection() const { return dir_; }
 
-		int GetWidth() const;
-		int GetHeight() const;
-		TextureUsage GetUsage() const;
+		GeometryType GetType() const { return type_; }
 
-		RenderSurfaceUpdateMode GetUpdateMode() const { return updateMode_; }
+		YumeMesh* GetGeometry() const { return geometry_; };
+		void SetGeometry(YumeMesh* g) { geometry_ = g; }
+	protected:
+		GeometryType type_;
+		YumeMesh* geometry_;
 
-		YumeRenderable* GetLinkedRenderTarget() const { return linkedRenderTarget_; }
-		YumeRenderable* GetLinkedDepthStencil() const { return linkedDepthStencil_; }
+		DirectX::XMFLOAT4 pos_;
+		DirectX::XMFLOAT4 rot_;
+		DirectX::XMFLOAT4 dir_;
 
-		bool IsUpdateQueued() const { return updateQueued_; }
-		void ResetUpdateQueued();
+		DirectX::XMFLOAT4X4 World;
 
-	public:
-		YumeTexture* parentTexture_;
-		void* renderTargetView_;
-		void* readOnlyView_;
-		WeakPtr<YumeRenderable> linkedRenderTarget_;
-		WeakPtr<YumeRenderable> linkedDepthStencil_;
-		RenderSurfaceUpdateMode updateMode_;
-		bool updateQueued_;
+		YumeString name_;
 	};
 }
 

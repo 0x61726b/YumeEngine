@@ -14,7 +14,8 @@ include_directories(${YUME_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${YUME_BOOST_PATH})
 include_directories(${YUME_3RDPARTY_PATH}/log4cplus/include)
-
+include_directories(${YUME_3RDPARTY_PATH}/assimp/include)
+include_directories(${DXUT_INCLUDE_DIRS})
 
 set(COMMON_SOURCES
 	${CMAKE_SOURCE_DIR}/Samples/Common/Common.h

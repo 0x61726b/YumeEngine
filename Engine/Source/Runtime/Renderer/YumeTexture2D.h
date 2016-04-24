@@ -64,6 +64,8 @@ namespace YumeEngine
 		SharedPtr<YumeImage> loadImage_;
 		SharedPtr<YumeXmlFile> loadParameters_;
 	};
+
+	typedef YumeTexture2D* Texture2DPtr;
 }
 
 

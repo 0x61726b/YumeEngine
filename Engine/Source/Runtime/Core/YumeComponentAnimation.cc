@@ -229,44 +229,6 @@ namespace YumeEngine
 
 		switch(valueType_)
 		{
-		case VAR_FLOAT:
-			return Lerp(value1.Get<float>(),value2.Get<float>(),t);
-
-		case VAR_VECTOR2:
-			return value1.GetVector2().Lerp(value2.GetVector2(),t);
-
-		case VAR_VECTOR3:
-			return value1.GetVector3().Lerp(value2.GetVector3(),t);
-
-		case VAR_VECTOR4:
-			return value1.GetVector4().Lerp(value2.GetVector4(),t);
-
-		case VAR_QUATERNION:
-			return value1.GetQuaternion().Slerp(value2.GetQuaternion(),t);
-
-		case VAR_COLOR:
-			return value1.GetColor().Lerp(value2.GetColor(),t);
-
-		case VAR_INTRECT:
-		{
-			float s = 1.0f - t;
-			const IntRect& r1 = value1.GetIntRect();
-			const IntRect& r2 = value2.GetIntRect();
-			return IntRect((int)(r1.left_ * s + r2.left_ * t),(int)(r1.top_ * s + r2.top_ * t),(int)(r1.right_ * s + r2.right_ * t),
-				(int)(r1.bottom_ * s + r2.bottom_ * t));
-		}
-
-		case VAR_INTVECTOR2:
-		{
-			float s = 1.0f - t;
-			const IntVector2& v1 = value1.GetIntVector2();
-			const IntVector2& v2 = value2.GetIntVector2();
-			return IntVector2((int)(v1.x_ * s + v2.x_ * t),(int)(v1.y_ * s + v2.y_ * t));
-		}
-
-		case VAR_DOUBLE:
-			return value1.GetDouble() * (1.0f - t) + value2.GetDouble() * t;
-
 		default:
 			YUMELOG_ERROR("Invalid value type for linear interpolation");
 			return Variant();
@@ -353,27 +315,6 @@ namespace YumeEngine
 	{
 		switch(valueType_)
 		{
-		case VAR_FLOAT:
-			return (value1.GetFloat() - value2.GetFloat()) * t;
-
-		case VAR_VECTOR2:
-			return (value1.GetVector2() - value2.GetVector2()) * t;
-
-		case VAR_VECTOR3:
-			return (value1.GetVector3() - value2.GetVector3()) * t;
-
-		case VAR_VECTOR4:
-			return (value1.GetVector4() - value2.GetVector4()) * t;
-
-		case VAR_QUATERNION:
-			return (value1.GetQuaternion() - value2.GetQuaternion()) * t;
-
-		case VAR_COLOR:
-			return (value1.GetColor() - value2.GetColor()) * t;
-
-		case VAR_DOUBLE:
-			return (value1.GetDouble() - value2.GetDouble()) * t;
-
 		default:
 			YUMELOG_ERROR("Invalid value type for spline interpolation's substract and multiply operation");
 			return Variant::EMPTY;

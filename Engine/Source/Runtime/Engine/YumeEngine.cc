@@ -45,24 +45,10 @@
 #include "Core/YumeJsFile.h"
 #include "Core/YumeWorkQueue.h"
 
-#include "Renderer/YumeRenderer.h"
-
-#include "Scene/YumeOctree.h"
-#include "Renderer/YumeCamera.h"
-
 
 #include "Renderer/YumeShader.h"
 #include "Renderer/YumeShaderVariation.h"
 #include "Renderer/YumeTexture2D.h"
-#include "Renderer/YumeRenderPass.h"
-#include "Renderer/YumeRenderPipeline.h"
-#include "Renderer/YumeLight.h"
-#include "Renderer/YumeMaterial.h"
-#include "Renderer/YumeModel.h"
-#include "Renderer/YumeStaticModel.h"
-#include "Renderer/YumeAuxRenderer.h"
-#include "Renderer/YumeSkybox.h"
-#include "Renderer/YumeRendererEnv.h"
 #include "Input/YumeInput.h"
 #include "UI/YumeUI.h"
 
@@ -115,7 +101,6 @@ namespace YumeEngine
 		gYume->pEnv = (YumeAPINew YumeEnvironment);
 		gYume->pWorkSystem = (YumeAPINew YumeWorkQueue);
 		gYume->pResourceManager = YumeAPINew YumeResourceManager;
-		gYume->pPostFx = YumeAPINew YumePostProcessor;
 
 		VariantMap::const_iterator It = variants.begin();
 
@@ -199,12 +184,13 @@ namespace YumeEngine
 			return false;
 		frameTimer_.Reset();
 
+		gYume->pRenderer = (YumeAPINew YumeMiscRenderer());
+		gYume->pRenderer->Initialize();
+		/*gYume->pRenderer->Setup();*/
+
 		gYume->pInput = (YumeAPINew YumeInput);
 
-		gYume->pRenderer = (YumeAPINew YumeRenderer(renderer));
-		gYume->pRenderer->Initialize();
-
-		gYume->pDebugRenderer = (new YumeDebugRenderer);
+		
 
 
 #ifndef DISABLE_CEF
@@ -272,18 +258,8 @@ namespace YumeEngine
 		YumeObjectRegistrar<YumeBase> baseObj(("Base"));
 		YumeObjectRegistrar<YumeResource> resourceObj(("Resource"));
 		YumeObjectRegistrar<YumeImage> imageObj(("Image"));
-		YumeObjectRegistrar<YumeRenderTechnique> techObj(("RenderTechnique"));
-		YumeObjectRegistrar<Octree> octreeObj(("Octree"));
-		YumeObjectRegistrar<YumeCamera> cameraObj(("Camera"));
 		YumeObjectRegistrar<YumeXmlFile> xmlFile(("XmlFile"));
 		YumeObjectRegistrar<YumeJsFile> jsFile(("JsFile"));
-		YumeObjectRegistrar<YumeLight> light(("Light"));
-		YumeObjectRegistrar<YumeMaterial> material(("Material"));
-		YumeObjectRegistrar<YumeModel> model(("Model"));
-		YumeObjectRegistrar<YumeStaticModel> staticmodel(("StaticModel"));
-		YumeObjectRegistrar<YumeDebugRenderer> debugRenderer(("DebugRenderer"));
-		YumeObjectRegistrar<YumeSkybox> skybox(("Skybox"));
-		YumeObjectRegistrar<YumeRendererEnvironment> rendererEnv(("RendererEnvironment"));
 	}
 	void YumeEngine3D::Render()
 	{

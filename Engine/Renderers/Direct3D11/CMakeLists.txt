@@ -70,6 +70,8 @@ include_directories(${YUME_INCLUDE_DIR})
 include_directories(${YUME_BOOST_PATH})
 include_directories(${YUME_SDL_INCLUDE_PATH})
 include_directories(${YUME_3RDPARTY_PATH}/log4cplus/include)
+include_directories(${YUME_3RDPARTY_PATH}/assimp/include)
+include_directories(${DXUT_INCLUDE_DIRS})
 
 set_output_dir(${RENDERER_TARGET})
 

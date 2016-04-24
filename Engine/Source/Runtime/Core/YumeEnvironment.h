@@ -28,7 +28,7 @@
 #include "YumeIO.h"
 #include <boost/filesystem.hpp>
 
-#undef CreateDirectory;
+#undef CreateDirectory
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {

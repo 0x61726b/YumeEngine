@@ -47,6 +47,9 @@ namespace YumeEngine
 		static YumeHash GetTypeStatic() { return textureType_; };
 		static YumeHash textureType_;
 
+		RenderTargetDesc desc_;
+		void SetDesc(const RenderTargetDesc& desc ){ desc_ = desc; }
+
 		void SetNumLevels(unsigned levels);
 		void SetFilterMode(TextureFilterMode filter);
 		void SetAddressMode(TextureCoordinate coord,TextureAddressMode address);
@@ -66,6 +69,8 @@ namespace YumeEngine
 		virtual unsigned GetSRGBFormat(unsigned format) = 0;
 		virtual bool IsDataLost() = 0;
 		virtual void ClearDataLost() = 0;
+
+		const RenderTargetDesc& GetDesc() const { return desc_ ;}
 
 		unsigned GetFormat() const { return format_; }
 		unsigned GetLevels() const { return levels_; }
@@ -95,51 +100,34 @@ namespace YumeEngine
 		void* GetSampler() const { return sampler_; }
 
 		static unsigned CheckMaxLevels(int width,int height,unsigned requestedLevels);
-
 		static unsigned CheckMaxLevels(int width,int height,int depth,unsigned requestedLevels);
 
 		//OpenGL only
 		const unsigned GetTarget() { return target_; }
 	protected:
-
 		void* shaderResourceView_;
 		//OpenGL target
 		unsigned target_;
-
 		void* sampler_;
-
 		unsigned format_;
-
 		TextureUsage usage_;
-
 		unsigned levels_;
 		unsigned arraySize_;
-
 		unsigned requestedLevels_;
-
 		int width_;
-
 		int height_;
-
 		int depth_;
-
 		bool shadowCompare_;
-
 		TextureFilterMode filterMode_;
-
 		TextureAddressMode addressMode_[MAX_COORDS];
-
 		unsigned mipsToSkip_[MAX_TEXTURE_QUALITY_LEVELS];
-
 		YumeColor borderColor_;
-
 		bool sRGB_;
-
 		bool parametersDirty_;
-
 		SharedPtr<YumeTexture> backupTexture_;
-
 	};
+
+	typedef YumeTexture* TexturePtr;
 }
 
 

@@ -49,7 +49,7 @@ Texture2DArray lpv_sh_r         : register(t7);
 Texture2DArray lpv_sh_g         : register(t8);
 Texture2DArray lpv_sh_b         : register(t9);
 
-VS_LPV_PROPAGATE VS(in float3 pos : POSITION, float3 tex : TEXCOORD)
+VS_LPV_PROPAGATE LPVPropagateVs(in float3 pos : POSITION, float3 tex : TEXCOORD)
 {
     VS_LPV_PROPAGATE output;
 
@@ -60,7 +60,7 @@ VS_LPV_PROPAGATE VS(in float3 pos : POSITION, float3 tex : TEXCOORD)
 }
 
 [maxvertexcount (3)]
-void GS(in triangle VS_LPV_PROPAGATE input[3], inout TriangleStream<GS_LPV_PROPAGATE> stream)
+void LPVPropagateGs(in triangle VS_LPV_PROPAGATE input[3], inout TriangleStream<GS_LPV_PROPAGATE> stream)
 {
     for(int v = 0; v < 3; ++v)
     {
@@ -74,7 +74,7 @@ void GS(in triangle VS_LPV_PROPAGATE input[3], inout TriangleStream<GS_LPV_PROPA
     stream.RestartStrip();
 }
 
-PS_LPV_PROPAGATE PS(in GS_LPV_PROPAGATE input)
+PS_LPV_PROPAGATE LPVPropagatePs(in GS_LPV_PROPAGATE input)
 {
     PS_LPV_PROPAGATE output;
 

@@ -49,54 +49,18 @@ set(SRC_RENDERER
 	Renderer/YumeConstantBuffer.cc
 	Renderer/YumeInputLayout.h
 	Renderer/YumeInputLayout.cc
-	Renderer/YumeRenderer.h
-	Renderer/YumeRenderer.cc
 	Renderer/YumeTexture.h
 	Renderer/YumeTexture.cc
 	Renderer/YumeTexture2D.h
 	Renderer/YumeTexture2D.cc
 	Renderer/YumeRenderable.h
 	Renderer/YumeRenderable.cc
-	Renderer/YumeViewport.h
-	Renderer/YumeViewport.cc
-	Renderer/YumeRenderPass.h
-	Renderer/YumeRenderPass.cc
-	Renderer/YumeAuxRenderer.h
-	Renderer/YumeAuxRenderer.cc
-	Renderer/YumeCamera.h
-	Renderer/YumeCamera.cc
-	Renderer/YumeDrawable.h
-	Renderer/YumeDrawable.cc
-	Renderer/YumeMaterial.h
-	Renderer/YumeMaterial.cc
-	Renderer/YumeLight.h
-	Renderer/YumeLight.cc
-	Renderer/YumeRendererEnv.h
-	Renderer/YumeRendererEnv.cc
 	Renderer/YumeGeometry.h
 	Renderer/YumeGeometry.cc
-	Renderer/YumeRenderPipeline.h
-	Renderer/YumeRenderPipeline.cc
-	Renderer/YumeBatch.h
-	Renderer/YumeBatch.cc
-	Renderer/YumeRenderView.h
-	Renderer/YumeRenderView.cc
 	Renderer/YumeTexture3D.h
 	Renderer/YumeTexture3D.cc
 	Renderer/YumeTextureCube.h
 	Renderer/YumeTextureCube.cc
-	Renderer/YumeOcclusion.h
-	Renderer/YumeOcclusion.cc
-	Renderer/YumeSkybox.h
-	Renderer/YumeSkybox.cc
-	Renderer/YumeModel.h
-	Renderer/YumeModel.cc
-	Renderer/YumeStaticModel.h
-	Renderer/YumeStaticModel.cc
-	Renderer/YumeSkeleton.h
-	Renderer/YumeSkeleton.cc
-	Renderer/YumePostProcessor.h
-	Renderer/YumePostProcessor.cc
 	Renderer/LPVRendererTest.h
 	Renderer/LPVRendererTest.cc
 	Renderer/LightPropagationVolume.h
@@ -115,23 +79,24 @@ set(SRC_RENDERER
 	Renderer/YumeMiscRenderer.cc
 	Renderer/YumePostProcess.h
 	Renderer/YumePostProcess.cc
+	Renderer/RenderCall.h
+	Renderer/RenderCall.cc
+	Renderer/RenderPass.h
+	Renderer/RenderPass.cc
+	Renderer/Light.h
+	Renderer/Light.cc
+	Renderer/SceneNode.h
+	Renderer/SceneNode.cc
+	Renderer/Scene.h
+	Renderer/Scene.cc
+	Renderer/StaticModel.h
+	Renderer/StaticModel.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h
 		Logging/log4cplus.cc
  )
-set( SRC_SCENE
-		Scene/YumeScene.h
-		Scene/YumeScene.cc
-		Scene/YumeSceneComponent.h
-		Scene/YumeSceneComponent.cc
-		Scene/YumeSceneNode.h
-		Scene/YumeSceneNode.cc
-		Scene/YumeOctreeQuery.h
-		Scene/YumeOctreeQuery.cc
-		Scene/YumeOctree.h
-		Scene/YumeOctree.cc
-)
+
 
 set( SRC_MATH
 	Math/asm_math.h
@@ -320,7 +285,6 @@ ADD_LIBRARY(${YUME} SHARED
 						${SRC_CORE_IO}
 						${SRC_RENDERER}
 						${SRC_ENGINE}
-						${SRC_SCENE}
 						${SRC_INPUT}
 						${CONTAINER_SOURCES}
 						${SRC_UI}

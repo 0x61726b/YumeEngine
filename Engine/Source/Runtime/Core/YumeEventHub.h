@@ -47,11 +47,7 @@ namespace YumeEngine
 		R_ENDVIEWRENDER
 	};
 
-	class YumeScene;
-	class YumeRenderView;
 	class YumeTexture;
-	class YumeScene;
-	class YumeCamera;
 	class YumeRenderable;
 
 	class YumeAPIExport EngineEventListener
@@ -73,10 +69,6 @@ namespace YumeEngine
 	{
 	public:
 		virtual void HandleRenderTargetUpdate() { };
-		virtual void HandleBeginViewUpdate(YumeRenderView* view,YumeRenderable* renderable,YumeTexture* texture,YumeScene* scene,YumeCamera* camera) { };
-		virtual void HandleEndViewUpdate(YumeRenderView* view,YumeRenderable* renderable,YumeTexture* texture,YumeScene* scene,YumeCamera* camera) { };
-		virtual void HandleBeginViewRender(YumeRenderView* view,YumeRenderable* renderable,YumeTexture* texture,YumeScene* scene,YumeCamera* camera) { };
-		virtual void HandleEndViewRender(YumeRenderView* view,YumeRenderable* renderable,YumeTexture* texture,YumeScene* scene,YumeCamera* camera) { };
 	};
 
 	class YumeAPIExport InputEventListener
@@ -92,8 +84,6 @@ namespace YumeEngine
 	class YumeAPIExport SceneEventListener
 	{
 	public:
-		virtual void HandleSceneUpdate(YumeScene* scene,float timeStep) { };
-		virtual void HandleScenePostUpdate(YumeScene* scene,float timeStep) { };
 	};
 	class YumeAPIExport YumeTimerEventListener
 	{

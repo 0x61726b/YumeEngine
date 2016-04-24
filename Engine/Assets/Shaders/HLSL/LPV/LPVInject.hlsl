@@ -33,7 +33,7 @@ cbuffer light_vs                : register(b0)
 {
     float4x4 light_vp           : packoffset(c0);
     float4x4 light_vp_inv       : packoffset(c4);
-    float3 main_light           : packoffset(c8);
+    float3 main_light_pos           : packoffset(c8);
     float pad0                  : packoffset(c8.w);
 }
 
@@ -48,7 +48,7 @@ Texture2D rt_rsm_lineardepth    : register(t6);
 Texture2D rt_rsm_colors         : register(t7);
 Texture2D rt_rsm_normals        : register(t8);
 
-VS_LPV_INJECT VS(in uint id : SV_VertexID)
+VS_LPV_INJECT LPVInjectVs(in uint id : SV_VertexID)
 {
     VS_LPV_INJECT output;
 
@@ -63,7 +63,7 @@ VS_LPV_INJECT VS(in uint id : SV_VertexID)
     float2 tc = float2((float)x/(float)nvpls, (float)y/(float)nvpls);
 
     // get vpl
-    directional_light vpl = gen_vpl(tc, light_vp_inv, float4(main_light, 1.0), rt_rsm_colors, rt_rsm_normals, rt_rsm_lineardepth, VPLFilter);
+    directional_light vpl = gen_vpl(tc, light_vp_inv, float4(main_light_pos, 1.0), rt_rsm_colors, rt_rsm_normals, rt_rsm_lineardepth, VPLFilter);
 
     float4 ppos = mul(world_to_lpv, vpl.position);
     float4 pnor = normalize(mul(world_to_lpv, vpl.normal));
@@ -75,11 +75,11 @@ VS_LPV_INJECT VS(in uint id : SV_VertexID)
     ppos.z *= lpv_size;
 
     // kill accidental injects with wrong normals
-    float4 d = (float4(main_light, 1.0) - vpl.position);
+    float4 d = (float4(main_light_pos, 1.0) - vpl.position);
     if (dot(vpl.normal, normalize(d)) < 0)
         ppos *= 50000;
 
-    float3 w = main_light - vpl.position.xyz;
+    float3 w = main_light_pos - vpl.position.xyz;
 
 	output.pos    = float4(ppos.xyz, 1.0);
     output.color  = vpl.color.rgb/M_PI * saturate(dot(normalize(w), vpl.normal.xyz));
@@ -89,7 +89,7 @@ VS_LPV_INJECT VS(in uint id : SV_VertexID)
 }
 
 [maxvertexcount (1)]
-void GS(in point VS_LPV_INJECT input[1], inout PointStream<GS_LPV_INJECT> stream)
+void LPVInjectGs(in point VS_LPV_INJECT input[1], inout PointStream<GS_LPV_INJECT> stream)
 {
     GS_LPV_INJECT output;
 
@@ -102,7 +102,7 @@ void GS(in point VS_LPV_INJECT input[1], inout PointStream<GS_LPV_INJECT> stream
     stream.Append(output);
 }
 
-PS_LPV_INJECT PS(in GS_LPV_INJECT input)
+PS_LPV_INJECT LPVInjectPs(in GS_LPV_INJECT input)
 {
     PS_LPV_INJECT output;
 

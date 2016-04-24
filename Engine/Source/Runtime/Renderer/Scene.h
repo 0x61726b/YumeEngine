@@ -19,56 +19,33 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeRenderable_h__
-#define __YumeRenderable_h__
+#ifndef __Scene_h__
+#define __Scene_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeTexture.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
+	class SceneNode;
+	typedef YumeVector<SceneNode*> SceneNodes;
 
-	class YumeAPIExport YumeRenderable : public YumeBase
+	class YumeAPIExport Scene : public YumeBase
 	{
-		friend class YumeTexture2D;
-		friend class YumeTextureCube;
-
 	public:
-		YumeRenderable(YumeTexture* parentTexture);
-		~YumeRenderable();
+		Scene();
+		virtual ~Scene();
 
-		void SetUpdateMode(RenderSurfaceUpdateMode mode);
-		void SetLinkedRenderTarget(YumeRenderable* renderTarget);
-		void SetLinkedDepthStencil(YumeRenderable* depthStencil);
-		void QueueUpdate();
-		virtual void Release() = 0;
 
-		YumeTexture* GetParentTexture() const { return parentTexture_; }
+		SceneNodes::type GetRenderables();
 
-		void* GetRenderTargetView() const { return renderTargetView_; }
 
-		void* GetReadOnlyView() const { return readOnlyView_; }
+		void AddNode(SceneNode* node);
 
-		int GetWidth() const;
-		int GetHeight() const;
-		TextureUsage GetUsage() const;
+		SceneNode* GetDirectionalLight();
 
-		RenderSurfaceUpdateMode GetUpdateMode() const { return updateMode_; }
-
-		YumeRenderable* GetLinkedRenderTarget() const { return linkedRenderTarget_; }
-		YumeRenderable* GetLinkedDepthStencil() const { return linkedDepthStencil_; }
-
-		bool IsUpdateQueued() const { return updateQueued_; }
-		void ResetUpdateQueued();
-
-	public:
-		YumeTexture* parentTexture_;
-		void* renderTargetView_;
-		void* readOnlyView_;
-		WeakPtr<YumeRenderable> linkedRenderTarget_;
-		WeakPtr<YumeRenderable> linkedDepthStencil_;
-		RenderSurfaceUpdateMode updateMode_;
-		bool updateQueued_;
+	private:
+		SceneNodes::type renderables_;
+		SceneNodes::type nodes_;
 	};
 }
 

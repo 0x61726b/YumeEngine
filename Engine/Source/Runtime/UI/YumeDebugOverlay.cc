@@ -26,10 +26,6 @@
 #include "Engine/YumeEngine.h"
 #include "Core/YumeDefaults.h"
 
-#include "Renderer/YumeCamera.h"
-#include "Renderer/YumeRenderPipeline.h"
-#include "Scene/YumeSceneNode.h"
-
 #include "Renderer/YumeMiscRenderer.h"
 #include "Renderer/YumeLPVCamera.h"
 #include "Renderer/YumePostProcess.h"
@@ -75,61 +71,61 @@ namespace YumeEngine
 			if(domElement == ("bloomSwitch"))
 			{
 				if(data == ("true"))
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetBloomEnabled(true);
+					gYume->pRenderer->GetPP()->SetBloomEnabled(true);
 				else
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetBloomEnabled(false);
+					gYume->pRenderer->GetPP()->SetBloomEnabled(false);
 			}
 
 			if(domElement == ("fxaaSwitch"))
 			{
 				if(data == ("true"))
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetFxaaEnabled(true);
+					gYume->pRenderer->GetPP()->SetFxaaEnabled(true);
 				else
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetFxaaEnabled(false);
+					gYume->pRenderer->GetPP()->SetFxaaEnabled(false);
 			}
 
 			if(domElement == ("dofSwitch"))
 			{
 				if(data == ("true"))
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetDofEnabled(true);
+					gYume->pRenderer->GetPP()->SetDofEnabled(true);
 				else
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetDofEnabled(false);
+					gYume->pRenderer->GetPP()->SetDofEnabled(false);
 			}
 
 
 			if(domElement == "ssaoSwitch")
 			{
 				if(data == ("true"))
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetSSAOEnabled(true);
+					gYume->pRenderer->GetPP()->SetSSAOEnabled(true);
 				else
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetSSAOEnabled(false);
+					gYume->pRenderer->GetPP()->SetSSAOEnabled(false);
 			}
 
 			if(domElement == "godraysSwitch")
 			{
 				if(data == ("true"))
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetGodraysEnabled(true);
+					gYume->pRenderer->GetPP()->SetGodraysEnabled(true);
 				else
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetGodraysEnabled(false);
+					gYume->pRenderer->GetPP()->SetGodraysEnabled(false);
 			}
 
 			if(domElement == "autoexposureSwitch")
 			{
 				if(data == ("true"))
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetExposureAdapt(true);
+					gYume->pRenderer->GetPP()->SetExposureAdapt(true);
 				else
-					gYume->pRenderer->GetMiscRenderer()->GetPP()->SetExposureAdapt(false);
+					gYume->pRenderer->GetPP()->SetExposureAdapt(false);
 			}
 
 			if(domElement == "debugIndirect")
 			{
 				if(data == "true")
 				{
-					gYume->pRenderer->GetMiscRenderer()->SetGIDebug(true);
+					gYume->pRenderer->SetGIDebug(true);
 				}
 				else
 				{
-					gYume->pRenderer->GetMiscRenderer()->SetGIDebug(false);
+					gYume->pRenderer->SetGIDebug(false);
 				}
 			}
 
@@ -140,51 +136,51 @@ namespace YumeEngine
 			if(domElement == "bloomThreshold")
 			{
 				float threshold = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetBloomThreshold(threshold);
+				gYume->pRenderer->GetPP()->SetBloomThreshold(threshold);
 
 			}
 			if(domElement == "bloomSigma")
 			{
 				float bloomSigma = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetBloomSigma(bloomSigma);
+				gYume->pRenderer->GetPP()->SetBloomSigma(bloomSigma);
 			}
 
 
 			if(domElement == "ssaoScale")
 			{
 				float ssaoScale = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetSSAOScale(ssaoScale);
+				gYume->pRenderer->GetPP()->SetSSAOScale(ssaoScale);
 			}
 
 
 			if(domElement == "aeExposureKey")
 			{
 				float aeExposureKey = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetAutoExposureKey(aeExposureKey);
+				gYume->pRenderer->GetPP()->SetAutoExposureKey(aeExposureKey);
 			}
 
 			if(domElement == "aeAdaptSpeed")
 			{
 				float aeAdaptSpeed = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetAutoExposureSpeed(aeAdaptSpeed);
+				gYume->pRenderer->GetPP()->SetAutoExposureSpeed(aeAdaptSpeed);
 			}
 
 
 			if(domElement == "dofCocScale")
 			{
 				float dofCocScale = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetDoFCoCScale(dofCocScale);
+				gYume->pRenderer->GetPP()->SetDoFCoCScale(dofCocScale);
 			}
 
 			if(domElement == "dofFocalPlane")
 			{
 				float dofFocalPlane = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetDoFFocalPlane(dofFocalPlane);
+				gYume->pRenderer->GetPP()->SetDoFFocalPlane(dofFocalPlane);
 			}
 			if(domElement == "gTau")
 			{
 				float gTau = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->GetPP()->SetGodraysTAU(gTau);
+				gYume->pRenderer->GetPP()->SetGodraysTAU(gTau);
 			}
 
 
@@ -195,40 +191,40 @@ namespace YumeEngine
 			if(domElement == "iGiScale")
 			{
 				float value = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->SetGIScale(value);
+				gYume->pRenderer->SetGIScale(value);
 			}
 			if(domElement == "iGiLPVFlux")
 			{
 				float value = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->SetGIScale(value);
+				gYume->pRenderer->SetGIScale(value);
 			}
 
 			if(domElement == "iLpvX")
 			{
 				float value = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->SetLPVPos(value,-1,-1);
+				gYume->pRenderer->SetLPVPos(value,-1,-1);
 			}
 			if(domElement == "iLpvY")
 			{
 				float value = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->SetLPVPos(-1,value,-1);
+				gYume->pRenderer->SetLPVPos(-1,value,-1);
 			}
 			if(domElement == "iLpvZ")
 			{
 				float value = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->SetLPVPos(-1,-1,value);
+				gYume->pRenderer->SetLPVPos(-1,-1,value);
 			}
 
 			if(domElement == "iGiLightFlux")
 			{
 				float value = atof(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->SetLightFlux(value);
+				gYume->pRenderer->SetLightFlux(value);
 			}
 
 			if(domElement == "iGiPropagations")
 			{
 				int value = atoi(data.c_str());
-				gYume->pRenderer->GetMiscRenderer()->SetLPVNumberIterations(value);
+				gYume->pRenderer->SetLPVNumberIterations(value);
 			}
 
 
@@ -277,16 +273,10 @@ namespace YumeEngine
 		float fps = 1.0f / gYume->pEngine->GetSmoothedTimestep();
 		int batchCount = gYume->pRHI->GetNumBatches();
 		int primitives = gYume->pRHI->GetNumPrimitives();
-		int lights = gYume->pRenderer->GetNumLights(true);
-		int occluders = gYume->pRenderer->GetNumOccluders(true);
-		int shadowMaps = gYume->pRenderer->GetNumShadowMaps(true);
+
 		unsigned long long totalMemory = gYume->pResourceManager->GetTotalMemoryUse();
 
-		YumeString shadowInfo;
-		shadowInfo.AppendWithFormat("%s , Size: %i , Quality: %s ",
-			gYume->pRenderer->GetDrawShadows() ? "On" : "Off",
-			gYume->pRenderer->GetShadowMapSize(),
-			shadowQualityTexts[gYume->pRenderer->GetShadowQuality()]);
+
 
 
 
@@ -295,14 +285,8 @@ namespace YumeEngine
 		ret.AppendWithFormat("\"TotalMemory\": \"%f\",",totalMemory);
 		ret.AppendWithFormat("\"ElapsedTime\": \"%f\",",elapsedTime);
 		ret.AppendWithFormat("\"FrameRate\": \"%f\",",fps);
-		ret.AppendWithFormat("\"ShadowInfo\": \"%s\",",shadowInfo.c_str());
-		ret.AppendWithFormat("\"MaterialQuality\": \"%s\",",qualityTexts[gYume->pRenderer->GetMaterialQuality()]);
-		ret.AppendWithFormat("\"TextureQuality\": \"%s\",",qualityTexts[gYume->pRenderer->GetTextureQuality()]);
 		ret.AppendWithFormat("\"PrimitiveCount\": \"%i\",",primitives);
 		ret.AppendWithFormat("\"BatchCount\": \"%i\",",batchCount);
-		ret.AppendWithFormat("\"LightCount\": \"%i\",",lights);
-		ret.AppendWithFormat("\"Occluders\": \"%i\",",occluders);
-		ret.AppendWithFormat("\"ShadowMaps\": \"%i\"",shadowMaps);
 
 
 
@@ -320,7 +304,7 @@ namespace YumeEngine
 		camera.append("}");
 		gYume->pUI->SendEvent("setCameraInfo",camera);
 #else
-		YumeLPVCamera* cam = gYume->pRenderer->miscRenderer_->GetCamera();
+		YumeLPVCamera* cam = gYume->pRenderer->GetCamera();
 
 		YumeString camera;
 		camera.append("{");

@@ -19,29 +19,54 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeD3D11Renderable_h__
-#define __YumeD3D11Renderable_h__
-//----------------------------------------------------------------------------
-#include "YumeD3D11Required.h"
-#include "Renderer/YumeRendererDefs.h"
-#include "Renderer/YumeRenderable.h"
-//----------------------------------------------------------------------------
+#include "YumeHeaders.h"
+#include "RenderPass.h"
+#include "RenderCall.h"
+#include "YumeRHI.h"
+
+
 namespace YumeEngine
 {
-	class YumeTexture;
-
-	/// %Color or depth-stencil surface that can be rendered into.
-	class YumeD3DExport YumeD3D11Renderable : public YumeRenderable
+	RenderPass::RenderPass()
 	{
-	public:
-		
-		YumeD3D11Renderable(YumeTexture* parentTexture);
-		
-		~YumeD3D11Renderable();
-		virtual void Release();
-	};
+	}
+
+	RenderPass::~RenderPass()
+	{
+	}
+
+	void RenderPass::AddRenderCall(RenderCall* call)
+	{
+		calls_.push_back(call);
+	}
+
+	void RenderPass::RemoveRenderCall(RenderCall* call)
+	{
+		calls_.Remove(call);
+	}
+
+	RenderCallPtr RenderPass::GetCallByName(const YumeString& name)
+	{
+		for(int i=0; i < calls_.size(); ++i)
+		{
+			RenderCallPtr c = calls_[i];
+
+			if(!c->GetPassName().Compare(name))
+				return c;
+		}
+		return 0;
+	}
+
+	void RenderPass::SetShaderParameter(YumeHash param,const Variant& variant)
+	{
+		for(int i=0; i < calls_.size(); ++i)
+		{
+			if(calls_[i]->ContainsParameter(param))
+			{
+				calls_[i]->SetShaderParameter(param,variant);
+			}
+		}
+	}
+
+
 }
-
-
-//----------------------------------------------------------------------------
-#endif

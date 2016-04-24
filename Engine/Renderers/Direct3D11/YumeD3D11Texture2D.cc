@@ -30,7 +30,6 @@
 #include "YumeD3D11Renderable.h"
 
 #include "Renderer/YumeImage.h"
-#include "Renderer/YumeRenderer.h"
 #include "Renderer/YumeRenderable.h"
 #include "Engine/YumeEngine.h"
 
@@ -88,7 +87,6 @@ namespace YumeEngine
 	YumeD3D11Texture2D::~YumeD3D11Texture2D()
 	{
 		Release();
-		gYume->pRenderer->RemoveListener(this);
 	}
 
 	void YumeD3D11Texture2D::Release()
@@ -143,11 +141,6 @@ namespace YumeEngine
 		}
 		else if(usage_ == TEXTURE_DYNAMIC)
 			requestedLevels_ = 1;
-
-		if(usage_ == TEXTURE_RENDERTARGET)
-			gYume->pRenderer->AddListener(this);
-		else
-			gYume->pRenderer->RemoveListener(this);
 
 		width_ = width;
 		height_ = height;
@@ -258,9 +251,6 @@ namespace YumeEngine
 		unsigned memoryUse = sizeof(YumeD3D11Texture2D);
 
 		int quality = QUALITY_HIGH;
-		YumeRenderer* renderer = 0;
-		if(renderer)
-			quality = renderer->GetTextureQuality();
 
 		if(!image->IsCompressed())
 		{
@@ -521,6 +511,13 @@ namespace YumeEngine
 			YUMELOG_ERROR("Failed to create shader resource view for texture",hr);
 			return false;
 		}
+		else
+		{
+			YumeString srvName = GetName();
+			srvName.append("_SRV");
+
+			((ID3D11ShaderResourceView*)shaderResourceView_)->SetPrivateData(WKPDID_D3DDebugObjectName,srvName.length(),srvName.c_str());
+		}
 
 		if(usage_ == TEXTURE_RENDERTARGET)
 		{
@@ -588,13 +585,7 @@ namespace YumeEngine
 
 	void YumeD3D11Texture2D::HandleRenderTargetUpdate()
 	{
-		if(renderSurface_ && (renderSurface_->GetUpdateMode() == SURFACE_UPDATEALWAYS || renderSurface_->IsUpdateQueued()))
-		{
-			YumeRenderer* renderer = gYume->pRenderer;
-			if(renderer)
-				renderer->QueueRenderable(renderSurface_);
-			renderSurface_->ResetUpdateQueued();
-		}
+
 	}
 
 	unsigned YumeD3D11Texture2D::GetRowDataSize(int width) const

@@ -119,6 +119,8 @@ namespace YumeEngine
 		virtual void							BindDepthStateEnable() { }
 		virtual void							BindDepthStateDisable() { }
 		virtual void							GenerateMips(YumeTexture2D*){}
+
+		void SetNoDepthStencil(bool b) { noDs_ = b;}
 		
 		//
 
@@ -271,9 +273,6 @@ namespace YumeEngine
 		void								    ResetRenderTarget(unsigned index);
 		void									ResetDepthStencil();
 
-		bool									HasTextureUnit(TextureUnit unit);
-		TextureUnit								GetTextureUnit(const YumeString& name);
-		const YumeString&						GetTextureUnitName(TextureUnit unit);
 		YumeTexture*							GetTexture(unsigned index) const;
 		YumeRenderable*							GetRenderTarget(unsigned index) const;
 		YumeRenderable*							GetDepthStencil() const { return depthStencil_; }
@@ -347,7 +346,7 @@ namespace YumeEngine
 		Mutex							gpuResourceMutex_;
 		GpuResourceVector::type			gpuResources_;
 
-
+		
 		bool sRGB_;
 		bool lightPrepassSupport_;
 		bool deferredSupport_;
@@ -369,8 +368,6 @@ namespace YumeEngine
 		YumeShaderVariation* vertexShader_;
 		YumeShaderVariation* geometryShader_;
 		YumeShaderVariation* pixelShader_;
-		YumeTexture* textures_[MAX_TEXTURE_UNITS];
-		YumeMap<YumeString,TextureUnit>::type textureUnits_;
 		YumeRenderable* renderTargets_[MAX_RENDERTARGETS];
 		YumeRenderable* depthStencil_;
 		IntRect viewport_;
@@ -416,6 +413,7 @@ namespace YumeEngine
 		YumeMap<unsigned,SharedPtr<YumeConstantBuffer> >::type constantBuffers_;
 		YumeVector<YumeConstantBuffer*>::type dirtyConstantBuffers_;
 		const void* shaderParameterSources_[MAX_SHADER_PARAMETER_GROUPS];
+		YumeTexture* textures_[MAX_TEXTURE_UNITS];
 		YumeString shaderPath_;
 		YumeString shaderExtension_;
 		mutable SharedPtr<YumeShader> lastShader_;
@@ -426,14 +424,22 @@ namespace YumeEngine
 		YumeString apiName_;
 
 		const Vector2 pixelUVOffset;
+
+		bool noDs_;
 	};
 
 
 	class RHIEvent
 	{
 	public:
-		RHIEvent(const YumeString& event);
+		RHIEvent(const YumeString& event,bool autoStart = true);
+		RHIEvent();
 		~RHIEvent();
+
+		void BeginEvent(const YumeString& event);
+		void EndEvent();
+	private:
+		bool autoStart;
 	};
 }
 

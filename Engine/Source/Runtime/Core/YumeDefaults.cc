@@ -484,35 +484,35 @@ namespace YumeEngine
 		return ret;
 	}
 
-	Vector3 ToVector3(const YumeString& source)
+	DirectX::XMFLOAT3 ToVector3(const YumeString& source)
 	{
 		return ToVector3(source.c_str());
 	}
 
-	Vector3 ToVector3(const char* source)
+	DirectX::XMFLOAT3 ToVector3(const char* source)
 	{
-		Vector3 ret(Vector3::ZERO);
+		DirectX::XMFLOAT3 ret(0,0,0);
 
 		unsigned elements = CountElements(source,' ');
 		if(elements < 3)
 			return ret;
 
 		char* ptr = (char*)source;
-		ret.x_ = (float)strtod(ptr,&ptr);
-		ret.y_ = (float)strtod(ptr,&ptr);
-		ret.z_ = (float)strtod(ptr,&ptr);
+		ret.x = (float)strtod(ptr,&ptr);
+		ret.y = (float)strtod(ptr,&ptr);
+		ret.z = (float)strtod(ptr,&ptr);
 
 		return ret;
 	}
 
-	Vector4 ToVector4(const YumeString& source,bool allowMissingCoords)
+	DirectX::XMFLOAT4 ToVector4(const YumeString& source,bool allowMissingCoords)
 	{
 		return ToVector4(source.c_str(),allowMissingCoords);
 	}
 
-	Vector4 ToVector4(const char* source,bool allowMissingCoords)
+	DirectX::XMFLOAT4 ToVector4(const char* source,bool allowMissingCoords)
 	{
-		Vector4 ret(Vector4::ZERO);
+		DirectX::XMFLOAT4 ret(0,0,0,0);
 
 		unsigned elements = CountElements(source,' ');
 		char* ptr = (char*)source;
@@ -522,23 +522,23 @@ namespace YumeEngine
 			if(elements < 4)
 				return ret;
 
-			ret.x_ = (float)strtod(ptr,&ptr);
-			ret.y_ = (float)strtod(ptr,&ptr);
-			ret.z_ = (float)strtod(ptr,&ptr);
-			ret.w_ = (float)strtod(ptr,&ptr);
+			ret.x = (float)strtod(ptr,&ptr);
+			ret.y = (float)strtod(ptr,&ptr);
+			ret.z = (float)strtod(ptr,&ptr);
+			ret.w = (float)strtod(ptr,&ptr);
 
 			return ret;
 		}
 		else
 		{
 			if(elements > 0)
-				ret.x_ = (float)strtod(ptr,&ptr);
+				ret.x = (float)strtod(ptr,&ptr);
 			if(elements > 1)
-				ret.y_ = (float)strtod(ptr,&ptr);
+				ret.y = (float)strtod(ptr,&ptr);
 			if(elements > 2)
-				ret.z_ = (float)strtod(ptr,&ptr);
+				ret.z = (float)strtod(ptr,&ptr);
 			if(elements > 3)
-				ret.w_ = (float)strtod(ptr,&ptr);
+				ret.w = (float)strtod(ptr,&ptr);
 
 			return ret;
 		}
@@ -649,36 +649,18 @@ namespace YumeEngine
 		return ret;
 	}
 
-	Matrix4 ToMatrix4(const YumeString& source)
+	DirectX::XMMATRIX ToMatrix4(const YumeString& source)
 	{
 		return ToMatrix4(source.c_str());
 	}
 
-	Matrix4 ToMatrix4(const char* source)
+	DirectX::XMMATRIX ToMatrix4(const char* source)
 	{
-		Matrix4 ret(Matrix4::ZERO);
+		DirectX::XMMATRIX ret = DirectX::XMMatrixIdentity();
 
 		unsigned elements = CountElements(source,' ');
 		if(elements < 16)
 			return ret;
-
-		char* ptr = (char*)source;
-		ret.m00_ = (float)strtod(ptr,&ptr);
-		ret.m01_ = (float)strtod(ptr,&ptr);
-		ret.m02_ = (float)strtod(ptr,&ptr);
-		ret.m03_ = (float)strtod(ptr,&ptr);
-		ret.m10_ = (float)strtod(ptr,&ptr);
-		ret.m11_ = (float)strtod(ptr,&ptr);
-		ret.m12_ = (float)strtod(ptr,&ptr);
-		ret.m13_ = (float)strtod(ptr,&ptr);
-		ret.m20_ = (float)strtod(ptr,&ptr);
-		ret.m21_ = (float)strtod(ptr,&ptr);
-		ret.m22_ = (float)strtod(ptr,&ptr);
-		ret.m23_ = (float)strtod(ptr,&ptr);
-		ret.m30_ = (float)strtod(ptr,&ptr);
-		ret.m31_ = (float)strtod(ptr,&ptr);
-		ret.m32_ = (float)strtod(ptr,&ptr);
-		ret.m33_ = (float)strtod(ptr,&ptr);
 
 		return ret;
 	}

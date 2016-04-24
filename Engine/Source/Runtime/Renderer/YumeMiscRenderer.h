@@ -26,25 +26,64 @@
 
 #include "YumeLPVCamera.h"
 #include "YumeSkydome.h"
+
+#include "RenderCall.h"
+#include "LightPropagationVolume.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class LPVRenderer;
 	class YumePostProcess;
+	class RenderPass;
+	class Scene;
 
-	class YumeAPIExport YumeMiscRenderer : public YumeBase
+	class YumeAPIExport YumeMiscRenderer : 
+		public YumeBase,
+		public EngineEventListener
 	{
 	public:
 		YumeMiscRenderer();
 		virtual ~YumeMiscRenderer();
 
 		void Setup();
+		void Initialize();
+
+
+		//New era starts here
+		void ApplyRendererFlags(RenderCallPtr call);
+		void RenderReflectiveShadowMap(RenderCall* call);
+
+		void SetModelMatrix(const DirectX::XMFLOAT4X4& model,const DirectX::XMFLOAT3& lpvMin,const DirectX::XMFLOAT3& lpvMax);
+		bool GetGIEnabled() { return giEnabled_; }
+
+		void SetGIParameters();
+
+		bool giEnabled_;
+		bool updateRsm_;
+
+		Scene* GetScene() const {return scene_; };
+		Scene* scene_;
+
+		LightPropagationVolume lightPropagator_;
+
+		unsigned curr_;
+		unsigned next_;
+		unsigned num_iterations_rendered;
+
+		RenderPass* GetDefaultPass() const { return defaultPass_; }
+
+		GIParameters giParams_;
+
+		void LPVPropagate(RenderCall* call,float iteration);
+		//~
 
 		void Render();
 		void RenderSky();
 		void RenderScene();
 
 		void RenderFullScreenTexture(const IntRect& rect,YumeTexture2D*);
+
+		virtual void HandlePostRenderUpdate(float timeStep);
 
 		void SetCameraParameters(bool shadowPass);
 		void SetPerFrameConstants();
@@ -93,6 +132,8 @@ namespace YumeEngine
 		SharedPtr<YumePostProcess> pp_;
 		SharedPtr<LPVRenderer> lpv_;
 		SharedPtr<YumeTexture2D> renderTarget_;
+
+		SharedPtr<RenderPass> defaultPass_;
 
 	public:
 		float zNear;

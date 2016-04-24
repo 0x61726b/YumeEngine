@@ -295,12 +295,6 @@ namespace YumeEngine
 		case VAR_VECTOR2:
 			return Variant(ReadVector2());
 
-		case VAR_VECTOR3:
-			return Variant(ReadVector3());
-
-		case VAR_VECTOR4:
-			return Variant(ReadVector4());
-
 		case VAR_QUATERNION:
 			return Variant(ReadQuaternion());
 

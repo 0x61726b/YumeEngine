@@ -74,17 +74,15 @@ struct YumeAPIExport GlobalSystems : public YumeEngine::RefCounted
 {
 	YumeEngine::YumeEngine3D*												pEngine;
 	YumeEngine::YumeRHI*													pRHI;
-	YumeEngine::SharedPtr<YumeEngine::YumeRenderer>							pRenderer;
+	YumeEngine::SharedPtr<YumeEngine::YumeMiscRenderer>						pRenderer;
 	YumeEngine::SharedPtr<YumeEngine::YumeResourceManager>					pResourceManager;
 	YumeEngine::SharedPtr<YumeEngine::YumeIO>								pIO;
 	YumeEngine::SharedPtr<YumeEngine::YumeTime>								pTimer;
 	YumeEngine::SharedPtr<YumeEngine::YumeUI>								pUI;
 	YumeEngine::SharedPtr<YumeEngine::YumeWorkQueue>						pWorkSystem;
 	YumeEngine::SharedPtr<YumeEngine::YumeEnvironment>						pEnv;
-	YumeEngine::SharedPtr<YumeEngine::YumeDebugRenderer>					pDebugRenderer;
 	YumeEngine::SharedPtr<YumeEngine::YumeInput>							pInput;
 	YumeEngine::SharedPtr<YumeEngine::YumeObjectFactory>					pObjFactory;
-	YumeEngine::SharedPtr<YumeEngine::YumePostProcessor>					pPostFx;
 };
 
 extern YumeAPIExport YumeEngine::SharedPtr<GlobalSystems> gYume;

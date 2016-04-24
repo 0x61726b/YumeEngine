@@ -30,6 +30,8 @@
 #include "Math/YumeRect.h"
 #include "Math/YumeHash.h"
 
+#include <DirectXMath.h>
+
 #ifdef _MSC_VER
 #   pragma warning(disable:4805)
 #   pragma warning(disable:4389)
@@ -243,14 +245,14 @@ namespace YumeEngine
 		}
 
 
-		Variant(const Vector3& value):
+		Variant(const DirectX::XMFLOAT3& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
 		}
 
 
-		Variant(const Vector4& value):
+		Variant(const DirectX::XMFLOAT4& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
@@ -375,7 +377,7 @@ namespace YumeEngine
 		}
 
 
-		Variant(const Matrix4& value):
+		Variant(const DirectX::XMMATRIX& value):
 			type_(VAR_EMPTY)
 		{
 			*this = value;
@@ -495,18 +497,18 @@ namespace YumeEngine
 		}
 
 
-		Variant& operator =(const Vector3& rhs)
+		Variant& operator =(const DirectX::XMFLOAT3& rhs)
 		{
 			SetType(VAR_VECTOR3);
-			*(reinterpret_cast<Vector3*>(&value_)) = rhs;
+			*(reinterpret_cast<DirectX::XMFLOAT3*>(&value_)) = rhs;
 			return *this;
 		}
 
 
-		Variant& operator =(const Vector4& rhs)
+		Variant& operator =(const DirectX::XMFLOAT4& rhs)
 		{
 			SetType(VAR_VECTOR4);
-			*(reinterpret_cast<Vector4*>(&value_)) = rhs;
+			*(reinterpret_cast<DirectX::XMFLOAT4*>(&value_)) = rhs;
 			return *this;
 		}
 
@@ -624,10 +626,10 @@ namespace YumeEngine
 		}
 
 
-		Variant& operator =(const Matrix4& rhs)
+		Variant& operator =(const DirectX::XMMATRIX& rhs)
 		{
 			SetType(VAR_MATRIX4);
-			*(reinterpret_cast<Matrix4*>(value_.ptr_)) = rhs;
+			*(reinterpret_cast<DirectX::XMMATRIX*>(value_.ptr_)) = rhs;
 			return *this;
 		}
 
@@ -656,15 +658,25 @@ namespace YumeEngine
 		}
 
 
-		bool operator ==(const Vector3& rhs) const
+		bool operator ==(const DirectX::XMFLOAT3& rhs) const
 		{
-			return type_ == VAR_VECTOR3 ? *(reinterpret_cast<const Vector3*>(&value_)) == rhs : false;
+			const DirectX::XMFLOAT3& value = *(reinterpret_cast<const DirectX::XMFLOAT3*>(&value_));
+
+			if(type_ == VAR_VECTOR3 && value.x == rhs.x && value.y == rhs.y && value.z && rhs.z)
+				return true;
+			else
+				return false;
 		}
 
 
-		bool operator ==(const Vector4& rhs) const
+		bool operator ==(const DirectX::XMFLOAT4& rhs) const
 		{
-			return type_ == VAR_VECTOR4 ? *(reinterpret_cast<const Vector4*>(&value_)) == rhs : false;
+			const DirectX::XMFLOAT4& value = *(reinterpret_cast<const DirectX::XMFLOAT4*>(&value_));
+
+			if(type_ == VAR_VECTOR4 && value.x == rhs.x && value.y == rhs.y && value.z && rhs.z && value.w == rhs.w)
+				return true;
+			else
+				return false;
 		}
 
 
@@ -756,9 +768,9 @@ namespace YumeEngine
 		}
 
 
-		bool operator ==(const Matrix4& rhs) const
+		bool operator ==(const DirectX::XMMATRIX& rhs) const
 		{
-			return type_ == VAR_MATRIX4 ? *(reinterpret_cast<const Matrix4*>(value_.ptr_)) == rhs : false;
+			return false;
 		}
 
 
@@ -783,10 +795,10 @@ namespace YumeEngine
 		bool operator !=(const Vector2& rhs) const { return !(*this == rhs); }
 
 
-		bool operator !=(const Vector3& rhs) const { return !(*this == rhs); }
+		bool operator !=(const DirectX::XMFLOAT3& rhs) const { return !(*this == rhs); }
 
 
-		bool operator !=(const Vector4& rhs) const { return !(*this == rhs); }
+		bool operator !=(const DirectX::XMFLOAT4& rhs) const { return !(*this == rhs); }
 
 
 		bool operator !=(const Quaternion& rhs) const { return !(*this == rhs); }
@@ -918,10 +930,10 @@ namespace YumeEngine
 		const Vector2& GetVector2() const { return type_ == VAR_VECTOR2 ? *reinterpret_cast<const Vector2*>(&value_) : Vector2::ZERO; }
 
 
-		const Vector3& GetVector3() const { return type_ == VAR_VECTOR3 ? *reinterpret_cast<const Vector3*>(&value_) : Vector3::ZERO; }
+		const DirectX::XMFLOAT3& GetVector3() const { return type_ == VAR_VECTOR3 ? *reinterpret_cast<const DirectX::XMFLOAT3*>(&value_) : DirectX::XMFLOAT3(0,0,0); }
 
 
-		const Vector4& GetVector4() const { return type_ == VAR_VECTOR4 ? *reinterpret_cast<const Vector4*>(&value_) : Vector4::ZERO; }
+		const DirectX::XMFLOAT4& GetVector4() const { return type_ == VAR_VECTOR4 ? *reinterpret_cast<const DirectX::XMFLOAT4*>(&value_) : DirectX::XMFLOAT4(0,0,0,0); }
 
 
 		const Quaternion& GetQuaternion() const
@@ -1000,9 +1012,9 @@ namespace YumeEngine
 		}
 
 
-		const Matrix4& GetMatrix4() const
+		const DirectX::XMMATRIX& GetMatrix4() const
 		{
-			return type_ == VAR_MATRIX4 ? *(reinterpret_cast<const Matrix4*>(value_.ptr_)) : Matrix4::IDENTITY;
+			return type_ == VAR_MATRIX4 ? *(reinterpret_cast<const DirectX::XMMATRIX*>(value_.ptr_)) : DirectX::XMMatrixIdentity();
 		}
 
 
@@ -1079,7 +1091,7 @@ namespace YumeEngine
 
 	template <> inline VariantType GetVariantType<Vector3>() { return VAR_VECTOR3; }
 
-	template <> inline VariantType GetVariantType<Vector4>() { return VAR_VECTOR4; }
+	template <> inline VariantType GetVariantType<DirectX::XMFLOAT4>() { return VAR_VECTOR4; }
 
 	template <> inline VariantType GetVariantType<Quaternion>() { return VAR_QUATERNION; }
 
@@ -1111,7 +1123,7 @@ namespace YumeEngine
 
 	template <> inline VariantType GetVariantType<Matrix3x4>() { return VAR_MATRIX3X4; }
 
-	template <> inline VariantType GetVariantType<Matrix4>() { return VAR_MATRIX4; }
+	template <> inline VariantType GetVariantType<DirectX::XMMATRIX>() { return VAR_MATRIX4; }
 
 	// Specializations of Variant::Get<T>
 	template <> YumeAPIExport int Variant::Get<int>() const;
@@ -1128,7 +1140,7 @@ namespace YumeEngine
 
 	template <> YumeAPIExport const Vector2& Variant::Get<const Vector2&>() const;
 
-	template <> YumeAPIExport const Vector3& Variant::Get<const Vector3&>() const;
+	template <> YumeAPIExport const DirectX::XMFLOAT3& Variant::Get<const DirectX::XMFLOAT3&>() const;
 
 	template <> YumeAPIExport const Vector4& Variant::Get<const Vector4&>() const;
 

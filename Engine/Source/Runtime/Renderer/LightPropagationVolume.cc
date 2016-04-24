@@ -22,14 +22,13 @@
 #include "YumeHeaders.h"
 #include "LightPropagationVolume.h"
 #include "YumeGeometry.h"
-#include "YumeRenderPipeline.h"
 #include "YumeVertexBuffer.h"
 #include "YumeIndexBuffer.h"
 #include "YumeRHI.h"
-#include "YumeRenderer.h"
-#include "YumeModel.h"
 
 #include "LPVRendererTest.h"
+
+#include "RenderPass.h"
 
 
 
@@ -65,53 +64,53 @@ namespace YumeEngine
 	{
 		volume_size_ = volumeSize;
 
-		injectPs_ = gYume->pRHI->GetShader(PS,"LPV/LPVInject");
-		injectVs_ = gYume->pRHI->GetShader(VS,"LPV/LPVInject");
-		injectGs_ = gYume->pRHI->GetShader(GS,"LPV/LPVInject","");
+		//injectPs_ = gYume->pRHI->GetShader(PS,"LPV/LPVInject");
+		//injectVs_ = gYume->pRHI->GetShader(VS,"LPV/LPVInject");
+		//injectGs_ = gYume->pRHI->GetShader(GS,"LPV/LPVInject","");
 
-		propogateVs_ = gYume->pRHI->GetShader(VS,"LPV/LPVPropogate");
-		propogatePs_ = gYume->pRHI->GetShader(PS,"LPV/LPVPropogate");
-		propogateGs_ = gYume->pRHI->GetShader(GS,"LPV/LPVPropogate","");
+		//propogateVs_ = gYume->pRHI->GetShader(VS,"LPV/LPVPropogate");
+		//propogatePs_ = gYume->pRHI->GetShader(PS,"LPV/LPVPropogate");
+		//propogateGs_ = gYume->pRHI->GetShader(GS,"LPV/LPVPropogate","");
 
-		normalizePs_ = gYume->pRHI->GetShader(PS,"LPV/LPVNormalize","");
+		//normalizePs_ = gYume->pRHI->GetShader(PS,"LPV/LPVNormalize","");
 
-		for(size_t i=0; i < 2; ++i)
-		{
-			lpv_r_[i] = gYume->pRHI->CreateTexture2D();
-			YumeString debugName = "LPV_R_";
-			debugName.AppendWithFormat("%i",i);
-			lpv_r_[i]->SetName(debugName);
-			lpv_r_[i]->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
+		//for(size_t i=0; i < 2; ++i)
+		//{
+		//	lpv_r_[i] = gYume->pRHI->CreateTexture2D();
+		//	YumeString debugName = "LPV_R_";
+		//	debugName.AppendWithFormat("%i",i);
+		//	lpv_r_[i]->SetName(debugName);
+		//	lpv_r_[i]->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
 
-			lpv_g_[i] = gYume->pRHI->CreateTexture2D();
-			debugName = "LPV_G_";
-			debugName.AppendWithFormat("%i",i);
-			lpv_g_[i]->SetName(debugName);
-			lpv_g_[i]->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
+		//	lpv_g_[i] = gYume->pRHI->CreateTexture2D();
+		//	debugName = "LPV_G_";
+		//	debugName.AppendWithFormat("%i",i);
+		//	lpv_g_[i]->SetName(debugName);
+		//	lpv_g_[i]->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
 
-			lpv_b_[i] = gYume->pRHI->CreateTexture2D();
-			debugName = "LPV_B_";
-			debugName.AppendWithFormat("%i",i);
-			lpv_b_[i]->SetName(debugName);
-			lpv_b_[i]->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
-		}
+		//	lpv_b_[i] = gYume->pRHI->CreateTexture2D();
+		//	debugName = "LPV_B_";
+		//	debugName.AppendWithFormat("%i",i);
+		//	lpv_b_[i]->SetName(debugName);
+		//	lpv_b_[i]->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
+		//}
 
-		lpv_accum_r_ = gYume->pRHI->CreateTexture2D();
-		lpv_accum_r_->SetName("LPV_ACCUM_R_");
-		lpv_accum_r_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
+		//lpv_accum_r_ = gYume->pRHI->CreateTexture2D();
+		//lpv_accum_r_->SetName("LPV_ACCUM_R_");
+		//lpv_accum_r_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
 
-		lpv_accum_g_ = gYume->pRHI->CreateTexture2D();
-		lpv_accum_g_->SetName("LPV_ACCUM_G_");
-		lpv_accum_g_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
+		//lpv_accum_g_ = gYume->pRHI->CreateTexture2D();
+		//lpv_accum_g_->SetName("LPV_ACCUM_G_");
+		//lpv_accum_g_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
 
-		lpv_accum_b_ = gYume->pRHI->CreateTexture2D();
-		lpv_accum_b_->SetName("LPV_ACCUM_B_");
-		lpv_accum_b_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
+		//lpv_accum_b_ = gYume->pRHI->CreateTexture2D();
+		//lpv_accum_b_->SetName("LPV_ACCUM_B_");
+		//lpv_accum_b_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
 
 
-		lpv_inject_counter_ = gYume->pRHI->CreateTexture2D();
-		lpv_inject_counter_->SetName("LPV_INJECT_COUNTER");
-		lpv_inject_counter_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
+		//lpv_inject_counter_ = gYume->pRHI->CreateTexture2D();
+		//lpv_inject_counter_->SetName("LPV_INJECT_COUNTER");
+		//lpv_inject_counter_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
 
 
 		UINT num_vertices = 6 * volume_size_;
@@ -144,6 +143,109 @@ namespace YumeEngine
 		next_ = 1;
 
 		iterations_rendered_ = 0;
+
+		RenderTargetDesc lpvrgb;
+		lpvrgb.Width = volumeSize;
+		lpvrgb.Height = volumeSize;
+		lpvrgb.Format = gYume->pRHI->GetRGBAFloat16FormatNs();
+		lpvrgb.Usage = TEXTURE_RENDERTARGET;
+		lpvrgb.Type = RT_OUTPUT | RT_INPUT ;
+		lpvrgb.ArraySize = volumeSize;
+		lpvrgb.ClearColor = YumeColor(0,0,0,0);
+		lpvrgb.Mips = 1;
+
+		//LPV_R_0 ID 0
+		//LPV_G_0 ID 1
+		//LPV_B_0 ID 2
+		//LPV_R_1 ID 3
+		//LPV_G_1 ID 4
+		//LPV_B_1 ID 5
+		//LPV_ACCUMR_0 ID 6
+		//LPV_ACCUMG_0 ID 7
+		//LPV_ACCUMB_0 ID 8
+		//LPV_INJECT_COUNTER ID 9
+
+		RenderCallPtr lpvInject = YumeAPINew RenderCall(CallType::LPV_INJECT,
+			"LPV/LPVInject",
+			"LPV/LPVInject",
+			"LPV/LPVInject",
+			"LPVInjectVs","LPVInjectPs","LPVInjectGs");
+
+		RenderCallPtr lpvNormalize =  YumeAPINew RenderCall(CallType::LPV_NORMALIZE,
+			"LPV/LPVPropagate",
+			"LPV/LPVNormalize",
+			"LPV/LPVPropagate",
+			"LPVPropagateVs","LPVNormalizePs","LPVPropagateGs");
+
+		RenderCallPtr lpvPropagate =  YumeAPINew RenderCall(CallType::LPV_PROPAGATE,
+			"LPV/LPVPropagate",
+			"LPV/LPVPropagate",
+			"LPV/LPVPropagate",
+			"LPVPropagateVs","LPVPropagatePs","LPVPropagateGs");
+
+		lpvInject->SetMiscRenderingFlags(RF_NODEPTHSTENCIL);
+		lpvNormalize->SetMiscRenderingFlags(RF_NODEPTHSTENCIL);
+		lpvPropagate->SetMiscRenderingFlags(RF_NODEPTHSTENCIL);
+
+		lpvInject->SetPassName("LPVInject");
+		lpvNormalize->SetPassName("LPVNormalize");
+		lpvPropagate->SetPassName("LPVPropagate");
+
+		int identifier = 0;
+		for(size_t i=0; i < 2; ++i)
+		{
+			YumeString name = "LPV_R_";
+			name.AppendWithFormat("%i",i);
+			lpvrgb.Name = name;
+			lpvrgb.Index = identifier;
+			Texture2DPtr lpvr = lpvInject->AddTexture(lpvrgb);
+			lpvTextures_[identifier++] = lpvr;
+
+			name = "LPV_G_";
+			name.AppendWithFormat("%i",i);
+			lpvrgb.Name = name;
+			lpvrgb.Index = identifier;
+			Texture2DPtr lpvg = lpvInject->AddTexture(lpvrgb);
+			lpvTextures_[identifier++] = lpvg;
+
+			name = "LPV_B_";
+			name.AppendWithFormat("%i",i);
+			lpvrgb.Name = name;
+			lpvrgb.Index = identifier;
+			Texture2DPtr lpvb = lpvInject->AddTexture(lpvrgb);
+			lpvTextures_[identifier++] = lpvb;
+		}
+
+		lpvrgb.Name = "LPV_ACCUM_R";
+		lpvrgb.Index = identifier;
+		Texture2DPtr lpvaccumr = lpvInject->AddTexture(lpvrgb);
+		lpvTextures_[identifier++] = lpvaccumr;
+
+		lpvrgb.Name = "LPV_ACCUM_G";
+		lpvrgb.Index = identifier;
+		Texture2DPtr lpvaccumg = lpvInject->AddTexture(lpvrgb);
+		lpvTextures_[identifier++] = lpvaccumg;
+
+		lpvrgb.Name = "LPV_ACCUM_B";
+		lpvrgb.Index = identifier;
+		Texture2DPtr lpvaccumb = lpvInject->AddTexture(lpvrgb);
+		lpvTextures_[identifier++] = lpvaccumb;
+
+		lpvrgb.Name = "LPV_INJECT_COUNTER";
+		lpvrgb.Index = identifier;
+		Texture2DPtr lpvinjectcounter = lpvInject->AddTexture(lpvrgb);
+		lpvTextures_[identifier] = lpvinjectcounter;
+
+		gYume->pRenderer->GetDefaultPass()->AddRenderCall(lpvInject);
+
+		lpvNormalize->AddTextures(10,lpvTextures_);
+		lpvPropagate->AddTextures(10,lpvTextures_);
+
+		gYume->pRenderer->GetDefaultPass()->AddRenderCall(lpvNormalize);
+		gYume->pRenderer->GetDefaultPass()->AddRenderCall(lpvPropagate);
+
+
+
 
 	}
 
@@ -220,7 +322,7 @@ namespace YumeEngine
 
 		lpvRenderer_->SetGIParameters();
 
-		YumeTexture2D* textures[4] = { lpv_r_[curr_],lpv_g_[curr_],lpv_b_[curr_],lpv_inject_counter_ };
+		YumeTexture2D* textures[4] ={lpv_r_[curr_],lpv_g_[curr_],lpv_b_[curr_],lpv_inject_counter_};
 		gYume->pRHI->PSBindSRV(7,4,textures);
 		/*gYume->pRHI->SetTexture(7,lpv_r_[curr_]);
 		gYume->pRHI->SetTexture(8,lpv_g_[curr_]);
@@ -261,7 +363,7 @@ namespace YumeEngine
 		gYume->pRHI->ClearRenderTarget(2,CLEAR_COLOR);
 
 
-		YumeTexture2D* textures[4] = { lpv_r_[curr_],lpv_g_[curr_],lpv_b_[curr_] };
+		YumeTexture2D* textures[4] ={lpv_r_[curr_],lpv_g_[curr_],lpv_b_[curr_]};
 		gYume->pRHI->PSBindSRV(7,3,textures);
 
 
@@ -272,7 +374,7 @@ namespace YumeEngine
 		lpvRenderer_->SetGIParameters();
 
 		gYume->pRHI->BindNullIndexBuffer();
-		
+
 		lpv_volume_geo_->Draw(gYume->pRHI);
 
 		gYume->pRHI->BindResetRenderTargets(6);

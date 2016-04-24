@@ -25,11 +25,7 @@
 #include "Engine/YumeEngine.h"
 #include "Renderer/YumeRHI.h"
 #include "Core/YumeEnvironment.h"
-#include "Scene/YumeOctree.h"
-#include "Renderer/YumeAuxRenderer.h"
-#include "Renderer/YumeRenderer.h"
-#include "Renderer/YumeRenderPipeline.h"
-#include "Renderer/YumeCamera.h"
+
 
 #include "Input/YumeInput.h"
 
@@ -78,106 +74,19 @@ namespace YumeEngine
 			input->SetMouseVisible(!input->IsMouseVisible());
 		}
 
-		else if(key == '1')
-		{
-			int quality = gYume->pRenderer->GetTextureQuality();
-			++quality;
-			if(quality > QUALITY_HIGH)
-				quality = QUALITY_LOW;
-			gYume->pRenderer->SetTextureQuality(quality);
-		}
-
-		// Material quality
-		else if(key == '2')
-		{
-			int quality = gYume->pRenderer->GetMaterialQuality();
-			++quality;
-			if(quality > QUALITY_HIGH)
-				quality = QUALITY_LOW;
-			gYume->pRenderer->SetMaterialQuality(quality);
-		}
-		else if(key == '3')
-			gYume->pRenderer->SetDrawShadows(!gYume->pRenderer->GetDrawShadows());
-		else if(key == '4')
-		{
-			int shadowMapSize = gYume->pRenderer->GetShadowMapSize();
-			shadowMapSize *= 2;
-			if(shadowMapSize > 2048)
-				shadowMapSize = 512;
-			gYume->pRenderer->SetShadowMapSize(shadowMapSize);
-		}
-		else if(key == '5')
-		{
-			ShadowQuality quality = gYume->pRenderer->GetShadowQuality();
-			quality = (ShadowQuality)(quality + 1);
-			if(quality > SHADOWQUALITY_BLUR_VSM)
-				quality = SHADOWQUALITY_SIMPLE_16BIT;
-			gYume->pRenderer->SetShadowQuality(quality);
-		}
-		else if(key == '6')
-		{
-			bool occlusion = gYume->pRenderer->GetMaxOccluderTriangles() > 0;
-			occlusion = !occlusion;
-			gYume->pRenderer->SetMaxOccluderTriangles(occlusion ? 5000 : 0);
-		}
-
 		if(input->GetKeyPress(KEY_U))
 			gYume->pUI->SetUIEnabled(!gYume->pUI->GetUIEnabled());
-
 		if(input->GetKeyPress(KEY_SPACE))
 			drawDebug_ = !drawDebug_;
 
-		if(input->GetKeyPress(KEY_G))
-		{
-			YumeRenderer* renderer = gYume->pRenderer;
-			renderer->SetGBufferDebugRendering(!renderer->GetGBufferDebugRendering());
-		}
 
-		//FX Debug
 
-		if(input->GetKeyPress(KEY_F2))
-		{
-			ssaoDebug_ = !ssaoDebug_;
-
-			YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
-			YumeRenderPipeline* pipeline = viewport->GetRenderPath();
-
-			RenderCommand p = pipeline->commands_[ssaoCommandIndex_];
-
-			if(ssaoDebug_)
-				p.pixelShaderDefines_ = "DEBUG_AO";
-			else
-				p.pixelShaderDefines_ = "COMBINE";
-
-			pipeline->RemoveCommand(ssaoCommandIndex_);
-			pipeline->InsertCommand(ssaoCommandIndex_,p);
-		}
-
-		if(input->GetKeyPress(KEY_F1))
-		{
-			YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
-			YumeRenderPipeline* pipeline = viewport->GetRenderPath();
-
-			pipeline->ToggleEnabled("DebugGBuffer");
-			gYume->pRenderer->SetGBufferDebugRendering(!gYume->pRenderer->GetGBufferDebugRendering());
-		}
-
-		if(input->GetKeyPress(KEY_F3))
-		{
-			YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
-			YumeRenderPipeline* pipeline = viewport->GetRenderPath();
-
-			pipeline->ToggleEnabled("VolumetricLightScatter");
-		}
+	
 	}
 
 	void BaseApplication::HandlePostRenderUpdate(float timeStep)
 	{
-		if(drawDebug_)
-		{
-			gYume->pRenderer->DrawDebugGeometry(false);
-			//scene_->GetComponent<Octree>()->DrawDebugGeometry(false);
-		}
+
 	}
 
 	void BaseApplication::Start()
@@ -185,56 +94,6 @@ namespace YumeEngine
 		SetupWindowProperties();
 
 		gYume->pInput->AddListener(this);
-
-
-		SharedPtr<YumeViewport> viewport(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>()));
-
-		YumeRenderPipeline* pipeline = viewport->GetRenderPath();
-		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/Bloom.xml"));
-		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/BloomHDR.xml"));
-		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/Blur.xml"));
-		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/FXAA2.xml"));
-		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/AutoExposure.xml"));
-		pipeline->Append(gYume->pResourceManager->PrepareResource<YumeXmlFile>("PostFX/LightScatter.xml"));
-		pipeline->SetShaderParameter("BloomMix",Vector2(0.9f,0.6f));
-		pipeline->SetShaderParameter("BloomHDRThreshold",0.8f);
-		pipeline->SetEnabled("Bloom",false);
-		pipeline->SetEnabled("AutoExposure",false);
-		pipeline->SetEnabled("BloomHDR",false);
-		pipeline->SetEnabled("Blur",false);
-		pipeline->SetEnabled("AutoExposure",false);
-		pipeline->SetEnabled("FXAA2",false);
-		pipeline->SetEnabled("VolumetricLightScatter",false);
-		viewport->SetRenderPath(pipeline);
-
-		YumeRenderer* renderer = gYume->pRenderer;
-		renderer->SetViewport(0,viewport);
-
-		for(int i=0; i < pipeline->GetNumCommands(); ++i)
-		{
-			if(pipeline->commands_[i].tag_ == "LinearDepthSSAO")
-				ssaoCommandIndex_ = i;
-			if(pipeline->commands_[i].tag_ == "DebugGBuffer")
-				gbufferDebugIndex_ = i;
-		}
-
-		Vector3 ao_radius = Vector3(1.0f,0.0f,4.0f);
-		Vector3 ao_intensity = Vector3(0.15f,0.0f,2.0f);
-		Vector3 ao_projscale = Vector3(0.3f,0.0f,1.0f);
-		Vector3 ao_bias = Vector3(0.01f,0.0f,0.1f);
-
-		pipeline->SetShaderParameter("Radius",ao_radius.x_);
-		pipeline->SetShaderParameter("ProjScale2",ao_projscale.x_);
-		pipeline->SetShaderParameter("IntensityDivR6",ao_intensity.x_);
-		pipeline->SetShaderParameter("Bias",ao_bias.x_);
-
-		pipeline->SetEnabled("LinearDepthSSAO",false);
-
-		gYume->pPostFx->SetDefaultParameters();
-
-
-
-
 	}
 
 	void BaseApplication::Exit()

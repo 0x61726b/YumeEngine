@@ -23,7 +23,7 @@ Texture2DArray lpv_sh_g             : register(t8);
 Texture2DArray lpv_sh_b             : register(t9);
 Texture2DArray lpv_inject_counter   : register(t10);
 
-PS_LPV_NORMALIZE PS(in GS_LPV_PROPAGATE input)
+PS_LPV_NORMALIZE LPVNormalizePs(in GS_LPV_PROPAGATE input)
 {
     PS_LPV_NORMALIZE output;
 

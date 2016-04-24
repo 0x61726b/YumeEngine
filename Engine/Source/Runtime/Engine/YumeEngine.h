@@ -46,7 +46,6 @@ namespace YumeEngine
 	class YumeObjectFactory;
 	class YumeRenderer;
 	class YumeWorkQueue;
-	class YumeDebugRenderer;
 	class YumeInput;
 
 	class YumeAPIExport YumeEngine3D : public YumeBase

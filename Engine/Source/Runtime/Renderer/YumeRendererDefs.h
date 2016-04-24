@@ -28,7 +28,7 @@
 namespace YumeEngine
 {
 
-	
+
 	enum PrimitiveType
 	{
 		TRIANGLE_LIST = 0,
@@ -39,19 +39,6 @@ namespace YumeEngine
 		TRIANGLE_FAN
 	};
 
-	
-	enum GeometryType
-	{
-		GEOM_STATIC = 0,
-		GEOM_SKINNED = 1,
-		GEOM_INSTANCED = 2,
-		GEOM_BILLBOARD = 3,
-		GEOM_DIRBILLBOARD = 4,
-		GEOM_STATIC_NOINSTANCING = 5,
-		MAX_GEOMETRYTYPES = 5,
-	};
-
-	
 	enum BlendMode
 	{
 		BLEND_REPLACE = 0,
@@ -66,7 +53,7 @@ namespace YumeEngine
 		MAX_BLENDMODES
 	};
 
-	
+
 	enum CompareMode
 	{
 		CMP_ALWAYS = 0,
@@ -79,7 +66,7 @@ namespace YumeEngine
 		MAX_COMPAREMODES
 	};
 
-	
+
 	enum CullMode
 	{
 		CULL_NONE = 0,
@@ -88,7 +75,7 @@ namespace YumeEngine
 		MAX_CULLMODES
 	};
 
-	
+
 	enum FillMode
 	{
 		FILL_SOLID = 0,
@@ -96,7 +83,7 @@ namespace YumeEngine
 		FILL_POINT
 	};
 
-	
+
 	enum StencilOp
 	{
 		OP_KEEP = 0,
@@ -106,7 +93,7 @@ namespace YumeEngine
 		OP_DECR
 	};
 
-	
+
 	enum LockState
 	{
 		LOCK_NONE = 0,
@@ -115,7 +102,7 @@ namespace YumeEngine
 		LOCK_SCRATCH
 	};
 
-	
+
 	enum VertexElement
 	{
 		ELEMENT_POSITION = 0,
@@ -137,7 +124,7 @@ namespace YumeEngine
 		MAX_VERTEX_ELEMENTS
 	};
 
-	
+
 	enum TextureFilterMode
 	{
 		FILTER_NEAREST = 0,
@@ -148,7 +135,7 @@ namespace YumeEngine
 		MAX_FILTERMODES
 	};
 
-	
+
 	enum TextureAddressMode
 	{
 		ADDRESS_WRAP = 0,
@@ -158,7 +145,7 @@ namespace YumeEngine
 		MAX_ADDRESSMODES
 	};
 
-	
+
 	enum TextureCoordinate
 	{
 		COORD_U = 0,
@@ -167,7 +154,7 @@ namespace YumeEngine
 		MAX_COORDS
 	};
 
-	
+
 	enum TextureUsage
 	{
 		TEXTURE_STATIC = 0,
@@ -176,7 +163,7 @@ namespace YumeEngine
 		TEXTURE_DEPTHSTENCIL
 	};
 
-	
+
 	enum CubeMapFace
 	{
 		FACE_POSITIVE_X = 0,
@@ -188,7 +175,7 @@ namespace YumeEngine
 		MAX_CUBEMAP_FACES
 	};
 
-	
+
 	enum CubeMapLayout
 	{
 		CML_HORIZONTAL = 0,
@@ -198,7 +185,7 @@ namespace YumeEngine
 		CML_BLENDER
 	};
 
-	
+
 	enum RenderSurfaceUpdateMode
 	{
 		SURFACE_MANUALUPDATE = 0,
@@ -206,7 +193,7 @@ namespace YumeEngine
 		SURFACE_UPDATEALWAYS
 	};
 
-	
+
 	enum ShaderType
 	{
 		VS = 0,
@@ -214,7 +201,7 @@ namespace YumeEngine
 		GS
 	};
 
-	
+
 	enum ShaderParameterGroup
 	{
 		SP_FRAME = 0,
@@ -229,7 +216,7 @@ namespace YumeEngine
 		MAX_SHADER_PARAMETER_GROUPS
 	};
 
-	
+
 	enum TextureUnit
 	{
 		TU_DIFFUSE = 0,
@@ -254,28 +241,43 @@ namespace YumeEngine
 		MAX_TEXTURE_UNITS = 16
 	};
 
-	
-	enum FaceCameraMode
+	enum RenderTargetInOut
 	{
-		FC_NONE = 0,
-		FC_ROTATE_XYZ,
-		FC_ROTATE_Y,
-		FC_LOOKAT_XYZ,
-		FC_LOOKAT_Y,
-		FC_DIRECTION
+		RT_INPUT = 0x1,
+		RT_OUTPUT = 0x2,
+		RT_DEPTHSTENCIL = 0x4
 	};
 
-	
-	enum ShadowQuality
+	struct RenderTargetDesc
 	{
-		SHADOWQUALITY_SIMPLE_16BIT = 0,
-		SHADOWQUALITY_SIMPLE_24BIT,
-		SHADOWQUALITY_PCF_16BIT,
-		SHADOWQUALITY_PCF_24BIT,
-		SHADOWQUALITY_VSM,
-		SHADOWQUALITY_BLUR_VSM
+		unsigned Index;
+		unsigned Width;
+		unsigned Height;
+
+		YumeString Name;
+		unsigned Format;
+		unsigned ArraySize;
+		unsigned Mips;
+
+		TextureUsage Usage;
+
+		unsigned Type;
+		YumeColor ClearColor;
 	};
 
+
+
+	enum MiscRenderingFlags
+	{
+		RF_NODEPTHSTENCIL = 0x1
+	};
+
+	struct GIParameters
+	{
+		float Scale;
+		float LPVFlux;
+		bool DebugView;
+	};
 
 	extern YumeAPIExport const YumeHash VSP_AMBIENTSTARTCOLOR;
 	extern YumeAPIExport const YumeHash VSP_AMBIENTENDCOLOR;

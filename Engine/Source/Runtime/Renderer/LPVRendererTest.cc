@@ -23,16 +23,12 @@
 #include "LPVRendererTest.h"
 
 #include "YumeGeometry.h"
-#include "YumeRenderPipeline.h"
 #include "YumeVertexBuffer.h"
 #include "YumeIndexBuffer.h"
 #include "YumeRHI.h"
-#include "YumeRenderer.h"
-#include "YumeModel.h"
 #include "YumeGeometry.h"
 #include "Core/YumeFile.h"
 
-#include "YumeStaticModel.h"
 #include "YumeMiscRenderer.h"
 
 #include "AssimpMesh.h"
@@ -62,7 +58,6 @@ namespace YumeEngine
 		misc_(mi)
 	{
 		rhi_ = gYume->pRHI;
-		renderer_ = gYume->pRenderer;
 
 		XMMATRIX I = DirectX::XMMatrixIdentity();
 		XMStoreFloat4x4(&world_,I);

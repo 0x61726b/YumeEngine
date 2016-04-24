@@ -129,7 +129,7 @@ namespace YumeEngine
 		for(;It != uiElements_.end(); ++It)
 		{
 			if((*It)->GetVisible())
-				gYume->pRenderer->miscRenderer_->RenderFullScreenTexture((*It)->GetRect(),(*It)->GetTexture());
+				gYume->pRenderer->RenderFullScreenTexture((*It)->GetRect(),(*It)->GetTexture());
 		}
 	}
 

@@ -19,29 +19,34 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeD3D11Renderable_h__
-#define __YumeD3D11Renderable_h__
-//----------------------------------------------------------------------------
-#include "YumeD3D11Required.h"
-#include "Renderer/YumeRendererDefs.h"
-#include "Renderer/YumeRenderable.h"
-//----------------------------------------------------------------------------
+#include "YumeHeaders.h"
+#include "StaticModel.h"
+
+#include "Logging/logging.h"
+
+
 namespace YumeEngine
 {
-	class YumeTexture;
-
-	/// %Color or depth-stencil surface that can be rendered into.
-	class YumeD3DExport YumeD3D11Renderable : public YumeRenderable
+	StaticModel::StaticModel(const YumeString& model)
+		: SceneNode(GT_STATIC),modelName_(model)
 	{
-	public:
-		
-		YumeD3D11Renderable(YumeTexture* parentTexture);
-		
-		~YumeD3D11Renderable();
-		virtual void Release();
-	};
+
+	}
+
+	StaticModel::~StaticModel()
+	{
+
+	}
+
+	void StaticModel::Initialize()
+	{
+		if(!internalMesh_.Load(gYume->pResourceManager->GetFullPath(modelName_)))
+			YUMELOG_ERROR("Model resource " << modelName_.c_str() << " couldnt be loaded.");
+
+		SetGeometry(&internalMesh_);
+
+		SetWorld(DirectX::XMMatrixIdentity());
+
+		internalMesh_.set_world(World);
+	}
 }
-
-
-//----------------------------------------------------------------------------
-#endif

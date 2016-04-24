@@ -134,7 +134,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 if(OS_WINDOWS)
 
-  SET(YUME_COMPILER_FLAGS "/EHsc /Zi /GR /W4 /wd\"4100\" /wd\"4127\" /wd\"4244\" /wd\"4512\" /wd\"4701\" /wd\"4702\" /wd\"4996\" /wd\"4251\" /wd\"4275\" /wd\"4005\" /wd\"4267\"")
+  SET(YUME_COMPILER_FLAGS "/EHsc /Zi /GR /W4 /wd\"4100\" /wd\"4127\" /wd\"4201\" /wd\"4244\" /wd\"4512\" /wd\"4701\" /wd\"4702\" /wd\"4996\" /wd\"4251\" /wd\"4275\" /wd\"4005\" /wd\"4267\"")
   SET(YUME_COMPILER_FLAGS_DEBUG "/MDd /RTC1 /Od /Ob0")
   set(YUME_COMPILER_FLAGS_RELEASE  "/MD")
   set(YUME_LINKER_FLAGS_DEBUG      "/DEBUG")

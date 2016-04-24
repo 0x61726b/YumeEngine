@@ -19,29 +19,46 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeD3D11Renderable_h__
-#define __YumeD3D11Renderable_h__
-//----------------------------------------------------------------------------
-#include "YumeD3D11Required.h"
-#include "Renderer/YumeRendererDefs.h"
-#include "Renderer/YumeRenderable.h"
-//----------------------------------------------------------------------------
+#include "YumeHeaders.h"
+#include "SceneNode.h"
+
+using namespace DirectX;
+
 namespace YumeEngine
 {
-	class YumeTexture;
-
-	/// %Color or depth-stencil surface that can be rendered into.
-	class YumeD3DExport YumeD3D11Renderable : public YumeRenderable
+	SceneNode::SceneNode(GeometryType gt)
+		: type_(gt),
+		pos_(XMFLOAT4(0,0,0,0)),
+		rot_(XMFLOAT4(0,0,0,0)),
+		dir_(XMFLOAT4(0,0,0,0)),
+		geometry_(0),
+		name_("SceneNode")
 	{
-	public:
-		
-		YumeD3D11Renderable(YumeTexture* parentTexture);
-		
-		~YumeD3D11Renderable();
-		virtual void Release();
-	};
+		XMMATRIX I = XMMatrixIdentity();
+		XMStoreFloat4x4(&World,I);
+	}
+
+	SceneNode::~SceneNode()
+	{
+	}
+
+	void SceneNode::SetPosition(const DirectX::XMVECTOR& v)
+	{
+		DirectX::XMStoreFloat4(&pos_,v);
+	}
+
+	void SceneNode::SetRotation(const DirectX::XMVECTOR& v)
+	{
+		DirectX::XMStoreFloat4(&rot_,v);
+	}
+
+	void SceneNode::SetDirection(const DirectX::XMVECTOR& v)
+	{
+		DirectX::XMStoreFloat4(&dir_,v);
+	}
+
+	void SceneNode::SetWorld(const DirectX::XMMATRIX& world)
+	{
+		DirectX::XMStoreFloat4x4(&World,world);
+	}
 }
-
-
-//----------------------------------------------------------------------------
-#endif

@@ -40,11 +40,28 @@
 
 namespace YumeEngine
 {
-	RHIEvent::RHIEvent(const YumeString& event)
+	RHIEvent::RHIEvent(const YumeString& event,bool ao)
+	{
+		autoStart = ao;
+		if(autoStart)
+			gYume->pRHI->BeginEvent(event);
+	}
+	RHIEvent::RHIEvent()
+	{
+
+	}
+	RHIEvent::~RHIEvent()
+	{
+		if(autoStart)
+			gYume->pRHI->EndEvent();
+	}
+
+	void RHIEvent::BeginEvent(const YumeString& event)
 	{
 		gYume->pRHI->BeginEvent(event);
 	}
-	RHIEvent::~RHIEvent()
+
+	void RHIEvent::EndEvent()
 	{
 		gYume->pRHI->EndEvent();
 	}
@@ -273,31 +290,6 @@ namespace YumeEngine
 		SetRenderTarget(index,renderTarget);
 	}
 
-	bool YumeRHI::HasTextureUnit(TextureUnit unit)
-	{
-		return (vertexShader_ && vertexShader_->HasTextureUnit(unit)) || (pixelShader_ && pixelShader_->HasTextureUnit(unit));
-	}
-
-
-	TextureUnit YumeRHI::GetTextureUnit(const YumeString& name)
-	{
-		YumeMap<YumeString,TextureUnit>::iterator i = textureUnits_.find(name);
-		if(i != textureUnits_.end())
-			return i->second;
-		else
-			return MAX_TEXTURE_UNITS;
-	}
-
-
-	const YumeString& YumeRHI::GetTextureUnitName(TextureUnit unit)
-	{
-		for(YumeMap<YumeString,TextureUnit>::iterator i = textureUnits_.begin(); i != textureUnits_.end(); ++i)
-		{
-			if(i->second == unit)
-				return i->first;
-		}
-		return EmptyString;
-	}
 	YumeTexture* YumeRHI::GetTexture(unsigned index) const
 	{
 		return index < MAX_TEXTURE_UNITS ? textures_[index] : 0;

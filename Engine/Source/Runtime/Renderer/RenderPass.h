@@ -19,59 +19,35 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeRenderable_h__
-#define __YumeRenderable_h__
+#ifndef __RenderPass_h__
+#define __RenderPass_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeTexture.h"
+#include "RenderCall.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-
-	class YumeAPIExport YumeRenderable : public YumeBase
+	class YumeAPIExport RenderPass : public YumeBase
 	{
-		friend class YumeTexture2D;
-		friend class YumeTextureCube;
-
 	public:
-		YumeRenderable(YumeTexture* parentTexture);
-		~YumeRenderable();
+		RenderPass();
+		virtual ~RenderPass();
 
-		void SetUpdateMode(RenderSurfaceUpdateMode mode);
-		void SetLinkedRenderTarget(YumeRenderable* renderTarget);
-		void SetLinkedDepthStencil(YumeRenderable* depthStencil);
-		void QueueUpdate();
-		virtual void Release() = 0;
+		void AddRenderCall(RenderCall* call);
+		void RemoveRenderCall(RenderCall* call);
 
-		YumeTexture* GetParentTexture() const { return parentTexture_; }
+		RenderCallPtr GetRenderCall(unsigned index) const { return calls_[index]; }
 
-		void* GetRenderTargetView() const { return renderTargetView_; }
+		RenderCallPtr GetCallByName(const YumeString& name);
 
-		void* GetReadOnlyView() const { return readOnlyView_; }
+		void SetShaderParameter(YumeHash param,const Variant& variant);
 
-		int GetWidth() const;
-		int GetHeight() const;
-		TextureUsage GetUsage() const;
-
-		RenderSurfaceUpdateMode GetUpdateMode() const { return updateMode_; }
-
-		YumeRenderable* GetLinkedRenderTarget() const { return linkedRenderTarget_; }
-		YumeRenderable* GetLinkedDepthStencil() const { return linkedDepthStencil_; }
-
-		bool IsUpdateQueued() const { return updateQueued_; }
-		void ResetUpdateQueued();
-
-	public:
-		YumeTexture* parentTexture_;
-		void* renderTargetView_;
-		void* readOnlyView_;
-		WeakPtr<YumeRenderable> linkedRenderTarget_;
-		WeakPtr<YumeRenderable> linkedDepthStencil_;
-		RenderSurfaceUpdateMode updateMode_;
-		bool updateQueued_;
+		typedef YumeVector<RenderCall*> RenderCalls;
+		RenderCalls::type calls_;
 	};
 }
 
 
 //----------------------------------------------------------------------------
 #endif
+

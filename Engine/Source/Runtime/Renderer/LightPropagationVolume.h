@@ -58,6 +58,9 @@ namespace YumeEngine
 		SharedPtr<YumeTexture2D> GetLPVAccumG() const { return lpv_accum_g_; }
 		SharedPtr<YumeTexture2D> GetLPVAccumB() const { return lpv_accum_b_; }
 
+		YumeGeometry* GetLPVVolume() const { return lpv_volume_geo_; }
+		
+		Texture2DPtr lpvTextures_[10];
 	private:
 		unsigned volume_size_;
 		unsigned curr_;

@@ -111,7 +111,6 @@ namespace YumeEngine
 		YumeGeometry* cornell_;
 		YumeGeometry* plane_;
 		YumeStaticModel* model_;
-		YumeVector<YumeMaterial*>::type materials_;
 
 
 
@@ -150,7 +149,6 @@ namespace YumeEngine
 		LightPropagationVolume lpv_;
 
 		YumeRHI* rhi_;
-		YumeRenderer* renderer_;
 	};
 }
 

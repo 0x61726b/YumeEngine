@@ -19,56 +19,26 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeRenderable_h__
-#define __YumeRenderable_h__
+#ifndef __StaticModel_h__
+#define __StaticModel_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "YumeTexture.h"
+#include "SceneNode.h"
+#include "AssimpMesh.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-
-	class YumeAPIExport YumeRenderable : public YumeBase
+	class YumeAPIExport StaticModel : public SceneNode
 	{
-		friend class YumeTexture2D;
-		friend class YumeTextureCube;
-
 	public:
-		YumeRenderable(YumeTexture* parentTexture);
-		~YumeRenderable();
+		StaticModel(const YumeString& resName);
+		virtual ~StaticModel();
 
-		void SetUpdateMode(RenderSurfaceUpdateMode mode);
-		void SetLinkedRenderTarget(YumeRenderable* renderTarget);
-		void SetLinkedDepthStencil(YumeRenderable* depthStencil);
-		void QueueUpdate();
-		virtual void Release() = 0;
+		void Initialize();
 
-		YumeTexture* GetParentTexture() const { return parentTexture_; }
-
-		void* GetRenderTargetView() const { return renderTargetView_; }
-
-		void* GetReadOnlyView() const { return readOnlyView_; }
-
-		int GetWidth() const;
-		int GetHeight() const;
-		TextureUsage GetUsage() const;
-
-		RenderSurfaceUpdateMode GetUpdateMode() const { return updateMode_; }
-
-		YumeRenderable* GetLinkedRenderTarget() const { return linkedRenderTarget_; }
-		YumeRenderable* GetLinkedDepthStencil() const { return linkedDepthStencil_; }
-
-		bool IsUpdateQueued() const { return updateQueued_; }
-		void ResetUpdateQueued();
-
-	public:
-		YumeTexture* parentTexture_;
-		void* renderTargetView_;
-		void* readOnlyView_;
-		WeakPtr<YumeRenderable> linkedRenderTarget_;
-		WeakPtr<YumeRenderable> linkedDepthStencil_;
-		RenderSurfaceUpdateMode updateMode_;
-		bool updateQueued_;
+	private:
+		YumeMesh internalMesh_;
+		YumeString modelName_;
 	};
 }
 

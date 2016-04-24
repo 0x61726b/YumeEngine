@@ -248,12 +248,6 @@ namespace YumeEngine
 		case VAR_VECTOR2:
 			return WriteVector2(value.GetVector2());
 
-		case VAR_VECTOR3:
-			return WriteVector3(value.GetVector3());
-
-		case VAR_VECTOR4:
-			return WriteVector4(value.GetVector4());
-
 		case VAR_QUATERNION:
 			return WriteQuaternion(value.GetQuaternion());
 
@@ -297,9 +291,6 @@ namespace YumeEngine
 
 		case VAR_MATRIX3X4:
 			return WriteMatrix3x4(value.GetMatrix3x4());
-
-		case VAR_MATRIX4:
-			return WriteMatrix4(value.GetMatrix4());
 
 		case VAR_DOUBLE:
 			return WriteDouble(value.GetDouble());

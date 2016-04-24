@@ -185,6 +185,8 @@ namespace YumeEngine
 					D3D_SAFE_RELEASE(object_);
 					compilerOutput_ = "Could not create vertex shader (HRESULT " + String(hr) + ")";
 				}
+				else
+					((ID3D11VertexShader*)object_)->SetPrivateData(WKPDID_D3DDebugObjectName,GetName().length(),GetName().c_str());
 			}
 			else
 				compilerOutput_ = "Could not create vertex shader, empty bytecode";
@@ -199,6 +201,8 @@ namespace YumeEngine
 					D3D_SAFE_RELEASE(object_);
 					compilerOutput_ = "Could not create pixel shader (HRESULT " + String(hr) + ")";
 				}
+				else
+					((ID3D11PixelShader*)object_)->SetPrivateData(WKPDID_D3DDebugObjectName,GetName().length(),GetName().c_str());
 			}
 			else
 				compilerOutput_ = "Could not create pixel shader, empty bytecode";
@@ -213,6 +217,8 @@ namespace YumeEngine
 					D3D_SAFE_RELEASE(object_);
 					compilerOutput_ = "Could not create GEOMETRY shader (HRESULT " + String(hr) + ")";
 				}
+				else
+					((ID3D11GeometryShader*)object_)->SetPrivateData(WKPDID_D3DDebugObjectName,GetName().length(),GetName().c_str());
 			}
 			else
 				compilerOutput_ = "Could not create GEOMETRY shader, empty bytecode";
@@ -484,59 +490,7 @@ namespace YumeEngine
 
 	void YumeD3D11ShaderVariation::SaveByteCode(const YumeString& binaryShaderName)
 	{
-		YumeIO* io_ = gYume->pIO;
-		YumeResourceManager* rm_ = gYume->pResourceManager;
-
-		YumeString path = GetPath(rm_->GetFullPath(owner_->GetName())) + "Cache/";
-
-		if(!io_->IsDirectoryExist(FsPath(path.c_str())))
-			io_->CreateDir(FsPath(path.c_str()));
-
-		YumeString p,file,extension;
-		SplitPath(binaryShaderName,p,file,extension);
-		YumeString fullName = p+ file + extension;
-
-
-
-		SharedPtr<YumeFile> file_ = SharedPtr<YumeFile>(new YumeFile(path + file + extension,FILEMODE_WRITE));
-
-
-		if(!file_)
-			return;
-
-		file_->WriteFileID("USHD");
-		file_->WriteShort((unsigned short)type_);
-		file_->WriteShort(4);
-		file_->WriteUInt(elementMask_);
-
-		file_->WriteUInt(parameters_.size());
-		for(YumeMap<YumeHash,ShaderParameter>::const_iterator i = parameters_.begin(); i != parameters_.end(); ++i)
-		{
-			file_->WriteString(i->second.name_);
-			file_->WriteUByte((unsigned char)i->second.buffer_);
-			file_->WriteUInt(i->second.offset_);
-			file_->WriteUInt(i->second.size_);
-		}
-
-		unsigned usedTextureUnits = 0;
-		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
-		{
-			if(useTextureUnit_[i])
-				++usedTextureUnits;
-		}
-		file_->WriteUInt(usedTextureUnits);
-		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
-		{
-			if(useTextureUnit_[i])
-			{
-				file_->WriteString(gYume->pRHI->GetTextureUnitName((TextureUnit)i));
-				file_->WriteUByte((unsigned char)i);
-			}
-		}
-
-		file_->WriteUInt(byteCode_.size());
-		if(byteCode_.size())
-			file_->Write(&byteCode_[0],byteCode_.size());
+		
 
 	}
 
