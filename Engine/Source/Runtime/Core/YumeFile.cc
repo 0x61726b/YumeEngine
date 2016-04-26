@@ -189,11 +189,29 @@ namespace YumeEngine
 		return BoundingBox(Vector3(&data[0]),Vector3(&data[3]));
 	}
 
-	Vector3 YumeFile::ReadVector3()
+	DirectX::XMFLOAT3 YumeFile::ReadVector3()
 	{
 		float data[3];
 		Read(data,sizeof data);
-		return Vector3(data);
+
+		DirectX::XMFLOAT3 d;
+		d.x = data[0];
+		d.y = data[1];
+		d.z = data[2];
+		return d;
+	}
+
+	DirectX::XMFLOAT4 YumeFile::ReadVector4()
+	{
+		float data[4];
+		Read(data,sizeof data);
+
+		DirectX::XMFLOAT4 d;
+		d.x = data[0];
+		d.y = data[1];
+		d.z = data[2];
+		d.w = data[2];
+		return d;
 	}
 
 	Quaternion YumeFile::ReadQuaternion()

@@ -1,8 +1,0 @@
-<Yume>
-  <Technique vs="Unlit" ps="Unlit" psdefines="DIFFMAP" >
-      <Pass name="base" />
-      <Pass name="prepass" psdefines="PREPASS" />
-      <Pass name="material" />
-      <Pass name="deferred" psdefines="DEFERRED" />
-  </Technique>
-</Yume>

@@ -36,14 +36,31 @@ namespace YumeEngine
 		void AddRenderCall(RenderCall* call);
 		void RemoveRenderCall(RenderCall* call);
 
+		void Load(const YumeString& resource);
+
 		RenderCallPtr GetRenderCall(unsigned index) const { return calls_[index]; }
 
 		RenderCallPtr GetCallByName(const YumeString& name);
+		Pair<SamplerStateDesc,unsigned>& GetSamplerByName(const YumeString& name);
 
-		void SetShaderParameter(YumeHash param,const Variant& variant);
+		void DisableRenderCalls(const YumeString& id);
+		void EnableRenderCalls(const YumeString& id);
+
+		void SetShaderParameter(YumeHash param,const Variant&);
+		void SetShaderParameter(YumeHash param,const DirectX::XMFLOAT3& matrix);
+		void SetShaderParameter(YumeHash param,const DirectX::XMFLOAT4& matrix);
+		void SetShaderParameter(YumeHash param,const DirectX::XMMATRIX& matrix);
+
+		Texture2DPtr GetTextureByName(const YumeString&);
+
+		typedef YumeMap<YumeString,Pair<SamplerStateDesc,unsigned> > Samplers;
+		Samplers::type samplers_;
 
 		typedef YumeVector<RenderCall*> RenderCalls;
 		RenderCalls::type calls_;
+
+		typedef YumeMap<YumeString, Texture2DPtr> RenderTargets;
+		RenderTargets::type renderTargets_;
 	};
 }
 

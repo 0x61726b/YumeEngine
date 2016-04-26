@@ -80,6 +80,7 @@ namespace YumeEngine
 	YumeAPIExport DirectX::XMMATRIX ToMatrix4(const YumeString& source);
 	YumeAPIExport DirectX::XMMATRIX ToMatrix4(const char* source);
 	YumeAPIExport YumeString ToString(void* value);
+	YumeAPIExport YumeVector<YumeString>::type ParseFlags(const char* source);
 	YumeAPIExport YumeString ToStringHex(unsigned value);
 	YumeAPIExport void StringToBuffer(YumeVector<unsigned char>::type& dest,const YumeString& source);
 	YumeAPIExport void StringToBuffer(YumeVector<unsigned char>::type& dest,const char* source);

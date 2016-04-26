@@ -289,8 +289,8 @@ namespace YumeEngine
 			RHIEvent e("DeferredRenderer");
 
 
-			rhi_->BindSampler(PS,2,1,2); //Shadow
-			rhi_->BindSampler(PS,1,1,3); //LPV
+			//rhi_->BindSampler(PS,2,1,2); //Shadow
+			//rhi_->BindSampler(PS,1,1,3); //LPV
 
 
 			rhi_->SetShaders(triangleVs_,deferredLpvPs_,0);

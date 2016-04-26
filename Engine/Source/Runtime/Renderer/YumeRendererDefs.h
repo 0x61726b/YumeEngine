@@ -265,11 +265,59 @@ namespace YumeEngine
 		YumeColor ClearColor;
 	};
 
+	enum TextureFilterModes
+	{
+		TFM_Nearest = 0,
+		TFM_Bilinear,
+		TFM_Trilinear,
+		TFM_Aniso,
+		TFM_Default
+	};
 
+	enum TextureAddressModes
+	{
+		TAM_Wrap = 0,
+		TAM_Mirror,
+		TAM_Clamp,
+		TAM_Border
+	};
+
+	enum TextureComparisonFunctions
+	{
+		TCF_NEVER,
+		TCF_EQUAL,
+		TCF_NOTEQUAL,
+		TCF_LESS,
+		TCF_LESSEQUAL,
+		TCF_GREATER,
+		TCF_GREATEREQUAL,
+		TCF_ALWAYS,
+	};
+
+	struct SamplerStateDesc
+	{
+		TextureFilterModes Filter;
+		TextureAddressModes AddressModeU;
+		TextureAddressModes AddressModeV;
+		TextureAddressModes AddressModeW;
+
+		TextureComparisonFunctions ComparisonFunc;
+
+		float MaxLOD;
+		unsigned MaxAniso;
+
+		YumeString Name;
+
+		float BorderColor[4];
+
+		unsigned Register;
+		ShaderType Type;
+	};
 
 	enum MiscRenderingFlags
 	{
-		RF_NODEPTHSTENCIL = 0x1
+		RF_NODEPTHSTENCIL = 0x1,
+		RF_NOBLENDSTATE = 0x2
 	};
 
 	struct GIParameters

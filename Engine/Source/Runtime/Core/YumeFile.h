@@ -83,7 +83,8 @@ namespace YumeEngine
 		Variant ReadVariant();
 		Variant ReadVariant(VariantType type);
 		BoundingBox ReadBoundingBox();
-		Vector3 ReadVector3();
+		DirectX::XMFLOAT3 ReadVector3();
+		DirectX::XMFLOAT4 ReadVector4();
 		Quaternion ReadQuaternion();
 
 		unsigned GetSize();

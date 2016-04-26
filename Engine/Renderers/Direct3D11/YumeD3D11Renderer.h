@@ -78,7 +78,7 @@ namespace YumeEngine
 		bool									UpdateSwapchain(int width,int height);
 		/* */
 
-		virtual void							BindSampler(ShaderType type,unsigned samplerStartSlot,unsigned samplerCount,unsigned internalIndex);
+		virtual void							BindSampler(ShaderType type,unsigned start,unsigned count,unsigned* samplers);
 		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures);
 		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture3D** textures);
 		virtual void							VSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures);
@@ -98,6 +98,7 @@ namespace YumeEngine
 		virtual void							BindDepthStateEnable();
 		virtual void							BindDepthStateDisable();
 		virtual void							GenerateMips(YumeTexture2D*);
+		virtual unsigned						CreateSamplerState(const SamplerStateDesc& sampler);
 
 		virtual IntVector2						GetRenderTargetDimensions() const;
 		virtual void							CreateRendererCapabilities();
@@ -247,6 +248,7 @@ namespace YumeEngine
 	private:
 		bool									initialized_;
 
+		YumeVector<ID3D11SamplerState*>::type	samplers_;
 
 		YumeD3D11RendererImpl*					impl_;
 		ShaderProgramMap::type					shaderPrograms_;

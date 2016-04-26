@@ -726,6 +726,24 @@ namespace YumeEngine
 			dest[index] = (unsigned char)value;
 	}
 
+	YumeVector<YumeString>::type ParseFlags(const char* source)
+	{
+		YumeVector<YumeString>::type dest;
+		unsigned size = CountElements(source,' ');
+		dest.resize(size);
+
+		std::vector<std::string> strs;
+		boost::split(strs,source,boost::is_any_of(" "));
+		
+		for(int i=0; i < strs.size(); ++i)
+		{
+			if(!strcmp(strs[i].c_str(),"") == 0)
+				dest[i] = strs[i].c_str();
+		}
+
+		return dest;
+	}
+
 
 	void BufferToString(YumeString& dest,const void* data,unsigned size)
 	{

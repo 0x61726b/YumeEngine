@@ -66,6 +66,44 @@
 
 namespace YumeEngine
 {
+	static const char* addressModeNames[] =
+	{
+		"wrap",
+		"mirror",
+		"clamp",
+		"border",
+		0
+	};
+
+	static const char* filterModeNames[] =
+	{
+		"nearest",
+		"bilinear",
+		"trilinear",
+		"anisotropic",
+		"default",
+		0
+	};
+
+	static const D3D11_FILTER d3dFilterMode[] =
+	{
+		D3D11_FILTER_MIN_MAG_MIP_POINT,
+		D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT,
+		D3D11_FILTER_MIN_MAG_MIP_LINEAR,
+		D3D11_FILTER_ANISOTROPIC,
+		D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT,
+		D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT,
+		D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
+		D3D11_FILTER_COMPARISON_ANISOTROPIC
+	};
+
+	static const D3D11_TEXTURE_ADDRESS_MODE d3dAddressMode[] =
+	{
+		D3D11_TEXTURE_ADDRESS_WRAP,
+		D3D11_TEXTURE_ADDRESS_MIRROR,
+		D3D11_TEXTURE_ADDRESS_CLAMP,
+		D3D11_TEXTURE_ADDRESS_BORDER
+	};
 
 	static const D3D11_COMPARISON_FUNC d3dCmpFunc[] =
 	{
@@ -258,6 +296,7 @@ namespace YumeEngine
 		viewport_ = IntRect(0,0,windowWidth_,windowHeight_);
 
 		noDs_ = false;
+		noBlendState_ = false;
 
 		indexBuffer_ = 0;
 		vertexDeclarationHash_ = 0;
@@ -321,7 +360,7 @@ namespace YumeEngine
 	{
 		IntVector2 rtSize = GetRenderTargetDimensions();
 
-		
+
 
 		SetDepthWrite(true);
 		PreDraw();
@@ -604,12 +643,12 @@ namespace YumeEngine
 			D3D_SAFE_RELEASE(rasterizerIt->second);
 		impl_->rasterizerStates_.clear();
 
-		D3D_SAFE_RELEASE(standardFilter_);
-		D3D_SAFE_RELEASE(lpvFilter_);
-		D3D_SAFE_RELEASE(vplFilter_);
-		D3D_SAFE_RELEASE(shadowFilter_);
-		D3D_SAFE_RELEASE(bsInject_);
-		D3D_SAFE_RELEASE(bsPropogate_);
+		//D3D_SAFE_RELEASE(standardFilter_);
+		//D3D_SAFE_RELEASE(lpvFilter_);
+		//D3D_SAFE_RELEASE(vplFilter_);
+		//D3D_SAFE_RELEASE(shadowFilter_);
+		/*D3D_SAFE_RELEASE(bsInject_);*/
+		/*D3D_SAFE_RELEASE(bsPropogate_);*/
 		D3D_SAFE_RELEASE(dss_disableDepthTest_);
 		D3D_SAFE_RELEASE(dss_enableDepthTest_);
 
@@ -1394,7 +1433,7 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::CreateStandardSampler()
 	{
-		D3D11_SAMPLER_DESC sd;
+		/*D3D11_SAMPLER_DESC sd;
 		ZeroMemory(&sd,sizeof(sd));
 		sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 		sd.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -1425,66 +1464,71 @@ namespace YumeEngine
 		sd.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
 		sd.MaxLOD = D3D11_FLOAT32_MAX;
 
+
+
 		hr = impl_->device_->CreateSamplerState(&sd,&vplFilter_);
 		vplFilter_->SetPrivateData(WKPDID_D3DDebugObjectName,9,"VPLFilter");
 
-
-		ZeroMemory(&sd,sizeof(sd));
-		sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		sd.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		sd.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		sd.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		sd.MaxLOD = D3D11_FLOAT32_MAX;
-
-		hr = impl_->device_->CreateSamplerState(&sd,&standardFilter_);
-		standardFilter_->SetPrivateData(WKPDID_D3DDebugObjectName,14,"StandardFilter");
-
-		if(FAILED(hr))
-		{
-			YUMELOG_ERROR("Could not create standard filter");
-		}
+		D3D11_SAMPLER_DESC dx;
+		vplFilter_->GetDesc(&dx);*/
 
 
+		//ZeroMemory(&sd,sizeof(sd));
+		//sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		//sd.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		//sd.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		//sd.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		//sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		//sd.MaxLOD = D3D11_FLOAT32_MAX;
 
-		if(FAILED(hr))
-		{
-			YUMELOG_ERROR("Could not create LPV filter");
-		}
+		//hr = impl_->device_->CreateSamplerState(&sd,&standardFilter_);
+		//standardFilter_->SetPrivateData(WKPDID_D3DDebugObjectName,14,"StandardFilter");
 
-		D3D11_BLEND_DESC bld;
-		ZeroMemory(&bld,sizeof(D3D11_BLEND_DESC));
+		//if(FAILED(hr))
+		//{
+		//	YUMELOG_ERROR("Could not create standard filter");
+		//}
 
-		bld.IndependentBlendEnable = TRUE;
 
-		for(size_t i = 0; i < 6; ++i)
-		{
-			bld.RenderTarget[i].BlendEnable =    TRUE;
-			bld.RenderTarget[i].SrcBlend =       D3D11_BLEND_ONE;
-			bld.RenderTarget[i].DestBlend =      D3D11_BLEND_ONE;
-			bld.RenderTarget[i].SrcBlendAlpha =  D3D11_BLEND_ONE;
-			bld.RenderTarget[i].DestBlendAlpha = D3D11_BLEND_ONE;
-			bld.RenderTarget[i].BlendOp =        D3D11_BLEND_OP_ADD;
-			bld.RenderTarget[i].BlendOpAlpha =   D3D11_BLEND_OP_ADD;
-			bld.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-		}
 
-		hr = impl_->device_->CreateBlendState(&bld,&bsInject_);
+		//if(FAILED(hr))
+		//{
+		//	YUMELOG_ERROR("Could not create LPV filter");
+		//}
 
-		if(FAILED(hr))
-		{
-			YUMELOG_ERROR("Could not create blend state of injection");
-		}
+		//D3D11_BLEND_DESC bld;
+		//ZeroMemory(&bld,sizeof(D3D11_BLEND_DESC));
 
-		for(size_t i = 0; i < 3; ++i)
-			bld.RenderTarget[i].BlendEnable = FALSE;
+		//bld.IndependentBlendEnable = TRUE;
 
-		hr = impl_->device_->CreateBlendState(&bld,&bsPropogate_);
+		//for(size_t i = 0; i < 6; ++i)
+		//{
+		//	bld.RenderTarget[i].BlendEnable =    TRUE;
+		//	bld.RenderTarget[i].SrcBlend =       D3D11_BLEND_ONE;
+		//	bld.RenderTarget[i].DestBlend =      D3D11_BLEND_ONE;
+		//	bld.RenderTarget[i].SrcBlendAlpha =  D3D11_BLEND_ONE;
+		//	bld.RenderTarget[i].DestBlendAlpha = D3D11_BLEND_ONE;
+		//	bld.RenderTarget[i].BlendOp =        D3D11_BLEND_OP_ADD;
+		//	bld.RenderTarget[i].BlendOpAlpha =   D3D11_BLEND_OP_ADD;
+		//	bld.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+		//}
 
-		impl_->samplers_[0] = standardFilter_;
-		impl_->samplers_[1] = vplFilter_;
-		impl_->samplers_[2] = shadowFilter_;
-		impl_->samplers_[3] = lpvFilter_;
+		///*hr = impl_->device_->CreateBlendState(&bld,&bsInject_);*/
+
+		//if(FAILED(hr))
+		//{
+		//	YUMELOG_ERROR("Could not create blend state of injection");
+		//}
+
+		//for(size_t i = 0; i < 3; ++i)
+		//	bld.RenderTarget[i].BlendEnable = FALSE;
+
+		///*hr = impl_->device_->CreateBlendState(&bld,&bsPropogate_);*/
+
+		//impl_->samplers_[0] = standardFilter_;
+		//impl_->samplers_[1] = vplFilter_;
+		//impl_->samplers_[2] = shadowFilter_;
+		//impl_->samplers_[3] = lpvFilter_;
 
 
 		D3D11_DEPTH_STENCIL_DESC dsd;
@@ -1512,6 +1556,56 @@ namespace YumeEngine
 	void YumeD3D11Renderer::GenerateMips(YumeTexture2D* texture)
 	{
 		impl_->deviceContext_->GenerateMips((ID3D11ShaderResourceView*)texture->GetShaderResourceView());
+	}
+
+	unsigned YumeD3D11Renderer::CreateSamplerState(const SamplerStateDesc& sampler)
+	{
+		D3D11_SAMPLER_DESC sd;
+		ZeroMemory(&sd,sizeof(sd));
+		sd.Filter = d3dFilterMode[sampler.Filter];
+		sd.AddressU = d3dAddressMode[sampler.AddressModeU];
+		sd.AddressV = d3dAddressMode[sampler.AddressModeV];
+		sd.AddressW = d3dAddressMode[sampler.AddressModeW];
+
+		if(sampler.ComparisonFunc == TCF_NEVER)
+			sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		else
+			sd.ComparisonFunc = d3dCmpFunc[sampler.ComparisonFunc];
+		sd.MaxLOD = D3D11_FLOAT32_MAX;
+
+		if(sampler.AddressModeU == TAM_Border)
+		{
+			sd.BorderColor[0] = sampler.BorderColor[0];
+			sd.BorderColor[1] = sampler.BorderColor[1];
+			sd.BorderColor[2] = sampler.BorderColor[2];
+			sd.BorderColor[3] = sampler.BorderColor[3];
+		}
+		if(sampler.MaxAniso >= 0)
+			sd.MaxAnisotropy = 1;
+
+
+
+		ID3D11SamplerState* samplerstate = 0;
+		HRESULT hr = impl_->device_->CreateSamplerState(&sd,&samplerstate);
+
+		assert(hr == S_OK);
+
+
+		if(!FAILED(hr))
+		{
+			unsigned samplerId = samplers_.size() ;
+			samplers_.push_back(samplerstate);
+
+			samplerstate->SetPrivateData(WKPDID_D3DDebugObjectName,sampler.Name.length(),sampler.Name.c_str());
+
+			D3D11_SAMPLER_DESC dx;
+			samplerstate->GetDesc(&dx);
+
+			return samplerId;
+		}
+		else
+			return M_MAX_UNSIGNED;
+		return M_MAX_UNSIGNED;
 	}
 
 	void YumeD3D11Renderer::BindDefaultDepthStencil()
@@ -1554,35 +1648,47 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::BindLPVSampler()
 	{
-		impl_->samplers_[1] = lpvFilter_;
+		/*impl_->samplers_[1] = lpvFilter_;
 		texturesDirty_ = true;
 		firstDirtyTexture_ = -1;
-		lastDirtyTexture_ = -1;
+		lastDirtyTexture_ = -1;*/
 	}
 
 	void YumeD3D11Renderer::BindShadowsSampler()
 	{
-		impl_->samplers_[2] = shadowFilter_;
-		texturesDirty_ = true;
-		firstDirtyTexture_ = -1;
-		lastDirtyTexture_ = -1;
+		//impl_->samplers_[2] = shadowFilter_;
+		//texturesDirty_ = true;
+		//firstDirtyTexture_ = -1;
+		//lastDirtyTexture_ = -1;
 	}
 
 	void YumeD3D11Renderer::BindStandardSampler()
 	{
-		impl_->samplers_[0] = standardFilter_;
-		impl_->deviceContext_->VSSetSamplers(0,1,
-			&impl_->samplers_[0]);
+		//impl_->samplers_[0] = standardFilter_;
+		//impl_->deviceContext_->VSSetSamplers(0,1,
+		//	&impl_->samplers_[0]);
 	}
 
-	void YumeD3D11Renderer::BindSampler(ShaderType type,unsigned samplerStartSlot,unsigned samplerCount,unsigned internalIndex)
+	void YumeD3D11Renderer::BindSampler(ShaderType type,unsigned start,unsigned count,unsigned* samplers)
 	{
+		std::vector<ID3D11SamplerState*> samplerVector;
+
+		for(unsigned i = 0; i < count; ++i) {
+			if((*samplers) != M_MAX_UNSIGNED)
+				samplerVector.push_back(samplers_[*samplers]);
+			else
+				samplerVector.push_back(nullptr);
+			samplers++;
+		}
+
 		if(type == VS)
-			impl_->deviceContext_->VSSetSamplers(samplerStartSlot,samplerCount,
-			&impl_->samplers_[internalIndex]);
-		else if(type == PS)
-			impl_->deviceContext_->PSSetSamplers(samplerStartSlot,samplerCount,
-			&impl_->samplers_[internalIndex]);
+			impl_->deviceContext_->VSSetSamplers(start,count,
+			&samplerVector[0]);
+		if(type == PS)
+		{
+			impl_->deviceContext_->PSSetSamplers(start,count,
+				&samplerVector[0]);
+		}
 	}
 
 	void YumeD3D11Renderer::PSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures)
@@ -1654,9 +1760,11 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::BindBackbuffer()
 	{
-		
-		impl_->renderTargetViews_[0] = impl_->defaultRenderTargetView_;
-		impl_->deviceContext_->OMSetRenderTargets(1,&impl_->defaultRenderTargetView_,nullptr);
+		if(impl_->renderTargetViews_[0] != impl_->defaultRenderTargetView_)
+		{
+			impl_->renderTargetViews_[0] = impl_->defaultRenderTargetView_;
+			impl_->deviceContext_->OMSetRenderTargets(1,&impl_->defaultRenderTargetView_,nullptr);
+		}
 	}
 
 	void YumeD3D11Renderer::BindResetRenderTargets(int count)
@@ -1758,10 +1866,10 @@ namespace YumeEngine
 		depthStencil_ = depthStencil;
 		renderTargetsDirty_ = true;
 
-	/*	if(depthStencil_)
-			impl_->depthStencilView_ = (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView();
-		else
-			impl_->depthStencilView_ = 0;*/
+		/*	if(depthStencil_)
+				impl_->depthStencilView_ = (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView();
+				else
+				impl_->depthStencilView_ = 0;*/
 	}
 	void YumeD3D11Renderer::SetDepthStencil(YumeTexture2D* texture)
 	{
@@ -2228,7 +2336,7 @@ namespace YumeEngine
 		{
 			if(!noDs_)
 				impl_->depthStencilView_ =
-					depthStencil_ ? (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView() : impl_->defaultDepthStencilView_;
+				depthStencil_ ? (ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView() : impl_->defaultDepthStencilView_;
 			else
 				impl_->depthStencilView_ = 0;
 
@@ -2287,36 +2395,49 @@ namespace YumeEngine
 			unsigned newBlendStateHash = (unsigned)((colorWrite_ ? 1 : 0) | (blendMode_ << 1));
 			if(newBlendStateHash != blendStateHash_)
 			{
-				YumeMap<unsigned,ID3D11BlendState*>::iterator i = impl_->blendStates_.find(newBlendStateHash);
-				if(i == impl_->blendStates_.end())
+				if(noBlendState_)
 				{
-					D3D11_BLEND_DESC stateDesc;
-					memset(&stateDesc,0,sizeof stateDesc);
-					stateDesc.AlphaToCoverageEnable = false;
-					stateDesc.IndependentBlendEnable = false;
-					stateDesc.RenderTarget[0].BlendEnable = d3dBlendEnable[blendMode_];
-					stateDesc.RenderTarget[0].SrcBlend = d3dSrcBlend[blendMode_];
-					stateDesc.RenderTarget[0].DestBlend = d3dDestBlend[blendMode_];
-					stateDesc.RenderTarget[0].BlendOp = d3dBlendOp[blendMode_];
-					stateDesc.RenderTarget[0].SrcBlendAlpha = d3dSrcBlend[blendMode_];
-					stateDesc.RenderTarget[0].DestBlendAlpha = d3dDestBlend[blendMode_];
-					stateDesc.RenderTarget[0].BlendOpAlpha = d3dBlendOp[blendMode_];
-					stateDesc.RenderTarget[0].RenderTargetWriteMask = colorWrite_ ? D3D11_COLOR_WRITE_ENABLE_ALL : 0x0;
-
-					ID3D11BlendState* newBlendState = 0;
-					HRESULT hr = impl_->device_->CreateBlendState(&stateDesc,&newBlendState);
-					if(FAILED(hr))
-					{
-						D3D_SAFE_RELEASE(newBlendState);
-						YUMELOG_ERROR("Failed to create blend state " << hr);
-					}
-
-
-					i = impl_->blendStates_.insert(MakePair(newBlendStateHash,newBlendState));
+					impl_->deviceContext_->OMSetBlendState(nullptr,nullptr,0xffffffff);
+					blendStateDirty_ = false;
+					blendStateHash_ = newBlendStateHash;
+					noBlendState_ = false;
 				}
-				FLOAT factors[4] ={1.0f,1.0f,1.0f,1.0f};
-				impl_->deviceContext_->OMSetBlendState(i->second,factors,M_MAX_UNSIGNED);
-				blendStateHash_ = newBlendStateHash;
+				else
+				{
+					YumeMap<unsigned,ID3D11BlendState*>::iterator i = impl_->blendStates_.find(newBlendStateHash);
+					if(i == impl_->blendStates_.end())
+					{
+						D3D11_BLEND_DESC stateDesc;
+						memset(&stateDesc,0,sizeof stateDesc);
+						stateDesc.AlphaToCoverageEnable = false;
+						stateDesc.IndependentBlendEnable = true;
+
+						for(int i=0; i < 6; ++i)
+						{
+							stateDesc.RenderTarget[i].BlendEnable = d3dBlendEnable[blendMode_];
+							stateDesc.RenderTarget[i].SrcBlend = d3dSrcBlend[blendMode_];
+							stateDesc.RenderTarget[i].DestBlend = d3dDestBlend[blendMode_];
+							stateDesc.RenderTarget[i].BlendOp = d3dBlendOp[blendMode_];
+							stateDesc.RenderTarget[i].SrcBlendAlpha = d3dSrcBlend[blendMode_];
+							stateDesc.RenderTarget[i].DestBlendAlpha = d3dDestBlend[blendMode_];
+							stateDesc.RenderTarget[i].BlendOpAlpha = d3dBlendOp[blendMode_];
+							stateDesc.RenderTarget[i].RenderTargetWriteMask = colorWrite_ ? D3D11_COLOR_WRITE_ENABLE_ALL : 0x0;
+						}
+						ID3D11BlendState* newBlendState = 0;
+						HRESULT hr = impl_->device_->CreateBlendState(&stateDesc,&newBlendState);
+						if(FAILED(hr))
+						{
+							D3D_SAFE_RELEASE(newBlendState);
+							YUMELOG_ERROR("Failed to create blend state " << hr);
+						}
+
+
+						i = impl_->blendStates_.insert(MakePair(newBlendStateHash,newBlendState));
+					}
+					FLOAT factors[4] ={1.0f,1.0f,1.0f,1.0f};
+					impl_->deviceContext_->OMSetBlendState(i->second,factors,M_MAX_UNSIGNED);
+					blendStateHash_ = newBlendStateHash;
+				}
 			}
 
 			blendStateDirty_ = false;
@@ -2902,6 +3023,10 @@ namespace YumeEngine
 			return GetDepthStencilFormat();
 		if(nameLower == "readabledepth" || nameLower == "hwdepth")
 			return GetReadableDepthFormat();
+		if(nameLower == "rgba10u2")
+			return DXGI_FORMAT_R10G10B10A2_UNORM;
+		if(nameLower =="r32typeless")
+			return DXGI_FORMAT_R32_TYPELESS;
 
 		return GetRGBFormat();
 	}

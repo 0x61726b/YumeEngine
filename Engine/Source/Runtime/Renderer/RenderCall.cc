@@ -27,6 +27,7 @@
 
 namespace YumeEngine
 {
+
 	RenderCall::RenderCall(CallType type,const YumeString& vs,const YumeString& ps,const YumeString& gs,const YumeString& vsEntry,
 		const YumeString& psEntry,
 		const YumeString& gsEntry):
@@ -41,7 +42,10 @@ namespace YumeEngine
 		vs_(0),
 		gs_(0),
 		ps_(0),
-		passName(String::EMPTY)
+		passName(String::EMPTY),
+		depthStencil_(0),
+		numInputs_(0),
+		numOutputs_(0)
 	{
 		vs_ = gYume->pRHI->GetShader(VS,vs,vsEntry,vsEntry);
 		ps_ = gYume->pRHI->GetShader(PS,ps,psEntry,psEntry);
@@ -54,6 +58,9 @@ namespace YumeEngine
 		}
 
 		clearColor = YumeColor(0,0,0,0);
+
+		inputs_.resize(MAX_TEXTURE_UNITS);
+		outputs_.resize(MAX_RENDERTARGETS);
 	}
 
 	RenderCall::~RenderCall()
@@ -81,6 +88,8 @@ namespace YumeEngine
 		if(inputs_.size() <= index)
 			inputs_.resize(index + 1);
 		inputs_[index] = target;
+
+		++numInputs_;
 	}
 
 	void RenderCall::SetOutput(unsigned index,Texture2DPtr target)
@@ -88,16 +97,33 @@ namespace YumeEngine
 		if(outputs_.size() <= index)
 			outputs_.resize(index + 1);
 		outputs_[index] = target;
+
+		++numOutputs_;
+	}
+
+	void RenderCall::SetShaderParameter(YumeHash param,const DirectX::XMFLOAT3& value)
+	{
+		shaderVectors3[param] = value;
+	}
+
+	void RenderCall::SetShaderParameter(YumeHash param,const DirectX::XMFLOAT4& value)
+	{
+		shaderVectors4[param] = value;
+	}
+
+	void RenderCall::SetShaderParameter(YumeHash param,const DirectX::XMMATRIX& value)
+	{
+		shaderMatrices[param] = value;
 	}
 
 	void RenderCall::SetShaderParameter(YumeHash param,const Variant& value)
 	{
-		shaderParameters_[param] = value;
+		shaderVariants[param] = value;
 	}
 
 	bool RenderCall::ContainsParameter(YumeHash param)
 	{
-		return shaderParameters_.Contains(param);
+		return shaderVectors4.Contains(param) || shaderVectors3.Contains(param) || shaderMatrices.Contains(param) || shaderVariants.Contains(param);
 	}
 
 	void RenderCall::SetPassName(const YumeString& name)
@@ -105,6 +131,10 @@ namespace YumeEngine
 		passName = name;
 	}
 
+	void RenderCall::SetIdentifier(const YumeString& name)
+	{
+		identifier_ = name;
+	}
 
 	Texture2DPtr RenderCall::AddTexture(const RenderTargetDesc& desc)
 	{

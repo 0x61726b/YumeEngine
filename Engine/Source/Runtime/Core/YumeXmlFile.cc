@@ -36,6 +36,7 @@ namespace YumeEngine
 	bool YumeXmlFile::BeginLoad(YumeFile& source)
 	{
 		wholeXmlString = source.ReadString();
+		source_ = &source;
 		return true;
 	}
 }

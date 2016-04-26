@@ -49,6 +49,7 @@ namespace YumeEngine
 
 		RenderTargetDesc desc_;
 		void SetDesc(const RenderTargetDesc& desc ){ desc_ = desc; }
+		void SetClearColor(const YumeColor& color) { desc_.ClearColor = color; }
 
 		void SetNumLevels(unsigned levels);
 		void SetFilterMode(TextureFilterMode filter);

@@ -49,6 +49,9 @@ namespace YumeEngine
 		virtual ~RenderCall();
 
 		void SetShaderParameter(YumeHash param,const Variant& value);
+		void SetShaderParameter(YumeHash param,const DirectX::XMFLOAT3& value);
+		void SetShaderParameter(YumeHash param,const DirectX::XMFLOAT4& value);
+		void SetShaderParameter(YumeHash param,const DirectX::XMMATRIX& value);
 
 		void SetInput(unsigned,Texture2DPtr target);
 		void SetOutput(unsigned,Texture2DPtr target);
@@ -56,6 +59,7 @@ namespace YumeEngine
 		bool ContainsParameter(YumeHash param);
 		void SetSampler(ShaderType type,unsigned index,unsigned samplerId);
 		void SetPassName(const YumeString& name);
+		void SetIdentifier(const YumeString& name);
 
 		
 
@@ -73,16 +77,21 @@ namespace YumeEngine
 		YumeShaderVariation* GetPs() const { return ps_; }
 		YumeShaderVariation* GetGs() const { return gs_; }
 
-		YumeMap<YumeHash,Variant>::type& GetShaderParameters() { return shaderParameters_; }
+		const YumeMap<YumeHash,Variant>::type& GetShaderVariants() { return shaderVariants; }
+		const YumeMap<YumeHash,DirectX::XMFLOAT3>::type& GetShaderVectors3() { return shaderVectors3; }
+		const YumeMap<YumeHash,DirectX::XMFLOAT4>::type& GetShaderVectors4() { return shaderVectors4; }
+		const YumeMap<YumeHash,DirectX::XMMATRIX>::type& GetShaderMatrices() { return shaderMatrices; }
 
 		const YumeString& GetPassName() const { return passName; }
+		const YumeString& GetIdentifier() const { return identifier_; }
 
 		unsigned GetVertexSampler(unsigned i) const { return vsSamplers_[i]; }
 		unsigned GetPixelSampler(unsigned i) const { return psSamplers_[i]; }
 
-		const YumeColor& GetClearColor(unsigned index) const { return outputs_[index]->GetDesc().ClearColor; }
+		const YumeColor& GetClearColor(unsigned index) const { return inputs_[index]->GetDesc().ClearColor; }
 		
 		Texture2DPtr GetInput(unsigned index) const { return inputs_[index]; }
+
 		Texture2DPtr GetOutput(unsigned index) const { return outputs_[index]; }
 
 		unsigned GetNumVertexSamplers() const {return numVertexSamplers_;}
@@ -90,8 +99,8 @@ namespace YumeEngine
 
 		
 
-		unsigned GetNumInputs() const { return inputs_.size(); }
-		unsigned GetNumOutputs() const { return outputs_.size(); }
+		unsigned GetNumInputs() const { return numInputs_; }
+		unsigned GetNumOutputs() const { return numOutputs_; }
 
 		bool HasVertexSampler() const { return hasVsSampler_; }
 		bool HasPixelSampler() const { return hasPsSampler_; }
@@ -116,10 +125,17 @@ namespace YumeEngine
 		unsigned numVertexSamplers_;
 		unsigned numPixelSamplers_;
 
+		unsigned numInputs_;
+		unsigned numOutputs_;
+
 		YumeString passName;
+		YumeString identifier_;
 
 		CallType type_;
-		YumeMap<YumeHash,Variant>::type shaderParameters_;
+		YumeMap<YumeHash,Variant>::type shaderVariants;
+		YumeMap<YumeHash,DirectX::XMFLOAT3>::type shaderVectors3;
+		YumeMap<YumeHash,DirectX::XMFLOAT4>::type shaderVectors4;
+		YumeMap<YumeHash,DirectX::XMMATRIX>::type shaderMatrices;
 		unsigned clearFlags;
 		unsigned addFlags_;
 

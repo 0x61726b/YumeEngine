@@ -56,6 +56,9 @@ namespace YumeEngine
 		void SetModelMatrix(const DirectX::XMFLOAT4X4& model,const DirectX::XMFLOAT3& lpvMin,const DirectX::XMFLOAT3& lpvMax);
 		bool GetGIEnabled() { return giEnabled_; }
 
+		void ApplyShaderParameters(RenderCall* call);
+		void SetSamplers(RenderCall* call);
+
 		void SetGIParameters();
 
 		bool giEnabled_;
@@ -75,7 +78,12 @@ namespace YumeEngine
 		GIParameters giParams_;
 
 		void LPVPropagate(RenderCall* call,float iteration);
-		//~
+
+
+		void SetRSMSize(unsigned newSize) { rsmSize = newSize;}
+
+		YumeString GetTextureName(const YumeString&,int num);
+ 		//~
 
 		void Render();
 		void RenderSky();
@@ -112,20 +120,17 @@ namespace YumeEngine
 		void SetLightFlux(float f);
 		void SetLPVNumberIterations(int num);
 		
-
-	private: //Geometry stuff
 		void UpdateMeshBb(YumeMesh& mesh);
-
+	private: //Geometry stuff
 		SharedPtr<YumeGeometry> fullscreenTriangle_;
-	private:
-		YumeMesh* mesh_; //Whole scene
-		YumeSkydome sky_;
-
-	private: //Scene stuff
 		DirectX::XMFLOAT3 bbMin;
 		DirectX::XMFLOAT3 bbMax;
 
+	private:
 		SharedPtr<YumeLPVCamera> camera_;
+
+	private:
+		unsigned rsmSize;
 
 	private: //Renderer stuff
 		YumeRHI* rhi_;

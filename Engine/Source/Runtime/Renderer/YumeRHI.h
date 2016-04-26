@@ -99,7 +99,7 @@ namespace YumeEngine
 		void									SetWindowIcon(YumeImage* image);
 
 		//
-		virtual void							BindSampler(ShaderType type,unsigned samplerStartSlot,unsigned samplerCount,unsigned internalIndex) { };
+		virtual void							BindSampler(ShaderType type,unsigned start,unsigned count,unsigned* samplers) { };
 		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures) {};
 		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture3D** textures) {};
 		virtual void							VSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures) {};
@@ -119,8 +119,11 @@ namespace YumeEngine
 		virtual void							BindDepthStateEnable() { }
 		virtual void							BindDepthStateDisable() { }
 		virtual void							GenerateMips(YumeTexture2D*){}
+		virtual unsigned						CreateSamplerState(const SamplerStateDesc& sampler) = 0;
+
 
 		void SetNoDepthStencil(bool b) { noDs_ = b;}
+		void SetNoBlendState(bool b) { noBlendState_ = b; blendStateDirty_ = true; blendStateHash_ = M_MAX_UNSIGNED;}
 		
 		//
 
@@ -426,6 +429,7 @@ namespace YumeEngine
 		const Vector2 pixelUVOffset;
 
 		bool noDs_;
+		bool noBlendState_;
 	};
 
 

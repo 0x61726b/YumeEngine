@@ -35,6 +35,8 @@
 
 #define NUM_VPLS 1024
 
+#define Kappa
+
 namespace YumeEngine
 {
 
@@ -63,56 +65,6 @@ namespace YumeEngine
 	void LightPropagationVolume::Create(unsigned volumeSize)
 	{
 		volume_size_ = volumeSize;
-
-		//injectPs_ = gYume->pRHI->GetShader(PS,"LPV/LPVInject");
-		//injectVs_ = gYume->pRHI->GetShader(VS,"LPV/LPVInject");
-		//injectGs_ = gYume->pRHI->GetShader(GS,"LPV/LPVInject","");
-
-		//propogateVs_ = gYume->pRHI->GetShader(VS,"LPV/LPVPropogate");
-		//propogatePs_ = gYume->pRHI->GetShader(PS,"LPV/LPVPropogate");
-		//propogateGs_ = gYume->pRHI->GetShader(GS,"LPV/LPVPropogate","");
-
-		//normalizePs_ = gYume->pRHI->GetShader(PS,"LPV/LPVNormalize","");
-
-		//for(size_t i=0; i < 2; ++i)
-		//{
-		//	lpv_r_[i] = gYume->pRHI->CreateTexture2D();
-		//	YumeString debugName = "LPV_R_";
-		//	debugName.AppendWithFormat("%i",i);
-		//	lpv_r_[i]->SetName(debugName);
-		//	lpv_r_[i]->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
-
-		//	lpv_g_[i] = gYume->pRHI->CreateTexture2D();
-		//	debugName = "LPV_G_";
-		//	debugName.AppendWithFormat("%i",i);
-		//	lpv_g_[i]->SetName(debugName);
-		//	lpv_g_[i]->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
-
-		//	lpv_b_[i] = gYume->pRHI->CreateTexture2D();
-		//	debugName = "LPV_B_";
-		//	debugName.AppendWithFormat("%i",i);
-		//	lpv_b_[i]->SetName(debugName);
-		//	lpv_b_[i]->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
-		//}
-
-		//lpv_accum_r_ = gYume->pRHI->CreateTexture2D();
-		//lpv_accum_r_->SetName("LPV_ACCUM_R_");
-		//lpv_accum_r_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
-
-		//lpv_accum_g_ = gYume->pRHI->CreateTexture2D();
-		//lpv_accum_g_->SetName("LPV_ACCUM_G_");
-		//lpv_accum_g_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
-
-		//lpv_accum_b_ = gYume->pRHI->CreateTexture2D();
-		//lpv_accum_b_->SetName("LPV_ACCUM_B_");
-		//lpv_accum_b_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
-
-
-		//lpv_inject_counter_ = gYume->pRHI->CreateTexture2D();
-		//lpv_inject_counter_->SetName("LPV_INJECT_COUNTER");
-		//lpv_inject_counter_->SetSize(volumeSize,volumeSize,gYume->pRHI->GetFloat16FormatNs(),TEXTURE_RENDERTARGET,volumeSize);
-
-
 		UINT num_vertices = 6 * volume_size_;
 		std::vector<lpv_vertex> data(num_vertices);
 
@@ -144,6 +96,7 @@ namespace YumeEngine
 
 		iterations_rendered_ = 0;
 
+#ifndef Kappa
 		RenderTargetDesc lpvrgb;
 		lpvrgb.Width = volumeSize;
 		lpvrgb.Height = volumeSize;
@@ -187,9 +140,25 @@ namespace YumeEngine
 		lpvNormalize->SetMiscRenderingFlags(RF_NODEPTHSTENCIL);
 		lpvPropagate->SetMiscRenderingFlags(RF_NODEPTHSTENCIL);
 
+		lpvNormalize->SetShaderParameter("gi_scale",1.0f);
+		lpvNormalize->SetShaderParameter("lpv_flux_amplifier",1.0f);
+		lpvNormalize->SetShaderParameter("debug_gi",false);
+
+		lpvPropagate->SetShaderParameter("gi_scale",1.0f);
+		lpvPropagate->SetShaderParameter("lpv_flux_amplifier",1.0f);
+		lpvPropagate->SetShaderParameter("debug_gi",false);
+
+		lpvInject->SetShaderParameter("light_vp",DirectX::XMMatrixIdentity());
+		lpvInject->SetShaderParameter("light_vp_inv",DirectX::XMMatrixIdentity());
+		lpvInject->SetShaderParameter("main_light_pos",DirectX::XMFLOAT3(0,0,0));
+
 		lpvInject->SetPassName("LPVInject");
 		lpvNormalize->SetPassName("LPVNormalize");
 		lpvPropagate->SetPassName("LPVPropagate");
+
+		lpvInject->SetIdentifier("LPVDeferred");
+		lpvNormalize->SetIdentifier("LPVDeferred");
+		lpvPropagate->SetIdentifier("LPVDeferred");
 
 		int identifier = 0;
 		for(size_t i=0; i < 2; ++i)
@@ -245,7 +214,7 @@ namespace YumeEngine
 		gYume->pRenderer->GetDefaultPass()->AddRenderCall(lpvPropagate);
 
 
-
+#endif
 
 	}
 
@@ -269,7 +238,7 @@ namespace YumeEngine
 		gYume->pRHI->ClearRenderTarget(2,CLEAR_COLOR);
 		gYume->pRHI->ClearRenderTarget(3,CLEAR_COLOR);
 
-		gYume->pRHI->BindSampler(VS,0,1,1); //1 is LPVFilter
+		//gYume->pRHI->BindSampler(VS,0,1,1); //1 is VPLFilter
 
 		gYume->pRHI->SetDepthStencil((YumeRenderable*)0);
 

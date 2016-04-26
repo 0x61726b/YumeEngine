@@ -1,5 +1,0 @@
-<Yume>
-    <Technique vs="Skybox" ps="Skybox">
-        <Pass name="postopaque" depthwrite="false" />
-    </Technique>
-</Yume>

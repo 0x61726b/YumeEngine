@@ -24,6 +24,7 @@
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 #include "Renderer/YumeResource.h"
+#include "YumeFile.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -40,6 +41,8 @@ namespace YumeEngine
 		static YumeHash GetTypeStatic() { return type_; };
 		virtual YumeHash GetType() { return type_; };
 		static YumeHash type_;
+
+		YumeFile* source_;
 	};
 }
 

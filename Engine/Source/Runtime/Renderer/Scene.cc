@@ -68,5 +68,8 @@ namespace YumeEngine
 	void Scene::AddNode(SceneNode* node)
 	{
 		nodes_.push_back(node);
+
+		if(node->GetType() == GT_STATIC)
+			gYume->pRenderer->UpdateMeshBb(*node->GetGeometry());
 	}
 }
