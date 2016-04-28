@@ -28,7 +28,7 @@
 #include "LPVRendererTest.h"
 
 #include "YumeTexture3D.h"
-
+#include "RenderPass.h"
 
 namespace YumeEngine
 {
@@ -60,43 +60,57 @@ namespace YumeEngine
 
 	void YumePostProcess::Setup()
 	{
-		temporaryRt_ = gYume->pRHI->CreateTexture2D();
-		temporaryRt_->SetSize(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,10);
+		temporaryRt_ = misc_->GetDefaultPass()->GetTextureByName("PostProcessSubstitute");
+		frontBufferBlurred_ = misc_->GetDefaultPass()->GetTextureByName("PostProcessBlurred");
 
-		temporaryRt_ = gYume->pRHI->CreateTexture2D();
-		temporaryRt_->SetSize(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,10);
-
-		frontBufferBlurred_ = gYume->pRHI->CreateTexture2D();
-		frontBufferBlurred_->SetSize(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,10);
+		adaptadLuminanceRt_[0] = misc_->GetDefaultPass()->GetTextureByName("ADAPT_LUMINANCE_0");
+		adaptadLuminanceRt_[1] = misc_->GetDefaultPass()->GetTextureByName("ADAPT_LUMINANCE_1");
 
 
-		adaptadLuminanceRt_[0] = gYume->pRHI->CreateTexture2D();
-		adaptadLuminanceRt_[0]->SetSize(1,1,gYume->pRHI->GetFloat32FormatNs(),TEXTURE_RENDERTARGET);
-
-		adaptadLuminanceRt_[1] = gYume->pRHI->CreateTexture2D();
-		adaptadLuminanceRt_[1]->SetSize(1,1,gYume->pRHI->GetFloat32FormatNs(),TEXTURE_RENDERTARGET);
-
-		bloomFull_ = gYume->pRHI->CreateTexture2D();
-		bloomFull_->SetSize(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,10);
+		bloomFull_ = misc_->GetDefaultPass()->GetTextureByName("BloomFull");
 
 
-		blurred_[0] = gYume->pRHI->CreateTexture2D();
-		blurred_[0]->SetSize(gYume->pRHI->GetWidth() / 2,gYume->pRHI->GetHeight() / 2,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
+		blurred_[0] = misc_->GetDefaultPass()->GetTextureByName("BLURRED_0");
+		blurred_[5] = misc_->GetDefaultPass()->GetTextureByName("BLURRED_5");
+		blurred_[1] = misc_->GetDefaultPass()->GetTextureByName("BLURRED_1");
+		blurred_[2] = misc_->GetDefaultPass()->GetTextureByName("BLURRED_2");
+		blurred_[3] = misc_->GetDefaultPass()->GetTextureByName("BLURRED_3");
+		blurred_[4] = misc_->GetDefaultPass()->GetTextureByName("BLURRED_4");
 
-		blurred_[5] = gYume->pRHI->CreateTexture2D();
-		blurred_[5]->SetSize(gYume->pRHI->GetWidth() / 2,gYume->pRHI->GetHeight() / 2,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
+		//temporaryRt_ = gYume->pRHI->CreateTexture2D();
+		//temporaryRt_->SetSize(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,10);
 
-		blurred_[1] = gYume->pRHI->CreateTexture2D();
-		blurred_[1]->SetSize(gYume->pRHI->GetWidth() /4,gYume->pRHI->GetHeight() / 4,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
+		//frontBufferBlurred_ = gYume->pRHI->CreateTexture2D();
+		//frontBufferBlurred_->SetSize(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,10);
 
-		blurred_[2] = gYume->pRHI->CreateTexture2D();
-		blurred_[2]->SetSize(gYume->pRHI->GetWidth() /8,gYume->pRHI->GetHeight() / 8,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
 
-		blurred_[3] = gYume->pRHI->CreateTexture2D();
-		blurred_[3]->SetSize(gYume->pRHI->GetWidth() /16,gYume->pRHI->GetHeight() / 16,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
+		//adaptadLuminanceRt_[0] = gYume->pRHI->CreateTexture2D();
+		//adaptadLuminanceRt_[0]->SetSize(1,1,gYume->pRHI->GetFloat32FormatNs(),TEXTURE_RENDERTARGET);
 
-		blurred_[4] = gYume->pRHI->CreateTexture2D();
-		blurred_[4]->SetSize(gYume->pRHI->GetWidth() /16,gYume->pRHI->GetHeight() / 16,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
+		//adaptadLuminanceRt_[1] = gYume->pRHI->CreateTexture2D();
+		//adaptadLuminanceRt_[1]->SetSize(1,1,gYume->pRHI->GetFloat32FormatNs(),TEXTURE_RENDERTARGET);
+
+		//bloomFull_ = gYume->pRHI->CreateTexture2D();
+		//bloomFull_->SetSize(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,10);
+
+
+		//blurred_[0] = gYume->pRHI->CreateTexture2D();
+		//blurred_[0]->SetSize(gYume->pRHI->GetWidth() / 2,gYume->pRHI->GetHeight() / 2,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
+
+		//blurred_[5] = gYume->pRHI->CreateTexture2D();
+		//blurred_[5]->SetSize(gYume->pRHI->GetWidth() / 2,gYume->pRHI->GetHeight() / 2,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
+
+		//blurred_[1] = gYume->pRHI->CreateTexture2D();
+		//blurred_[1]->SetSize(gYume->pRHI->GetWidth() /4,gYume->pRHI->GetHeight() / 4,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
+
+		//blurred_[2] = gYume->pRHI->CreateTexture2D();
+		//blurred_[2]->SetSize(gYume->pRHI->GetWidth() /8,gYume->pRHI->GetHeight() / 8,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
+
+		//blurred_[3] = gYume->pRHI->CreateTexture2D();
+		//blurred_[3]->SetSize(gYume->pRHI->GetWidth() /16,gYume->pRHI->GetHeight() / 16,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
+
+		//blurred_[4] = gYume->pRHI->CreateTexture2D();
+		//blurred_[4]->SetSize(gYume->pRHI->GetWidth() /16,gYume->pRHI->GetHeight() / 16,gYume->pRHI->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET,1,0);
 
 		ssaoPs_ = gYume->pRHI->GetShader(PS,"PostFX/pp_ssao");
 		adaptExposure_ = gYume->pRHI->GetShader(PS,"PostFX/pp_bloom","","ps_adapt_exposure");
@@ -128,7 +142,8 @@ namespace YumeEngine
 	{
 		RHIEvent e("Post Processing");
 
-		gYume->pRHI->GenerateMips(misc_->GetRenderTarget());
+		Texture2DPtr target = misc_->GetDefaultPass()->GetTextureByName("PostProcessTarget");
+		gYume->pRHI->GenerateMips(target);
 
 		static bool current = true;
 		current = !current;
@@ -140,19 +155,19 @@ namespace YumeEngine
 
 		{
 			RHIEvent e("Adapt Luminance");
-			Render(adaptExposure_,misc_->GetRenderTarget(),adaptadLuminanceRt_[current]);
+			Render(adaptExposure_,target,adaptadLuminanceRt_[current]);
 		}
 
 		if(bloom_enabled)
-			Bloom(misc_->GetRenderTarget());
+			Bloom(target);
 
 
 		YumeTexture2D* textures2[] ={adaptadLuminanceRt_[current],bloomFull_};
 		gYume->pRHI->PSBindSRV(11,2,textures2);
 
-		SetViewport(misc_->GetRenderTarget());
+		SetViewport(target);
 
-		YumeTexture2D* in = misc_->GetRenderTarget();
+		YumeTexture2D* in = target;
 		YumeTexture2D* out = temporaryRt_;
 
 		{
@@ -342,7 +357,7 @@ namespace YumeEngine
 		YumeTexture2D* textures[] ={in};
 		gYume->pRHI->PSBindSRV(10,1,textures);
 
-		misc_->GetLPVRenderer()->SetDeferredLightParameters();
+		
 
 		//TODO Move these out of here
 		gYume->pRHI->SetShaderParameter("scene_dim_max",DirectX::XMFLOAT4(misc_->GetMaxBb().x,misc_->GetMaxBb().y,misc_->GetMaxBb().z,1.0f));

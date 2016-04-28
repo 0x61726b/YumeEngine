@@ -71,7 +71,7 @@ namespace YumeEngine
 
 		unsigned curr_;
 		unsigned next_;
-		unsigned num_iterations_rendered;
+		unsigned num_propagations_;
 
 		RenderPass* GetDefaultPass() const { return defaultPass_; }
 

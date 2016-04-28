@@ -20,7 +20,7 @@ cbuffer camera_vs : register(b0)
 }
 
 // Note: could do way easier with SV_VertexID, but stupid HLSL debugger won't have it
-PS_INPUT VS(in float3 pos : POSITION)
+PS_INPUT fs_triangle_vs(in float3 pos : POSITION)
 {
 	PS_INPUT outp;
 

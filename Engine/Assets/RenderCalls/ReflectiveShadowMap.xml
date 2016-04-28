@@ -1,10 +1,34 @@
 <Yume>
   <RenderTargets>
+    <Rt Name="PostProcessTarget" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="PostProcessBlurred" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="PostProcessSubstitute" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+
+    <Rt Name="BloomFull" Format="rgba16f" Mips="1" Width="1600" Height="450" ArraySize="1"/>
+
+    <Rt Name="BLURRED_0" Format="rgba16f" Mips="1" Width="800" Height="900" ArraySize="1"/>
+    <Rt Name="BLURRED_5" Format="rgba16f" Mips="1" Width="800" Height="900" ArraySize="1"/>
+
+    <Rt Name="BLURRED_1" Format="rgba16f" Mips="1" Width="400" Height="225" ArraySize="1"/>
+
+    <Rt Name="BLURRED_2" Format="rgba16f" Mips="1" Width="200" Height="112" ArraySize="1"/>
+
+    <Rt Name="BLURRED_3" Format="rgba16f" Mips="1" Width="100" Height="56" ArraySize="1"/>
+    <Rt Name="BLURRED_4" Format="rgba16f" Mips="1" Width="100" Height="56" ArraySize="1"/>
+
+    <Rt Name="ADAPT_LUMINANCE_0" Format="r32f" Mips="1" Width="1" Height="1" ArraySize="1"/>
+    <Rt Name="ADAPT_LUMINANCE_1" Format="r32f" Mips="1" Width="1" Height="1" ArraySize="1"/>
+
     <Rt Name="RSM_COLORS" Format="rgba16f" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
     <Rt Name="RSM_NORMALS" Format="rgba10u2" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
     <Rt Name="RSM_LINEARDEPTH" Format="rg32f" Mips="0" Width="1024" Height="1024" ArraySize="1"/>
     <Rt Name="RSM_SPECULAR" Format="rgba16f" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
     <Ds Name="RSM_DEPTHSTENCIL" Format="r32typeless" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
+
+    <Rt Name="SCENE_COLORS" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_NORMALS" Format="rgba10u2" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
 
     <Rt Name="LPV_R_0" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
     <Rt Name="LPV_G_0" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
@@ -22,7 +46,9 @@
   </RenderTargets>
   <Samplers>
     <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />
-    <Sampler Name="VPLFilter" Filter="Trilinear" Comprasion="Always" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
+    <Sampler Name="VPLFilter" Filter="Nearest" Comprasion="Always" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
+    <Sampler Name="LPVFilter" Filter="Trilinear" Comprasion="Never" AddressU="Border" AddressV="Border" AddressW="Border" />
+    <Sampler Name="ShadowFilter" Filter="Trilinear" Comprasion="Never" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
   </Samplers>
   <RenderCalls>
     <Clear PassName="ClearRSM" Identifier="RSM" ClearTargets="Default" Flags="CLEAR_DEPTH">
@@ -88,6 +114,10 @@
         <Rt Index="1" Name="LPV_G_0" />
         <Rt Index="2" Name="LPV_B_0" />
       </Outputs>
+      <Parameters>
+        <Param Name="gi_scale" Value="1" />
+        <Param Name="lpv_flux_amplifier" Value="1" />
+      </Parameters>
     </NormalizeLPV>
     <Clear PassName="ClearAccums" Identifier="RSM" ClearTargets="Default" Flags="CLEAR_COLOR NODS">
       <Targets>
@@ -110,6 +140,55 @@
         <Rt Index="4" Name="LPV_ACCUM_G" />
         <Rt Index="5" Name="LPV_ACCUM_B" />
       </Outputs>
-    </NormalizeLPV>
+      <Parameters>
+        <Param Name="gi_scale" Value="1" />
+        <Param Name="lpv_flux_amplifier" Value="4" />
+      </Parameters>
+    </PropagateLPV>
+    <Scene PassName="GBuffer" Identifier="Main" Vs="LPV/Mesh" Ps="LPV/Mesh" VsEntry="MeshVs" PsEntry="MeshPs" Flags="NOBLEND">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+      </Samplers>
+      <Outputs>
+        <Rt Index="0" Name="SCENE_COLORS" />
+        <Rt Index="1" Name="SCENE_NORMALS"/>
+        <Rt Index="2" Name="SCENE_LINEARDEPTH"/>
+        <Rt Index="3" Name="SCENE_SPECULAR"/>
+      </Outputs>
+    </Scene>
+    <Mips PassName="GenMips" Identifier="Main">
+      <Inputs>
+        <Rt Index="0" Name="RSM_LINEARDEPTH"/>
+        <Rt Index="1" Name="SCENE_LINEARDEPTH" />
+      </Inputs>
+    </Mips>
+    <Triangle PassName="FinalizeLPV" Identifier="Main" Ps="LPV/deferred_lpv" PsEntry="deferred_lpv_ps" Flags="NODS" Output="PostProcessTarget">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="LPVFilter" Register="1" />
+        <Ps Name="ShadowFilter" Register="2" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="2" Name="SCENE_COLORS"/>
+        <Rt Index="3" Name="SCENE_SPECULAR" />
+        <Rt Index="4" Name="SCENE_NORMALS" />
+        <Rt Index="5" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="6" Name="RSM_LINEARDEPTH" />
+        <Rt Index="7" Name="LPV_ACCUM_R" />
+        <Rt Index="8" Name="LPV_ACCUM_G" />
+        <Rt Index="9" Name="LPV_ACCUM_B" />
+      </Inputs>
+      <Parameters>
+        <Param Name="gi_scale" Value="1" />
+        <Param Name="debug_gi" Value="false" />
+        <Param Name="lpv_flux_amplifier" Value="4" />
+        <Param Name="scene_dim_max" Value="0 0 0 0" />
+        <Param Name="scene_dim_min" Value="0 0 0 0" />
+        <Param Name="light_vp_tex" />
+        <Param Name="light_vp" />
+        <Param Name="light_vp_inv" />
+        <Param Name="main_light_pos" Value="0 0 0 0" />
+      </Parameters>
+    </Triangle>
   </RenderCalls>
 </Yume>

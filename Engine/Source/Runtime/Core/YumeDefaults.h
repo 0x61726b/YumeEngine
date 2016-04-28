@@ -44,7 +44,7 @@ namespace YumeEngine
 	YumeAPIExport unsigned GetStringListIndex(const char* value,const YumeString* strings,unsigned defaultIndex,bool caseSensitive = false);
 	YumeAPIExport unsigned GetStringListIndex(const char* value,const char** strings,unsigned defaultIndex,bool caseSensitive = false);
 
-
+	YumeAPIExport unsigned CountElements(const char* buffer,char separator);
 	YumeAPIExport bool ToBool(const YumeString& source);
 	YumeAPIExport bool ToBool(const char* source);
 	YumeAPIExport float ToFloat(const YumeString& source);

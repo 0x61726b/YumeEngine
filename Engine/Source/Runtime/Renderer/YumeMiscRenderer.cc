@@ -41,7 +41,7 @@
 
 using namespace DirectX;
 
-#define DEBUGGING_RSM
+//#define DEBUGGING_RSM
 #define DISABLE_CALLS
 
 namespace YumeEngine
@@ -57,7 +57,8 @@ namespace YumeEngine
 		zFar(100000.f),
 		giEnabled_(true),
 		updateRsm_(true),
-		rsmSize(1024)
+		rsmSize(1024),
+		num_propagations_(64)
 	{
 		rhi_ = gYume->pRHI ;
 
@@ -79,7 +80,7 @@ namespace YumeEngine
 		camera_ = YumeAPINew YumeLPVCamera;
 		camera_->SetViewParams(XMVectorSet(0,5,-10,1),XMVectorSet(0,0,0,0));
 		camera_->SetProjParams(60.0f * M_DEGTORAD,1600.0f / 900.0f,zNear,zFar);
-		camera_->SetScalers(0.0099f,0.6f);
+		camera_->SetScalers(0.0099f,3);
 
 		defaultPass_ = YumeAPINew RenderPass;
 
@@ -93,179 +94,8 @@ namespace YumeEngine
 
 			curr_ = 0;
 			next_ = 1;
-
-			num_iterations_rendered = 0;
 		}
 
-#ifndef DISABLE_CALLS
-		RenderCallPtr clearCall = YumeAPINew RenderCall(CallType::CLEAR);
-		clearCall->SetPassName("RSMClear");
-
-		RenderCallPtr rsmRender = YumeAPINew RenderCall(CallType::SCENE,"LPV/Mesh","LPV/Mesh","","MeshVs","MeshPs");
-		rsmRender->SetShadowPass(true);
-
-		rsmRender->SetPassName("ReflectiveShadowMapPass");
-		rsmRender->SetMiscRenderingFlags(RF_NOBLENDSTATE);
-
-		RenderTargetDesc dummyRt; //baka
-		ZeroMemory(&dummyRt,sizeof(RenderTargetDesc));
-
-		dummyRt.Width = rsmSize;
-		dummyRt.Height = rsmSize;
-		dummyRt.ArraySize = 1;
-		dummyRt.Format = gYume->pRHI->GetRGBAFloat16FormatNs();
-		dummyRt.Name = "RSM_COLORS";
-		dummyRt.Usage = TEXTURE_RENDERTARGET;
-		dummyRt.Mips = 1;
-		dummyRt.Index = 0;
-		dummyRt.Type = RT_OUTPUT;
-		dummyRt.ClearColor = YumeColor(0,0,0,1);
-		Texture2DPtr RsmColors = clearCall->AddTexture(dummyRt);
-
-		dummyRt.Index = 1;
-		dummyRt.Name = "RSM_NORMALS";
-		dummyRt.Format = 24;
-		Texture2DPtr RsmNormals = clearCall->AddTexture(dummyRt);
-
-		dummyRt.Index = 2;
-		dummyRt.Format = 16;
-		dummyRt.Name = "RSM_LINEARDEPTH";
-		dummyRt.Mips = 0;
-		dummyRt.ClearColor = YumeColor(10000,10000,10000,10000);
-		Texture2DPtr RsmLinearDepth = clearCall->AddTexture(dummyRt);
-
-		dummyRt.Index = 3;
-		dummyRt.Name = "RSM_DUMMYSPEC";
-		dummyRt.Format = gYume->pRHI->GetRGBAFloat16FormatNs();
-		dummyRt.ClearColor = YumeColor(0,0,0,1);
-		dummyRt.Mips = 1;
-		Texture2DPtr RsmSpec = clearCall->AddTexture(dummyRt);
-
-		dummyRt.Usage = TEXTURE_DEPTHSTENCIL;
-		dummyRt.Type = RT_DEPTHSTENCIL;
-		dummyRt.Format = 39;
-		dummyRt.Name = "RSM_DSV";
-		Texture2DPtr depthStencil = clearCall->AddTexture(dummyRt);
-
-
-		clearCall->SetClearFlags(CLEAR_DEPTH);
-
-		YumeTexture2D* textures[5] ={RsmColors,RsmNormals,RsmLinearDepth,RsmSpec,depthStencil};
-
-		rsmRender->AddTextures(5,textures);
-
-
-		defaultPass_->AddRenderCall(clearCall);
-		defaultPass_->AddRenderCall(rsmRender);
-
-		RenderCallPtr gbufferCall = YumeAPINew RenderCall(CallType::SCENE,"LPV/Mesh","LPV/Mesh","","MeshVs","MeshPs");
-		gbufferCall->SetPassName("GBufferPass");
-
-		RenderTargetDesc gBufferTargets; //baka
-		ZeroMemory(&gBufferTargets,sizeof(RenderTargetDesc));
-
-		gBufferTargets.Width = rhi_->GetWidth();
-		gBufferTargets.Height = rhi_->GetHeight();
-		gBufferTargets.ArraySize = 1;
-		gBufferTargets.Format = gYume->pRHI->GetRGBAFloat16FormatNs();
-		gBufferTargets.Name = "SCENE_COLORS";
-		gBufferTargets.Usage = TEXTURE_RENDERTARGET;
-		gBufferTargets.Mips = 1;
-		gBufferTargets.Index = 0;
-		gBufferTargets.Type = RT_OUTPUT | RT_INPUT;
-		gBufferTargets.ClearColor = YumeColor(0,0,0,1);
-
-		Texture2DPtr SceneColors = gbufferCall->AddTexture(gBufferTargets);
-
-		gBufferTargets.Name = "SCENE_NORMALS";
-		gBufferTargets.Format = 24; ////DXGI_FORMAT_R10G10B10A2_UNORM
-		gBufferTargets.Index = 1;
-		Texture2DPtr SceneNormals = gbufferCall->AddTexture(gBufferTargets);
-
-		gBufferTargets.Name = "SCENE_SPECULAR";
-		gBufferTargets.Format = gYume->pRHI->GetRGBAFloat16FormatNs();; ////DXGI_FORMAT_R10G10B10A2_UNORM
-		gBufferTargets.Index = 3;
-		Texture2DPtr SceneSpecular = gbufferCall->AddTexture(gBufferTargets);
-
-		gBufferTargets.Name = "SCENE_LINEARDEPTH";
-		gBufferTargets.Format = 16;
-		gBufferTargets.Index = 2;
-		gBufferTargets.Mips = 0;
-		Texture2DPtr SceneLd = gbufferCall->AddTexture(gBufferTargets);
-
-		Setup();
-
-		if(GetGIEnabled())
-		{
-			lightPropagator_.Create(32);
-
-			curr_ = 0;
-			next_ = 1;
-
-			num_iterations_rendered = 0;
-		}
-
-		//It is important to add gbuffer call after GI calls
-		defaultPass_->AddRenderCall(gbufferCall);
-
-		RenderCallPtr genMips = YumeAPINew RenderCall(CallType::GENERATEMIPS);
-
-		genMips->AddTexture(RT_INPUT,0,RsmLinearDepth);
-		genMips->AddTexture(RT_INPUT,1,SceneLd);
-
-		defaultPass_->AddRenderCall(genMips);
-
-		RenderCallPtr fsFinal = YumeAPINew RenderCall(CallType::FSTRIANGLE,"","LPV/deferred_lpv","","","deferred_lpv_ps");
-		fsFinal->SetMiscRenderingFlags(RF_NODEPTHSTENCIL);
-		//Add Inputs
-		fsFinal->AddTexture(RT_INPUT,0,SceneColors);
-		fsFinal->AddTexture(RT_INPUT,1,SceneSpecular);
-		fsFinal->AddTexture(RT_INPUT,2,SceneNormals);
-		fsFinal->AddTexture(RT_INPUT,3,SceneLd);
-		fsFinal->AddTexture(RT_INPUT,4,RsmLinearDepth);
-
-		RenderCallPtr lpvInject = defaultPass_->GetCallByName("LPVInject");
-
-		Texture2DPtr accumR = lpvInject->GetInput(6);
-		Texture2DPtr accumG = lpvInject->GetInput(7);
-		Texture2DPtr accumB = lpvInject->GetInput(8);
-
-		fsFinal->AddTexture(RT_INPUT,5,accumR);
-		fsFinal->AddTexture(RT_INPUT,6,accumG);
-		fsFinal->AddTexture(RT_INPUT,7,accumB);
-
-		//fsFinal->SetSampler(PS,2,2);
-		/*fsFinal->SetSampler(PS,1,3);*/
-
-		fsFinal->SetShaderParameter("gi_scale",giParams_.Scale);
-		fsFinal->SetShaderParameter("lpv_flux_amplifier",giParams_.LPVFlux);
-		fsFinal->SetShaderParameter("debug_gi",giParams_.DebugView);
-		fsFinal->SetShaderParameter("scene_dim_max",XMFLOAT4(GetMaxBb().x,GetMaxBb().y,GetMaxBb().z,1.0f));
-		fsFinal->SetShaderParameter("scene_dim_min",XMFLOAT4(GetMinBb().x,GetMinBb().y,GetMinBb().z,1.0f));
-
-		fsFinal->SetShaderParameter("lpv_size",32.0f);
-		fsFinal->SetShaderParameter("light_vp",XMMatrixIdentity());
-		fsFinal->SetShaderParameter("light_vp_inv",XMMatrixIdentity());
-		fsFinal->SetShaderParameter("light_mvp",XMMatrixIdentity());
-		fsFinal->SetShaderParameter("light_vp_tex",XMMatrixIdentity());
-
-
-
-		defaultPass_->AddRenderCall(fsFinal);
-
-		RenderTargetDesc frontBuffer;
-		frontBuffer.Width = 1600;
-		frontBuffer.Height = 900;
-		frontBuffer.ArraySize = 1;
-		frontBuffer.Mips = 10;
-		frontBuffer.Name = "FrontBuffer";
-		frontBuffer.Format = gYume->pRHI->GetRGBAFloat16FormatNs();
-		frontBuffer.Usage = TEXTURE_RENDERTARGET;
-		frontBuffer.Type = RT_OUTPUT;
-		frontBuffer.Index = 0;
-
-		/*fsFinal->AddTexture(frontBuffer);*/
-		fsFinal->AddTexture(RT_OUTPUT,0,0);
 		SharedPtr<YumeVertexBuffer> triangleVb(gYume->pRHI->CreateVertexBuffer());
 
 		SimpleVertex v1 ={DirectX::XMFLOAT3(-1.f,-3.f,1.f)};
@@ -281,56 +111,8 @@ namespace YumeEngine
 		fullscreenTriangle_->SetVertexBuffer(0,triangleVb);
 		fullscreenTriangle_->SetDrawRange(TRIANGLE_LIST,0,0,0,3);
 
-
-		rsmRender->SetIdentifier("LPVDeferred");
-		clearCall->SetIdentifier("LPVDeferred");
-
-		SamplerStateDesc lpvFilters;
-		lpvFilters.Filter = MinMagMipLinear;
-		lpvFilters.AddressModeU = TAM_Clamp;
-		lpvFilters.AddressModeV = TAM_Clamp;
-		lpvFilters.AddressModeW = TAM_Clamp;
-		lpvFilters.BorderColor[0] = lpvFilters.BorderColor[1] = lpvFilters.BorderColor[2] = lpvFilters.BorderColor[3] = 0.0f;
-		lpvFilters.ComparisonFunc = TCF_NEVER;
-		lpvFilters.MaxLOD = D3D11_FLOAT32_MAX; //3.402823466e+38f
-		lpvFilters.Name = "ShadowFilter";
-		lpvFilters.MaxAniso = 1;
-		unsigned shadowSampler = rhi_->CreateSamplerState(lpvFilters);
-
-		lpvFilters.AddressModeU = TAM_Border;
-		lpvFilters.AddressModeV = TAM_Border;
-		lpvFilters.AddressModeW = TAM_Border;
-		lpvFilters.MaxAniso = 1;
-		lpvFilters.Name = "LPVFilter";
-		unsigned lpvFilter = rhi_->CreateSamplerState(lpvFilters);
-
-		lpvFilters.AddressModeU = TAM_Clamp;
-		lpvFilters.AddressModeV = TAM_Clamp;
-		lpvFilters.AddressModeW = TAM_Clamp;
-		lpvFilters.ComparisonFunc = TCF_ALWAYS;
-		lpvFilters.Filter = MinMagMipPoint;
-		lpvFilters.MaxAniso = 1;
-		lpvFilters.Name = "VPLFilter";
-		unsigned vplFilter = rhi_->CreateSamplerState(lpvFilters);
-
-		lpvFilters.Filter = MinMagMipLinear;
-		lpvFilters.ComparisonFunc = TCF_NEVER;
-		lpvFilters.AddressModeU = TAM_Wrap;
-		lpvFilters.AddressModeV = TAM_Wrap;
-		lpvFilters.AddressModeW = TAM_Wrap;
-		lpvFilters.Name = "StandardFilter";
-
-		unsigned standardFilter = rhi_->CreateSamplerState(lpvFilters);
-
-		fsFinal->SetSampler(PS,1,lpvFilter);
-		fsFinal->SetSampler(PS,2,shadowSampler);
-
-		gbufferCall->SetSampler(PS,0,standardFilter);
-		lpvInject->SetSampler(VS,0,vplFilter);
-
-		rsmRender->SetSampler(PS,0,standardFilter);
-#endif
-
+		pp_ = YumeAPINew YumePostProcess(this);
+		pp_->Setup();
 	}
 
 	void YumeMiscRenderer::Setup()
@@ -342,8 +124,6 @@ namespace YumeEngine
 		if(!gYume->pInput->GetMouseButtonDown(MOUSEB_LEFT))
 			camera_->FrameMove(timeStep);
 
-
-
 		Light* dirLight = static_cast<Light*>(scene_->GetDirectionalLight());
 		dirLight->UpdateLightParameters();
 
@@ -352,6 +132,8 @@ namespace YumeEngine
 		//abort variant matrices
 		defaultPass_->SetShaderParameter("scene_dim_max",XMFLOAT4(GetMaxBb().x,GetMaxBb().y,GetMaxBb().z,1.0f));
 		defaultPass_->SetShaderParameter("scene_dim_min",XMFLOAT4(GetMinBb().x,GetMinBb().y,GetMinBb().z,1.0f));
+
+
 	}
 
 	void YumeMiscRenderer::ApplyShaderParameters(RenderCall* call)
@@ -461,9 +243,7 @@ namespace YumeEngine
 					}
 					else
 					{
-						bool deferred = true;
-
-						if(deferred)
+						if(call->GetDeferred())
 						{
 							Texture2DPtr colors = call->GetOutput(0);
 							Texture2DPtr normals = call->GetOutput(1);
@@ -502,6 +282,8 @@ namespace YumeEngine
 				break;
 				case CallType::LPV_INJECT:
 				{
+					curr_ = 0;
+					next_ = 1;
 
 					if(!updateRsm_)
 						break;
@@ -528,15 +310,6 @@ namespace YumeEngine
 					SetModelMatrix(i,bbMin,bbMax);
 
 					ApplyShaderParameters(call);
-
-					//RenderCall* rsmRender = defaultPass_->GetRenderCall(1); //1 is RSM renderer
-
-					//Texture2DPtr rsmColors = rsmRender->GetOutput(0);
-					//Texture2DPtr rsmNormals = rsmRender->GetOutput(1);
-					//Texture2DPtr rsmLinearDepth = rsmRender->GetOutput(2);
-
-					//Texture2DPtr textures[3] ={rsmLinearDepth,rsmColors,rsmNormals};
-					//rhi_->VSBindSRV(6,3,textures);
 
 					unsigned numOutputs = call->GetNumOutputs();
 
@@ -694,14 +467,14 @@ namespace YumeEngine
 
 					rhi_->SetShaders(call->GetVs(),call->GetPs(),call->GetGs());
 
-					for(int i=0; i < 64; ++i)
+					for(int i=0; i < num_propagations_; ++i)
 					{
 						rhi_->SetShaderParameter("iteration",(float)i);
 						LPVPropagate(call,i);
 					}
 #ifndef DEBUGGING_RSM
 					updateRsm_ = false;
-					defaultPass_->DisableRenderCalls("LPVDeferred");
+					defaultPass_->DisableRenderCalls("RSM");
 #endif
 
 				}
@@ -726,31 +499,42 @@ namespace YumeEngine
 				break;
 				case CallType::FSTRIANGLE:
 				{
-					rhi_->SetViewport(IntRect(0,0,rhi_->GetWidth(),rhi_->GetHeight()));
+					RHIEvent ev;
+					if(call->GetPassName().length())
+					{
+						ev.BeginEvent(call->GetPassName());
+					}
+					else
+						ev.BeginEvent("RenderCall::FSTRIANGLE");
 
 					SetSamplers(call);
 
-					YumeShaderVariation* fsTriangle = rhi_->GetShader(VS,"LPV/fs_triangle");
+					YumeShaderVariation* fsTriangle = rhi_->GetShader(VS,"LPV/fs_triangle","","fs_triangle_vs");
 
 					rhi_->SetShaders(fsTriangle,call->GetPs());
 
-					unsigned startIndex = 0;
-					unsigned endIndex = 0;
 					YumeVector<Texture2DPtr>::type inputs;
 
-					for(int i=0; i < call->GetNumInputs(); ++i)
+					unsigned startIndex = 0;
+					unsigned inputSize = call->GetNumInputs();
+					for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
 					{
 						Texture2DPtr input = call->GetInput(i);
 
-						inputs.push_back(input);
+						if(input)
+						{
+							if(startIndex == 0) startIndex = i;
+							inputs.push_back(input);
+						}
 					}
+					rhi_->PSBindSRV(startIndex,inputSize,&inputs[0]);
 
-					rhi_->PSBindSRV(2,call->GetNumInputs(),&inputs[0]);
 
 					DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
 					DirectX::XMFLOAT4X4 i;
 					DirectX::XMStoreFloat4x4(&i,I);
 					SetModelMatrix(i,bbMin,bbMax);
+
 
 					//Variants
 					ApplyShaderParameters(call);
@@ -776,10 +560,8 @@ namespace YumeEngine
 
 					SetCameraParameters(false);
 
-					rhi_->BindResetRenderTargets(6);
-					rhi_->SetDepthStencil((YumeTexture2D*)0);
-
 					Texture2DPtr output = call->GetOutput(0);
+					gYume->pRHI->SetViewport(IntRect(0,0,output->GetWidth(),output->GetHeight()));
 					if(!output)
 					{
 						rhi_->BindBackbuffer();
@@ -788,13 +570,17 @@ namespace YumeEngine
 					else
 					{
 						rhi_->SetRenderTarget(0,output);
-						rhi_->ClearRenderTarget(0,CLEAR_COLOR);
+						/*rhi_->ClearRenderTarget(0,CLEAR_COLOR);*/
 					}
+
+
+					pp_->SetPPParameters();
+
 
 					GetFsTriangle()->Draw(gYume->pRHI);
 
 					rhi_->BindResetRenderTargets(1);
-					rhi_->BindResetTextures(0,13);
+					
 
 				}
 				break;
@@ -804,6 +590,7 @@ namespace YumeEngine
 			}
 		}
 
+		pp_->Render();
 	}
 
 	void YumeMiscRenderer::RenderReflectiveShadowMap(RenderCall* call)
@@ -846,14 +633,21 @@ namespace YumeEngine
 		if(call->HasVertexSampler())
 		{
 			unsigned num = call->GetNumVertexSamplers();
+			unsigned startIndex = 0;
 
 			YumeVector<unsigned>::type vsSamplers;
-			for(int k=0; k < num; ++k)
+			for(int k=0; k < MAX_TEXTURE_UNITS; ++k)
 			{
 				unsigned samplerId = call->GetVertexSampler(k);
-				vsSamplers.push_back(samplerId);
+
+				if(samplerId != M_MAX_UNSIGNED)
+				{
+					if(startIndex == 0) startIndex = k;
+
+					vsSamplers.push_back(samplerId);
+				}
 			}
-			rhi_->BindSampler(VS,0,num,&vsSamplers[0]);
+			rhi_->BindSampler(VS,startIndex,num,&vsSamplers[0]);
 		}
 
 
@@ -861,12 +655,20 @@ namespace YumeEngine
 		{
 			unsigned num = call->GetNumPixelSamplers();
 			YumeVector<unsigned>::type psSamplers;
-			for(int k=0; k < num; ++k)
+			unsigned startIndex = 0;
+
+			for(int k=0; k < MAX_TEXTURE_UNITS; ++k)
 			{
 				unsigned samplerId = call->GetPixelSampler(k);
-				psSamplers.push_back(samplerId);
+
+				if(samplerId != M_MAX_UNSIGNED)
+				{
+					if(startIndex == 0) startIndex = k;
+
+					psSamplers.push_back(samplerId);
+				}
 			}
-			rhi_->BindSampler(PS,0,num,&psSamplers[0]);
+			rhi_->BindSampler(PS,startIndex,num,&psSamplers[0]);
 		}
 	}
 
@@ -928,7 +730,7 @@ namespace YumeEngine
 		rhi_->BindResetRenderTargets(6);
 		rhi_->BindResetTextures(7,3,true);
 
-		
+
 	}
 
 	YumeString YumeMiscRenderer::GetTextureName(const YumeString& s,int num)
@@ -989,10 +791,15 @@ namespace YumeEngine
 
 
 		YumeShaderVariation* triangle = gYume->pRHI->GetShader(VS,"LPV/fs_triangle");
+		YumeShaderVariation* overlay = rhi_->GetShader(PS,"LPV/Overlay");
 
 		rhi_->SetBlendMode(BLEND_PREMULALPHA);
-		rhi_->BindSampler(PS,0,1,0); //Standard
-		rhi_->SetShaders(triangle,overlayPs_,0);
+
+		unsigned sampler = defaultPass_->GetSamplerByName("Standard").second;
+		unsigned samplers[1] ={sampler};
+		rhi_->BindSampler(PS,0,1,samplers); //Standard
+
+		rhi_->SetShaders(triangle,overlay,0);
 
 		rhi_->BindBackbuffer();
 
@@ -1021,17 +828,19 @@ namespace YumeEngine
 
 	void YumeMiscRenderer::SetGIDebug(bool enabled)
 	{
-		lpv_->SetGIDebug(enabled);
+		giParams_.DebugView = enabled;
 	}
 
 	void YumeMiscRenderer::SetGIScale(float f)
 	{
-		lpv_->SetGIScale(f);
+		giParams_.Scale = f;
 	}
 
 	void YumeMiscRenderer::SetLPVFluxAmp(float f)
 	{
-		lpv_->SetLPVFlux(f);
+		giParams_.LPVFlux = f;
+		updateRsm_ = true;
+		defaultPass_->EnableRenderCalls("RSM");
 	}
 
 	void YumeMiscRenderer::SetLPVPos(float x,float y,float z)
@@ -1046,7 +855,9 @@ namespace YumeEngine
 
 	void YumeMiscRenderer::SetLPVNumberIterations(int num)
 	{
-		lpv_->SetNumIterations(num);
+		num_propagations_ = num;
+		updateRsm_ = true;
+		defaultPass_->EnableRenderCalls("RSM");
 	}
 
 	void YumeMiscRenderer::SetPerFrameConstants()

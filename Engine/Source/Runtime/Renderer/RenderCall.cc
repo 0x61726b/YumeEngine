@@ -35,6 +35,7 @@ namespace YumeEngine
 		shadowPass_(false),
 		hasVsSampler_(false),
 		hasPsSampler_(false),
+		deferred_(true),
 		numVertexSamplers_(0),
 		numPixelSamplers_(0),
 		type_(type),

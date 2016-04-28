@@ -114,6 +114,9 @@ namespace YumeEngine
 		void SetEnabled(bool enabled) { enabled_ = enabled; }
 		bool GetEnabled() const { return enabled_; }
 
+		bool GetDeferred() const { return deferred_; }
+		void SetDeferred(bool enabled) { deferred_ = enabled; }
+
 		Texture2DPtr GetDepthStencil() const { return depthStencil_; }
 	private:
 		bool enabled_;
@@ -127,6 +130,8 @@ namespace YumeEngine
 
 		unsigned numInputs_;
 		unsigned numOutputs_;
+
+		bool deferred_;
 
 		YumeString passName;
 		YumeString identifier_;

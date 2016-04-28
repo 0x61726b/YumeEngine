@@ -196,7 +196,7 @@ namespace YumeEngine
 			if(domElement == "iGiLPVFlux")
 			{
 				float value = atof(data.c_str());
-				gYume->pRenderer->SetGIScale(value);
+				gYume->pRenderer->SetLPVFluxAmp(value);
 			}
 
 			if(domElement == "iLpvX")

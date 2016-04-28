@@ -209,6 +209,14 @@ namespace YumeEngine
 				{
 					ct = CallType::LPV_PROPAGATE;
 				}
+				else if(strcmp(type,"Mips") == 0)
+				{
+					ct = CallType::GENERATEMIPS;
+				}
+				else if(strcmp(type,"Triangle") == 0)
+				{
+					ct = CallType::FSTRIANGLE;
+				}
 
 				const char* passName = child.attribute("PassName").as_string();
 				const char* identifier = child.attribute("Identifier").as_string();
@@ -222,13 +230,63 @@ namespace YumeEngine
 				const char* geometryShader = child.attribute("Gs").as_string();
 				const char* geometryEntry = child.attribute("GsEntry").as_string();
 
+				const char* singleOutput = child.attribute("Output").as_string();
+
+
+
 				RenderCallPtr renderCall = YumeAPINew RenderCall(ct,vertexShader,pixelShader,geometryShader,vertexEntry,pixelEntry,geometryEntry);
 				renderCall->SetIdentifier(identifier);
 				renderCall->SetPassName(passName);
 
+				if(strlen(singleOutput) > 0)
+				{
+					Texture2DPtr sOutput = GetTextureByName(singleOutput);
+					renderCall->SetOutput(0,sOutput);
+				}
+
 
 				XmlNode samplerBindings = child.child("Samplers");
 				XmlNode clearTargets = child.child("Targets");
+				XmlNode Outputs = child.child("Outputs");
+				XmlNode Params = child.child("Parameters");
+				XmlNode Inputs = child.child("Inputs");
+
+				for(XmlNode param = Params.first_child(); param; param = param.next_sibling())
+				{
+					const char* name = param.attribute("Name").as_string();
+					YumeString value = param.attribute("Value").as_string();
+
+					if(value.Contains(' ')) //Its a vector
+					{
+						unsigned wsCount = CountElements(value.c_str(),' ');
+
+						if(wsCount == 4) //4-component vector
+						{
+							DirectX::XMFLOAT4 v4 = ToVector4(value.c_str());
+							renderCall->SetShaderParameter(name,v4);
+						}
+
+						if(wsCount == 3)
+						{
+							DirectX::XMFLOAT3 v3 = ToVector3(value.c_str());
+							renderCall->SetShaderParameter(name,v3);
+						}
+					}
+					else
+					{
+						if(!value.Compare("false"))
+						{
+							renderCall->SetShaderParameter(name,false);
+						}
+						else if(!value.Compare("true"))
+						{
+							renderCall->SetShaderParameter(name,true);
+						}
+						else
+							renderCall->SetShaderParameter(name,(float)atof(value.c_str()));
+
+					}
+				}
 
 				unsigned targetCount = 0;
 				for(XmlNode clearTarget = clearTargets.first_child(); clearTarget; clearTarget = clearTarget.next_sibling())
@@ -275,7 +333,7 @@ namespace YumeEngine
 
 				YumeVector<YumeString>::type flagsVector = ParseFlags(flags);
 
-				XmlNode Outputs = child.child("Outputs");
+
 				for(XmlNode output = Outputs.first_child(); output; output = output.next_sibling())
 				{
 					const char* index = output.attribute("Index").as_string();
@@ -284,7 +342,7 @@ namespace YumeEngine
 					renderCall->SetOutput(atoi(index),GetTextureByName(name));
 				}
 
-				XmlNode Inputs = child.child("Inputs");
+
 				for(XmlNode input = Inputs.first_child(); input;input = input.next_sibling())
 				{
 					const char* index = input.attribute("Index").as_string();
@@ -292,7 +350,6 @@ namespace YumeEngine
 
 					renderCall->SetInput(atoi(index),GetTextureByName(name));
 				}
-
 
 				if(flagsVector.size())
 				{
@@ -328,6 +385,8 @@ namespace YumeEngine
 
 		if(It != renderTargets_.end())
 			return It->second;
+		else
+			return 0;
 	}
 
 
