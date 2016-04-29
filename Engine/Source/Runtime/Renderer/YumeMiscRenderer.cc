@@ -134,6 +134,14 @@ namespace YumeEngine
 		defaultPass_->SetShaderParameter("scene_dim_min",XMFLOAT4(GetMinBb().x,GetMinBb().y,GetMinBb().z,1.0f));
 
 
+		if(updateRsm_)
+		{
+			DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
+			DirectX::XMFLOAT4X4 i;
+			DirectX::XMStoreFloat4x4(&i,I);
+
+			svo_.SetModelMatrix(i,bbMin,bbMax);
+		}
 
 	}
 
@@ -257,12 +265,10 @@ namespace YumeEngine
 								YumeMesh* geometry = node->GetGeometry();
 								auto geometries = geometry->GetGeometries();
 
-								svo_.Voxelize(geometry,i == 0);
+								svo_.Voxelize(call,geometry,i == 0);
 							}
-
-							svo_.Inject();
-							svo_.Filter();
-
+							/*gYume->pRenderer->GetDefaultPass()->DisableRenderCalls("RSM");
+							updateRsm_ = false;*/
 						}
 
 						if(call->GetDeferred())
@@ -371,6 +377,61 @@ namespace YumeEngine
 					gYume->pRHI->BindResetTextures(startIndex,inputSize); //Start at 6 count 3
 
 					ev.EndEvent();
+				}
+				break;
+				case SVO_INJECT:
+				{
+					RHIEvent ev;
+					if(call->GetPassName().length())
+					{
+						ev.BeginEvent(call->GetPassName());
+					}
+					else
+						ev.BeginEvent("RenderCall::SVO_INJECT");
+
+					UINT num_vpls = 1024 * 1024;
+
+					unsigned numOutputs = call->GetNumOutputs();
+
+					TexturePtr output = call->GetOutput(1);
+
+					TexturePtr uavs[] ={output};
+					rhi_->SetRenderTargetsAndUAVs(0,1,1,uavs);
+
+					unsigned inputSize = call->GetNumInputs();
+					YumeVector<TexturePtr>::type inputs;
+
+					unsigned startIndex = 0;
+
+					for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
+					{
+						TexturePtr input = call->GetInput(i);
+
+						if(input)
+						{
+							if(startIndex == 0) startIndex = i;
+							inputs.push_back(input);
+						}
+					}
+					rhi_->PSBindSRV(startIndex,inputSize,&inputs[0]);
+
+					rhi_->SetShaders(call->GetVs(),call->GetPs());
+
+					ApplyShaderParameters(call);
+
+					SetMainLight();
+
+					rhi_->BindPsuedoBuffer();
+					rhi_->Draw(POINT_LIST,0,num_vpls);
+
+					gYume->pRHI->BindResetTextures(6,3); //Start at 6 count 3
+					TexturePtr clearUavs[1] ={0};
+					rhi_->SetRenderTargetsAndUAVs(0,1,1,clearUavs);
+
+					svo_.Filter();
+
+					defaultPass_->DisableRenderCalls("RSM");
+					updateRsm_ = false;
 				}
 				break;
 				case LPV_NORMALIZE:
@@ -882,6 +943,22 @@ namespace YumeEngine
 		num_propagations_ = num;
 		updateRsm_ = true;
 		defaultPass_->EnableRenderCalls("RSM");
+	}
+
+	void YumeMiscRenderer::SetMainLight()
+	{
+		Light* light = static_cast<Light*>(scene_->GetDirectionalLight());
+
+		const DirectX::XMFLOAT4& pos = light->GetPosition();
+		const DirectX::XMFLOAT4& dir = light->GetDirection();
+		const YumeColor& color = light->GetColor();
+
+		const unsigned fSize = 4 * 3 * 4;
+		float f[fSize] ={
+			pos.x,pos.y,pos.z,pos.w,
+			dir.x,dir.y,dir.z,dir.w,
+			color.r_,color.g_,color.b_,color.a_
+		};
 	}
 
 	void YumeMiscRenderer::SetPerFrameConstants()

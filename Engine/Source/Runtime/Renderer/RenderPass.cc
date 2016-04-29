@@ -232,6 +232,10 @@ namespace YumeEngine
 				{
 					ct = CallType::FSTRIANGLE;
 				}
+				else if(strcmp(type,"SvoInject") == 0)
+				{
+					ct = CallType::SVO_INJECT;
+				}
 
 				const char* passName = child.attribute("PassName").as_string();
 				const char* identifier = child.attribute("Identifier").as_string();

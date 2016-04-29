@@ -61,6 +61,7 @@ namespace YumeEngine
 		void SetSamplers(RenderCall* call);
 
 		void SetGIParameters();
+		void SetMainLight();
 
 		bool giEnabled_;
 		bool updateRsm_;

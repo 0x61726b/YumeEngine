@@ -37,7 +37,8 @@ namespace YumeEngine
 		FSTRIANGLE,
 		LPV_INJECT,
 		LPV_NORMALIZE,
-		LPV_PROPAGATE
+		LPV_PROPAGATE,
+		SVO_INJECT
 	};
 
 	class YumeAPIExport RenderCall : public YumeBase

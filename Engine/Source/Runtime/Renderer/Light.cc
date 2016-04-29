@@ -70,5 +70,6 @@ namespace YumeEngine
 		gYume->pRHI->SetShaderParameter("light_vp_tex",light_vp * tex);
 
 
+
 	}
 }
