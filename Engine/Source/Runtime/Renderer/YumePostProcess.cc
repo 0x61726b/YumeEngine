@@ -142,7 +142,7 @@ namespace YumeEngine
 	{
 		RHIEvent e("Post Processing");
 
-		Texture2DPtr target = misc_->GetDefaultPass()->GetTextureByName("PostProcessTarget");
+		TexturePtr target = misc_->GetDefaultPass()->GetTextureByName("PostProcessTarget");
 		gYume->pRHI->GenerateMips(target);
 
 		static bool current = true;
@@ -150,7 +150,7 @@ namespace YumeEngine
 
 		gYume->pRHI->SetViewport(IntRect(0,0,1,1));
 
-		YumeTexture2D* textures[] ={adaptadLuminanceRt_[!current]};
+		TexturePtr textures[] ={adaptadLuminanceRt_[!current]};
 		gYume->pRHI->PSBindSRV(11,1,textures);
 
 		{
@@ -162,13 +162,13 @@ namespace YumeEngine
 			Bloom(target);
 
 
-		YumeTexture2D* textures2[] ={adaptadLuminanceRt_[current],bloomFull_};
+		TexturePtr textures2[] ={adaptadLuminanceRt_[current],bloomFull_};
 		gYume->pRHI->PSBindSRV(11,2,textures2);
 
 		SetViewport(target);
 
-		YumeTexture2D* in = target;
-		YumeTexture2D* out = temporaryRt_;
+		TexturePtr in = target;
+		TexturePtr out = temporaryRt_;
 
 		{
 			RHIEvent e("SSAO Pass");
@@ -203,7 +203,7 @@ namespace YumeEngine
 		gYume->pRHI->BindResetTextures(0,13);
 	}
 
-	void YumePostProcess::Bloom(YumeTexture2D* frontbuffer)
+	void YumePostProcess::Bloom(TexturePtr frontbuffer)
 	{
 		RHIEvent e("Bloom Pass");
 
@@ -214,7 +214,7 @@ namespace YumeEngine
 	}
 
 
-	void YumePostProcess::BloomBlur(YumeTexture2D* in,YumeTexture2D* out)
+	void YumePostProcess::BloomBlur(TexturePtr in,TexturePtr out)
 	{
 		RHIEvent e("Bloom Blur Pass");
 
@@ -252,15 +252,15 @@ namespace YumeEngine
 		Render(copy_,blurred_[0],out);
 	}
 
-	void YumePostProcess::DoF(YumeTexture2D* in,YumeTexture2D* out)
+	void YumePostProcess::DoF(TexturePtr in,TexturePtr out)
 	{
 		RHIEvent e("DoF");
 
 		if(dof_enabled)
 			DoFBlur(in,frontBufferBlurred_);
 
-		YumeTexture2D* textures[] ={frontBufferBlurred_};
-		YumeTexture2D* texturesNull[] ={nullptr};
+		TexturePtr textures[] ={frontBufferBlurred_};
+		TexturePtr texturesNull[] ={nullptr};
 
 		gYume->pRHI->PSBindSRV(13,1,textures);
 
@@ -269,11 +269,11 @@ namespace YumeEngine
 		gYume->pRHI->PSBindSRV(13,1,texturesNull);
 	}
 
-	void YumePostProcess::DoFBlur(YumeTexture2D* in,YumeTexture2D* out)
+	void YumePostProcess::DoFBlur(TexturePtr in,TexturePtr out)
 	{
 		RHIEvent e("DoF Blur");
 
-		YumeTexture2D* textures[] ={in};
+		TexturePtr textures[] ={in};
 
 		gYume->pRHI->PSBindSRV(0,1,textures);
 
@@ -292,19 +292,19 @@ namespace YumeEngine
 		SetViewport(out);
 		Render(copy_,blurred_[0],out);
 
-		YumeTexture2D* texturesNull[] ={nullptr};
+		TexturePtr texturesNull[] ={nullptr};
 		gYume->pRHI->PSBindSRV(0,1,texturesNull);
 	}
 
 
-	void YumePostProcess::Godrays(YumeTexture2D* in,YumeTexture2D* out)
+	void YumePostProcess::Godrays(TexturePtr in,TexturePtr out)
 	{
 		RHIEvent e("Godrays");
 
 		if(godrays_enabled)
 		{
 			
-			YumeTexture3D* noiseTex[] ={ noiseTex_ };
+			TexturePtr noiseTex[] ={ noiseTex_ };
 
 			gYume->pRHI->PSBindSRV(14,1,noiseTex);
 			
@@ -315,7 +315,7 @@ namespace YumeEngine
 			Render(godrays_,blurred_[0],blurred_[5]);
 
 
-			YumeTexture2D* textures[] ={nullptr};
+			TexturePtr textures[] ={nullptr};
 			gYume->pRHI->PSBindSRV(0,1,textures);
 
 
@@ -332,8 +332,8 @@ namespace YumeEngine
 			Render(copy_,blurred_[5],frontBufferBlurred_);
 		}
 
-		YumeTexture2D* textures[] ={frontBufferBlurred_};
-		YumeTexture2D* texturesNull[] ={nullptr};
+		TexturePtr textures[] ={frontBufferBlurred_};
+		TexturePtr texturesNull[] ={nullptr};
 
 		gYume->pRHI->PSBindSRV(13,1,textures);
 
@@ -344,7 +344,7 @@ namespace YumeEngine
 
 	}
 
-	void YumePostProcess::Render(YumeShaderVariation* ps,YumeTexture2D* in,YumeTexture2D* out)
+	void YumePostProcess::Render(YumeShaderVariation* ps,TexturePtr in,TexturePtr out)
 	{
 		YumeShaderVariation* triangle = gYume->pRHI->GetShader(VS,"LPV/fs_triangle");
 
@@ -354,7 +354,7 @@ namespace YumeEngine
 
 		YumeGeometry* fs = misc_->GetFsTriangle();
 
-		YumeTexture2D* textures[] ={in};
+		TexturePtr textures[] ={in};
 		gYume->pRHI->PSBindSRV(10,1,textures);
 
 		
@@ -382,13 +382,13 @@ namespace YumeEngine
 		gYume->pRHI->BindResetTextures(10,1);
 	}
 
-	void YumePostProcess::SSAO(YumeTexture2D* target)
+	void YumePostProcess::SSAO(TexturePtr target)
 	{
 		RHIEvent e("SSAO Pass");
 		Render(ssaoPs_,misc_->GetRenderTarget(),target);
 	}
 
-	void YumePostProcess::SetViewport(YumeTexture2D* rendertarget)
+	void YumePostProcess::SetViewport(TexturePtr rendertarget)
 	{
 		gYume->pRHI->SetViewport(IntRect(0,0,rendertarget->GetWidth(),rendertarget->GetHeight()));
 	}

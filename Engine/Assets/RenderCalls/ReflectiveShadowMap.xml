@@ -1,24 +1,5 @@
 <Yume>
   <RenderTargets>
-    <Rt Name="PostProcessTarget" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
-    <Rt Name="PostProcessBlurred" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-    <Rt Name="PostProcessSubstitute" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-
-    <Rt Name="BloomFull" Format="rgba16f" Mips="1" Width="1600" Height="450" ArraySize="1"/>
-
-    <Rt Name="BLURRED_0" Format="rgba16f" Mips="1" Width="800" Height="900" ArraySize="1"/>
-    <Rt Name="BLURRED_5" Format="rgba16f" Mips="1" Width="800" Height="900" ArraySize="1"/>
-
-    <Rt Name="BLURRED_1" Format="rgba16f" Mips="1" Width="400" Height="225" ArraySize="1"/>
-
-    <Rt Name="BLURRED_2" Format="rgba16f" Mips="1" Width="200" Height="112" ArraySize="1"/>
-
-    <Rt Name="BLURRED_3" Format="rgba16f" Mips="1" Width="100" Height="56" ArraySize="1"/>
-    <Rt Name="BLURRED_4" Format="rgba16f" Mips="1" Width="100" Height="56" ArraySize="1"/>
-
-    <Rt Name="ADAPT_LUMINANCE_0" Format="r32f" Mips="1" Width="1" Height="1" ArraySize="1"/>
-    <Rt Name="ADAPT_LUMINANCE_1" Format="r32f" Mips="1" Width="1" Height="1" ArraySize="1"/>
-
     <Rt Name="RSM_COLORS" Format="rgba16f" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
     <Rt Name="RSM_NORMALS" Format="rgba10u2" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
     <Rt Name="RSM_LINEARDEPTH" Format="rg32f" Mips="0" Width="1024" Height="1024" ArraySize="1"/>
@@ -29,20 +10,6 @@
     <Rt Name="SCENE_NORMALS" Format="rgba10u2" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-
-    <Rt Name="LPV_R_0" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
-    <Rt Name="LPV_G_0" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
-    <Rt Name="LPV_B_0" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
-
-    <Rt Name="LPV_R_1" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
-    <Rt Name="LPV_G_1" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
-    <Rt Name="LPV_B_1" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
-
-    <Rt Name="LPV_ACCUM_R" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
-    <Rt Name="LPV_ACCUM_G" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
-    <Rt Name="LPV_ACCUM_B" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
-
-    <Rt Name="LPV_INJECT_COUNTER" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
   </RenderTargets>
   <Samplers>
     <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />
@@ -162,7 +129,7 @@
         <Rt Index="1" Name="SCENE_LINEARDEPTH" />
       </Inputs>
     </Mips>
-    <Triangle PassName="FinalizeLPV" Identifier="Main" Ps="LPV/deferred_lpv" PsEntry="deferred_lpv_ps" Flags="NODS" Output="PostProcessTarget">
+    <Triangle PassName="FinalizeLPV" Identifier="Main" Ps="LPV/deferred_lpv" PsEntry="deferred_lpv_ps" Flags="NODS" Output="Backbuffer">
       <Samplers>
         <Ps Name="Standard" Register="0" />
         <Ps Name="LPVFilter" Register="1" />

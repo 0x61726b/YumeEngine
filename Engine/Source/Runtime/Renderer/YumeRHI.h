@@ -93,6 +93,7 @@ namespace YumeEngine
 		virtual void							Clear(unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) = 0;
 		virtual void							ClearRenderTarget(unsigned index,unsigned flags,const YumeColor& color = YumeColor(0.0f,0.0f,0.0f,0.0f),float depth = 1.0f,unsigned stencil = 0) = 0;
 		virtual void							ClearDepthStencil(unsigned flags,float depth,unsigned stencil) { }
+		virtual void							ClearUAV(YumeTexture* texture,const float* values) { };
 
 		virtual bool							IsInitialized() = 0;
 
@@ -100,9 +101,8 @@ namespace YumeEngine
 
 		//
 		virtual void							BindSampler(ShaderType type,unsigned start,unsigned count,unsigned* samplers) { };
-		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures) {};
-		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture3D** textures) {};
-		virtual void							VSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures) {};
+		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture** textures) {};
+		virtual void							VSBindSRV(unsigned start,unsigned count,YumeTexture** textures) {};
 		virtual void							BindBackbuffer() { };
 		virtual void							CreateStandardSampler() { };
 		virtual void							BindStandardSampler() { };
@@ -118,8 +118,9 @@ namespace YumeEngine
 		virtual void							BindDefaultDepthStencil() { }
 		virtual void							BindDepthStateEnable() { }
 		virtual void							BindDepthStateDisable() { }
-		virtual void							GenerateMips(YumeTexture2D*){}
+		virtual void							GenerateMips(YumeTexture*){}
 		virtual unsigned						CreateSamplerState(const SamplerStateDesc& sampler) = 0;
+		virtual void							SetRenderTargetsAndUAVs(unsigned numRtv,unsigned uavStart,unsigned numUAV,YumeTexture** textures) { };
 
 
 		void SetNoDepthStencil(bool b) { noDs_ = b;}
@@ -267,7 +268,7 @@ namespace YumeEngine
 		void									FreeScratchBuffer(void* buffer);
 		void									CleanupScratchBuffers();
 
-		void 									SetRenderTarget(unsigned index,YumeTexture2D* texture);
+		void 									SetRenderTarget(unsigned index,YumeTexture* texture);
 		void 									SetTextureAnisotropy(unsigned level);
 		void									SetDefaultTextureFilterMode(TextureFilterMode mode);
 		void 									SetTextureParametersDirty();

@@ -98,6 +98,7 @@ namespace YumeEngine
 		void SetParameters(const XmlNode& element);
 		void SetParametersDirty();
 		void* GetShaderResourceView() const { return shaderResourceView_; }
+		void* GetUAV() const { return unorderedAccessView_; }
 		void* GetSampler() const { return sampler_; }
 
 		static unsigned CheckMaxLevels(int width,int height,unsigned requestedLevels);
@@ -107,12 +108,14 @@ namespace YumeEngine
 		const unsigned GetTarget() { return target_; }
 	protected:
 		void* shaderResourceView_;
+		void* unorderedAccessView_;
 		//OpenGL target
 		unsigned target_;
 		void* sampler_;
 		unsigned format_;
 		TextureUsage usage_;
 		unsigned levels_;
+		int mips_;
 		unsigned arraySize_;
 		unsigned requestedLevels_;
 		int width_;

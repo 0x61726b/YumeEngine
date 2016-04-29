@@ -125,6 +125,8 @@ namespace YumeEngine
 		TRUE,
 		TRUE,
 		TRUE,
+		TRUE,
+		TRUE,
 		TRUE
 	};
 
@@ -139,6 +141,7 @@ namespace YumeEngine
 		D3D11_BLEND_INV_DEST_ALPHA,
 		D3D11_BLEND_ONE,
 		D3D11_BLEND_SRC_ALPHA,
+		D3D11_BLEND_ONE
 	};
 
 	static const D3D11_BLEND d3dDestBlend[] =
@@ -150,6 +153,7 @@ namespace YumeEngine
 		D3D11_BLEND_ONE,
 		D3D11_BLEND_INV_SRC_ALPHA,
 		D3D11_BLEND_DEST_ALPHA,
+		D3D11_BLEND_ONE,
 		D3D11_BLEND_ONE,
 		D3D11_BLEND_ONE
 	};
@@ -164,7 +168,8 @@ namespace YumeEngine
 		D3D11_BLEND_OP_ADD,
 		D3D11_BLEND_OP_ADD,
 		D3D11_BLEND_OP_REV_SUBTRACT,
-		D3D11_BLEND_OP_REV_SUBTRACT
+		D3D11_BLEND_OP_REV_SUBTRACT,
+		D3D11_BLEND_OP_MAX
 	};
 
 	static const D3D11_STENCIL_OP d3dStencilOp[] =
@@ -354,6 +359,31 @@ namespace YumeEngine
 			impl_->deviceContext_->ClearDepthStencilView((ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView(),depthClearFlags,depth,(UINT8)stencil);
 		else
 			impl_->deviceContext_->ClearDepthStencilView(impl_->depthStencilView_,depthClearFlags,depth,(UINT8)stencil);
+	}
+
+	void YumeD3D11Renderer::ClearUAV(YumeTexture* texture,const float* values)
+	{
+		ID3D11UnorderedAccessView* uav = (ID3D11UnorderedAccessView*)texture->GetUAV();
+		if(uav)
+		{
+			impl_->deviceContext_->ClearUnorderedAccessViewFloat(uav,values);
+		}
+	}
+
+	void YumeD3D11Renderer::SetRenderTargetsAndUAVs(unsigned numRtv,unsigned uavStart,unsigned numUAV,YumeTexture** textures) 
+	{
+		std::vector<ID3D11UnorderedAccessView*> uavs;
+
+		for(int i=0; i < numUAV; ++i)
+		{
+			if(*textures)
+				uavs.push_back((ID3D11UnorderedAccessView*)(*textures)->GetUAV());
+			else
+				uavs.push_back(nullptr);
+			textures++;
+		}
+		
+		impl_->deviceContext_->OMSetRenderTargetsAndUnorderedAccessViews(numRtv,nullptr,nullptr,uavStart,numUAV,&uavs[0],nullptr);
 	}
 
 	void YumeD3D11Renderer::Clear(unsigned flags,const YumeColor& color,float depth,unsigned stencil)
@@ -1553,7 +1583,7 @@ namespace YumeEngine
 		impl_->device_->CreateDepthStencilState(&dsd,&dss_enableDepthTest_);
 	}
 
-	void YumeD3D11Renderer::GenerateMips(YumeTexture2D* texture)
+	void YumeD3D11Renderer::GenerateMips(YumeTexture* texture)
 	{
 		impl_->deviceContext_->GenerateMips((ID3D11ShaderResourceView*)texture->GetShaderResourceView());
 	}
@@ -1691,7 +1721,7 @@ namespace YumeEngine
 		}
 	}
 
-	void YumeD3D11Renderer::PSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures)
+	void YumeD3D11Renderer::PSBindSRV(unsigned start,unsigned count,YumeTexture** textures)
 	{
 		std::vector<ID3D11ShaderResourceView*> srvs;
 
@@ -1706,22 +1736,7 @@ namespace YumeEngine
 		impl_->deviceContext_->PSSetShaderResources(start,count,&srvs[0]);
 	}
 
-	void YumeD3D11Renderer::PSBindSRV(unsigned start,unsigned count,YumeTexture3D** textures)
-	{
-		std::vector<ID3D11ShaderResourceView*> srvs;
-
-		for(int i=0; i < count; ++i)
-		{
-			if(*textures)
-				srvs.push_back((ID3D11ShaderResourceView*)(*textures)->GetShaderResourceView());
-			else
-				srvs.push_back(nullptr);
-			textures++;
-		}
-		impl_->deviceContext_->PSSetShaderResources(start,count,&srvs[0]);
-	}
-
-	void YumeD3D11Renderer::VSBindSRV(unsigned start,unsigned count,YumeTexture2D** textures)
+	void YumeD3D11Renderer::VSBindSRV(unsigned start,unsigned count,YumeTexture** textures)
 	{
 		std::vector<ID3D11ShaderResourceView*> srvs;
 
@@ -2508,13 +2523,13 @@ namespace YumeEngine
 					memset(&stateDesc,0,sizeof stateDesc);
 					stateDesc.FillMode = d3dFillMode[fillMode_];
 					stateDesc.CullMode = d3dCullMode[cullMode_];
-					stateDesc.FrontCounterClockwise = FALSE;
+					stateDesc.FrontCounterClockwise = TRUE;
 					stateDesc.DepthBias = scaledDepthBias;
 					stateDesc.DepthBiasClamp = 0;
 					stateDesc.SlopeScaledDepthBias = 0;
 					stateDesc.DepthClipEnable = TRUE;
 					stateDesc.ScissorEnable = scissorTest_ ? TRUE : FALSE;
-					stateDesc.MultisampleEnable = TRUE;
+					stateDesc.MultisampleEnable = FALSE;
 					stateDesc.AntialiasedLineEnable = FALSE;
 
 					ID3D11RasterizerState* newRasterizerState = 0;

@@ -467,6 +467,7 @@ namespace YumeEngine
 			cb->GetDesc(&cbDesc);
 			unsigned cbRegister = cbRegisterMap[YumeString(cbDesc.Name)];
 
+
 			for(unsigned j = 0; j < cbDesc.Variables; ++j)
 			{
 				ID3D11ShaderReflectionVariable* var = cb->GetVariableByIndex(j);

@@ -86,11 +86,12 @@ namespace YumeEngine
 		Light* dirLight = new Light;
 		dirLight->SetName("DirLight");
 		dirLight->SetType(LT_DIRECTIONAL);
-		dirLight->SetPosition(DirectX::XMVectorSet(0,30,0,0));
+		dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));
 		/*dirLight->SetPosition(DirectX::XMVectorSet(60,2200,90,0));*/
 		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
-		dirLight->SetColor(YumeColor(1,1,1,1));
+		dirLight->SetColor(YumeColor(0.1,0.1,0.1,0.1));
+
 
 		gYume->pRenderer->GetScene()->AddNode(dirLight);
 	}

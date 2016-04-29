@@ -253,89 +253,89 @@ namespace YumeEngine
 
 	void LPVRenderer::Render()
 	{
-		if(updateRsm_)
-		{
-			//Render GI
-			SetRSMCamera();
-			RenderRSM();
-
-			rhi_->BindResetRenderTargets(4);
-
-#ifndef RENDER_RSM_TO_BACKBUFFER
-
-			lpv_.Inject(misc_->GetMinBb(),misc_->GetMaxBb());
-
-			lpv_.Normalize();
-
-			lpv_.Propagate(number_it);
-
-			updateRsm_ = false;
-		}
-#endif
-#ifndef INJECT_ONLY
-		//
-		RenderSceneToGBuffer();
-
-
-		{
-			RHIEvent e("Mips");
-			gYume->pRHI->GenerateMips(RsmLinearDepth_);
-			gYume->pRHI->GenerateMips(SceneLinearDepth_);
-		}
-
-		rhi_->SetViewport(IntRect(0,0,gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight()));
-
-		{
-			RHIEvent e("DeferredRenderer");
-
-
-			//rhi_->BindSampler(PS,2,1,2); //Shadow
-			//rhi_->BindSampler(PS,1,1,3); //LPV
-
-
-			rhi_->SetShaders(triangleVs_,deferredLpvPs_,0);
-
-			SharedPtr<YumeTexture2D> accumr = lpv_.GetLPVAccumR();
-			SharedPtr<YumeTexture2D> accumg = lpv_.GetLPVAccumG();
-			SharedPtr<YumeTexture2D> accumb = lpv_.GetLPVAccumB();
-			YumeTexture2D* textures[8] ={SceneColors_,SceneSpecular_,SceneNormals_,SceneLinearDepth_,RsmLinearDepth_,accumr,accumg,accumb};
-
-			rhi_->PSBindSRV(2,8,textures);
-
-
-
-			//lpv_parameters
-			DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
-			DirectX::XMFLOAT4X4 i;
-			DirectX::XMStoreFloat4x4(&i,I);
-			lpv_.SetModelMatrix(i,misc_->GetMinBb(),misc_->GetMaxBb());
-			//Future me : this line crashes because constant buffer layout is being read wrong. FIX!1
-
-			//light_ps
-			SetDeferredLightParameters();
-			SetGIParameters();
-
-			rhi_->SetShaderParameter("scene_dim_max",XMFLOAT4(misc_->GetMaxBb().x,misc_->GetMaxBb().y,misc_->GetMaxBb().z,1.0f));
-			rhi_->SetShaderParameter("scene_dim_min",XMFLOAT4(misc_->GetMinBb().x,misc_->GetMinBb().y,misc_->GetMinBb().z,1.0f));
-
-			misc_->SetCameraParameters(false);
-
-			rhi_->BindResetRenderTargets(6);
-			rhi_->SetDepthStencil((YumeTexture2D*)0);
-			rhi_->SetRenderTarget(0,misc_->GetRenderTarget());
-			rhi_->ClearRenderTarget(0,CLEAR_COLOR);
-			/*rhi_->BindBackbuffer();
-			rhi_->Clear(CLEAR_COLOR);*/
-
-
-			triangle_->Draw(gYume->pRHI);
-
-			rhi_->BindResetRenderTargets(1);
-			/*rhi_->BindResetTextures(0,13);*/
-
-		}
-
-#endif
+//		if(updateRsm_)
+//		{
+//			//Render GI
+//			SetRSMCamera();
+//			RenderRSM();
+//
+//			rhi_->BindResetRenderTargets(4);
+//
+//#ifndef RENDER_RSM_TO_BACKBUFFER
+//
+//			lpv_.Inject(misc_->GetMinBb(),misc_->GetMaxBb());
+//
+//			lpv_.Normalize();
+//
+//			lpv_.Propagate(number_it);
+//
+//			updateRsm_ = false;
+//		}
+//#endif
+//#ifndef INJECT_ONLY
+//		//
+//		RenderSceneToGBuffer();
+//
+//
+//		{
+//			RHIEvent e("Mips");
+//			gYume->pRHI->GenerateMips(RsmLinearDepth_);
+//			gYume->pRHI->GenerateMips(SceneLinearDepth_);
+//		}
+//
+//		rhi_->SetViewport(IntRect(0,0,gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight()));
+//
+//		{
+//			RHIEvent e("DeferredRenderer");
+//
+//
+//			//rhi_->BindSampler(PS,2,1,2); //Shadow
+//			//rhi_->BindSampler(PS,1,1,3); //LPV
+//
+//
+//			rhi_->SetShaders(triangleVs_,deferredLpvPs_,0);
+//
+//			SharedPtr<YumeTexture2D> accumr = lpv_.GetLPVAccumR();
+//			SharedPtr<YumeTexture2D> accumg = lpv_.GetLPVAccumG();
+//			SharedPtr<YumeTexture2D> accumb = lpv_.GetLPVAccumB();
+//			YumeTexture2D* textures[8] ={SceneColors_,SceneSpecular_,SceneNormals_,SceneLinearDepth_,RsmLinearDepth_,accumr,accumg,accumb};
+//
+//			rhi_->PSBindSRV(2,8,textures);
+//
+//
+//
+//			//lpv_parameters
+//			DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
+//			DirectX::XMFLOAT4X4 i;
+//			DirectX::XMStoreFloat4x4(&i,I);
+//			lpv_.SetModelMatrix(i,misc_->GetMinBb(),misc_->GetMaxBb());
+//			//Future me : this line crashes because constant buffer layout is being read wrong. FIX!1
+//
+//			//light_ps
+//			SetDeferredLightParameters();
+//			SetGIParameters();
+//
+//			rhi_->SetShaderParameter("scene_dim_max",XMFLOAT4(misc_->GetMaxBb().x,misc_->GetMaxBb().y,misc_->GetMaxBb().z,1.0f));
+//			rhi_->SetShaderParameter("scene_dim_min",XMFLOAT4(misc_->GetMinBb().x,misc_->GetMinBb().y,misc_->GetMinBb().z,1.0f));
+//
+//			misc_->SetCameraParameters(false);
+//
+//			rhi_->BindResetRenderTargets(6);
+//			rhi_->SetDepthStencil((YumeTexture2D*)0);
+//			rhi_->SetRenderTarget(0,misc_->GetRenderTarget());
+//			rhi_->ClearRenderTarget(0,CLEAR_COLOR);
+//			/*rhi_->BindBackbuffer();
+//			rhi_->Clear(CLEAR_COLOR);*/
+//
+//
+//			triangle_->Draw(gYume->pRHI);
+//
+//			rhi_->BindResetRenderTargets(1);
+//			/*rhi_->BindResetTextures(0,13);*/
+//
+//		}
+//
+//#endif
 	}
 
 	void LPVRenderer::RenderSceneToGBuffer()
@@ -375,7 +375,7 @@ namespace YumeEngine
 
 	void LPVRenderer::SetInjectStageTextures()
 	{
-		YumeTexture2D* textures[3] ={RsmLinearDepth_,RsmColors_,RsmNormals_};
+		TexturePtr textures[3] ={RsmLinearDepth_,RsmColors_,RsmNormals_};
 
 		gYume->pRHI->VSBindSRV(6,3,textures);
 	}

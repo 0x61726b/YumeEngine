@@ -278,7 +278,7 @@ namespace YumeEngine
 
 			SharedPtr<YumeIndexBuffer> ib(gYume->pRHI->CreateIndexBuffer());
 			ib->SetShadowed(true);
-			ib->SetSize(num_faces * 3 ,true);
+			ib->SetSize(num_faces * 3,true);
 			ib->SetData(&indices_[i->istart_index]);
 
 			geo->SetVertexBuffer(0,vb);
@@ -384,7 +384,7 @@ namespace YumeEngine
 		mesh_data* prev = nullptr;
 
 		DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&world());
-		
+
 		gYume->pRHI->SetShaderParameter("world",w);
 
 		for(int m=0; m < meshes_.size(); ++m)
@@ -426,25 +426,25 @@ namespace YumeEngine
 
 				if(has_diffuse_tex)
 				{
-					YumeTexture2D* texture[] = { data->diffuse_tex.Get() };
+					TexturePtr texture[] ={data->diffuse_tex.Get()};
 					gYume->pRHI->PSBindSRV(0,1,texture);
 				}
 
 				if(has_normal_tex)
 				{
-					YumeTexture2D* texture[] = { data->normal_tex.Get() };
+					TexturePtr texture[] ={data->normal_tex.Get()};
 					gYume->pRHI->PSBindSRV(1,1,texture);
 				}
 
 				if(has_specular_tex)
 				{
-					YumeTexture2D* texture[] = { data->specular_tex.Get() };
+					TexturePtr texture[] ={data->specular_tex.Get()};
 					gYume->pRHI->PSBindSRV(2,1,texture);
 				}
 
 				if(has_alpha_tex)
 				{
-					YumeTexture2D* texture[] = { data->alpha_tex.Get() };
+					TexturePtr texture[] ={data->alpha_tex.Get()};
 					gYume->pRHI->PSBindSRV(3,1,texture);
 				}
 			}
@@ -453,4 +453,8 @@ namespace YumeEngine
 		}
 	}
 
+	void YumeMesh::RenderDirect(unsigned index)
+	{
+
+	}
 }

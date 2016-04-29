@@ -60,7 +60,7 @@ namespace YumeEngine
 		virtual bool IsDataLost() { return false; };
 		virtual void ClearDataLost() {}
 
-		int mips_;
+		
 	};
 }
 

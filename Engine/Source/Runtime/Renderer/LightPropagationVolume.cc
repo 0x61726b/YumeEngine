@@ -273,81 +273,81 @@ namespace YumeEngine
 	{
 		RHIEvent e("LPV_Normalize");
 
-		std::swap(curr_,next_);
+		//std::swap(curr_,next_);
 
-		gYume->pRHI->SetViewport(IntRect(0,0,volume_size_,volume_size_));
+		//gYume->pRHI->SetViewport(IntRect(0,0,volume_size_,volume_size_));
 
-		gYume->pRHI->SetRenderTarget(0,lpv_r_[next_]);
-		gYume->pRHI->SetRenderTarget(1,lpv_g_[next_]);
-		gYume->pRHI->SetRenderTarget(2,lpv_b_[next_]);
+		//gYume->pRHI->SetRenderTarget(0,lpv_r_[next_]);
+		//gYume->pRHI->SetRenderTarget(1,lpv_g_[next_]);
+		//gYume->pRHI->SetRenderTarget(2,lpv_b_[next_]);
 
-		gYume->pRHI->ClearRenderTarget(0,CLEAR_COLOR);
-		gYume->pRHI->ClearRenderTarget(1,CLEAR_COLOR);
-		gYume->pRHI->ClearRenderTarget(2,CLEAR_COLOR);
+		//gYume->pRHI->ClearRenderTarget(0,CLEAR_COLOR);
+		//gYume->pRHI->ClearRenderTarget(1,CLEAR_COLOR);
+		//gYume->pRHI->ClearRenderTarget(2,CLEAR_COLOR);
 
-		gYume->pRHI->BindInjectBlendState();
+		//gYume->pRHI->BindInjectBlendState();
 
-		gYume->pRHI->SetShaders(propogateVs_,normalizePs_,propogateGs_);
+		//gYume->pRHI->SetShaders(propogateVs_,normalizePs_,propogateGs_);
 
-		lpvRenderer_->SetGIParameters();
+		//lpvRenderer_->SetGIParameters();
 
-		YumeTexture2D* textures[4] ={lpv_r_[curr_],lpv_g_[curr_],lpv_b_[curr_],lpv_inject_counter_};
-		gYume->pRHI->PSBindSRV(7,4,textures);
-		/*gYume->pRHI->SetTexture(7,lpv_r_[curr_]);
-		gYume->pRHI->SetTexture(8,lpv_g_[curr_]);
-		gYume->pRHI->SetTexture(9,lpv_b_[curr_]);
-		gYume->pRHI->SetTexture(10,lpv_inject_counter_);*/
+		//YumeTexture2D* textures[4] ={lpv_r_[curr_],lpv_g_[curr_],lpv_b_[curr_],lpv_inject_counter_};
+		//gYume->pRHI->PSBindSRV(7,4,textures);
+		///*gYume->pRHI->SetTexture(7,lpv_r_[curr_]);
+		//gYume->pRHI->SetTexture(8,lpv_g_[curr_]);
+		//gYume->pRHI->SetTexture(9,lpv_b_[curr_]);
+		//gYume->pRHI->SetTexture(10,lpv_inject_counter_);*/
 
 
-		static YumeVector<YumeVertexBuffer*>::type vertexBuffers(1);
-		static YumeVector<unsigned>::type elementMasks(1);
-		vertexBuffers[0] = lpv_volume_;
-		elementMasks[0] = lpv_volume_->GetElementMask();
-		gYume->pRHI->SetVertexBuffers(vertexBuffers,elementMasks);
+		//static YumeVector<YumeVertexBuffer*>::type vertexBuffers(1);
+		//static YumeVector<unsigned>::type elementMasks(1);
+		//vertexBuffers[0] = lpv_volume_;
+		//elementMasks[0] = lpv_volume_->GetElementMask();
+		//gYume->pRHI->SetVertexBuffers(vertexBuffers,elementMasks);
 
-		gYume->pRHI->BindNullIndexBuffer();
+		//gYume->pRHI->BindNullIndexBuffer();
 
-		gYume->pRHI->Draw(TRIANGLE_LIST,0,6 * volume_size_);
+		//gYume->pRHI->Draw(TRIANGLE_LIST,0,6 * volume_size_);
 
-		gYume->pRHI->BindResetRenderTargets(3);
-		gYume->pRHI->BindResetTextures(7,4,true);
+		//gYume->pRHI->BindResetRenderTargets(3);
+		//gYume->pRHI->BindResetTextures(7,4,true);
 
 	}
 
 	void LightPropagationVolume::Propagate()
 	{
-		std::swap(curr_,next_);
+		//std::swap(curr_,next_);
 
-		RHIEvent e("LPV_Propagate");
+		//RHIEvent e("LPV_Propagate");
 
-		gYume->pRHI->SetRenderTarget(0,lpv_r_[next_]);
-		gYume->pRHI->SetRenderTarget(1,lpv_g_[next_]);
-		gYume->pRHI->SetRenderTarget(2,lpv_b_[next_]);
-		gYume->pRHI->SetRenderTarget(3,lpv_accum_r_);
-		gYume->pRHI->SetRenderTarget(4,lpv_accum_g_);
-		gYume->pRHI->SetRenderTarget(5,lpv_accum_b_);
+		//gYume->pRHI->SetRenderTarget(0,lpv_r_[next_]);
+		//gYume->pRHI->SetRenderTarget(1,lpv_g_[next_]);
+		//gYume->pRHI->SetRenderTarget(2,lpv_b_[next_]);
+		//gYume->pRHI->SetRenderTarget(3,lpv_accum_r_);
+		//gYume->pRHI->SetRenderTarget(4,lpv_accum_g_);
+		//gYume->pRHI->SetRenderTarget(5,lpv_accum_b_);
 
-		gYume->pRHI->ClearRenderTarget(0,CLEAR_COLOR);
-		gYume->pRHI->ClearRenderTarget(1,CLEAR_COLOR);
-		gYume->pRHI->ClearRenderTarget(2,CLEAR_COLOR);
-
-
-		YumeTexture2D* textures[4] ={lpv_r_[curr_],lpv_g_[curr_],lpv_b_[curr_]};
-		gYume->pRHI->PSBindSRV(7,3,textures);
+		//gYume->pRHI->ClearRenderTarget(0,CLEAR_COLOR);
+		//gYume->pRHI->ClearRenderTarget(1,CLEAR_COLOR);
+		//gYume->pRHI->ClearRenderTarget(2,CLEAR_COLOR);
 
 
-		/*gYume->pRHI->SetTexture(7,lpv_r_[curr_]);
-		gYume->pRHI->SetTexture(8,lpv_g_[curr_]);
-		gYume->pRHI->SetTexture(9,lpv_b_[curr_]);*/
+		//YumeTexture2D* textures[4] ={lpv_r_[curr_],lpv_g_[curr_],lpv_b_[curr_]};
+		//gYume->pRHI->PSBindSRV(7,3,textures);
 
-		lpvRenderer_->SetGIParameters();
 
-		gYume->pRHI->BindNullIndexBuffer();
+		///*gYume->pRHI->SetTexture(7,lpv_r_[curr_]);
+		//gYume->pRHI->SetTexture(8,lpv_g_[curr_]);
+		//gYume->pRHI->SetTexture(9,lpv_b_[curr_]);*/
 
-		lpv_volume_geo_->Draw(gYume->pRHI);
+		//lpvRenderer_->SetGIParameters();
 
-		gYume->pRHI->BindResetRenderTargets(6);
-		gYume->pRHI->BindResetTextures(7,3,true);
+		//gYume->pRHI->BindNullIndexBuffer();
+
+		//lpv_volume_geo_->Draw(gYume->pRHI);
+
+		//gYume->pRHI->BindResetRenderTargets(6);
+		//gYume->pRHI->BindResetTextures(7,3,true);
 
 	}
 

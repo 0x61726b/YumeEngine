@@ -53,10 +53,10 @@ namespace YumeEngine
 
 		RenderPass* dp = gYume->pRenderer->GetDefaultPass();
 
-		dp->SetShaderParameter("main_light_pos",XMFLOAT3(GetPosition().x,GetPosition().y,GetPosition().z));
-		dp->SetShaderParameter("light_vp",light_vp);
-		dp->SetShaderParameter("light_vp_inv",lightViewProjInv);
-		dp->SetShaderParameter("light_mvp",light_vp);
+		gYume->pRHI->SetShaderParameter("main_light_pos",XMFLOAT3(GetPosition().x,GetPosition().y,GetPosition().z));
+		gYume->pRHI->SetShaderParameter("light_vp",light_vp);
+		gYume->pRHI->SetShaderParameter("light_vp_inv",lightViewProjInv);
+		gYume->pRHI->SetShaderParameter("light_mvp",light_vp);
 
 
 		DirectX::XMMATRIX tex
@@ -67,7 +67,7 @@ namespace YumeEngine
 			0.5f,0.5f,0.5f,1.0f
 			);
 
-		dp->SetShaderParameter("light_vp_tex",light_vp * tex);
+		gYume->pRHI->SetShaderParameter("light_vp_tex",light_vp * tex);
 
 
 	}

@@ -29,6 +29,7 @@
 
 #include "RenderCall.h"
 #include "LightPropagationVolume.h"
+#include "SparseVoxelOctree.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -68,6 +69,7 @@ namespace YumeEngine
 		Scene* scene_;
 
 		LightPropagationVolume lightPropagator_;
+		SparseVoxelOctree svo_;
 
 		unsigned curr_;
 		unsigned next_;

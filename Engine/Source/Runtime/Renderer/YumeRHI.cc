@@ -281,11 +281,11 @@ namespace YumeEngine
 		SetDepthStencil((YumeRenderable*)0);
 	}
 
-	void YumeRHI::SetRenderTarget(unsigned index,YumeTexture2D* texture)
+	void YumeRHI::SetRenderTarget(unsigned index,YumeTexture* texture)
 	{
 		YumeRenderable* renderTarget = 0;
 		if(texture)
-			renderTarget = texture->GetRenderSurface();
+			renderTarget = static_cast<YumeTexture2D*>(texture)->GetRenderSurface();
 
 		SetRenderTarget(index,renderTarget);
 	}

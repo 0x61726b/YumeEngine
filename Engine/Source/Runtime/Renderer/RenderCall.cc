@@ -35,7 +35,8 @@ namespace YumeEngine
 		shadowPass_(false),
 		hasVsSampler_(false),
 		hasPsSampler_(false),
-		deferred_(true),
+		voxelizePass_(false),
+		deferred_(false),
 		numVertexSamplers_(0),
 		numPixelSamplers_(0),
 		type_(type),
@@ -84,7 +85,7 @@ namespace YumeEngine
 		}
 	}
 
-	void RenderCall::SetInput(unsigned index,Texture2DPtr target)
+	void RenderCall::SetInput(unsigned index,TexturePtr target)
 	{
 		if(inputs_.size() <= index)
 			inputs_.resize(index + 1);
@@ -93,7 +94,7 @@ namespace YumeEngine
 		++numInputs_;
 	}
 
-	void RenderCall::SetOutput(unsigned index,Texture2DPtr target)
+	void RenderCall::SetOutput(unsigned index,TexturePtr target)
 	{
 		if(outputs_.size() <= index)
 			outputs_.resize(index + 1);
@@ -137,27 +138,38 @@ namespace YumeEngine
 		identifier_ = name;
 	}
 
-	Texture2DPtr RenderCall::AddTexture(const RenderTargetDesc& desc)
+	TexturePtr RenderCall::AddTexture(const RenderTargetDesc& desc)
 	{
-		Texture2DPtr renderTarget = gYume->pRHI->CreateTexture2D();
-		renderTarget->SetName(desc.Name);
-		renderTarget->SetSize(desc.Width,desc.Height,desc.Format,desc.Usage,desc.ArraySize,desc.Mips);
-		renderTarget->SetDesc(desc);
-		if(desc.Type & RenderTargetInOut::RT_INPUT)
-			SetInput(desc.Index,renderTarget);
-		if(desc.Type & RT_OUTPUT)
-			SetOutput(desc.Index,renderTarget);
-		if(desc.Type == RT_DEPTHSTENCIL)
-			SetDepthStencil(renderTarget);
+		TexturePtr textureTarget = 0;
+		if(desc.Usage == TextureUsage::TEXTURE_UAV)
+		{
+			textureTarget = gYume->pRHI->CreateTexture3D();
+			textureTarget->SetName(desc.Name);
+			static_cast<Texture3DPtr>(textureTarget)->SetSize(desc.Width,desc.Height,desc.Depth,desc.Format,desc.Usage);
+		}
+		else
+		{
+			textureTarget = gYume->pRHI->CreateTexture2D();
+			textureTarget->SetName(desc.Name);
+			static_cast<Texture2DPtr>(textureTarget)->SetSize(desc.Width,desc.Height,desc.Format,desc.Usage,desc.ArraySize,desc.Mips);
+		}
 
-		return renderTarget;
+		textureTarget->SetDesc(desc);
+		if(desc.Type & RenderTargetInOut::RT_INPUT)
+			SetInput(desc.Index,textureTarget);
+		if(desc.Type & RT_OUTPUT)
+			SetOutput(desc.Index,textureTarget);
+		if(desc.Type == RT_DEPTHSTENCIL)
+			SetDepthStencil(textureTarget);
+
+		return textureTarget;
 	}
 
-	void RenderCall::AddTextures(unsigned size,Texture2DPtr* textures)
+	void RenderCall::AddTextures(unsigned size,TexturePtr* textures)
 	{
 		for(int i=0; i < size; ++i)
 		{
-			Texture2DPtr t = *textures;
+			TexturePtr t = *textures;
 			const RenderTargetDesc& desc = t->GetDesc();
 
 			if(t->GetDesc().Type & RT_INPUT)
@@ -171,7 +183,7 @@ namespace YumeEngine
 		}
 	}
 
-	void RenderCall::AddTexture(RenderTargetInOut type,unsigned index,Texture2DPtr tex)
+	void RenderCall::AddTexture(RenderTargetInOut type,unsigned index,TexturePtr tex)
 	{
 		if(type & RT_INPUT)
 			SetInput(index,tex);
@@ -179,8 +191,8 @@ namespace YumeEngine
 			SetOutput(index,tex);
 	}
 
-	void RenderCall::SetDepthStencil(Texture2DPtr target)
+	void RenderCall::SetDepthStencil(TexturePtr target)
 	{
-		depthStencil_ = target;
+		depthStencil_ = static_cast<Texture2DPtr>(target);
 	}
 }

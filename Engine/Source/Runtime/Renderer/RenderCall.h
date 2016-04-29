@@ -53,9 +53,9 @@ namespace YumeEngine
 		void SetShaderParameter(YumeHash param,const DirectX::XMFLOAT4& value);
 		void SetShaderParameter(YumeHash param,const DirectX::XMMATRIX& value);
 
-		void SetInput(unsigned,Texture2DPtr target);
-		void SetOutput(unsigned,Texture2DPtr target);
-		void SetDepthStencil(Texture2DPtr target);
+		void SetInput(unsigned,TexturePtr target);
+		void SetOutput(unsigned,TexturePtr target);
+		void SetDepthStencil(TexturePtr target);
 		bool ContainsParameter(YumeHash param);
 		void SetSampler(ShaderType type,unsigned index,unsigned samplerId);
 		void SetPassName(const YumeString& name);
@@ -64,9 +64,9 @@ namespace YumeEngine
 		
 
 
-		void AddTexture(RenderTargetInOut type,unsigned index,Texture2DPtr tex);
-		Texture2DPtr AddTexture(const RenderTargetDesc& desc);
-		void AddTextures(unsigned size,YumeTexture2D** textures);
+		void AddTexture(RenderTargetInOut type,unsigned index,TexturePtr tex);
+		TexturePtr AddTexture(const RenderTargetDesc& desc);
+		void AddTextures(unsigned size,TexturePtr* textures);
 
 		unsigned GetRendererFlags() const { return addFlags_;}
 		void SetMiscRenderingFlags(unsigned f) { addFlags_ = f; }
@@ -90,9 +90,9 @@ namespace YumeEngine
 
 		const YumeColor& GetClearColor(unsigned index) const { return inputs_[index]->GetDesc().ClearColor; }
 		
-		Texture2DPtr GetInput(unsigned index) const { return inputs_[index]; }
+		TexturePtr GetInput(unsigned index) const { return inputs_[index]; }
 
-		Texture2DPtr GetOutput(unsigned index) const { return outputs_[index]; }
+		TexturePtr GetOutput(unsigned index) const { return outputs_[index]; }
 
 		unsigned GetNumVertexSamplers() const {return numVertexSamplers_;}
 		unsigned GetNumPixelSamplers() const {return numPixelSamplers_;}
@@ -105,11 +105,13 @@ namespace YumeEngine
 		bool HasVertexSampler() const { return hasVsSampler_; }
 		bool HasPixelSampler() const { return hasPsSampler_; }
 		bool IsShadowPass() const { return shadowPass_; }
+		bool IsVoxelizePass() const { return voxelizePass_; }
 
 		void SetClearFlags(unsigned flags ) { clearFlags = flags; }
 		unsigned GetClearFlags() const { return clearFlags; }
 
 		void SetShadowPass(bool b) { shadowPass_ = b; }
+		void SetVoxelizePass(bool b) { voxelizePass_ = b; }
 
 		void SetEnabled(bool enabled) { enabled_ = enabled; }
 		bool GetEnabled() const { return enabled_; }
@@ -121,6 +123,7 @@ namespace YumeEngine
 	private:
 		bool enabled_;
 		bool shadowPass_;
+		bool voxelizePass_;
 		
 		bool hasVsSampler_;
 		bool hasPsSampler_;
@@ -151,7 +154,7 @@ namespace YumeEngine
 
 		RenderTargetDesc rtDescs_[32];
 
-		typedef YumeVector<SharedPtr<YumeTexture2D> > InputOutputRTs ;
+		typedef YumeVector<SharedPtr<YumeTexture> > InputOutputRTs ;
 
 		InputOutputRTs::type inputs_;
 		InputOutputRTs::type outputs_;

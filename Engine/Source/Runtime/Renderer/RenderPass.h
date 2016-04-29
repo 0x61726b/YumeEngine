@@ -51,7 +51,7 @@ namespace YumeEngine
 		void SetShaderParameter(YumeHash param,const DirectX::XMFLOAT4& matrix);
 		void SetShaderParameter(YumeHash param,const DirectX::XMMATRIX& matrix);
 
-		Texture2DPtr GetTextureByName(const YumeString&);
+		YumeTexture* GetTextureByName(const YumeString&);
 
 		typedef YumeMap<YumeString,Pair<SamplerStateDesc,unsigned> > Samplers;
 		Samplers::type samplers_;
@@ -59,7 +59,7 @@ namespace YumeEngine
 		typedef YumeVector<RenderCall*> RenderCalls;
 		RenderCalls::type calls_;
 
-		typedef YumeMap<YumeString, Texture2DPtr> RenderTargets;
+		typedef YumeMap<YumeString, YumeTexture*> RenderTargets;
 		RenderTargets::type renderTargets_;
 	};
 }

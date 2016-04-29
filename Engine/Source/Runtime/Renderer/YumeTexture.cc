@@ -53,6 +53,7 @@ namespace YumeEngine
 
 	YumeTexture::YumeTexture()
 		: shaderResourceView_(0),
+		unorderedAccessView_(0),
 		sampler_(0),
 		usage_(TEXTURE_STATIC),
 		levels_(0),

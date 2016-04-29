@@ -67,11 +67,6 @@ namespace YumeEngine
 			YUMELOG_ERROR("Zero or negative 3D texture dimensions");
 			return false;
 		}
-		if(usage >= TEXTURE_RENDERTARGET)
-		{
-			YUMELOG_ERROR("Rendertarget or depth-stencil usage not supported for 3D textures");
-			return false;
-		}
 		if(usage_ == TEXTURE_DYNAMIC)
 			requestedLevels_ = 1;
 
@@ -396,17 +391,25 @@ namespace YumeEngine
 			return false;
 
 		levels_ = CheckMaxLevels(width_,height_,depth_,requestedLevels_);
+		UINT mips = static_cast<UINT>(std::log2(width_));
+		mips_ = mips;
 
 		D3D11_TEXTURE3D_DESC textureDesc;
 		memset(&textureDesc,0,sizeof textureDesc);
 		textureDesc.Width = (UINT)width_;
 		textureDesc.Height = (UINT)height_;
 		textureDesc.Depth = (UINT)depth_;
-		textureDesc.MipLevels = levels_;
+		textureDesc.MipLevels = mips_;
 		textureDesc.Format = (DXGI_FORMAT)(sRGB_ ? GetSRGBFormat(format_) : format_);
 		textureDesc.Usage = usage_ == TEXTURE_DYNAMIC ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		textureDesc.CPUAccessFlags = usage_ == TEXTURE_DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
+
+		if(usage_ == TEXTURE_UAV)
+			textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_RENDER_TARGET;
+
+		if(mips_ != 1 && mips_ != 0)
+			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
 		HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateTexture3D(&textureDesc,0,(ID3D11Texture3D**)&object_);
 		if(FAILED(hr))
@@ -415,12 +418,16 @@ namespace YumeEngine
 			YUMELOG_ERROR("Failed to create texture",hr);
 			return false;
 		}
+		else
+		{
+
+		}
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
 		memset(&resourceViewDesc,0,sizeof resourceViewDesc);
 		resourceViewDesc.Format = (DXGI_FORMAT)GetSRVFormat(textureDesc.Format);
 		resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
-		resourceViewDesc.Texture3D.MipLevels = (UINT)levels_;
+		resourceViewDesc.Texture3D.MipLevels = (UINT)mips_;
 
 		hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateShaderResourceView((ID3D11Resource*)object_,&resourceViewDesc,
 			(ID3D11ShaderResourceView**)&shaderResourceView_);
@@ -429,6 +436,41 @@ namespace YumeEngine
 			D3D_SAFE_RELEASE(shaderResourceView_);
 			YUMELOG_ERROR("Failed to create shader resource view for texture",hr);
 			return false;
+		}
+		else
+		{
+			YumeString srvName = GetName();
+			srvName.append("_SRV");
+
+			((ID3D11ShaderResourceView*)shaderResourceView_)->SetPrivateData(WKPDID_D3DDebugObjectName,srvName.length(),srvName.c_str());
+		}
+		if(usage_ = TEXTURE_UAV)
+		{
+			D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
+			ZeroMemory(&uav_desc,sizeof(uav_desc));
+
+			uav_desc.Format = textureDesc.Format;
+			uav_desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE3D;
+			uav_desc.Texture3D.FirstWSlice = 0;
+			uav_desc.Texture3D.MipSlice = 0;
+			uav_desc.Texture3D.WSize = width_;
+
+			hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateUnorderedAccessView((ID3D11Resource*)object_,&uav_desc,
+				(ID3D11UnorderedAccessView**)&unorderedAccessView_);
+
+			if(FAILED(hr))
+			{
+				D3D_SAFE_RELEASE(unorderedAccessView_);
+				YUMELOG_ERROR("Failed to create UAV for texture " << hr);
+				return false;
+			}
+			else
+			{
+				YumeString srvName = GetName();
+				srvName.append("_UAV");
+
+				((ID3D11UnorderedAccessView*)unorderedAccessView_)->SetPrivateData(WKPDID_D3DDebugObjectName,srvName.length(),srvName.c_str());
+			}
 		}
 
 		return true;

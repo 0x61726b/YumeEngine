@@ -72,9 +72,6 @@ namespace YumeEngine
 	{
 
 		RenderTargets::iterator It = renderTargets_.begin();
-
-		for(It; It != renderTargets_.end(); ++It)
-			It->second->Release();
 	}
 
 	void RenderPass::Load(const YumeString& resource)
@@ -106,6 +103,7 @@ namespace YumeEngine
 				const char* mips = child.attribute("Mips").as_string();
 				const char* width = child.attribute("Width").as_string();
 				const char* height = child.attribute("Height").as_string();
+				const char* depth = child.attribute("Height").as_string();
 				const char* arraySize = child.attribute("ArraySize").as_string();
 				const char* clearColor= child.attribute("ClearColor").as_string();
 
@@ -115,6 +113,7 @@ namespace YumeEngine
 				desc.ArraySize = atoi(arraySize);
 				desc.Width = atoi(width);
 				desc.Height = atoi(height);
+				desc.Depth = atoi(depth);
 				desc.Format = gYume->pRHI->GetFormatNs(format);
 				desc.Mips = atoi(mips);
 
@@ -133,13 +132,29 @@ namespace YumeEngine
 					desc.Usage = TextureUsage::TEXTURE_DEPTHSTENCIL;
 				}
 
+				if(strcmp(type,"Uav") == 0)
+				{
+					desc.Type = RT_UAV;
+					desc.Usage = TextureUsage::TEXTURE_UAV;
+				}
 
-				Texture2DPtr renderTarget = gYume->pRHI->CreateTexture2D();
-				renderTarget->SetName(desc.Name);
-				renderTarget->SetSize(desc.Width,desc.Height,desc.Format,desc.Usage,desc.ArraySize,desc.Mips);
-				renderTarget->SetDesc(desc);
+				TexturePtr textureTarget = 0;
+				if(desc.Usage == TextureUsage::TEXTURE_UAV)
+				{
+					textureTarget = gYume->pRHI->CreateTexture3D();
+					textureTarget->SetName(desc.Name);
+					static_cast<Texture3DPtr>(textureTarget)->SetSize(desc.Width,desc.Height,desc.Depth,desc.Format,desc.Usage);
+				}
+				else
+				{
+					textureTarget = gYume->pRHI->CreateTexture2D();
+					textureTarget->SetName(desc.Name);
+					static_cast<Texture2DPtr>(textureTarget)->SetSize(desc.Width,desc.Height,desc.Format,desc.Usage,desc.ArraySize,desc.Mips);
+				}
+				textureTarget->SetName(desc.Name);
+				textureTarget->SetDesc(desc);
 
-				renderTargets_.insert(MakePair(desc.Name,renderTarget));
+				renderTargets_.insert(MakePair(desc.Name,textureTarget));
 			}
 
 			//Samplers
@@ -240,7 +255,7 @@ namespace YumeEngine
 
 				if(strlen(singleOutput) > 0)
 				{
-					Texture2DPtr sOutput = GetTextureByName(singleOutput);
+					TexturePtr sOutput = GetTextureByName(singleOutput);
 					renderCall->SetOutput(0,sOutput);
 				}
 
@@ -296,7 +311,7 @@ namespace YumeEngine
 					const char* name = clearTarget.attribute("Name").as_string();
 					const char* cColor = clearTarget.attribute("ClearColor").as_string();
 
-					Texture2DPtr target = GetTextureByName(name);
+					TexturePtr target = GetTextureByName(name);
 
 					DirectX::XMFLOAT4 clearColorV = ToVector4(cColor);
 
@@ -372,6 +387,12 @@ namespace YumeEngine
 
 						if(!strcmp(flagsVector[i].c_str(),"SHADOW"))
 							renderCall->SetShadowPass(true);
+
+						if(!strcmp(flagsVector[i].c_str(),"VOXELIZE"))
+							renderCall->SetVoxelizePass(true);
+
+						if(!strcmp(flagsVector[i].c_str(),"DEFERRED"))
+							renderCall->SetDeferred(true);
 					}
 				}
 				AddRenderCall(renderCall);
@@ -379,7 +400,7 @@ namespace YumeEngine
 		}
 	}
 
-	Texture2DPtr RenderPass::GetTextureByName(const YumeString& name)
+	YumeTexture* RenderPass::GetTextureByName(const YumeString& name)
 	{
 		RenderTargets::iterator It = renderTargets_.find(name);
 

@@ -91,6 +91,8 @@ set(SRC_RENDERER
 	Renderer/Scene.cc
 	Renderer/StaticModel.h
 	Renderer/StaticModel.cc
+	Renderer/SparseVoxelOctree.h
+	Renderer/SparseVoxelOctree.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

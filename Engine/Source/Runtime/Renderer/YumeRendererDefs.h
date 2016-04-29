@@ -50,6 +50,7 @@ namespace YumeEngine
 		BLEND_INVDESTALPHA,
 		BLEND_SUBTRACT,
 		BLEND_SUBTRACTALPHA,
+		BLEND_MAX,
 		MAX_BLENDMODES
 	};
 
@@ -160,7 +161,8 @@ namespace YumeEngine
 		TEXTURE_STATIC = 0,
 		TEXTURE_DYNAMIC,
 		TEXTURE_RENDERTARGET,
-		TEXTURE_DEPTHSTENCIL
+		TEXTURE_DEPTHSTENCIL,
+		TEXTURE_UAV
 	};
 
 
@@ -245,7 +247,8 @@ namespace YumeEngine
 	{
 		RT_INPUT = 0x1,
 		RT_OUTPUT = 0x2,
-		RT_DEPTHSTENCIL = 0x4
+		RT_DEPTHSTENCIL = 0x4,
+		RT_UAV = 0x8
 	};
 
 	struct RenderTargetDesc
@@ -253,6 +256,7 @@ namespace YumeEngine
 		unsigned Index;
 		unsigned Width;
 		unsigned Height;
+		unsigned Depth;
 
 		YumeString Name;
 		unsigned Format;
@@ -260,6 +264,7 @@ namespace YumeEngine
 		unsigned Mips;
 
 		TextureUsage Usage;
+		
 
 		unsigned Type;
 		YumeColor ClearColor;

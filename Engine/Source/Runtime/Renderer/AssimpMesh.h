@@ -106,6 +106,8 @@ namespace YumeEngine
 		bool PrepareMesh();
 		
 		void Render();
+		void RenderDirect(unsigned index);
+
 
 		virtual void push_back(vertex v);
 
@@ -165,6 +167,7 @@ namespace YumeEngine
 			float refractive_index;
 		};
 
+		YumeVector<SharedPtr<YumeGeometry> >::type GetGeometries() const { return geometries_; }
 	protected:
 		YumeVector<YumeVertex>::type vertices_;
 		YumeVector<mesh_data>::type meshes_;

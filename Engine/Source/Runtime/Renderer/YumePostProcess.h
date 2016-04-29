@@ -38,17 +38,17 @@ namespace YumeEngine
 		void Setup();
 		void SetPPParameters();
 		void Render();
-		void Render(YumeShaderVariation* ps,YumeTexture2D* in,YumeTexture2D* out);
+		void Render(YumeShaderVariation* ps,YumeTexture* in,YumeTexture* out);
 
-		void SSAO(YumeTexture2D* target);
+		void SSAO(TexturePtr target);
 
-		void DoF(YumeTexture2D* in,YumeTexture2D* out);
-		void DoFBlur(YumeTexture2D* in,YumeTexture2D* out);
+		void DoF(TexturePtr in,TexturePtr out);
+		void DoFBlur(TexturePtr in,TexturePtr out);
 
-		void Godrays(YumeTexture2D* in,YumeTexture2D* out);
+		void Godrays(TexturePtr in,TexturePtr out);
 
-		void Bloom(YumeTexture2D* target);
-		void BloomBlur(YumeTexture2D* in,YumeTexture2D* out);
+		void Bloom(TexturePtr target);
+		void BloomBlur(TexturePtr in,TexturePtr out);
 		
 		//Bloom
 		void SetBloomThreshold(float f) {bloom_treshold = f;}
@@ -75,7 +75,7 @@ namespace YumeEngine
 		void SetFxaaEnabled(bool enabled) { fxaa_enabled = enabled; }
 		void SetExposureAdapt(bool enabled) { exposure_adapt = enabled; }
 	private:
-		void SetViewport(YumeTexture2D* rendertarget);
+		void SetViewport(TexturePtr rendertarget);
 	private:
 		YumeMiscRenderer* misc_;
 	private:
@@ -99,15 +99,15 @@ namespace YumeEngine
 		float exposure_key;
 		float exposure_speed;
 
-		SharedPtr<YumeTexture2D> temporaryRt_;
-		SharedPtr<YumeTexture2D> adaptadLuminanceRt_[2];
+		TexturePtr temporaryRt_;
+		TexturePtr adaptadLuminanceRt_[2];
 
-		SharedPtr<YumeTexture2D> blurred_[6];
-		SharedPtr<YumeTexture2D> bloomFull_;
+		TexturePtr blurred_[6];
+		TexturePtr bloomFull_;
 
-		SharedPtr<YumeTexture2D> frontBufferBlurred_;
+		TexturePtr frontBufferBlurred_;
 
-		SharedPtr<YumeTexture3D> noiseTex_;
+		TexturePtr noiseTex_;
 
 	private:
 		YumeShaderVariation* ssaoPs_;
