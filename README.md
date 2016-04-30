@@ -22,7 +22,7 @@ For updates from this engine development(and my other silly posts) you can check
 
 ##Current Features
 
-- Driving the engine through XML files,see this.
+- Driving the engine through XML files,see [here](https://github.com/arkenthera/YumeEngine/blob/master/Engine/Assets/RenderCalls/ReflectiveShadowMap.xml) to see how Yume renders a Reflective Shadow Map for use in global illumination.
 - ASSIMP model/material loading
 - Unique UI framework using Javascript bindings (Chromium Embedded Framework)
 - Deferred pipeline
