@@ -54,7 +54,6 @@ namespace YumeEngine
 		void ApplyRendererFlags(RenderCallPtr call);
 		void RenderReflectiveShadowMap(RenderCall* call);
 
-		void SetModelMatrix(const DirectX::XMFLOAT4X4& model,const DirectX::XMFLOAT3& lpvMin,const DirectX::XMFLOAT3& lpvMax);
 		bool GetGIEnabled() { return giEnabled_; }
 
 		void ApplyShaderParameters(RenderCall* call);
@@ -69,8 +68,8 @@ namespace YumeEngine
 		Scene* GetScene() const {return scene_; };
 		Scene* scene_;
 
-		LightPropagationVolume lightPropagator_;
-		SparseVoxelOctree svo_;
+		LightPropagationVolume giLpvVolume_;
+		SparseVoxelOctree giSvoVolume_;
 
 		unsigned curr_;
 		unsigned next_;

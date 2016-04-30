@@ -29,6 +29,7 @@
 #include "LPVRendererTest.h"
 
 #include "RenderPass.h"
+#include "YumeMiscRenderer.h"
 
 
 
@@ -404,8 +405,11 @@ namespace YumeEngine
 		DirectX::XMMATRIX world_to_lpv = model_inv * trans * scale;
 		DirectX::XMStoreFloat4x4(&world_to_lpv_,world_to_lpv);
 
-		gYume->pRHI->SetShaderParameter("world_to_lpv",world_to_lpv);
-		gYume->pRHI->SetShaderParameter("lpv_size",(float)volume_size_);
+		RenderPass* rp = gYume->pRenderer->GetDefaultPass();
+
+		rp->SetShaderParameter("world_to_lpv",world_to_lpv);
+		rp->SetShaderParameter("lpv_size",(float)volume_size_);
+
 	}
 
 	void LightPropagationVolume::SetLPVRenderer(LPVRenderer* r)

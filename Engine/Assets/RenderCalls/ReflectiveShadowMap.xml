@@ -10,6 +10,20 @@
     <Rt Name="SCENE_NORMALS" Format="rgba10u2" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+
+    <Rt Name="LPV_R_0" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_G_0" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_B_0" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+
+<Rt Name="LPV_R_1" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_G_1" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_B_1" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+
+<Rt Name="LPV_ACCUM_R" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_ACCUM_G" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_ACCUM_B" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+
+<Rt Name="LPV_INJECT_COUNTER" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
   </RenderTargets>
   <Samplers>
     <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />
@@ -61,6 +75,14 @@
         <Rt Index="2" Name="LPV_B_1" />
         <Rt Index="3" Name="LPV_INJECT_COUNTER" />
       </Outputs>
+      <Parameters>
+        <Param Name="main_light" />
+        <Param Name="light_vp_tex" />
+        <Param Name="light_vp" />
+        <Param Name="lpv_size" />
+        <Param Name="light_vp_inv" />
+        <Param Name="world_to_lpv" />
+      </Parameters>
     </InjectLPV>
     <Clear PassName="ClearNormalize" Identifier="RSM" ClearTargets="Default" Flags="CLEAR_COLOR NODS">
       <Targets>
@@ -112,7 +134,7 @@
         <Param Name="lpv_flux_amplifier" Value="4" />
       </Parameters>
     </PropagateLPV>
-    <Scene PassName="GBuffer" Identifier="Main" Vs="LPV/Mesh" Ps="LPV/Mesh" VsEntry="MeshVs" PsEntry="MeshPs" Flags="NOBLEND">
+    <Scene PassName="GBuffer" Identifier="Main" Vs="LPV/Mesh" Ps="LPV/Mesh" VsEntry="MeshVs" PsEntry="MeshPs" Flags="NOBLEND DEFERRED">
       <Samplers>
         <Ps Name="Standard" Register="0" />
       </Samplers>
@@ -154,6 +176,7 @@
         <Param Name="light_vp_tex" />
         <Param Name="light_vp" />
         <Param Name="light_vp_inv" />
+        <Param Name="world_to_lpv" />
         <Param Name="main_light_pos" Value="0 0 0 0" />
       </Parameters>
     </Triangle>

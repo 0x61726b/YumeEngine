@@ -118,8 +118,6 @@ namespace YumeEngine
 
 		TexturePtr clearUavs[1] ={0};
 		r->SetRenderTargetsAndUAVs(0,1,1,clearUavs);
-
-	
 		
 	}
 
@@ -140,6 +138,7 @@ namespace YumeEngine
 			r->ClearUAV(vRho,clear);
 		}
 
+
 		TexturePtr uavs[2] ={vNormal,vRho};
 		r->SetRenderTargetsAndUAVs(0,1,2,uavs);
 
@@ -159,18 +158,17 @@ namespace YumeEngine
 		SetModelMatrix(i,gYume->pRenderer->GetMinBb(),gYume->pRenderer->GetMaxBb());*/
 
 
-
-
 		geo->Render();
 
 		TexturePtr clearUavs[2] ={0,0};
 		r->SetRenderTargetsAndUAVs(0,1,2,clearUavs);
+
 	}
 
 	void SparseVoxelOctree::ClearPs()
 	{
 		TexturePtr srv_null[] ={nullptr,nullptr};
-		gYume->pRHI->PSBindSRV(last_bound_,2,srv_null);
+		gYume->pRHI->PSBindSRV(7,2,srv_null);
 	}
 
 	void SparseVoxelOctree::SetModelMatrix(const DirectX::XMFLOAT4X4& model,const DirectX::XMFLOAT3& svo_min,const DirectX::XMFLOAT3& svo_max)

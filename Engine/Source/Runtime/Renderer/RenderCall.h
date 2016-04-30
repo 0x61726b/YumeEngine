@@ -98,7 +98,7 @@ namespace YumeEngine
 		unsigned GetNumVertexSamplers() const {return numVertexSamplers_;}
 		unsigned GetNumPixelSamplers() const {return numPixelSamplers_;}
 
-		
+		void RemoveInput(int);
 
 		unsigned GetNumInputs() const { return numInputs_; }
 		unsigned GetNumOutputs() const { return numOutputs_; }

@@ -1,6 +1,7 @@
 <Yume>
   <RenderTargets>
     <Rt Name="RSM_COLORS" Format="rgba16f" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
+
     <Rt Name="RSM_NORMALS" Format="rgba10u2" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
     <Rt Name="RSM_LINEARDEPTH" Format="rg32f" Mips="0" Width="1024" Height="1024" ArraySize="1"/>
     <Rt Name="RSM_SPECULAR" Format="rgba16f" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
@@ -13,6 +14,8 @@
     <Rt Name="SCENE_NORMALS" Format="rgba10u2" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+
+    <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
   </RenderTargets>
   <Samplers>
     <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />
@@ -21,7 +24,7 @@
     <Sampler Name="ShadowFilter" Filter="Trilinear" Comprasion="Never" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
   </Samplers>
   <RenderCalls>
-    <Clear PassName="ClearRSM" Identifier="RSM" ClearTargets="Default" Flags="CLEAR_DEPTH">
+    <Clear PassName="ClearRSM" Identifier="RSM" ClearTargets="Default" Flags="CLEAR_DEPTH SHADOW">
       <Targets>
         <Rt Name="RSM_COLORS" ClearColor="0 0 0 1" />
         <Rt Name="RSM_NORMALS" ClearColor="0 0 0 1" />
@@ -41,14 +44,14 @@
         <Rt Index="3" Name="RSM_SPECULAR"/>
       </Outputs>
     </Scene>
-    <Scene PassName="VoxelizeScene" Identifier="RSM" Vs="svo_voxelize" Ps="svo_voxelize" Gs="svo_voxelize" VsEntry="MeshVs" PsEntry="MeshPs" Flags="VOXELIZE">
+    <Scene PassName="VoxelizeScene" Identifier="RSMVoxelize" Vs="svo_voxelize" Ps="svo_voxelize" Gs="svo_voxelize" VsEntry="MeshVs" PsEntry="MeshPs" Flags="VOXELIZE">
       <Parameters>
         <Param Name="world_to_svo" />
         <Param Name="bb_min" />
         <Param Name="bb_max" />
       </Parameters>
     </Scene>
-    <SvoInject PassName="SVOInject" Identifier="RSM" Vs="svo_inject" Ps="svo_inject" VsEntry="vs_svo_inject" PsEntry="ps_svo_inject">
+    <SvoInject PassName="SVOInject" Identifier="RSMInject" Vs="svo_inject" Ps="svo_inject" VsEntry="vs_svo_inject" PsEntry="ps_svo_inject">
       <Inputs>
         <Rt Index="6" Name="RSM_LINEARDEPTH" />
         <Rt Index="7" Name="RSM_COLORS" />

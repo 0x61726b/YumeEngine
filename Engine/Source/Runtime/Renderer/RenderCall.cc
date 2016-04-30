@@ -138,6 +138,12 @@ namespace YumeEngine
 		identifier_ = name;
 	}
 
+	void RenderCall::RemoveInput(int texture)
+	{
+		inputs_[texture] = 0;
+		numInputs_--;
+	}
+
 	TexturePtr RenderCall::AddTexture(const RenderTargetDesc& desc)
 	{
 		TexturePtr textureTarget = 0;

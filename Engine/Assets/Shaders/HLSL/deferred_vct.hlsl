@@ -26,8 +26,6 @@ float4 ps_vct(in PS_INPUT inp) : SV_Target
 {
     gbuffer gb = unpack_gbuffer(inp.tex_coord);
 
-    gb.specular_albedo = float4(F0_ALUMINIUM,1.0f);
-
     // normal
     float3 N = normalize(gb.normal.xyz * 2.0 - 1.0);
 
@@ -59,7 +57,7 @@ float4 ps_vct(in PS_INPUT inp) : SV_Target
     float NoL = saturate(dot(N, L));
 
     // have no gloss maps, roughness is simply inverse spec color/smoothness
-    float roughness = 0.00001f;
+    float roughness = 1;
 
     // calculate power of light and scale it to get the scene adequately lit
     float power = 100 * length(scene_dim_max - scene_dim_min);

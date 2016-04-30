@@ -90,7 +90,7 @@ namespace YumeEngine
 
 		if(GetGIEnabled())
 		{
-			svo_.Create(256);
+			giSvoVolume_.Create(256);
 
 			curr_ = 0;
 			next_ = 1;
@@ -140,7 +140,8 @@ namespace YumeEngine
 			DirectX::XMFLOAT4X4 i;
 			DirectX::XMStoreFloat4x4(&i,I);
 
-			svo_.SetModelMatrix(i,bbMin,bbMax);
+			/*giLpvVolume_.SetModelMatrix(i,bbMin,bbMax);*/
+			giSvoVolume_.SetModelMatrix(i,bbMin,bbMax);
 		}
 
 	}
@@ -208,6 +209,12 @@ namespace YumeEngine
 				case CallType::CLEAR:
 				{
 					RHIEvent e("RenderCall::Clear");
+
+					if(call->IsShadowPass())
+					{
+						if(!updateRsm_)
+							break;
+					}
 					for(int j=0; j < call->GetNumInputs(); ++j)
 					{
 						TexturePtr input = call->GetInput(j);
@@ -219,6 +226,7 @@ namespace YumeEngine
 							gYume->pRHI->ClearRenderTarget(j,call->GetClearFlags(),call->GetClearColor(j));
 						}
 					}
+
 
 					if(call->GetDepthStencil())
 					{
@@ -265,7 +273,7 @@ namespace YumeEngine
 								YumeMesh* geometry = node->GetGeometry();
 								auto geometries = geometry->GetGeometries();
 
-								svo_.Voxelize(call,geometry,i == 0);
+								giSvoVolume_.Voxelize(call,geometry,i == 0);
 							}
 							/*gYume->pRenderer->GetDefaultPass()->DisableRenderCalls("RSM");
 							updateRsm_ = false;*/
@@ -335,7 +343,7 @@ namespace YumeEngine
 					DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
 					DirectX::XMFLOAT4X4 i;
 					DirectX::XMStoreFloat4x4(&i,I);
-					SetModelMatrix(i,bbMin,bbMax);
+					giLpvVolume_.SetModelMatrix(i,bbMin,bbMax);
 
 					ApplyShaderParameters(call);
 
@@ -354,7 +362,7 @@ namespace YumeEngine
 					unsigned inputSize = call->GetNumInputs();
 					YumeVector<TexturePtr>::type inputs;
 
-					unsigned startIndex = 0;
+					unsigned startIndex = M_MAX_UNSIGNED;
 
 					for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
 					{
@@ -362,7 +370,7 @@ namespace YumeEngine
 
 						if(input)
 						{
-							if(startIndex == 0) startIndex = i;
+							if(startIndex == M_MAX_UNSIGNED) startIndex = i;
 							inputs.push_back(input);
 						}
 					}
@@ -393,6 +401,7 @@ namespace YumeEngine
 
 					unsigned numOutputs = call->GetNumOutputs();
 
+
 					TexturePtr output = call->GetOutput(1);
 
 					TexturePtr uavs[] ={output};
@@ -401,7 +410,8 @@ namespace YumeEngine
 					unsigned inputSize = call->GetNumInputs();
 					YumeVector<TexturePtr>::type inputs;
 
-					unsigned startIndex = 0;
+					unsigned startIndex = M_MAX_UNSIGNED;
+
 
 					for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
 					{
@@ -409,7 +419,7 @@ namespace YumeEngine
 
 						if(input)
 						{
-							if(startIndex == 0) startIndex = i;
+							if(startIndex == M_MAX_UNSIGNED) startIndex = i;
 							inputs.push_back(input);
 						}
 					}
@@ -424,14 +434,18 @@ namespace YumeEngine
 					rhi_->BindPsuedoBuffer();
 					rhi_->Draw(POINT_LIST,0,num_vpls);
 
-					gYume->pRHI->BindResetTextures(6,3); //Start at 6 count 3
+					
 					TexturePtr clearUavs[1] ={0};
 					rhi_->SetRenderTargetsAndUAVs(0,1,1,clearUavs);
 
-					svo_.Filter();
+					giSvoVolume_.Filter();
 
-					defaultPass_->DisableRenderCalls("RSM");
+
+					defaultPass_->DisableRenderCalls("RSMVoxelize");
+					/*defaultPass_->DisableRenderCalls("RSMInject");*/
 					updateRsm_ = false;
+
+					rhi_->BindResetTextures(6,3);
 				}
 				break;
 				case LPV_NORMALIZE:
@@ -491,8 +505,8 @@ namespace YumeEngine
 
 					static YumeVector<YumeVertexBuffer*>::type vertexBuffers(1);
 					static YumeVector<unsigned>::type elementMasks(1);
-					vertexBuffers[0] = lightPropagator_.GetLPVVolume()->GetVertexBuffer(0);
-					elementMasks[0] = lightPropagator_.GetLPVVolume()->GetVertexBuffer(0)->GetElementMask();
+					vertexBuffers[0] = giLpvVolume_.GetLPVVolume()->GetVertexBuffer(0);
+					elementMasks[0] = giLpvVolume_.GetLPVVolume()->GetVertexBuffer(0)->GetElementMask();
 					rhi_->SetVertexBuffers(vertexBuffers,elementMasks);
 
 					rhi_->BindNullIndexBuffer();
@@ -544,6 +558,8 @@ namespace YumeEngine
 						}
 					}
 					rhi_->PSBindSRV(startIndex,inputSize,&inputs[0]);
+
+
 
 
 					rhi_->SetBlendMode(BLEND_ADD);
@@ -598,7 +614,7 @@ namespace YumeEngine
 
 					YumeVector<TexturePtr>::type inputs;
 
-					unsigned startIndex = 0;
+					unsigned startIndex = M_MAX_UNSIGNED;
 					unsigned inputSize = call->GetNumInputs();
 					for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
 					{
@@ -606,18 +622,17 @@ namespace YumeEngine
 
 						if(input)
 						{
-							if(startIndex == 0) startIndex = i;
+							if(startIndex == M_MAX_UNSIGNED) startIndex = i;
 							inputs.push_back(input);
 						}
 					}
 					rhi_->PSBindSRV(startIndex,inputSize,&inputs[0]);
 
 
-					DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
+					/*DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
 					DirectX::XMFLOAT4X4 i;
 					DirectX::XMStoreFloat4x4(&i,I);
-					svo_.SetModelMatrix(i,bbMin,bbMax);
-
+					svo_.SetModelMatrix(i,bbMin,bbMax);*/
 
 					//Variants
 					ApplyShaderParameters(call);
@@ -665,7 +680,7 @@ namespace YumeEngine
 					GetFsTriangle()->Draw(gYume->pRHI);
 
 					rhi_->BindResetRenderTargets(1);
-					rhi_->BindResetTextures(0,13);
+					rhi_->BindResetTextures(2,call->GetNumInputs());
 				}
 				break;
 				default:
@@ -810,10 +825,12 @@ namespace YumeEngine
 
 		rhi_->BindNullIndexBuffer();
 
-		lightPropagator_.GetLPVVolume()->Draw(gYume->pRHI);
+		giLpvVolume_.GetLPVVolume()->Draw(gYume->pRHI);
 
 		rhi_->BindResetRenderTargets(6);
 		rhi_->BindResetTextures(7,3,true);
+
+
 
 
 	}
@@ -847,25 +864,6 @@ namespace YumeEngine
 		defaultPass_->SetShaderParameter("gi_scale",giParams_.Scale);
 		defaultPass_->SetShaderParameter("lpv_flux_amplifier",giParams_.LPVFlux);
 		defaultPass_->SetShaderParameter("debug_gi",giParams_.DebugView);
-	}
-
-	void YumeMiscRenderer::SetModelMatrix(const DirectX::XMFLOAT4X4& model,const DirectX::XMFLOAT3& lpvMin,const DirectX::XMFLOAT3& lpvMax)
-	{
-		DirectX::XMMATRIX model_inv = DirectX::XMMatrixInverse(nullptr,DirectX::XMLoadFloat4x4(&model));
-
-		DirectX::XMVECTOR diag = DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&lpvMax),DirectX::XMLoadFloat3(&lpvMin));
-
-		DirectX::XMFLOAT3 d;
-		DirectX::XMStoreFloat3(&d,diag);
-
-		DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(1.f/d.x,1.f/d.y,1.f/d.z);
-
-		DirectX::XMMATRIX trans = DirectX::XMMatrixTranslation(-lpvMin.x,-lpvMin.y,-lpvMin.z);
-
-		DirectX::XMMATRIX world_to_lpv = model_inv * trans * scale;
-
-		gYume->pRHI->SetShaderParameter("world_to_lpv",world_to_lpv);
-		gYume->pRHI->SetShaderParameter("lpv_size",(float)32.0f);
 	}
 
 	void YumeMiscRenderer::RenderFullScreenTexture(const IntRect& rect,YumeTexture2D* overlaytexture)
@@ -959,6 +957,8 @@ namespace YumeEngine
 			dir.x,dir.y,dir.z,dir.w,
 			color.r_,color.g_,color.b_,color.a_
 		};
+
+		gYume->pRHI->SetShaderParameter("main_light",f,4*3);
 	}
 
 	void YumeMiscRenderer::SetPerFrameConstants()

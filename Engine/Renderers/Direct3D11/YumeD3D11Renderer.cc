@@ -383,7 +383,12 @@ namespace YumeEngine
 			textures++;
 		}
 		
+		for(int i=0; i < MAX_RENDERTARGETS; ++i)
+			renderTargets_[i] = 0;
+
 		impl_->deviceContext_->OMSetRenderTargetsAndUnorderedAccessViews(numRtv,nullptr,nullptr,uavStart,numUAV,&uavs[0],nullptr);
+
+		renderTargetsDirty_ = false;
 	}
 
 	void YumeD3D11Renderer::Clear(unsigned flags,const YumeColor& color,float depth,unsigned stencil)
@@ -2523,7 +2528,7 @@ namespace YumeEngine
 					memset(&stateDesc,0,sizeof stateDesc);
 					stateDesc.FillMode = d3dFillMode[fillMode_];
 					stateDesc.CullMode = d3dCullMode[cullMode_];
-					stateDesc.FrontCounterClockwise = TRUE;
+					stateDesc.FrontCounterClockwise = FALSE;
 					stateDesc.DepthBias = scaledDepthBias;
 					stateDesc.DepthBiasClamp = 0;
 					stateDesc.SlopeScaledDepthBias = 0;
