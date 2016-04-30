@@ -77,7 +77,7 @@ namespace YumeEngine
 #endif
 
 
-		StaticModel* sm_ = new StaticModel("Models/sponza/sponza.obj");
+		StaticModel* sm_ = new StaticModel("Models/cornell/cornellbox.obj");
 		sm_->Initialize();
 		sm_->SetName("Cornell");
 
