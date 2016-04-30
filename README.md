@@ -30,7 +30,7 @@ For updates from this engine development(and my other silly posts) you can check
 - [Light Propagation Volumes](http://cg.ibds.kit.edu/publications/p2010/CLPVFRII_Kaplanyan_2010/CLPVFRII_Kaplanyan_2010.pdf)
 - Post Processing effects such as, SSAO algorithm Scalable Ambient Obscurance, FXAA,DoF,Godrays,Auto Exposure
 
-##Windows
+##Building
 <b>Prerequisities</b>
 
 - <a href="http://www.cmake.org/">CMake 2.6.2 or greater</a>
