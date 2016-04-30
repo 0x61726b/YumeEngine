@@ -60,4 +60,6 @@ For updates from this engine development(and my other silly posts) you can check
 [Hy3](https://hieroglyph3.codeplex.com/)
 [Frank Luna's D3D11 Book](http://www.amazon.com/Introduction-3D-Game-Programming-DirectX/dp/1936420228)
 
+[Tobias Franke's awesome Dirtchamber](http://www.tobias-franke.eu/?dev)
+
 <img src = "http://i.imgur.com/mPVCTYw.png" />
