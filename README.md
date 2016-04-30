@@ -18,17 +18,23 @@ Exploring new renderer design ideas,trying to implement as simple as possible.He
 
 For updates from this engine development(and my other silly posts) you can check out my <a href="http://arkenthera.github.io">website</a>
 
+**Update 2016** : Oh well, when I wrote above, it was 2 years ago. I was reading papers about game engine design,getting fired up and thought that I could create an engine supporting every platform.Well that might be doable but not if you're not working on the project full-time. Yume only supports **Direct3D 11** as of now, in the upcoming years it is for sure that I will expand to other APIs.
+
+##Current Features
+
+- Driving the engine through XML files,see this.
+- ASSIMP model/material loading
+- Unique UI framework using Javascript bindings (Chromium Embedded Framework)
+- Deferred pipeline
+- Global Illumination through [Voxel Cone Tracing](http://research.nvidia.com/sites/default/files/publications/GIVoxels-pg2011-authors.pdf)
+- [Light Propagation Volumes](http://cg.ibds.kit.edu/publications/p2010/CLPVFRII_Kaplanyan_2010/CLPVFRII_Kaplanyan_2010.pdf)
+- Post Processing effects such as, SSAO algorithm Scalable Ambient Obscurance, FXAA,DoF,Godrays,Auto Exposure
 
 ##Windows
 <b>Prerequisities</b>
 
 - <a href="http://www.cmake.org/">CMake 2.6.2 or greater</a>
 - Visual Studio 2013 (Need C++11 support)
-- <a href="http://www.microsoft.com/en-us/download/details.aspx?id=6812">DirectX SDK June 2010</a>
-
-You can use CMake GUI to create a Vs2013 solution then build it.
-
-Tested on Win10 x64 Vs2013
 
 
 ##Some screens
