@@ -77,17 +77,22 @@ namespace YumeEngine
 #endif
 
 
-		StaticModel* sm_ = new StaticModel("Models/Cornell/cornellbox.obj");
+		StaticModel* sm_ = new StaticModel("Models/sponza/sponza.obj");
 		sm_->Initialize();
 		sm_->SetName("Cornell");
 
 		gYume->pRenderer->GetScene()->AddNode(sm_);
 
+		DirectX::XMFLOAT3 min = gYume->pRenderer->GetMinBb();
+		DirectX::XMFLOAT3 max = gYume->pRenderer->GetMaxBb();
+
+		DirectX::XMFLOAT3 delta = DirectX::XMFLOAT3(max.x - min.x,max.y - min.y,max.z - min.z);
+
 		Light* dirLight = new Light;
 		dirLight->SetName("DirLight");
 		dirLight->SetType(LT_DIRECTIONAL);
-		dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));
-		/*dirLight->SetPosition(DirectX::XMVectorSet(60,2200,90,0));*/
+		/*dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));*/
+		dirLight->SetPosition(DirectX::XMVectorSet(0,delta.y,0,0));
 		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
 		dirLight->SetColor(YumeColor(1,1,1,1));

@@ -30,6 +30,7 @@
 
 #include <assimp/ProgressHandler.hpp>
 
+
 namespace YumeEngine
 {
 	namespace detail

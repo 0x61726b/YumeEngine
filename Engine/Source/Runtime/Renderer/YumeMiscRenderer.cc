@@ -86,7 +86,12 @@ namespace YumeEngine
 
 		defaultPass_->Load("RenderCalls/SparseVoxelOctree.xml");
 
+
+
 		Setup();
+
+		
+
 
 		if(GetGIEnabled())
 		{
@@ -95,6 +100,7 @@ namespace YumeEngine
 			curr_ = 0;
 			next_ = 1;
 		}
+
 
 		SharedPtr<YumeVertexBuffer> triangleVb(gYume->pRHI->CreateVertexBuffer());
 
@@ -434,7 +440,7 @@ namespace YumeEngine
 					rhi_->BindPsuedoBuffer();
 					rhi_->Draw(POINT_LIST,0,num_vpls);
 
-					
+
 					TexturePtr clearUavs[1] ={0};
 					rhi_->SetRenderTargetsAndUAVs(0,1,1,clearUavs);
 
@@ -629,32 +635,26 @@ namespace YumeEngine
 					rhi_->PSBindSRV(startIndex,inputSize,&inputs[0]);
 
 
-					/*DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
-					DirectX::XMFLOAT4X4 i;
-					DirectX::XMStoreFloat4x4(&i,I);
-					svo_.SetModelMatrix(i,bbMin,bbMax);*/
-
 					//Variants
 					ApplyShaderParameters(call);
 
 
-					if(GetGIEnabled())
-					{
-						Light* light = static_cast<Light*>(scene_->GetDirectionalLight());
 
-						const DirectX::XMFLOAT4& pos = light->GetPosition();
-						const DirectX::XMFLOAT4& dir = light->GetDirection();
-						const YumeColor& color = light->GetColor();
+					Light* light = static_cast<Light*>(scene_->GetDirectionalLight());
 
-						const unsigned fSize = 4 * 3 * 4;
-						float f[fSize] ={
-							pos.x,pos.y,pos.z,pos.w,
-							dir.x,dir.y,dir.z,dir.w,
-							color.r_,color.g_,color.b_,color.a_
-						};
+					const DirectX::XMFLOAT4& pos = light->GetPosition();
+					const DirectX::XMFLOAT4& dir = light->GetDirection();
+					const YumeColor& color = light->GetColor();
 
-						gYume->pRHI->SetShaderParameter("main_light",f,4*3);
-					}
+					const unsigned fSize = 4 * 3 * 4;
+					float f[fSize] ={
+						pos.x,pos.y,pos.z,pos.w,
+						dir.x,dir.y,dir.z,dir.w,
+						color.r_,color.g_,color.b_,color.a_
+					};
+
+					gYume->pRHI->SetShaderParameter("main_light",f,4*3);
+
 
 					SetCameraParameters(false);
 

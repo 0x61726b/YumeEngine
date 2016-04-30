@@ -330,7 +330,7 @@ namespace YumeEngine
 		if(shaderEntry.length() > 0)
 			entryPoint = shaderEntry.c_str();
 
-		flags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG;
+		flags = D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_DEBUG;
 		YUMELOG_INFO("Compiling shader " << GetFullName().c_str());
 
 		YumeVector<YumeString>::type defineValues;

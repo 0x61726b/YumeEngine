@@ -6,12 +6,11 @@
 [![todofy badge](https://todofy.org/b/arkenthera/YumeEngine/master)](https://todofy.org/r/arkenthera/YumeEngine/master)
 [![Coverity](https://scan.coverity.com/projects/8038/badge.svg)](https://scan.coverity.com/projects/arkenthera-yumeengine)
 
-
+![](http://i.imgur.com/xG2na2E.jpg)
 
 ![](http://i.imgur.com/5SyAHWa.jpg)
 
 
-![](http://i.imgur.com/elObCXQ.jpg)
 
 # Synopsis
 Yume Engine
@@ -19,36 +18,6 @@ Exploring new renderer design ideas,trying to implement as simple as possible.He
 
 For updates from this engine development(and my other silly posts) you can check out my <a href="http://arkenthera.github.io">website</a>
 
-#Building
-
-```
-git clone https://github.com/arkenthera/YumeEngine
-cd YumeEngine
-git submodule update --init --recursive
-```
-
-##Mac OS X
-<b>Prerequisities</b>
-- [CMake](http://www.cmake.org)
-- OpenGL (probably already installed)
-- XCode or Command line tools
-
-
-Tested on Yosemite 10.10
-
-##Debian/Ubuntu
-<b>Prerequisities</b>
-- [CMake](http://www.cmake.org)
-- ```sudo apt-get install build-essential libgl1-mesa-dev```
-- GCC 4.8
-
-Tested on Ubuntu 14.04
-
-```
-mkdir build && cd build
-cmake ..
-make
-```
 
 ##Windows
 <b>Prerequisities</b>
@@ -60,6 +29,17 @@ make
 You can use CMake GUI to create a Vs2013 solution then build it.
 
 Tested on Win10 x64 Vs2013
+
+
+##Some screens
+
+![](http://i.imgur.com/WRKOVRd.jpg)
+
+![](http://i.imgur.com/elObCXQ.jpg)
+
+![](http://i.imgur.com/PKNJs6M.jpg)
+
+![](http://i.imgur.com/00caEIY.png)
 
 # **Sources Used On This Project**
 
