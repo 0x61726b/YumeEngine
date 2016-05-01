@@ -18,8 +18,8 @@
 // Comments :
 //###############################################################################
 function testo(name,params){
+  //alert(name); To debug
   params = JSON.parse(params);
-
   var event = new CustomEvent(name, {"detail": params});
   try {
     window.dispatchEvent(event);

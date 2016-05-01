@@ -443,6 +443,7 @@ namespace YumeEngine
 
 		YUMELOG_INFO("Exiting Yume Engine...");
 
+		gYume->pRenderer.Reset();
 
 		if(gYume->pRHI)
 			gYume->pRHI->Close();

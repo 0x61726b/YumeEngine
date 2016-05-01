@@ -72,6 +72,19 @@ namespace YumeEngine
 	{
 
 		RenderTargets::iterator It = renderTargets_.begin();
+
+		for(It; It != renderTargets_.end(); ++It)
+		{
+			RenderTargetDesc desc = It->second->GetDesc();
+			if(desc.Usage != TextureUsage::TEXTURE_UAV)
+			{
+				static_cast<Texture2DPtr>(It->second)->Release();
+			}
+			else
+			{
+				static_cast<Texture3DPtr>(It->second)->Release();
+			}
+		}
 	}
 
 	void RenderPass::Load(const YumeString& resource)

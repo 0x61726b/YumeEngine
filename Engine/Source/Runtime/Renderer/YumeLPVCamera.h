@@ -35,7 +35,13 @@ namespace YumeEngine
 		public YumeBase
 	{
 	public:
-		void Update(float z_far);
+		void Update();
+
+		void GetFrustumSize(DirectX::XMFLOAT3& n,DirectX::XMFLOAT3& f);
+
+		const DirectX::XMFLOAT4X4& GetRotationMatrix() const { return Rot;}
+	protected:
+		DirectX::XMFLOAT4X4 Rot;
 	};
 }
 

@@ -67,12 +67,12 @@ var Overlay = React.createClass( {
       cutFps = cutFps.substring(0,6);
 
       var cutMs = data.ElapsedTime;
-      cutMs = cutMs.substring(0,6);
+      cutMs = cutMs.substring(0,3);
       this.setState( { ms: cutMs,
         fps: cutFps,
         shadowInfo: data.ShadowInfo,
-        materialQuality:data.MaterialQuality,
-        textureQuality:data.TextureQuality,
+        materialQuality:"Ultra",
+        textureQuality:"Ultra",
         primitiveCount:data.PrimitiveCount,
         batchCount:data.BatchCount,
         lightCount:data.LightCount,

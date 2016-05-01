@@ -385,7 +385,7 @@ namespace YumeEngine
 	void YumePostProcess::SSAO(TexturePtr target)
 	{
 		RHIEvent e("SSAO Pass");
-		Render(ssaoPs_,misc_->GetRenderTarget(),target);
+		
 	}
 
 	void YumePostProcess::SetViewport(TexturePtr rendertarget)

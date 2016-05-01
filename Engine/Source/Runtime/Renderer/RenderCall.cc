@@ -146,47 +146,12 @@ namespace YumeEngine
 
 	TexturePtr RenderCall::AddTexture(const RenderTargetDesc& desc)
 	{
-		TexturePtr textureTarget = 0;
-		if(desc.Usage == TextureUsage::TEXTURE_UAV)
-		{
-			textureTarget = gYume->pRHI->CreateTexture3D();
-			textureTarget->SetName(desc.Name);
-			static_cast<Texture3DPtr>(textureTarget)->SetSize(desc.Width,desc.Height,desc.Depth,desc.Format,desc.Usage);
-		}
-		else
-		{
-			textureTarget = gYume->pRHI->CreateTexture2D();
-			textureTarget->SetName(desc.Name);
-			static_cast<Texture2DPtr>(textureTarget)->SetSize(desc.Width,desc.Height,desc.Format,desc.Usage,desc.ArraySize,desc.Mips);
-		}
-
-		textureTarget->SetDesc(desc);
-		if(desc.Type & RenderTargetInOut::RT_INPUT)
-			SetInput(desc.Index,textureTarget);
-		if(desc.Type & RT_OUTPUT)
-			SetOutput(desc.Index,textureTarget);
-		if(desc.Type == RT_DEPTHSTENCIL)
-			SetDepthStencil(textureTarget);
-
-		return textureTarget;
+		return 0;
 	}
 
 	void RenderCall::AddTextures(unsigned size,TexturePtr* textures)
 	{
-		for(int i=0; i < size; ++i)
-		{
-			TexturePtr t = *textures;
-			const RenderTargetDesc& desc = t->GetDesc();
 
-			if(t->GetDesc().Type & RT_INPUT)
-				SetInput(desc.Index,t);
-			if(t->GetDesc().Type & RT_OUTPUT)
-				SetOutput(desc.Index,t);
-			if(t->GetDesc().Type == RT_DEPTHSTENCIL)
-				SetDepthStencil(t);
-
-			textures++;
-		}
 	}
 
 	void RenderCall::AddTexture(RenderTargetInOut type,unsigned index,TexturePtr tex)

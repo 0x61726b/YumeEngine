@@ -37,6 +37,7 @@ namespace YumeEngine
 
 
 		SceneNodes::type GetRenderables();
+		SceneNodes::type GetLights();
 
 
 		void AddNode(SceneNode* node);
@@ -45,6 +46,7 @@ namespace YumeEngine
 
 	private:
 		SceneNodes::type renderables_;
+		SceneNodes::type lights_;
 		SceneNodes::type nodes_;
 	};
 }

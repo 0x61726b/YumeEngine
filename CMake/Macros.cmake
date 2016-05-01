@@ -189,10 +189,13 @@ macro( set_output_dir TARGET_NAME)
           LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Yume"
           LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Yume"
           LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Yume"
+          LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/Yume"
           RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Yume"
           ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Yume"
           RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Yume"
           ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Yume"
+          RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/Yume"
+          ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/Yume"
       )
   else()
     set_target_properties( ${TARGET_NAME}
@@ -222,6 +225,16 @@ endmacro( add_coverage)
 macro( copy_assets )
   add_custom_command(TARGET ${YUME} POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    "${CMAKE_SOURCE_DIR}/Engine/Assets"
-                  "${CMAKE_BINARY_DIR}/Yume/Engine/Assets" COMMENT "Copying assets...")
+                    "${CMAKE_SOURCE_DIR}/Engine/Assets/Shaders"
+                  "${CMAKE_BINARY_DIR}/Yume/Engine/Assets/Shaders" COMMENT "Copying assets...")
+
+  add_custom_command(TARGET ${YUME} POST_BUILD
+                                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+                                    "${CMAKE_SOURCE_DIR}/Engine/Assets/RenderCalls"
+                                  "${CMAKE_BINARY_DIR}/Yume/Engine/Assets/RenderCalls" COMMENT "Copying assets...")
+                                  add_custom_command(TARGET ${YUME} POST_BUILD
+                                                                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+                                                                    "${CMAKE_SOURCE_DIR}/Engine/Assets/UI"
+                                                                  "${CMAKE_BINARY_DIR}/Yume/Engine/Assets/UI" COMMENT "Copying assets...")                                             
+
 endmacro( copy_assets )

@@ -36,12 +36,28 @@ namespace YumeEngine
 	{
 		XMMATRIX I = XMMatrixIdentity();
 		XMStoreFloat4x4(&World,I);
+		XMStoreFloat4x4(&Scale,I);
+
+		pos_ = XMFLOAT4(0,0,0,0);
+		rot_ = XMFLOAT4(0,0,0,0);
+
 	}
 
 	SceneNode::~SceneNode()
 	{
 	}
 
+
+	DirectX::XMMATRIX SceneNode::GetTransformation()
+	{
+		XMMATRIX translate = DirectX::XMMatrixTranslationFromVector(XMLoadFloat4(&pos_));
+		XMMATRIX scale = XMLoadFloat4x4(&Scale);
+		XMMATRIX rotation = DirectX::XMMatrixRotationRollPitchYawFromVector(XMLoadFloat4(&rot_));
+
+
+		XMMATRIX transformation = scale * rotation * translate;
+		return transformation;
+	}
 	void SceneNode::SetPosition(const DirectX::XMVECTOR& v)
 	{
 		DirectX::XMStoreFloat4(&pos_,v);
@@ -60,5 +76,12 @@ namespace YumeEngine
 	void SceneNode::SetWorld(const DirectX::XMMATRIX& world)
 	{
 		DirectX::XMStoreFloat4x4(&World,world);
+	}
+
+	void SceneNode::SetScale(float x,float y,float z)
+	{
+		XMMATRIX scale = DirectX::XMMatrixScaling(x,y,z);
+
+		XMStoreFloat4x4(&Scale,scale);
 	}
 }

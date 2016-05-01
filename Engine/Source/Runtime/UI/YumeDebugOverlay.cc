@@ -269,16 +269,12 @@ namespace YumeEngine
 
 	void YumeDebugOverlay::Update()
 	{
-		float elapsedTime = (gYume->pTimer->GetTimeStep());
+		float elapsedTime = (gYume->pTimer->GetTimeStep()) * 1000;
 		float fps = 1.0f / gYume->pEngine->GetSmoothedTimestep();
 		int batchCount = gYume->pRHI->GetNumBatches();
 		int primitives = gYume->pRHI->GetNumPrimitives();
 
 		unsigned long long totalMemory = gYume->pResourceManager->GetTotalMemoryUse();
-
-
-
-
 
 		YumeString ret;
 		ret.append("{");
@@ -286,13 +282,11 @@ namespace YumeEngine
 		ret.AppendWithFormat("\"ElapsedTime\": \"%f\",",elapsedTime);
 		ret.AppendWithFormat("\"FrameRate\": \"%f\",",fps);
 		ret.AppendWithFormat("\"PrimitiveCount\": \"%i\",",primitives);
-		ret.AppendWithFormat("\"BatchCount\": \"%i\",",batchCount);
-
+		ret.AppendWithFormat("\"BatchCount\": \"%i\"",batchCount);
 
 
 		ret.append("}");
 		gYume->pUI->SendEvent("setFrameInfo",ret);
-
 
 #ifndef SOMETHING_STRANGE
 		YumeCamera* cam = gYume->pRenderer->GetViewport(0)->GetCamera();
@@ -312,9 +306,11 @@ namespace YumeEngine
 		/*camera.AppendWithFormat("\"CameraRot\": \"%s\",",cam->GetNode()->GetWorldRotation().ToString().c_str());*/
 		camera.AppendWithFormat("\"CameraFov\": \"%f\"",45.0f);
 		camera.append("}");
-		gYume->pUI->SendEvent("setCameraInfo",camera);
+		/*gYume->pUI->SendEvent("setCameraInfo",camera);*/
 #endif
 		YumeUIElement::Update();
+
+
 
 	}
 

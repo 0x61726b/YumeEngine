@@ -77,11 +77,24 @@ namespace YumeEngine
 #endif
 
 
-		StaticModel* sm_ = new StaticModel("Models/cornell/cornellbox.obj");
+		/*StaticModel* sm_ = new StaticModel("Models/Trees/001_Birch_Middle_Age_or_Young.obj");*/
+		/*StaticModel* sm_ = new StaticModel("Models/SM/san-miguel.obj");*/
+		StaticModel* sm_ = new StaticModel("Models/Primitives/plane.obj");
 		sm_->Initialize();
 		sm_->SetName("Cornell");
 
+		//StaticModel* sm2_ = new StaticModel("Models/head.obj");
+		//sm2_->Initialize();
+		//sm2_->SetPosition(DirectX::XMVectorSet(9,10,0,0));
+		//sm2_->SetScale(10,10,10);
+		//sm2_->SetName("Cornell");
+		//gYume->pRenderer->GetScene()->AddNode(sm2_);
+
+
 		gYume->pRenderer->GetScene()->AddNode(sm_);
+		
+
+		gYume->pRenderer->UpdateMeshBb(*sm_->GetGeometry());
 
 		DirectX::XMFLOAT3 min = gYume->pRenderer->GetMinBb();
 		DirectX::XMFLOAT3 max = gYume->pRenderer->GetMaxBb();
@@ -92,13 +105,19 @@ namespace YumeEngine
 		dirLight->SetName("DirLight");
 		dirLight->SetType(LT_DIRECTIONAL);
 		/*dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));*/
-		dirLight->SetPosition(DirectX::XMVectorSet(0,delta.y,0,0));
+		dirLight->SetPosition(DirectX::XMVectorSet(0,100,0,0));
 		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
 		dirLight->SetColor(YumeColor(1,1,1,1));
 
+		Light* pointLight = new Light;
+		pointLight->SetName("PointLight");
+		pointLight->SetType(LT_POINT);
+		pointLight->SetPosition(DirectX::XMVectorSet(0,10,0,0));
+		pointLight->SetColor(YumeColor(1,0,0,1));
 
 		gYume->pRenderer->GetScene()->AddNode(dirLight);
+		gYume->pRenderer->GetScene()->AddNode(pointLight);
 	}
 
 	void PlaygroundDemo::SSAOOffsetVectors()

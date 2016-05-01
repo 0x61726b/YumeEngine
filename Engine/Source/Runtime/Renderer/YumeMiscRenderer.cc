@@ -46,6 +46,82 @@ using namespace DirectX;
 
 namespace YumeEngine
 {
+	static const float pointLightVertexData[] =
+	{
+		-0.423169f,-1.000000f,0.423169f,
+		-0.423169f,-1.000000f,-0.423169f,
+		0.423169f,-1.000000f,-0.423169f,
+		0.423169f,-1.000000f,0.423169f,
+		0.423169f,1.000000f,-0.423169f,
+		-0.423169f,1.000000f,-0.423169f,
+		-0.423169f,1.000000f,0.423169f,
+		0.423169f,1.000000f,0.423169f,
+		-1.000000f,0.423169f,-0.423169f,
+		-1.000000f,-0.423169f,-0.423169f,
+		-1.000000f,-0.423169f,0.423169f,
+		-1.000000f,0.423169f,0.423169f,
+		0.423169f,0.423169f,-1.000000f,
+		0.423169f,-0.423169f,-1.000000f,
+		-0.423169f,-0.423169f,-1.000000f,
+		-0.423169f,0.423169f,-1.000000f,
+		1.000000f,0.423169f,0.423169f,
+		1.000000f,-0.423169f,0.423169f,
+		1.000000f,-0.423169f,-0.423169f,
+		1.000000f,0.423169f,-0.423169f,
+		0.423169f,-0.423169f,1.000000f,
+		0.423169f,0.423169f,1.000000f,
+		-0.423169f,0.423169f,1.000000f,
+		-0.423169f,-0.423169f,1.000000f
+	};
+
+	static const unsigned short pointLightIndexData[] =
+	{
+		0,1,2,
+		0,2,3,
+		4,5,6,
+		4,6,7,
+		8,9,10,
+		8,10,11,
+		12,13,14,
+		12,14,15,
+		16,17,18,
+		16,18,19,
+		20,21,22,
+		20,22,23,
+		0,10,9,
+		0,9,1,
+		13,2,1,
+		13,1,14,
+		23,0,3,
+		23,3,20,
+		17,3,2,
+		17,2,18,
+		21,7,6,
+		21,6,22,
+		7,16,19,
+		7,19,4,
+		5,8,11,
+		5,11,6,
+		4,12,15,
+		4,15,5,
+		22,11,10,
+		22,10,23,
+		8,15,14,
+		8,14,9,
+		12,19,18,
+		12,18,13,
+		16,21,20,
+		16,20,17,
+		0,23,10,
+		1,9,14,
+		2,13,18,
+		3,17,20,
+		6,11,22,
+		5,15,8,
+		4,19,12,
+		7,21,16
+	};
+
 	struct SimpleVertex
 	{
 		DirectX::XMFLOAT3 V;
@@ -84,14 +160,12 @@ namespace YumeEngine
 
 		defaultPass_ = YumeAPINew RenderPass;
 
-		defaultPass_->Load("RenderCalls/SparseVoxelOctree.xml");
-
+		defaultPass_->Load("RenderCalls/Deferred.xml");
 
 
 		Setup();
 
-		
-
+		giEnabled_ = false;
 
 		if(GetGIEnabled())
 		{
@@ -100,6 +174,9 @@ namespace YumeEngine
 			curr_ = 0;
 			next_ = 1;
 		}
+
+
+
 
 
 		SharedPtr<YumeVertexBuffer> triangleVb(gYume->pRHI->CreateVertexBuffer());
@@ -123,12 +200,28 @@ namespace YumeEngine
 
 	void YumeMiscRenderer::Setup()
 	{
+		SharedPtr<YumeVertexBuffer> plvb(gYume->pRHI->CreateVertexBuffer());
+		plvb->SetShadowed(true);
+		plvb->SetSize(24,MASK_POSITION);
+		plvb->SetData(pointLightVertexData);
+
+		SharedPtr<YumeIndexBuffer> plib(gYume->pRHI->CreateIndexBuffer());
+		plib->SetShadowed(true);
+		plib->SetSize(132,false);
+		plib->SetData(pointLightIndexData);
+
+		pointLightGeometry_ = new YumeGeometry;
+		pointLightGeometry_->SetVertexBuffer(0,plvb);
+		pointLightGeometry_->SetIndexBuffer(plib);
+		pointLightGeometry_->SetDrawRange(TRIANGLE_LIST,0,plib->GetIndexCount());
 	}
 
 	void YumeMiscRenderer::Update(float timeStep)
 	{
 		if(!gYume->pInput->GetMouseButtonDown(MOUSEB_LEFT))
 			camera_->FrameMove(timeStep);
+
+		camera_->Update();
 
 		Light* dirLight = static_cast<Light*>(scene_->GetDirectionalLight());
 		dirLight->UpdateLightParameters();
@@ -689,7 +782,7 @@ namespace YumeEngine
 			}
 		}
 
-		/*pp_->Render();*/
+		RenderLights();
 	}
 
 	void YumeMiscRenderer::RenderReflectiveShadowMap(RenderCall* call)
@@ -895,6 +988,59 @@ namespace YumeEngine
 
 	}
 
+	void YumeMiscRenderer::RenderLights()
+	{
+		SceneNodes::type& renderables = scene_->GetLights();
+
+		for(int i=0; i < renderables.size(); ++i)
+		{
+			SceneNode* node = renderables[i];
+
+			Light* light = static_cast<Light*>(node);
+
+
+			if(light && light->GetType() == LT_POINT)
+			{
+				RHIEvent e("Point Light Pass");
+
+				rhi_->SetDepthTest(CompareMode::CMP_GREATER);
+				rhi_->SetCullMode(CULL_CW);
+				rhi_->SetStencilTest(true,CMP_NOTEQUAL);
+				rhi_->SetDepthWrite(false);
+
+				YumeShaderVariation* deferredLightVs = rhi_->GetShader(VS,"NoShadows/DeferredLightVS","NoShadows/DeferredLightVS","vs_df");
+				YumeShaderVariation* deferredLightPs = rhi_->GetShader(PS,"NoShadows/DeferredLightPS","NoShadows/DeferredLightPS","ps_df");
+
+				rhi_->SetShaders(deferredLightVs,deferredLightPs);
+
+				SetCameraParameters(false);
+
+				rhi_->BindBackbuffer();
+				rhi_->BindDefaultDepthStencil();
+
+
+
+				rhi_->SetShaderParameter("LightColor",light->GetColor());
+				rhi_->SetShaderParameter("LightPosition",light->GetPosition());
+				rhi_->SetShaderParameter("world",light->GetTransformation());
+				rhi_->SetShaderParameter("camera_rot",DirectX::XMLoadFloat4x4(&camera_->GetRotationMatrix()));
+				
+
+				SetGBufferShaderParameters(IntVector2(1600,900),IntRect(0,0,1600,900));
+
+				pointLightGeometry_->Draw(rhi_);
+
+				//Left at; screen pos is wrong Kappa
+
+				//restore
+				rhi_->SetDepthTest(CMP_LESSEQUAL);
+				rhi_->SetStencilTest(true,CMP_ALWAYS);
+				rhi_->SetCullMode(CULL_CCW);
+				rhi_->SetDepthWrite(true);
+			}
+		}
+	}
+
 	void YumeMiscRenderer::RenderScene()
 	{
 		SceneNodes::type& renderables = scene_->GetRenderables();
@@ -905,9 +1051,29 @@ namespace YumeEngine
 
 			YumeMesh* geometry = node->GetGeometry();
 
+			rhi_->SetShaderParameter("world",node->GetTransformation());
+
 			geometry->Render();
 		}
 	}
+
+	void YumeMiscRenderer::SetGBufferShaderParameters(const IntVector2& texSize,const IntRect& viewRect)
+	{
+		float texWidth = (float)texSize.x_;
+		float texHeight = (float)texSize.y_;
+		float widthRange = 0.5f * viewRect.Width() / texWidth;
+		float heightRange = 0.5f * viewRect.Height() / texHeight;
+
+		
+		DirectX::XMFLOAT4 bufferUVOffset(((float)viewRect.left_) / texWidth + widthRange,
+			((float)viewRect.top_) / texHeight + heightRange,widthRange,heightRange);
+		rhi_->SetShaderParameter("GBufferOffsets",bufferUVOffset);
+
+		float invSizeX = 1.0f / texWidth;
+		float invSizeY = 1.0f / texHeight;
+		rhi_->SetShaderParameter(PSP_GBUFFERINVSIZE,Vector2(invSizeX,invSizeY));
+	}
+
 
 	void YumeMiscRenderer::SetGIDebug(bool enabled)
 	{
@@ -928,12 +1094,12 @@ namespace YumeEngine
 
 	void YumeMiscRenderer::SetLPVPos(float x,float y,float z)
 	{
-		lpv_->SetLPVPos(x,y,z);
+
 	}
 
 	void YumeMiscRenderer::SetLightFlux(float f)
 	{
-		lpv_->SetLightFlux(f);
+
 	}
 
 	void YumeMiscRenderer::SetLPVNumberIterations(int num)
@@ -1022,6 +1188,10 @@ namespace YumeEngine
 		gYume->pRHI->SetShaderParameter("vp_inv",vpInv);
 		gYume->pRHI->SetShaderParameter("camera_pos",cameraPos);
 		gYume->pRHI->SetShaderParameter("z_far",zFar);
+
+		XMFLOAT3 n,f;
+		camera_->GetFrustumSize(n,f);
+		rhi_->SetShaderParameter("FrustumSize",f);
 	}
 
 

@@ -85,6 +85,10 @@ namespace YumeEngine
 		void SetRSMSize(unsigned newSize) { rsmSize = newSize;}
 
 		YumeString GetTextureName(const YumeString&,int num);
+
+		void RenderLights();
+
+		void SetGBufferShaderParameters(const IntVector2& texSize,const IntRect& viewRect);
  		//~
 
 		void Render();
@@ -102,14 +106,11 @@ namespace YumeEngine
 
 		YumeLPVCamera* GetCamera() const { return camera_; }
 
-
-		LPVRenderer* GetLPVRenderer() const {return lpv_;}
 		YumePostProcess* GetPP() const {return pp_; }
 
 		const DirectX::XMFLOAT3& GetMinBb() const { return bbMin; }
 		const DirectX::XMFLOAT3& GetMaxBb() const { return bbMax; }
 
-		YumeTexture2D* GetRenderTarget() const { return renderTarget_; }
 		YumeGeometry* GetFsTriangle() const { return fullscreenTriangle_; };
 
 	public:
@@ -125,6 +126,8 @@ namespace YumeEngine
 		void UpdateMeshBb(YumeMesh& mesh);
 	private: //Geometry stuff
 		SharedPtr<YumeGeometry> fullscreenTriangle_;
+		SharedPtr<YumeGeometry> pointLightGeometry_;
+
 		DirectX::XMFLOAT3 bbMin;
 		DirectX::XMFLOAT3 bbMax;
 
@@ -137,8 +140,6 @@ namespace YumeEngine
 	private: //Renderer stuff
 		YumeRHI* rhi_;
 		SharedPtr<YumePostProcess> pp_;
-		SharedPtr<LPVRenderer> lpv_;
-		SharedPtr<YumeTexture2D> renderTarget_;
 
 		SharedPtr<RenderPass> defaultPass_;
 
@@ -146,11 +147,6 @@ namespace YumeEngine
 		float zNear;
 		float zFar;
 		DirectX::XMMATRIX MakeProjection();
-	private:
-		YumeShaderVariation* overlayPs_;
-
-	private: //Textures
-		SharedPtr<YumeTexture2D> dummyTexture_;
 	};
 }
 

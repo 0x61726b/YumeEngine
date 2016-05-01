@@ -28,11 +28,6 @@ if(NOT MSVC)
 	add_executable(${SAMPLE_TARGET} ${HEADER_FILES} ${SOURCE_FILES} ${COMMON_SOURCES})
 endif()
 
-if(YUME_BUILD_OPENGL)
-	target_link_libraries(${SAMPLE_TARGET} GLEW)
-	include_directories(${YUME_3RDPARTY_PATH}/GLEW)
-endif()
-
 target_link_libraries(${SAMPLE_TARGET} ${YUME})
 set_target_properties(${SAMPLE_TARGET} PROPERTIES FOLDER "Samples")
 

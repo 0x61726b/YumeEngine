@@ -41,6 +41,7 @@ namespace YumeEngine
 		void SetPosition(const DirectX::XMVECTOR&);
 		void SetRotation(const DirectX::XMVECTOR&);
 		void SetDirection(const DirectX::XMVECTOR&);
+		void SetScale(float x,float y,float z);
 
 		void SetName(const YumeString& name) { name_ = name; }
 
@@ -49,6 +50,8 @@ namespace YumeEngine
 		const DirectX::XMFLOAT4& GetPosition() const { return pos_; }
 		const DirectX::XMFLOAT4& GetRotation() const { return rot_; }
 		const DirectX::XMFLOAT4& GetDirection() const { return dir_; }
+
+		DirectX::XMMATRIX GetTransformation();
 
 		GeometryType GetType() const { return type_; }
 
@@ -62,6 +65,7 @@ namespace YumeEngine
 		DirectX::XMFLOAT4 rot_;
 		DirectX::XMFLOAT4 dir_;
 
+		DirectX::XMFLOAT4X4 Scale;
 		DirectX::XMFLOAT4X4 World;
 
 		YumeString name_;

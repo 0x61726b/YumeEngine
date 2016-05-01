@@ -30,7 +30,9 @@ namespace YumeEngine
 {
 	enum LightType
 	{
-		LT_DIRECTIONAL = 0
+		LT_DIRECTIONAL = 0,
+		LT_POINT,
+		LT_AREA
 	};
 
 	class YumeAPIExport Light : public SceneNode

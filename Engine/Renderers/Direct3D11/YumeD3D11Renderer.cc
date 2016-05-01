@@ -2631,6 +2631,7 @@ namespace YumeEngine
 
 		PreDraw();
 
+
 		unsigned primitiveCount;
 		D3D_PRIMITIVE_TOPOLOGY d3dPrimitiveType;
 

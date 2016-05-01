@@ -28,8 +28,24 @@ namespace YumeEngine
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Summary: Default constructor
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-	void YumeLPVCamera::Update(float zFar)
+	void YumeLPVCamera::Update()
 	{
+		DirectX::XMMATRIX rot = DirectX::XMMatrixRotationRollPitchYaw(m_fCameraPitchAngle,m_fCameraYawAngle,0);
+		DirectX::XMStoreFloat4x4(&Rot,rot);
+	}
 
+	void YumeLPVCamera::GetFrustumSize(DirectX::XMFLOAT3& n,DirectX::XMFLOAT3& f)
+	{
+		n.z = GetNearClip();
+		f.z = GetFarClip();
+
+		
+		float halfViewSize = tanf(m_fFOV * M_DEGTORAD * 0.5f);
+		n.y = n.z * halfViewSize;
+		n.x = n.y * m_fAspect;
+		f.y = f.z * halfViewSize;
+		f.x = f.y * m_fAspect;
+
+		
 	}
 }

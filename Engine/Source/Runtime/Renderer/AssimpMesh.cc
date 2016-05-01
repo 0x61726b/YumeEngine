@@ -226,6 +226,7 @@ namespace YumeEngine
 
 	YumeMesh::~YumeMesh()
 	{
+		
 	}
 	void YumeMesh::push_back(vertex v)
 	{
@@ -383,10 +384,6 @@ namespace YumeEngine
 	void YumeMesh::Render()
 	{
 		mesh_data* prev = nullptr;
-
-		DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&world());
-
-		gYume->pRHI->SetShaderParameter("world",w);
 
 		for(int m=0; m < meshes_.size(); ++m)
 		{

@@ -37,7 +37,7 @@ namespace YumeEngine
 		nodes_.clear();
 	}
 
-	SceneNodes::type Scene::GetRenderables() 
+	SceneNodes::type Scene::GetRenderables()
 	{
 		renderables_.clear();
 
@@ -47,6 +47,18 @@ namespace YumeEngine
 				renderables_.push_back(nodes_[i]);
 		}
 		return renderables_;
+	}
+
+	SceneNodes::type Scene::GetLights()
+	{
+		lights_.clear();
+
+		for(int i=0; i < nodes_.size(); ++i)
+		{
+			if(nodes_[i]->GetType() == LT_POINT)
+				lights_.push_back(nodes_[i]);
+		}
+		return lights_;
 	}
 
 	SceneNode* Scene::GetDirectionalLight()
@@ -68,8 +80,5 @@ namespace YumeEngine
 	void Scene::AddNode(SceneNode* node)
 	{
 		nodes_.push_back(node);
-
-		if(node->GetType() == GT_STATIC)
-			gYume->pRenderer->UpdateMeshBb(*node->GetGeometry());
 	}
 }
