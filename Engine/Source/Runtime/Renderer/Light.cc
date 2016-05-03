@@ -34,7 +34,8 @@ namespace YumeEngine
 {
 	Light::Light():
 		SceneNode(GT_LIGHT),
-		color_(YumeColor(1,1,1,1))
+		color_(YumeColor(1,1,1,1)),
+		range_(2.0f)
 	{
 	}
 

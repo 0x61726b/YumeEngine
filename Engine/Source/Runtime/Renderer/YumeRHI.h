@@ -124,6 +124,8 @@ namespace YumeEngine
 
 
 		void SetNoDepthStencil(bool b) { noDs_ = b;}
+		void SetDepthEnable(bool b) { depthEnable_ = b;}
+		void SetBindReadOnlyDepthStencil(bool b) { bindReadOnlyDepthStencil_ = b;}
 		void SetNoBlendState(bool b) { noBlendState_ = b; blendStateDirty_ = true; blendStateHash_ = M_MAX_UNSIGNED;}
 		
 		//
@@ -309,6 +311,7 @@ namespace YumeEngine
 		bool									GetDepthWrite() const { return depthWrite_; }
 		FillMode								GetFillMode() const { return fillMode_; }
 		bool									GetStencilTest() const { return stencilTest_; }
+		bool									GetDepthState() const { return depthEnable_; }
 		bool									GetScissorTest() const { return scissorTest_; }
 		CompareMode								GetStencilTestMode() const { return stencilTestMode_; }
 		StencilOp								GetStencilPass() const { return stencilPass_; }
@@ -383,6 +386,7 @@ namespace YumeEngine
 		float slopeScaledDepthBias_;
 		CompareMode depthTestMode_;
 		bool depthWrite_;
+		bool depthEnable_;
 		FillMode fillMode_;
 		IntRect scissorRect_;
 		bool scissorTest_;
@@ -430,6 +434,7 @@ namespace YumeEngine
 		const Vector2 pixelUVOffset;
 
 		bool noDs_;
+		bool bindReadOnlyDepthStencil_;
 		bool noBlendState_;
 	};
 

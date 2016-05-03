@@ -22,6 +22,13 @@
 
 #include "deferred.hlsl"
 
+cbuffer LightParameters : register(b3)
+{
+  float4 LightColor;
+  float4 LightPosition;
+  float4 LightDirection;
+}
+
 
 float4 ps_deferred(in PS_INPUT inp) : SV_Target
 {

@@ -45,7 +45,5 @@ Summary: Default constructor
 		n.x = n.y * m_fAspect;
 		f.y = f.z * halfViewSize;
 		f.x = f.y * m_fAspect;
-
-		
 	}
 }

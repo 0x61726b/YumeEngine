@@ -43,15 +43,19 @@ namespace YumeEngine
 
 		void SetType(LightType type) {type_ = type;}
 		void SetColor(const YumeColor& color) { color_ = color; }
+		void SetRange(float range) { range_ = range; }
 
 		void UpdateLightParameters();
 
 
 		LightType GetType() const { return type_; }
 		const YumeColor& GetColor() const { return color_; }
+		float GetRange() const { return range_; }
 	private:
 		LightType type_;
 		YumeColor color_;
+
+		float range_;
 	};
 }
 

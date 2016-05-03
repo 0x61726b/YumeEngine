@@ -485,8 +485,9 @@ namespace YumeEngine
 
 		if(textureDesc.Format == DXGI_FORMAT_R32_TYPELESS)
 			resourceViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
-		else
+		else if(resourceViewDesc.Format != DXGI_FORMAT_R24_UNORM_X8_TYPELESS)
 			resourceViewDesc.Format = textureDesc.Format;
+		
 
 		if(textureDesc.ArraySize > 1)
 		{
@@ -566,7 +567,7 @@ namespace YumeEngine
 			((ID3D11RenderTargetView*)renderSurface_->renderTargetView_)->SetPrivateData(WKPDID_D3DDebugObjectName,GetName().length(),GetName().c_str());
 
 			// Create also a read-only version of the view for simultaneous depth testing and sampling in shader
-			depthStencilViewDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH;
+			depthStencilViewDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH | D3D11_DSV_READ_ONLY_STENCIL;
 			hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Resource*)object_,&depthStencilViewDesc,
 				(ID3D11DepthStencilView**)&renderSurface_->readOnlyView_);
 			if(FAILED(hr))

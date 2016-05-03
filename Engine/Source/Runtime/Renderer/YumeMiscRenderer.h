@@ -128,6 +128,7 @@ namespace YumeEngine
 		SharedPtr<YumeGeometry> fullscreenTriangle_;
 		SharedPtr<YumeGeometry> pointLightGeometry_;
 
+		SharedPtr<YumeTexture2D> pointLightAttTexture_;
 		DirectX::XMFLOAT3 bbMin;
 		DirectX::XMFLOAT3 bbMax;
 
@@ -142,6 +143,8 @@ namespace YumeEngine
 		SharedPtr<YumePostProcess> pp_;
 
 		SharedPtr<RenderPass> defaultPass_;
+
+		SharedPtr<YumeTexture2D> lightMap;
 
 	public:
 		float zNear;

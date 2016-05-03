@@ -43,7 +43,8 @@ cbuffer onetime_ps                  : register(b6)
 Texture2D rt_colors					: register(t2);
 Texture2D rt_specular				: register(t3);
 Texture2D rt_normals				: register(t4);
-Texture2D rt_lineardepth			: register(t5);
+Texture2D rt_position			: register(t5);
+Texture2D rt_lineardepth			: register(t7);
 
 
 float shadow_attenuation(in float3 pos, in float3 Ll, in Texture2D linear_shadowmap, in float min_s = 0.0, in float min_o = 0.0)

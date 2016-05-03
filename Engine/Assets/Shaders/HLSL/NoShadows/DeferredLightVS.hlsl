@@ -26,39 +26,17 @@ cbuffer LightParameters : register(b6)
   float4 LightPosition;
 }
 
-cbuffer ObjectVS
+cbuffer ObjectVS : register(b1)
 {
-  float4x4 world;
+  float4x4 volume_transform;
 }
 
-cbuffer camera_vs
+cbuffer camera_vs : register(b0)
 {
   float4x4 vp;
   float4x4 vp_inv;
-  float4x4 camera_rot;
   float3 camera_pos;
   float pad;
-  float4 GBufferOffsets;
-  float3 FrustumSize;
-}
-
-float4 GetScreenPos(float4 clipPos)
-{
-    return float4(
-        clipPos.x * GBufferOffsets.z + GBufferOffsets.x * clipPos.w,
-        -clipPos.y * GBufferOffsets.w + GBufferOffsets.y * clipPos.w,
-        0.0,
-        clipPos.w);
-}
-
-float4 GetFarRay(float4 clipPos)
-{
-    float4 viewRay = float4(
-        clipPos.x / clipPos.w * FrustumSize.x,
-        clipPos.y / clipPos.w * FrustumSize.y,
-        FrustumSize.z,1.0f);
-
-    return mul(viewRay, camera_rot);
 }
 
 
@@ -70,15 +48,21 @@ struct PS_INPUT_DF
   float4 far_ray : TEXCOORD1;
 };
 
-
-PS_INPUT_DF vs_df(in float3 position : POSITION)
+struct PS_INPUT_POS
 {
-  PS_INPUT_DF inp;
+  float4 Position : SV_POSITION;
+  float3 ViewRay  : VIEWRAY;
+};
 
-  float4 pos_world = mul(world, float4(position, 1.0));
-  inp.position = mul(pos_world, vp);
-  inp.screen_pos = GetScreenPos(inp.position);
-  inp.far_ray = GetFarRay(inp.position);
 
-  return inp;
+PS_INPUT_POS vs_df(in float3 position : POSITION)
+{
+  PS_INPUT_POS output;
+
+  float4 worldPos = mul(volume_transform,float4(position,1.0f));
+  output.Position = mul(vp,worldPos);
+
+  float3 pos_view = mul(vp_inv,float4(position,1.0f)).xyz;
+  output.ViewRay = pos_view;
+  return output;
 }

@@ -302,6 +302,8 @@ namespace YumeEngine
 
 		noDs_ = false;
 		noBlendState_ = false;
+		bindReadOnlyDepthStencil_ = false;
+		depthEnable_ = true;
 
 		indexBuffer_ = 0;
 		vertexDeclarationHash_ = 0;
@@ -395,7 +397,8 @@ namespace YumeEngine
 	{
 		IntVector2 rtSize = GetRenderTargetDimensions();
 
-
+		bool oldColorWrite = colorWrite_;
+		bool oldDepthWrite = depthWrite_;
 
 		SetDepthWrite(true);
 		PreDraw();
@@ -418,6 +421,9 @@ namespace YumeEngine
 				depthClearFlags |= D3D11_CLEAR_STENCIL;
 			impl_->deviceContext_->ClearDepthStencilView(impl_->depthStencilView_,depthClearFlags,depth,(UINT8)stencil);
 		}
+
+		SetColorWrite(oldColorWrite);
+		SetDepthWrite(oldDepthWrite);
 	}
 
 	void YumeD3D11Renderer::ClearRenderTarget(unsigned index,unsigned flags,const YumeColor& color,float depth,unsigned stencil)
@@ -2360,6 +2366,9 @@ namespace YumeEngine
 			else
 				impl_->depthStencilView_ = 0;
 
+			if(!depthWrite_ && depthStencil_ && depthStencil_->GetReadOnlyView() && bindReadOnlyDepthStencil_)
+				impl_->depthStencilView_ = (ID3D11DepthStencilView*)depthStencil_->GetReadOnlyView();
+
 			for(unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
 				impl_->renderTargetViews_[i] =
 				renderTargets_[i] ? (ID3D11RenderTargetView*)renderTargets_[i]->GetRenderTargetView() : 0;
@@ -2430,7 +2439,7 @@ namespace YumeEngine
 						D3D11_BLEND_DESC stateDesc;
 						memset(&stateDesc,0,sizeof stateDesc);
 						stateDesc.AlphaToCoverageEnable = false;
-						stateDesc.IndependentBlendEnable = true;
+						stateDesc.IndependentBlendEnable = false;
 
 						for(int i=0; i < 6; ++i)
 						{
@@ -2466,7 +2475,7 @@ namespace YumeEngine
 		if(depthStateDirty_)
 		{
 			unsigned newDepthStateHash =
-				(depthWrite_ ? 1 : 0) | (stencilTest_ ? 2 : 0) | (depthTestMode_ << 2) | ((stencilCompareMask_ & 0xff) << 5) |
+				(depthWrite_ ? 1 : 0) | (depthEnable_ ? 2 : 0 ) | (stencilTest_ ? 4 : 0) | (depthTestMode_ << 4) | ((stencilCompareMask_ & 0xff) << 5) |
 				((stencilWriteMask_ & 0xff) << 13) | (stencilTestMode_ << 21) |
 				((stencilFail_ + stencilZFail_ * 5 + stencilPass_ * 25) << 24);
 			if(newDepthStateHash != depthStateHash_ || stencilRefDirty_)
@@ -2476,7 +2485,7 @@ namespace YumeEngine
 				{
 					D3D11_DEPTH_STENCIL_DESC stateDesc;
 					memset(&stateDesc,0,sizeof stateDesc);
-					stateDesc.DepthEnable = TRUE;
+					stateDesc.DepthEnable = depthEnable_ ? TRUE : FALSE;
 					stateDesc.DepthWriteMask = depthWrite_ ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
 					stateDesc.DepthFunc = d3dCmpFunc[depthTestMode_];
 					stateDesc.StencilEnable = stencilTest_ ? TRUE : FALSE;
@@ -2530,11 +2539,11 @@ namespace YumeEngine
 					stateDesc.CullMode = d3dCullMode[cullMode_];
 					stateDesc.FrontCounterClockwise = FALSE;
 					stateDesc.DepthBias = scaledDepthBias;
-					stateDesc.DepthBiasClamp = 0;
+					stateDesc.DepthBiasClamp = M_INFINITY;
 					stateDesc.SlopeScaledDepthBias = 0;
 					stateDesc.DepthClipEnable = TRUE;
 					stateDesc.ScissorEnable = scissorTest_ ? TRUE : FALSE;
-					stateDesc.MultisampleEnable = FALSE;
+					stateDesc.MultisampleEnable = TRUE;
 					stateDesc.AntialiasedLineEnable = FALSE;
 
 					ID3D11RasterizerState* newRasterizerState = 0;

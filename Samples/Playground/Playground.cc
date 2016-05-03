@@ -36,6 +36,9 @@
 #include "Renderer/Scene.h"
 #include "Renderer/Light.h"
 
+
+
+
 YUME_DEFINE_ENTRY_POINT(YumeEngine::PlaygroundDemo);
 
 #define TURNOFF 1
@@ -92,7 +95,7 @@ namespace YumeEngine
 
 
 		gYume->pRenderer->GetScene()->AddNode(sm_);
-		
+
 
 		gYume->pRenderer->UpdateMeshBb(*sm_->GetGeometry());
 
@@ -100,6 +103,10 @@ namespace YumeEngine
 		DirectX::XMFLOAT3 max = gYume->pRenderer->GetMaxBb();
 
 		DirectX::XMFLOAT3 delta = DirectX::XMFLOAT3(max.x - min.x,max.y - min.y,max.z - min.z);
+
+
+		float x = 0;
+		float y = 5;
 
 		Light* dirLight = new Light;
 		dirLight->SetName("DirLight");
@@ -110,13 +117,21 @@ namespace YumeEngine
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
 		dirLight->SetColor(YumeColor(1,1,1,1));
 
+		/*gYume->pRenderer->GetScene()->AddNode(pointLight);*/
+
+		gYume->pRenderer->GetScene()->AddNode(dirLight);
+
+	}
+
+	void PlaygroundDemo::CreateLight(DirectX::XMFLOAT3 pos,YumeColor color,float range)
+	{
 		Light* pointLight = new Light;
 		pointLight->SetName("PointLight");
 		pointLight->SetType(LT_POINT);
-		pointLight->SetPosition(DirectX::XMVectorSet(0,10,0,0));
-		pointLight->SetColor(YumeColor(1,0,0,1));
+		pointLight->SetPosition(DirectX::XMVectorSet(pos.x,pos.y,pos.z,0));
+		pointLight->SetColor(color);
+		pointLight->SetRange(range);
 
-		gYume->pRenderer->GetScene()->AddNode(dirLight);
 		gYume->pRenderer->GetScene()->AddNode(pointLight);
 	}
 

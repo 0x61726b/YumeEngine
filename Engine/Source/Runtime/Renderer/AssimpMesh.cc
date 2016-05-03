@@ -226,7 +226,7 @@ namespace YumeEngine
 
 	YumeMesh::~YumeMesh()
 	{
-		
+
 	}
 	void YumeMesh::push_back(vertex v)
 	{
@@ -410,10 +410,12 @@ namespace YumeEngine
 				const bool has_specular_tex = data->specular_tex != nullptr;
 				const bool has_alpha_tex = data->alpha_tex != nullptr;
 
+				Texture2DPtr random = gYume->pResourceManager->PrepareResource<YumeTexture2D>("Textures/test/test.jpg");
+
 				gYume->pRHI->SetShaderParameter("diffuse_color",data->diffuse_color);
 				gYume->pRHI->SetShaderParameter("specular_color",data->specular_color);
 				gYume->pRHI->SetShaderParameter("emissive_color",data->emissive_color);
-				gYume->pRHI->SetShaderParameter("has_diffuse_tex",has_diffuse_tex);
+				gYume->pRHI->SetShaderParameter("has_diffuse_tex",true);
 				gYume->pRHI->SetShaderParameter("has_normal_tex",has_normal_tex);
 				gYume->pRHI->SetShaderParameter("has_specular_tex",has_specular_tex);
 				gYume->pRHI->SetShaderParameter("has_alpha_tex",has_alpha_tex);
@@ -422,11 +424,12 @@ namespace YumeEngine
 				gYume->pRHI->SetShaderParameter("refractive_index",data->refractive_index);
 
 
-				if(has_diffuse_tex)
-				{
-					TexturePtr texture[] ={data->diffuse_tex.Get()};
-					gYume->pRHI->PSBindSRV(0,1,texture);
-				}
+				/*if(has_diffuse_tex)
+				{*/
+				/*TexturePtr texture[] ={data->diffuse_tex.Get()};*/
+				TexturePtr texture[] ={random};
+				gYume->pRHI->PSBindSRV(0,1,texture);
+				/*}*/
 
 				if(has_normal_tex)
 				{

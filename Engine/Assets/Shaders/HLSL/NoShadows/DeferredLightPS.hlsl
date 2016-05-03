@@ -21,22 +21,106 @@
 //----------------------------------------------------------------------------
 #include "deferred.hlsl"
 
-cbuffer LightParameters : register(b6)
+Texture2D PointLightAtt : register(t6);
+
+cbuffer LightParameters : register(b3)
 {
   float4 LightColor;
   float4 LightPosition;
+  float4 LightDirection;
 }
 
-struct PS_INPUT_DF
+#ifdef POINTLIGHT_STANDARD
+struct PS_INPUT_POS
 {
-  float4 position : SV_POSITION;
-  float4 screen_pos : TEXCOORD0;
-  float4 far_ray : TEXCOORD1;
+  float4 Position : SV_POSITION;
+  float3 ViewRay  : VIEWRAY;
 };
-
-float4 ps_df(in PS_INPUT_DF inp) : SV_Target
+#elif POINTLIGHT_BRDF
+struct PS_INPUT_POS
 {
-  gbuffer gb = unpack_gbuffer(inp.screen_pos);
+  float4 Position : SV_POSITION;
+  float3 ViewRay  : VIEWRAY;
+};
+#elif DIRECTIONALLIGHT
+struct PS_INPUT_POS
+{
+  float4 Position : SV_POSITION;
+  float2 TexCoord : TEXCOORD0;
+  float3 ViewRay  : VIEWRAY;
+};
+#endif
 
-  return gb.diffuse_albedo;
+#include "Lighting.hlsl"
+
+// Toksvig AA for specular highlights
+float toksvig_ft(in float3 Na, in float roughness)
+{
+    float a = roughness*roughness;
+    float s = 2.0f / (a * a) - 2.0f;
+
+    float len = length(Na);
+    return len/lerp(s, 1, len);
+}
+
+float4 ps_df(in PS_INPUT_POS inp) : SV_Target
+{
+  float4 screenPos = inp.Position;
+	float3 viewRay = inp.ViewRay;
+
+	int3 texCoord = int3(screenPos.xy, 0);
+
+	float3 diffuseAlbedo = rt_colors.Load(texCoord).xyz;
+	float3 normal = rt_normals.Load(texCoord).xyz;
+	float4 spec = rt_specular.Load(texCoord);
+	float3 position = rt_position.Load(texCoord).xyz;
+
+	float3 Na = normal.xyz * 2.0 - 1.0;
+	float3 N = normalize(Na);
+
+	normal = N;
+
+	float3 specularAlbedo = spec.xyz;
+  float specPower = 16;
+
+  //Lighting
+  float3 L = 0;
+  float att = 1.0f;
+  float lightRange = LightDirection.w;
+
+#ifdef POINTLIGHT
+  L = LightPosition.xyz - position;
+
+  float dist = length( L );
+
+  att = max(0, 1.0f - ( dist / lightRange ) );
+
+  L /= dist;
+#elif DIRECTIONALLIGHT
+  L = -LightDirection.xyz;
+#endif
+
+#ifdef DIRECTIONALLIGHT
+  const float DiffuseNormalizationFactor = 1.0f / 3.14159265f;
+	float nDotL = saturate( dot( normal, L ) );
+	float3 diffuse = nDotL * LightColor.xyz * diffuseAlbedo * DiffuseNormalizationFactor;
+
+  float3 V = camera_pos - position;
+	float3 H = normalize( L + V );
+	float specNormalizationFactor = ( ( specPower + 8.0f ) / ( 8.0f * 3.14159265f ) );
+	float3 specular = pow( saturate( dot( normal, H ) ), specPower ) * specNormalizationFactor * LightColor.xyz * specularAlbedo.xyz * nDotL;
+
+  float t = toksvig_ft(Na,spec.w);
+
+  return float4(( diffuse + specular*t ) * att,1.0f);
+  #elif POINTLIGHT_BRDF
+  float3 light = BRDFPointLight(diffuseAlbedo,normal,position,LightColor.xyz,LightPosition.xyz,LightDirection.w,32);
+
+  return float4(light,1.0f);
+  #elif POINTLIGHT_STANDARD
+  float3 lightDir;
+  float diff = GetPointLightDiffuse(normal,position,lightDir);
+  float gspec = GetSpecular(normal,-position,lightDir,255);
+  return diff * float4(LightColor.xyz * (diffuseAlbedo.rgb + gspec),1.0f);
+  #endif
 }

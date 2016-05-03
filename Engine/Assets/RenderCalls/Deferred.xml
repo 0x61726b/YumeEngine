@@ -2,26 +2,30 @@
   <RenderTargets>
     <Rt Name="SCENE_COLORS" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_NORMALS" Format="rgba10u2" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-    <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_POSITION" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+
+    <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+
+    <Ds Name="LightDSV" Format="d24s8" Mips="1" Width="1600" Height="900" ArraySize="1"/>
   </RenderTargets>
   <Samplers>
     <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />
     <Sampler Name="ShadowFilter" Filter="Trilinear" Comprasion="Never" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
   </Samplers>
   <RenderCalls>
-    <Scene PassName="GBuffer" Identifier="Main" Vs="LPV/Mesh" Ps="LPV/Mesh" VsEntry="MeshVs" PsEntry="MeshPs" Flags="NOBLEND DEFERRED">
+    <Scene PassName="GBuffer" Identifier="Main" Vs="NoShadows/DeferredSolid" Ps="NoShadows/DeferredSolid" VsEntry="MeshVs" PsEntry="MeshPs" Flags="DEFERRED">
       <Samplers>
         <Ps Name="Standard" Register="0" />
       </Samplers>
       <Outputs>
         <Rt Index="0" Name="SCENE_COLORS" />
         <Rt Index="1" Name="SCENE_NORMALS"/>
-        <Rt Index="2" Name="SCENE_LINEARDEPTH"/>
-        <Rt Index="3" Name="SCENE_SPECULAR"/>
+        <Rt Index="2" Name="SCENE_SPECULAR"/>
+        <Rt Index="3" Name="SCENE_POSITION"/>
       </Outputs>
     </Scene>
-    <Triangle PassName="Deferred" Identifier="Main" Ps="NoShadows/DeferredNoShadows" PsEntry="ps_deferred" Flags="NODS" Output="Backbuffer">
+    <!-- <Triangle PassName="Deferred" Identifier="Main" Ps="NoShadows/DeferredNoShadows" PsEntry="ps_deferred" Flags="NODS" Output="PostProcessingTarget">
       <Samplers>
         <Ps Name="Standard" Register="0" />
         <Ps Name="ShadowFilter" Register="1" />
@@ -44,6 +48,6 @@
         <Param Name="world_to_lpv" />
         <Param Name="main_light_pos" Value="0 0 0 0" />
       </Parameters>
-    </Triangle>
+    </Triangle> -->
   </RenderCalls>
 </Yume>

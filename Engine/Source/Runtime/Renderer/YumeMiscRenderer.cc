@@ -214,6 +214,11 @@ namespace YumeEngine
 		pointLightGeometry_->SetVertexBuffer(0,plvb);
 		pointLightGeometry_->SetIndexBuffer(plib);
 		pointLightGeometry_->SetDrawRange(TRIANGLE_LIST,0,plib->GetIndexCount());
+
+		pointLightAttTexture_ = gYume->pResourceManager->PrepareResource<YumeTexture2D>("Textures/Ramp.png");
+
+		lightMap = rhi_->CreateTexture2D();
+		lightMap->SetSize(1600,900,rhi_->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET);
 	}
 
 	void YumeMiscRenderer::Update(float timeStep)
@@ -330,7 +335,7 @@ namespace YumeEngine
 					if(call->GetDepthStencil())
 					{
 						gYume->pRHI->SetDepthStencil(call->GetDepthStencil());
-						rhi_->ClearDepthStencil(CLEAR_DEPTH,1.0f,0);
+						rhi_->ClearDepthStencil(CLEAR_DEPTH | CLEAR_STENCIL,1.0f,0);
 					}
 
 
@@ -385,22 +390,33 @@ namespace YumeEngine
 							TexturePtr lineardepth = call->GetOutput(2);
 							TexturePtr spec = call->GetOutput(3);
 
+							TexturePtr stencil = defaultPass_->GetTextureByName("LightDSV");
+
 							rhi_->SetRenderTarget(0,colors);
 							rhi_->SetRenderTarget(1,normals);
 							rhi_->SetRenderTarget(2,lineardepth);
 							rhi_->SetRenderTarget(3,spec);
 
-							rhi_->BindDefaultDepthStencil();
+							if(stencil)
+							{
+								rhi_->SetDepthStencil((Texture2DPtr)stencil);
+							}
+							rhi_->SetNoDepthStencil(false);
+							rhi_->SetDepthWrite(true);
 
 							rhi_->SetViewport(IntRect(0,0,rhi_->GetWidth(),rhi_->GetHeight()));
 
-							rhi_->ClearDepthStencil(CLEAR_DEPTH,1.0f,0.0f);
-							rhi_->ClearRenderTarget(0,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,1));
-							rhi_->ClearRenderTarget(1,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,1));
-							rhi_->ClearRenderTarget(2,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,1));
-							rhi_->ClearRenderTarget(3,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,1));
+							rhi_->ClearDepthStencil(CLEAR_DEPTH | CLEAR_STENCIL,1.0f,0.0f);
+							rhi_->ClearRenderTarget(0,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,0));
+							rhi_->ClearRenderTarget(1,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,0));
+							rhi_->ClearRenderTarget(2,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,0));
+							rhi_->ClearRenderTarget(3,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,0));
+
 
 							rhi_->SetBlendMode(BLEND_REPLACE);
+							rhi_->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,OP_KEEP,1);
+							rhi_->SetDepthTest(CMP_LESS);
+
 
 							rhi_->SetShaders(call->GetVs(),call->GetPs());
 
@@ -711,6 +727,7 @@ namespace YumeEngine
 
 					rhi_->SetShaders(fsTriangle,call->GetPs());
 
+
 					YumeVector<TexturePtr>::type inputs;
 
 					unsigned startIndex = M_MAX_UNSIGNED;
@@ -731,7 +748,8 @@ namespace YumeEngine
 					//Variants
 					ApplyShaderParameters(call);
 
-
+					rhi_->BindDefaultDepthStencil();
+					rhi_->SetNoDepthStencil(false);
 
 					Light* light = static_cast<Light*>(scene_->GetDirectionalLight());
 
@@ -755,7 +773,7 @@ namespace YumeEngine
 					if(!output)
 					{
 						rhi_->BindBackbuffer();
-						rhi_->Clear(CLEAR_COLOR);
+						rhi_->Clear(CLEAR_COLOR,YumeColor(0,0,0,1));
 					}
 					else
 					{
@@ -763,6 +781,7 @@ namespace YumeEngine
 						rhi_->SetRenderTarget(0,output);
 						/*rhi_->ClearRenderTarget(0,CLEAR_COLOR);*/
 					}
+
 
 
 					gYume->pRHI->SetShaderParameter("scene_dim_max",XMFLOAT4(GetMaxBb().x,GetMaxBb().y,GetMaxBb().z,1.0f));
@@ -992,53 +1011,107 @@ namespace YumeEngine
 	{
 		SceneNodes::type& renderables = scene_->GetLights();
 
+		TexturePtr stencil = defaultPass_->GetTextureByName("LightDSV");
+		rhi_->SetNoDepthStencil(false);
+		rhi_->SetDepthStencil((Texture2DPtr)stencil);
+		rhi_->SetRenderTarget(0,(YumeTexture*)0);
+		rhi_->SetDepthWrite(false);
+		rhi_->SetBindReadOnlyDepthStencil(true);
+		rhi_->Clear(CLEAR_COLOR);
+
+		bool oldDepthState = rhi_->GetDepthState();
+
 		for(int i=0; i < renderables.size(); ++i)
 		{
 			SceneNode* node = renderables[i];
 
 			Light* light = static_cast<Light*>(node);
 
+			RHIEvent e("Light Pass");
 
-			if(light && light->GetType() == LT_POINT)
+			LightType ltype = light->GetType();
+
+			BlendMode blend = rhi_->GetBlendMode();
+
+
+			if(ltype == LT_POINT)
 			{
-				RHIEvent e("Point Light Pass");
-
-				rhi_->SetDepthTest(CompareMode::CMP_GREATER);
+				rhi_->SetDepthTest(CompareMode::CMP_GREATEREQUAL);
 				rhi_->SetCullMode(CULL_CW);
-				rhi_->SetStencilTest(true,CMP_NOTEQUAL);
+				rhi_->SetStencilTest(true,CMP_EQUAL,OP_KEEP,OP_KEEP,OP_KEEP,OP_KEEP,1,M_MAX_UNSIGNED,0);
 				rhi_->SetDepthWrite(false);
+				rhi_->SetBlendMode(BLEND_ADD);
+				
+			}
 
+			if(ltype == LT_DIRECTIONAL)
+			{
+				rhi_->SetDepthEnable(false);
+				rhi_->SetDepthTest(CMP_LESS);
+				rhi_->SetStencilTest(true,CMP_EQUAL,OP_KEEP,OP_KEEP,OP_KEEP,OP_KEEP,1,M_MAX_UNSIGNED,0);
+				rhi_->SetBlendMode(BLEND_ADD);
+			}
+
+			if(light->GetType() == LT_POINT)
+			{
 				YumeShaderVariation* deferredLightVs = rhi_->GetShader(VS,"NoShadows/DeferredLightVS","NoShadows/DeferredLightVS","vs_df");
-				YumeShaderVariation* deferredLightPs = rhi_->GetShader(PS,"NoShadows/DeferredLightPS","NoShadows/DeferredLightPS","ps_df");
+				YumeShaderVariation* deferredLightPs = rhi_->GetShader(PS,"NoShadows/DeferredLightPS","POINTLIGHT_BRDF","ps_df");
 
 				rhi_->SetShaders(deferredLightVs,deferredLightPs);
-
-				SetCameraParameters(false);
-
-				rhi_->BindBackbuffer();
-				rhi_->BindDefaultDepthStencil();
-
-
-
-				rhi_->SetShaderParameter("LightColor",light->GetColor());
-				rhi_->SetShaderParameter("LightPosition",light->GetPosition());
-				rhi_->SetShaderParameter("world",light->GetTransformation());
-				rhi_->SetShaderParameter("camera_rot",DirectX::XMLoadFloat4x4(&camera_->GetRotationMatrix()));
-				
-
-				SetGBufferShaderParameters(IntVector2(1600,900),IntRect(0,0,1600,900));
-
-				pointLightGeometry_->Draw(rhi_);
-
-				//Left at; screen pos is wrong Kappa
-
-				//restore
-				rhi_->SetDepthTest(CMP_LESSEQUAL);
-				rhi_->SetStencilTest(true,CMP_ALWAYS);
-				rhi_->SetCullMode(CULL_CCW);
-				rhi_->SetDepthWrite(true);
 			}
+			else
+			{
+				YumeShaderVariation* deferredLightVs = rhi_->GetShader(VS,"NoShadows/FsTriangle","","fs_triangle_vs");
+				YumeShaderVariation* deferredLightPs = rhi_->GetShader(PS,"NoShadows/DeferredLightPS","DIRECTIONALLIGHT","ps_df");
+
+				rhi_->SetShaders(deferredLightVs,deferredLightPs);
+			}
+
+			XMMATRIX volumeTransform = DirectX::XMMatrixTranslationFromVector(DirectX::XMVectorSet(light->GetPosition().x,light->GetPosition().y,light->GetPosition().z,1.0f));
+			volumeTransform = DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(light->GetRange(),light->GetRange(),light->GetRange()),volumeTransform);
+
+			SetCameraParameters(false);
+
+
+			rhi_->SetShaderParameter("LightColor",light->GetColor());
+			rhi_->SetShaderParameter("LightPosition",light->GetPosition());
+			rhi_->SetShaderParameter("LightDirection",DirectX::XMFLOAT4(-0.577350300f,-0.577350300f,-0.577350300f,light->GetRange()));
+			rhi_->SetShaderParameter("volume_transform",volumeTransform);
+			rhi_->SetShaderParameter("camera_rot",DirectX::XMLoadFloat4x4(&camera_->GetRotationMatrix()));
+
+
+			TexturePtr colors = defaultPass_->GetTextureByName("SCENE_COLORS");
+			TexturePtr normals = defaultPass_->GetTextureByName("SCENE_NORMALS");
+			TexturePtr position = defaultPass_->GetTextureByName("SCENE_POSITION");
+			TexturePtr spec = defaultPass_->GetTextureByName("SCENE_SPECULAR");
+
+
+			TexturePtr inputs[] ={colors,spec,normals,position,pointLightAttTexture_};
+			rhi_->PSBindSRV(2,5,inputs);
+
+			SetGBufferShaderParameters(IntVector2(1600,900),IntRect(0,0,1600,900));
+
+			if(light->GetType() == LT_POINT)
+				pointLightGeometry_->Draw(rhi_);
+			else
+				GetFsTriangle()->Draw(rhi_);
+
+
+
+
+			//Left at; screen pos is wrong Kappa
+
+			//restore
+			rhi_->SetDepthTest(CMP_LESSEQUAL);
+			rhi_->SetStencilTest(true,CMP_ALWAYS);
+			rhi_->SetCullMode(CULL_CCW);
+			rhi_->SetDepthWrite(true);
+			rhi_->SetBlendMode(blend);
+			rhi_->SetDepthEnable(oldDepthState);
+
+			rhi_->BindResetTextures(2,4,true);
 		}
+		rhi_->SetBindReadOnlyDepthStencil(false);
 	}
 
 	void YumeMiscRenderer::RenderScene()
@@ -1064,7 +1137,7 @@ namespace YumeEngine
 		float widthRange = 0.5f * viewRect.Width() / texWidth;
 		float heightRange = 0.5f * viewRect.Height() / texHeight;
 
-		
+
 		DirectX::XMFLOAT4 bufferUVOffset(((float)viewRect.left_) / texWidth + widthRange,
 			((float)viewRect.top_) / texHeight + heightRange,widthRange,heightRange);
 		rhi_->SetShaderParameter("GBufferOffsets",bufferUVOffset);
@@ -1183,6 +1256,7 @@ namespace YumeEngine
 
 		XMMATRIX vp = view * proj;
 		XMMATRIX vpInv = XMMatrixInverse(nullptr,vp);
+
 
 		gYume->pRHI->SetShaderParameter("vp",vp);
 		gYume->pRHI->SetShaderParameter("vp_inv",vpInv);
