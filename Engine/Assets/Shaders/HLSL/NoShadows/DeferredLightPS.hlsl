@@ -63,6 +63,7 @@ float toksvig_ft(in float3 Na, in float roughness)
     return len/lerp(s, 1, len);
 }
 
+
 float4 ps_df(in PS_INPUT_POS inp) : SV_Target
 {
   float4 screenPos = inp.Position;
@@ -73,14 +74,16 @@ float4 ps_df(in PS_INPUT_POS inp) : SV_Target
 	float3 diffuseAlbedo = rt_colors.Load(texCoord).xyz;
 	float3 normal = rt_normals.Load(texCoord).xyz;
 	float4 spec = rt_specular.Load(texCoord);
-	float3 position = rt_position.Load(texCoord).xyz;
+	float depth = rt_lineardepth.Load(texCoord).x;
 
 	float3 Na = normal.xyz * 2.0 - 1.0;
 	float3 N = normalize(Na);
 
+  float3 View = -normalize(viewRay.xyz);
+  float3 position = camera_pos + (-View * depth);
 	normal = N;
 
-	float3 specularAlbedo = spec.xyz;
+	float3 specularAlbedo = float3(0.6f,0.6f,0.6f);
   float specPower = 16;
 
   //Lighting
@@ -112,7 +115,7 @@ float4 ps_df(in PS_INPUT_POS inp) : SV_Target
 
   float t = toksvig_ft(Na,spec.w);
 
-  return float4(( diffuse + specular*t ) * att,1.0f);
+  return float4(( diffuse + specular ) * att,1.0f);
   #elif POINTLIGHT_BRDF
   float3 light = BRDFPointLight(diffuseAlbedo,normal,position,LightColor.xyz,LightPosition.xyz,LightDirection.w,32);
 

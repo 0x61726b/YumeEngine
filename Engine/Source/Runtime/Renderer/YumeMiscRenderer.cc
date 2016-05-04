@@ -1073,6 +1073,8 @@ namespace YumeEngine
 			SetCameraParameters(false);
 
 
+			XMMATRIX wv = DirectX::XMMatrixMultiply(volumeTransform,camera_->GetViewMatrix());
+			rhi_->SetShaderParameter("wv",wv);
 			rhi_->SetShaderParameter("LightColor",light->GetColor());
 			rhi_->SetShaderParameter("LightPosition",light->GetPosition());
 			rhi_->SetShaderParameter("LightDirection",DirectX::XMFLOAT4(-0.577350300f,-0.577350300f,-0.577350300f,light->GetRange()));
@@ -1080,13 +1082,16 @@ namespace YumeEngine
 			rhi_->SetShaderParameter("camera_rot",DirectX::XMLoadFloat4x4(&camera_->GetRotationMatrix()));
 
 
+
+
 			TexturePtr colors = defaultPass_->GetTextureByName("SCENE_COLORS");
 			TexturePtr normals = defaultPass_->GetTextureByName("SCENE_NORMALS");
-			TexturePtr position = defaultPass_->GetTextureByName("SCENE_POSITION");
 			TexturePtr spec = defaultPass_->GetTextureByName("SCENE_SPECULAR");
+			TexturePtr ld = defaultPass_->GetTextureByName("SCENE_LINEARDEPTH");
 
 
-			TexturePtr inputs[] ={colors,spec,normals,position,pointLightAttTexture_};
+
+			TexturePtr inputs[] ={colors,spec,normals,ld,pointLightAttTexture_};
 			rhi_->PSBindSRV(2,5,inputs);
 
 			SetGBufferShaderParameters(IntVector2(1600,900),IntRect(0,0,1600,900));
@@ -1260,6 +1265,7 @@ namespace YumeEngine
 
 		gYume->pRHI->SetShaderParameter("vp",vp);
 		gYume->pRHI->SetShaderParameter("vp_inv",vpInv);
+		gYume->pRHI->SetShaderParameter("ProjMatrix",proj);
 		gYume->pRHI->SetShaderParameter("camera_pos",cameraPos);
 		gYume->pRHI->SetShaderParameter("z_far",zFar);
 

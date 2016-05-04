@@ -58,9 +58,18 @@ namespace YumeEngine
 		XMMATRIX transformation = scale * rotation * translate;
 		return transformation;
 	}
-	void SceneNode::SetPosition(const DirectX::XMVECTOR& v)
+	void SceneNode::SetPosition(const DirectX::XMVECTOR& v,bool setAsInitial)
 	{
+		if(setAsInitial)
+		{
+			DirectX::XMStoreFloat4(&initialPos_,v);
+		}
 		DirectX::XMStoreFloat4(&pos_,v);
+	}
+
+	void SceneNode::Translate(const DirectX::XMVECTOR& v)
+	{
+		XMStoreFloat4(&pos_, XMVectorAdd(XMLoadFloat4(&pos_),v));
 	}
 
 	void SceneNode::SetRotation(const DirectX::XMVECTOR& v)

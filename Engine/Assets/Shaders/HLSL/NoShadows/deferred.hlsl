@@ -22,8 +22,9 @@ cbuffer camera_ps                   : register(b1)
 {
     float4x4 vp						: packoffset(c0);
     float4x4 vp_inv					: packoffset(c4);
-    float3 camera_pos				: packoffset(c8);
-    float z_far						: packoffset(c8.w);
+		float4x4 ProjMatrix			: packoffset(c8);
+    float3 camera_pos				: packoffset(c12);
+    float z_far						: packoffset(c12.w);
 }
 
 cbuffer light_ps                    : register(b2)
@@ -43,8 +44,7 @@ cbuffer onetime_ps                  : register(b6)
 Texture2D rt_colors					: register(t2);
 Texture2D rt_specular				: register(t3);
 Texture2D rt_normals				: register(t4);
-Texture2D rt_position			: register(t5);
-Texture2D rt_lineardepth			: register(t7);
+Texture2D rt_lineardepth			: register(t5);
 
 
 float shadow_attenuation(in float3 pos, in float3 Ll, in Texture2D linear_shadowmap, in float min_s = 0.0, in float min_o = 0.0)

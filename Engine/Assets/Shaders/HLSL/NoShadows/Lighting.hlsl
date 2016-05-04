@@ -32,11 +32,11 @@ float3 BRDFPointLight(in float3 diffuseAlbedo,in float3 normal,in float3 positio
 
 		const float PI = 3.14159265f;
 
-		float3 diffuse = lightColor * diffuseAlbedo / PI;
+		float3 diffuse = (lightColor * diffuseAlbedo) / PI;
 		float3 E = normalize(camera_pos - position); //E
 		float3 H = normalize(L + E); //H
 
-		float3 Ks = float3(0.01, 0.01, 0.01);
+		float3 Ks = float3(0.7, 0.7, 0.7);
 
 		float3 D = ((shininess + 2) / (2 * PI)) * (pow(max(0.01, dot(normal, H)), shininess));
 

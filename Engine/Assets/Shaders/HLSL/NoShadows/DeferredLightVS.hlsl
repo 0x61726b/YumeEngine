@@ -34,7 +34,7 @@ cbuffer ObjectVS : register(b1)
 cbuffer camera_vs : register(b0)
 {
   float4x4 vp;
-  float4x4 vp_inv;
+  float4x4 wv;
   float3 camera_pos;
   float pad;
 }
@@ -62,7 +62,7 @@ PS_INPUT_POS vs_df(in float3 position : POSITION)
   float4 worldPos = mul(volume_transform,float4(position,1.0f));
   output.Position = mul(vp,worldPos);
 
-  float3 pos_view = mul(vp_inv,float4(position,1.0f)).xyz;
-  output.ViewRay = pos_view;
+  float3 pos_view = mul(float4(position,1.0f),wv).xyz;
+  output.ViewRay = worldPos - camera_pos;
   return output;
 }

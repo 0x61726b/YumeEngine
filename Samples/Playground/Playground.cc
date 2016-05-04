@@ -55,7 +55,8 @@ namespace YumeEngine
 
 
 	PlaygroundDemo::PlaygroundDemo()
-		: rot_(Quaternion::IDENTITY)
+		: rot_(Quaternion::IDENTITY),
+		rotationAngle_(0.0f)
 	{
 		REGISTER_ENGINE_LISTENER;
 	}
@@ -86,12 +87,12 @@ namespace YumeEngine
 		sm_->Initialize();
 		sm_->SetName("Cornell");
 
-		//StaticModel* sm2_ = new StaticModel("Models/head.obj");
-		//sm2_->Initialize();
-		//sm2_->SetPosition(DirectX::XMVectorSet(9,10,0,0));
-		//sm2_->SetScale(10,10,10);
-		//sm2_->SetName("Cornell");
-		//gYume->pRenderer->GetScene()->AddNode(sm2_);
+	/*	StaticModel* sm2_ = new StaticModel("Models/Trees/001_Birch_Middle_Age_or_Young.obj");
+		sm2_->Initialize();
+		sm2_->SetPosition(DirectX::XMVectorSet(0,0,0,0),true);
+		sm2_->SetScale(1,1,1);
+		sm2_->SetName("Cornell");
+		gYume->pRenderer->GetScene()->AddNode(sm2_);*/
 
 
 		gYume->pRenderer->GetScene()->AddNode(sm_);
@@ -117,10 +118,36 @@ namespace YumeEngine
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
 		dirLight->SetColor(YumeColor(1,1,1,1));
 
-		/*gYume->pRenderer->GetScene()->AddNode(pointLight);*/
+
+		CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,45);
+		CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,60);
+		CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,90);
+		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,120);
+
+
+
 
 		gYume->pRenderer->GetScene()->AddNode(dirLight);
 
+	}
+
+
+	void PlaygroundDemo::CreateCircleOfPointLights(DirectX::XMFLOAT3 origin,float numberOfLights,float rad)
+	{
+		float radius = rad;
+		int numPoints = numberOfLights;
+		for(int pointNum = 0; pointNum < numPoints; ++pointNum)
+		{
+			float i = (pointNum * 1.0f) / numPoints;
+			float angle = i * M_PI * 2;
+			float xPos =  sinf(angle)*radius + origin.x;
+			float zPos =  cosf(angle)*radius + origin.z;
+
+			float r = Random(360);
+			float g = Random(360);
+			float b = Random(360);
+			CreateLight(DirectX::XMFLOAT3(xPos,5,zPos),YumeColor(r / 360.0f,g / 360.0f,b / 360.0f,0),30);
+		}
 	}
 
 	void PlaygroundDemo::CreateLight(DirectX::XMFLOAT3 pos,YumeColor color,float range)
@@ -128,9 +155,11 @@ namespace YumeEngine
 		Light* pointLight = new Light;
 		pointLight->SetName("PointLight");
 		pointLight->SetType(LT_POINT);
-		pointLight->SetPosition(DirectX::XMVectorSet(pos.x,pos.y,pos.z,0));
+		pointLight->SetPosition(DirectX::XMVectorSet(pos.x,pos.y,pos.z,0),true);
 		pointLight->SetColor(color);
 		pointLight->SetRange(range);
+
+		lights_.push_back(pointLight);
 
 		gYume->pRenderer->GetScene()->AddNode(pointLight);
 	}

@@ -38,16 +38,21 @@ namespace YumeEngine
 		SceneNode(GeometryType type);
 		virtual ~SceneNode();
 
-		void SetPosition(const DirectX::XMVECTOR&);
+		void SetPosition(const DirectX::XMVECTOR&,bool setAsInitial = false);
 		void SetRotation(const DirectX::XMVECTOR&);
 		void SetDirection(const DirectX::XMVECTOR&);
 		void SetScale(float x,float y,float z);
+
+
+		void Translate(const DirectX::XMVECTOR&);
 
 		void SetName(const YumeString& name) { name_ = name; }
 
 		void SetWorld(const DirectX::XMMATRIX& world);
 
 		const DirectX::XMFLOAT4& GetPosition() const { return pos_; }
+		const DirectX::XMFLOAT4& GetInitialPosition() const { return initialPos_; }
+
 		const DirectX::XMFLOAT4& GetRotation() const { return rot_; }
 		const DirectX::XMFLOAT4& GetDirection() const { return dir_; }
 
@@ -62,6 +67,7 @@ namespace YumeEngine
 		YumeMesh* geometry_;
 
 		DirectX::XMFLOAT4 pos_;
+		DirectX::XMFLOAT4 initialPos_;
 		DirectX::XMFLOAT4 rot_;
 		DirectX::XMFLOAT4 dir_;
 

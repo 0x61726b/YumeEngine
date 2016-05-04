@@ -2,7 +2,7 @@
   <RenderTargets>
     <Rt Name="SCENE_COLORS" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_NORMALS" Format="rgba10u2" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-    <Rt Name="SCENE_POSITION" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
 
     <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
@@ -14,15 +14,15 @@
     <Sampler Name="ShadowFilter" Filter="Trilinear" Comprasion="Never" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
   </Samplers>
   <RenderCalls>
-    <Scene PassName="GBuffer" Identifier="Main" Vs="NoShadows/DeferredSolid" Ps="NoShadows/DeferredSolid" VsEntry="MeshVs" PsEntry="MeshPs" Flags="DEFERRED">
+    <Scene PassName="GBuffer" Identifier="Main" Vs="DeferredSolid" Ps="DeferredSolid" VsEntry="MeshVs" PsEntry="MeshPs" Flags="DEFERRED">
       <Samplers>
         <Ps Name="Standard" Register="0" />
       </Samplers>
       <Outputs>
         <Rt Index="0" Name="SCENE_COLORS" />
         <Rt Index="1" Name="SCENE_NORMALS"/>
-        <Rt Index="2" Name="SCENE_SPECULAR"/>
-        <Rt Index="3" Name="SCENE_POSITION"/>
+        <Rt Index="2" Name="SCENE_LINEARDEPTH"/>
+        <Rt Index="3" Name="SCENE_SPECULAR"/>
       </Outputs>
     </Scene>
     <!-- <Triangle PassName="Deferred" Identifier="Main" Ps="NoShadows/DeferredNoShadows" PsEntry="ps_deferred" Flags="NODS" Output="PostProcessingTarget">

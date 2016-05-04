@@ -15,6 +15,7 @@ namespace YumeEngine
 {
 	class YumeScene;
 	class YumeSceneNode;
+	class Light;
 
 	class PlaygroundDemo : public BaseApplication
 	{
@@ -41,12 +42,16 @@ namespace YumeEngine
 		void CreateCone(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
 
 		void CreateLight(DirectX::XMFLOAT3 pos,YumeColor color,float range);
+		void CreateCircleOfPointLights(DirectX::XMFLOAT3 origin,float numberOfLights,float rad);
 
 		YumeSceneNode* cubeNode_;
 		YumeSceneNode* dirLightNode_;
 		Quaternion rot_;
 
 		Vector4Vector::type mOffsets;
+
+		YumeVector<Light*>::type lights_;
+		float rotationAngle_;
 	};
 }
 

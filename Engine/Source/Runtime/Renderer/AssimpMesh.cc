@@ -410,7 +410,7 @@ namespace YumeEngine
 				const bool has_specular_tex = data->specular_tex != nullptr;
 				const bool has_alpha_tex = data->alpha_tex != nullptr;
 
-				Texture2DPtr random = gYume->pResourceManager->PrepareResource<YumeTexture2D>("Textures/test/test.jpg");
+				Texture2DPtr random = gYume->pResourceManager->PrepareResource<YumeTexture2D>("Textures/columna_b_color.jpg");
 
 				gYume->pRHI->SetShaderParameter("diffuse_color",data->diffuse_color);
 				gYume->pRHI->SetShaderParameter("specular_color",data->specular_color);
