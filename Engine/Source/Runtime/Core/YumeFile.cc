@@ -210,7 +210,7 @@ namespace YumeEngine
 		d.x = data[0];
 		d.y = data[1];
 		d.z = data[2];
-		d.w = data[2];
+		d.w = data[3];
 		return d;
 	}
 
@@ -319,6 +319,34 @@ namespace YumeEngine
 		for(unsigned i = value.length(); i < 4; ++i)
 			success &= WriteByte(' ');
 		return success;
+	}
+
+	bool YumeFile::WriteVector4(DirectX::XMFLOAT4& v)
+	{
+		float x = v.x;
+		float y = v.y;
+		float z = v.z;
+		float w = v.w;
+
+		WriteFloat(x);
+		WriteFloat(y);
+		WriteFloat(z);
+		WriteFloat(w);
+
+		return true;
+	}
+
+	bool YumeFile::WriteVector3(DirectX::XMFLOAT3& v)
+	{
+		float x = v.x;
+		float y = v.y;
+		float z = v.z;
+
+		WriteFloat(x);
+		WriteFloat(y);
+		WriteFloat(z);
+
+		return true;
 	}
 
 	bool YumeFile::WriteByte(signed char value)

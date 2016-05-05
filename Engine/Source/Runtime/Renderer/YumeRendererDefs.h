@@ -243,6 +243,15 @@ namespace YumeEngine
 		MAX_TEXTURE_UNITS = 16
 	};
 
+	enum MaterialTextures
+	{
+		MT_DIFFUSE,
+		MT_SPECULAR,
+		MT_EMISSIVE,
+		MT_NORMAL,
+		MT_ALPHA
+	};
+
 	enum RenderTargetInOut
 	{
 		RT_INPUT = 0x1,

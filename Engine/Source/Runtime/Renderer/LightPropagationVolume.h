@@ -24,12 +24,12 @@
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 #include <DirectXMath.h>
+#include "YumeGeometry.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class YumeTexture2D;
 	class YumeVertexBuffer;
-	class LPVRenderer;
 
 	class YumeAPIExport LightPropagationVolume : public YumeBase
 	{
@@ -49,8 +49,6 @@ namespace YumeEngine
 		void SetPropagateParameters();
 
 		void SetModelMatrix(const DirectX::XMFLOAT4X4& model,const DirectX::XMFLOAT3& lpvMin,const DirectX::XMFLOAT3& lpvMax);
-
-		void SetLPVRenderer(LPVRenderer* lpv);
 
 		void BindLPVTextures();
 
@@ -92,8 +90,6 @@ namespace YumeEngine
 		YumeShaderVariation* propogateGs_;
 
 		YumeShaderVariation* normalizePs_;
-
-		LPVRenderer* lpvRenderer_;
 	};
 }
 

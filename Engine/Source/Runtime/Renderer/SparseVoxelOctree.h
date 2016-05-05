@@ -35,7 +35,7 @@ namespace YumeEngine
 		SparseVoxelOctree();
 		virtual ~SparseVoxelOctree();
 
-		void Voxelize(RenderCall* call,YumeMesh* geo,bool clear);
+		void Voxelize(RenderCall* call,YumeGeometry* geo,bool clear);
 		void Inject();
 		void Filter();
 

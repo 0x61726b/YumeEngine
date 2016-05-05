@@ -211,6 +211,12 @@ namespace YumeEngine
 		return index < elementMasks_.size() ? elementMasks_[index] : 0;
 	}
 
+	void YumeGeometry::SetBoundingBox(const DirectX::XMFLOAT3& min,const DirectX::XMFLOAT3& max)
+	{
+		bbMin = min;
+		bbMax = max;
+	}
+
 	unsigned short YumeGeometry::GetBufferHash() const
 	{
 		unsigned short hash = 0;

@@ -152,15 +152,18 @@ namespace YumeEngine
 		rendererName_ = "libYume" + renderer;
 #endif
 
-		//This is where renderer library is getting loaded!
-		initialized_ = LoadExternalLibrary(rendererName_);
-		rendererName_ = renderer;
-		if(!initialized_)
-			return false;
+		if(!gYume->pEnv->GetVariant("NoRenderer").Get<bool>())
+		{
+			//This is where renderer library is getting loaded!
+			initialized_ = LoadExternalLibrary(rendererName_);
+			rendererName_ = renderer;
+			if(!initialized_)
+				return false;
 
 
-		gYume->pRHI->SetWindowTitle("Yume Engine");
-		gYume->pRHI->SetWindowPos(Vector2(100,50));
+			gYume->pRHI->SetWindowTitle("Yume Engine");
+			gYume->pRHI->SetWindowPos(Vector2(100,50));
+		}
 
 		FsPath resourceTree = FsPath(gYume->pEnv->GetVariant("ResourceTree").Get<YumeString>().c_str());
 		resourceTree = gYume->pIO->GetBinaryRoot() / resourceTree;
@@ -169,47 +172,51 @@ namespace YumeEngine
 
 		YumeThreadWrapper::SetMainThread();
 
+		if(!gYume->pEnv->GetVariant("NoRenderer").Get<bool>())
+		{
+			YumeImage* appIcon = gYume->pResourceManager->PrepareResource<YumeImage>("Textures/appIcon.png");
+			gYume->pRHI->SetWindowIcon(appIcon);
 
-		YumeImage* appIcon = gYume->pResourceManager->PrepareResource<YumeImage>("Textures/appIcon.png");
-		gYume->pRHI->SetWindowIcon(appIcon);
+			if(!gYume->pRHI->SetGraphicsMode(gYume->pEnv->GetVariant("WindowWidth").Get<int>(),
+				gYume->pEnv->GetVariant("WindowHeight").Get<int>(),
+				gYume->pEnv->GetVariant("Fullscreen").Get<bool>(),
+				gYume->pEnv->GetVariant("Borderless").Get<bool>(),
+				true,
+				gYume->pEnv->GetVariant("Vsync").Get<bool>(),
+				gYume->pEnv->GetVariant("TripleBuffer").Get<bool>(),
+				1))
+				return false;
+			frameTimer_.Reset();
 
-		if(!gYume->pRHI->SetGraphicsMode(gYume->pEnv->GetVariant("WindowWidth").Get<int>(),
-			gYume->pEnv->GetVariant("WindowHeight").Get<int>(),
-			gYume->pEnv->GetVariant("Fullscreen").Get<bool>(),
-			gYume->pEnv->GetVariant("Borderless").Get<bool>(),
-			true,
-			gYume->pEnv->GetVariant("Vsync").Get<bool>(),
-			gYume->pEnv->GetVariant("TripleBuffer").Get<bool>(),
-			1))
-			return false;
-		frameTimer_.Reset();
+			gYume->pRenderer = (YumeAPINew YumeMiscRenderer());
+			gYume->pRenderer->Initialize();
+			/*gYume->pRenderer->Setup();*/
 
-		gYume->pRenderer = (YumeAPINew YumeMiscRenderer());
-		gYume->pRenderer->Initialize();
-		/*gYume->pRenderer->Setup();*/
+			gYume->pInput = (YumeAPINew YumeInput);
+		}
 
-		gYume->pInput = (YumeAPINew YumeInput);
-
-		
 
 
 #ifndef DISABLE_CEF
 		{
-			gYume->pUI = new YumeUI;
-			if(!gYume->pUI->Initialize())
-				return false;
+			if(!gYume->pEnv->GetVariant("NoRenderer").Get<bool>())
+			{
+				gYume->pUI = new YumeUI;
+				if(!gYume->pUI->Initialize())
+					return false;
+			}
 		}
 #endif
 
 		YUMELOG_INFO("Initialized Yume Engine...");
 
-		assert(gYume->pEnv);
-		assert(gYume->pIO);
-		assert(gYume->pRenderer);
-		assert(gYume->pResourceManager);
-		assert(gYume->pRHI);
-		assert(gYume->pTimer);
-		assert(gYume->pWorkSystem);
+		//assert(gYume->pEnv);
+		//assert(gYume->pIO);
+		//assert(gYume->pRenderer);
+		//assert(gYume->pResourceManager);
+		//assert(gYume->pRHI);
+		//assert(gYume->pTimer);
+		//assert(gYume->pWorkSystem);
 		return initialized_;
 	}
 

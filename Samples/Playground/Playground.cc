@@ -81,24 +81,8 @@ namespace YumeEngine
 #endif
 
 
-		/*StaticModel* sm_ = new StaticModel("Models/Trees/001_Birch_Middle_Age_or_Young.obj");*/
-		/*StaticModel* sm_ = new StaticModel("Models/SM/san-miguel.obj");*/
-		StaticModel* sm_ = new StaticModel("Models/Primitives/plane.obj");
-		sm_->Initialize();
-		sm_->SetName("Cornell");
-
-	/*	StaticModel* sm2_ = new StaticModel("Models/Trees/001_Birch_Middle_Age_or_Young.obj");
-		sm2_->Initialize();
-		sm2_->SetPosition(DirectX::XMVectorSet(0,0,0,0),true);
-		sm2_->SetScale(1,1,1);
-		sm2_->SetName("Cornell");
-		gYume->pRenderer->GetScene()->AddNode(sm2_);*/
-
-
-		gYume->pRenderer->GetScene()->AddNode(sm_);
-
-
-		gYume->pRenderer->UpdateMeshBb(*sm_->GetGeometry());
+		StaticModel* plane = CreateModel("Models/cornell/cornellbox.yume");
+		
 
 		DirectX::XMFLOAT3 min = gYume->pRenderer->GetMinBb();
 		DirectX::XMFLOAT3 max = gYume->pRenderer->GetMaxBb();
@@ -113,19 +97,20 @@ namespace YumeEngine
 		dirLight->SetName("DirLight");
 		dirLight->SetType(LT_DIRECTIONAL);
 		/*dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));*/
-		dirLight->SetPosition(DirectX::XMVectorSet(0,100,0,0));
+		dirLight->SetPosition(DirectX::XMVectorSet(0,50,0,0));
 		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
-		dirLight->SetColor(YumeColor(1,1,1,1));
+		dirLight->SetColor(YumeColor(0,0,0,1));
 
 
-		CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,45);
-		CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,60);
-		CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,90);
+		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,45);
+		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,60);
+		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,90);
 		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,120);
 
 
 
+		CreateLight(DirectX::XMFLOAT3(0,19,-15),YumeColor(1,1,1),40);
 
 		gYume->pRenderer->GetScene()->AddNode(dirLight);
 
@@ -174,9 +159,19 @@ namespace YumeEngine
 
 	}
 
-	void PlaygroundDemo::CreateModel(Vector3 Pos,Quaternion Rot)
+	StaticModel* PlaygroundDemo::CreateModel(const YumeString& name,DirectX::XMFLOAT3 Pos,DirectX::XMFLOAT4 rot,DirectX::XMFLOAT3 scale)
 	{
+		StaticModel* sm_ = new StaticModel(name);
+		sm_->Initialize();
+		sm_->SetName("Cornell");
+		sm_->SetPosition(DirectX::XMLoadFloat3(&Pos),true);
+		sm_->SetRotation(DirectX::XMLoadFloat4(&rot));
+		sm_->SetScale(scale.x,scale.y,scale.z);
 
+		gYume->pRenderer->GetScene()->AddNode(sm_);
+		/*gYume->pRenderer->UpdateMeshBb(sm_->getge)*/
+
+		return sm_;
 	}
 
 	void PlaygroundDemo::CreateCube(Vector3 Pos,Quaternion Rot,float size,YumeColor color)

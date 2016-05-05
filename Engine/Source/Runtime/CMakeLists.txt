@@ -61,16 +61,8 @@ set(SRC_RENDERER
 	Renderer/YumeTexture3D.cc
 	Renderer/YumeTextureCube.h
 	Renderer/YumeTextureCube.cc
-	Renderer/LPVRendererTest.h
-	Renderer/LPVRendererTest.cc
 	Renderer/LightPropagationVolume.h
 	Renderer/LightPropagationVolume.cc
-	Renderer/AssimpMesh.h
-	Renderer/AssimpMesh.cc
-	Renderer/YumeMesh.h
-	Renderer/YumeMesh.cc
-	Renderer/YumeCompositeMesh.h
-	Renderer/YumeCompositeMesh.cc
 	Renderer/YumeLPVCamera.h
 	Renderer/YumeLPVCamera.cc
 	Renderer/YumeSkydome.h
@@ -93,6 +85,10 @@ set(SRC_RENDERER
 	Renderer/StaticModel.cc
 	Renderer/SparseVoxelOctree.h
 	Renderer/SparseVoxelOctree.cc
+	Renderer/Material.h
+	Renderer/Material.cc
+	Renderer/Batch.h
+	Renderer/Batch.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

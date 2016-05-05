@@ -23,11 +23,10 @@
 #define __YumeSkydome_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "AssimpMesh.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeAPIExport YumeSkydome : public YumeMesh
+	class YumeAPIExport YumeSkydome
 	{
 	public:
 		YumeSkydome();

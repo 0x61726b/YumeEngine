@@ -26,8 +26,6 @@
 #include "YumeIndexBuffer.h"
 #include "YumeRHI.h"
 
-#include "LPVRendererTest.h"
-
 #include "RenderPass.h"
 #include "YumeMiscRenderer.h"
 
@@ -252,9 +250,6 @@ namespace YumeEngine
 		DirectX::XMStoreFloat4x4(&i,I);
 		SetModelMatrix(i,lpvMin,lpvMax);
 
-		lpvRenderer_->SetLightParameters();
-		lpvRenderer_->SetInjectStageTextures();
-
 		gYume->pRHI->BindPsuedoBuffer();
 
 		gYume->pRHI->Draw(POINT_LIST,0,num_vpls);
@@ -410,10 +405,5 @@ namespace YumeEngine
 		rp->SetShaderParameter("world_to_lpv",world_to_lpv);
 		rp->SetShaderParameter("lpv_size",(float)volume_size_);
 
-	}
-
-	void LightPropagationVolume::SetLPVRenderer(LPVRenderer* r)
-	{
-		lpvRenderer_ = r;
 	}
 }

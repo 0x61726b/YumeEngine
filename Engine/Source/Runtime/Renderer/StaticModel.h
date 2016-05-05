@@ -24,7 +24,7 @@
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 #include "SceneNode.h"
-#include "AssimpMesh.h"
+#include "Batch.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -36,9 +36,15 @@ namespace YumeEngine
 
 		void Initialize();
 
-	private:
-		YumeMesh internalMesh_;
+		bool LoadFromFile(const YumeString& file);
+
+		const YumeVector<SharedPtr<RenderBatch> >::type& GetBatches() const { return batches_; }
+
+	public:
+		YumeVector<SharedPtr<RenderBatch> >::type batches_;
 		YumeString modelName_;
+
+		
 	};
 }
 

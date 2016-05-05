@@ -408,6 +408,9 @@ namespace YumeEngine
 						if(!strcmp(flagsVector[i].c_str(),"VOXELIZE"))
 							renderCall->SetVoxelizePass(true);
 
+						if(!strcmp(flagsVector[i].c_str(),"DEFERRED_LIGHTS"))
+							renderCall->SetDeferredLightPass(true);
+
 						if(!strcmp(flagsVector[i].c_str(),"DEFERRED"))
 							renderCall->SetDeferred(true);
 					}

@@ -100,7 +100,7 @@ namespace YumeEngine
 
 	YumeAPIExport unsigned CStringLength(const char* str);
 
-	const YumeVector<YumeString>::type& GetArguments();
+	YumeAPIExport const YumeVector<YumeString>::type& GetArguments();
 }
 
 

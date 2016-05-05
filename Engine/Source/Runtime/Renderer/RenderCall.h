@@ -107,12 +107,14 @@ namespace YumeEngine
 		bool HasPixelSampler() const { return hasPsSampler_; }
 		bool IsShadowPass() const { return shadowPass_; }
 		bool IsVoxelizePass() const { return voxelizePass_; }
+		bool IsDeferredLightPass() const { return deferredLightPass_; }
 
 		void SetClearFlags(unsigned flags ) { clearFlags = flags; }
 		unsigned GetClearFlags() const { return clearFlags; }
 
 		void SetShadowPass(bool b) { shadowPass_ = b; }
 		void SetVoxelizePass(bool b) { voxelizePass_ = b; }
+		void SetDeferredLightPass(bool b) { deferredLightPass_ = b; }
 
 		void SetEnabled(bool enabled) { enabled_ = enabled; }
 		bool GetEnabled() const { return enabled_; }
@@ -125,6 +127,7 @@ namespace YumeEngine
 		bool enabled_;
 		bool shadowPass_;
 		bool voxelizePass_;
+		bool deferredLightPass_;
 		
 		bool hasVsSampler_;
 		bool hasPsSampler_;

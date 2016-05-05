@@ -31,7 +31,6 @@ namespace YumeEngine
 		pos_(XMFLOAT4(0,0,0,0)),
 		rot_(XMFLOAT4(0,0,0,0)),
 		dir_(XMFLOAT4(0,0,0,0)),
-		geometry_(0),
 		name_("SceneNode")
 	{
 		XMMATRIX I = XMMatrixIdentity();
@@ -92,5 +91,11 @@ namespace YumeEngine
 		XMMATRIX scale = DirectX::XMMatrixScaling(x,y,z);
 
 		XMStoreFloat4x4(&Scale,scale);
+	}
+
+	void SceneNode::SetBoundingBox(const DirectX::XMFLOAT3& min,const DirectX::XMFLOAT3& max)
+	{
+		bbMin = min;
+		bbMax = max;
 	}
 }

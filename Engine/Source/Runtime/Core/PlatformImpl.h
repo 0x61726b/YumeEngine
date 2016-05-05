@@ -63,10 +63,10 @@ extern YumeAPIExport float GetDeviceScaleFactor();
 
 #include <DirectXMath.h>
 
-DirectX::XMFLOAT3 dmax(const DirectX::XMFLOAT3& a,const DirectX::XMFLOAT3& b);
-DirectX::XMFLOAT3 dmin(const DirectX::XMFLOAT3& a,const DirectX::XMFLOAT3& b);
-bool dequal(const DirectX::XMFLOAT4& a,const DirectX::XMFLOAT4& b);
-YumeEngine::YumeString XMVectorToString(const DirectX::XMVECTOR& v);
+extern YumeAPIExport DirectX::XMFLOAT3 dmax(const DirectX::XMFLOAT3& a,const DirectX::XMFLOAT3& b);
+extern YumeAPIExport DirectX::XMFLOAT3 dmin(const DirectX::XMFLOAT3& a,const DirectX::XMFLOAT3& b);
+extern YumeAPIExport bool dequal(const DirectX::XMFLOAT4& a,const DirectX::XMFLOAT4& b);
+extern YumeAPIExport YumeEngine::YumeString XMVectorToString(const DirectX::XMVECTOR& v);
 
 #endif
 

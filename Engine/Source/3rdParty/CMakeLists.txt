@@ -37,7 +37,7 @@ ADD_SUBDIRECTORY(STB)
 
 ADD_SUBDIRECTORY(assimp)
 
-
+ADD_SUBDIRECTORY(AssetImporter)
 
 
 #Boost

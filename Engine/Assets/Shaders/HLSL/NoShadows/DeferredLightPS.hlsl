@@ -82,6 +82,12 @@ float4 ps_df(in PS_INPUT_POS inp) : SV_Target
   float3 View = -normalize(viewRay.xyz);
   float3 position = camera_pos + (-View * depth);
 	normal = N;
+  #ifdef DIRECTIONAL_LIGHT
+	return float4(GetDirectionalLight(diffuseAlbedo, spec, View, depth, normal), 1.0f);
+#endif
+
+
+
 
 	float3 specularAlbedo = float3(0.6f,0.6f,0.6f);
   float specPower = 16;

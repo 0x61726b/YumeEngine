@@ -37,7 +37,9 @@
 #include "Scene.h"
 #include "SceneNode.h"
 #include "Light.h"
+#include "Material.h"
 #include "LightPropagationVolume.h"
+#include "StaticModel.h"
 
 using namespace DirectX;
 
@@ -156,11 +158,12 @@ namespace YumeEngine
 		camera_ = YumeAPINew YumeLPVCamera;
 		camera_->SetViewParams(XMVectorSet(0,5,-20,1),XMVectorSet(0,0,0,0));
 		camera_->SetProjParams(60.0f * M_DEGTORAD,1600.0f / 900.0f,zNear,zFar);
-		camera_->SetScalers(0.0099f,3);
+		camera_->SetScalers(0.0099f,0.3f);
 
 		defaultPass_ = YumeAPINew RenderPass;
 
 		defaultPass_->Load("RenderCalls/Deferred.xml");
+		defaultPass_->Load("RenderCalls/SSAO.xml");
 
 
 		Setup();
@@ -247,6 +250,8 @@ namespace YumeEngine
 			/*giLpvVolume_.SetModelMatrix(i,bbMin,bbMax);*/
 			giSvoVolume_.SetModelMatrix(i,bbMin,bbMax);
 		}
+
+		ConstructFrustum(zFar);
 
 	}
 
@@ -374,13 +379,18 @@ namespace YumeEngine
 							{
 								SceneNode* node = renderables[i];
 
-								YumeMesh* geometry = node->GetGeometry();
-								auto geometries = geometry->GetGeometries();
+								//YumeMesh* geometry = node->GetGeometry();
+								//auto geometries = geometry->GetGeometries();
 
-								giSvoVolume_.Voxelize(call,geometry,i == 0);
+								//giSvoVolume_.Voxelize(call,geometry,i == 0);
 							}
 							/*gYume->pRenderer->GetDefaultPass()->DisableRenderCalls("RSM");
 							updateRsm_ = false;*/
+						}
+
+						if(call->IsDeferredLightPass())
+						{
+							RenderLights(call);
 						}
 
 						if(call->GetDeferred())
@@ -748,8 +758,9 @@ namespace YumeEngine
 					//Variants
 					ApplyShaderParameters(call);
 
-					rhi_->BindDefaultDepthStencil();
-					rhi_->SetNoDepthStencil(false);
+
+					/*rhi_->BindDefaultDepthStencil();
+					rhi_->SetNoDepthStencil(false);*/
 
 					Light* light = static_cast<Light*>(scene_->GetDirectionalLight());
 
@@ -768,6 +779,7 @@ namespace YumeEngine
 
 
 					SetCameraParameters(false);
+
 
 					TexturePtr output = call->GetOutput(0);
 					if(!output)
@@ -791,7 +803,8 @@ namespace YumeEngine
 
 					GetFsTriangle()->Draw(gYume->pRHI);
 
-					rhi_->BindResetRenderTargets(1);
+					
+
 					rhi_->BindResetTextures(2,call->GetNumInputs());
 				}
 				break;
@@ -800,8 +813,6 @@ namespace YumeEngine
 				}
 			}
 		}
-
-		RenderLights();
 	}
 
 	void YumeMiscRenderer::RenderReflectiveShadowMap(RenderCall* call)
@@ -985,7 +996,7 @@ namespace YumeEngine
 
 
 
-		YumeShaderVariation* triangle = gYume->pRHI->GetShader(VS,"LPV/fs_triangle");
+		YumeShaderVariation* triangle = rhi_->GetShader(VS,"LPV/fs_triangle","","fs_triangle_vs");
 		YumeShaderVariation* overlay = rhi_->GetShader(PS,"LPV/Overlay");
 
 		rhi_->SetBlendMode(BLEND_PREMULALPHA);
@@ -995,8 +1006,9 @@ namespace YumeEngine
 		rhi_->BindSampler(PS,0,1,samplers); //Standard
 
 		rhi_->SetShaders(triangle,overlay,0);
+		rhi_->SetNoDepthStencil(true);
 
-		rhi_->BindBackbuffer();
+		rhi_->SetRenderTarget(0,(YumeTexture*)0);
 
 		fullscreenTriangle_->Draw(rhi_);
 	}
@@ -1007,14 +1019,15 @@ namespace YumeEngine
 
 	}
 
-	void YumeMiscRenderer::RenderLights()
+	void YumeMiscRenderer::RenderLights(RenderCall* call)
 	{
 		SceneNodes::type& renderables = scene_->GetLights();
 
 		TexturePtr stencil = defaultPass_->GetTextureByName("LightDSV");
+		TexturePtr target = call->GetOutput(0);
 		rhi_->SetNoDepthStencil(false);
 		rhi_->SetDepthStencil((Texture2DPtr)stencil);
-		rhi_->SetRenderTarget(0,(YumeTexture*)0);
+		rhi_->SetRenderTarget(0,target);
 		rhi_->SetDepthWrite(false);
 		rhi_->SetBindReadOnlyDepthStencil(true);
 		rhi_->Clear(CLEAR_COLOR);
@@ -1041,7 +1054,7 @@ namespace YumeEngine
 				rhi_->SetStencilTest(true,CMP_EQUAL,OP_KEEP,OP_KEEP,OP_KEEP,OP_KEEP,1,M_MAX_UNSIGNED,0);
 				rhi_->SetDepthWrite(false);
 				rhi_->SetBlendMode(BLEND_ADD);
-				
+
 			}
 
 			if(ltype == LT_DIRECTIONAL)
@@ -1067,6 +1080,8 @@ namespace YumeEngine
 				rhi_->SetShaders(deferredLightVs,deferredLightPs);
 			}
 
+
+
 			XMMATRIX volumeTransform = DirectX::XMMatrixTranslationFromVector(DirectX::XMVectorSet(light->GetPosition().x,light->GetPosition().y,light->GetPosition().z,1.0f));
 			volumeTransform = DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(light->GetRange(),light->GetRange(),light->GetRange()),volumeTransform);
 
@@ -1080,6 +1095,7 @@ namespace YumeEngine
 			rhi_->SetShaderParameter("LightDirection",DirectX::XMFLOAT4(-0.577350300f,-0.577350300f,-0.577350300f,light->GetRange()));
 			rhi_->SetShaderParameter("volume_transform",volumeTransform);
 			rhi_->SetShaderParameter("camera_rot",DirectX::XMLoadFloat4x4(&camera_->GetRotationMatrix()));
+
 
 
 
@@ -1116,6 +1132,7 @@ namespace YumeEngine
 
 			rhi_->BindResetTextures(2,4,true);
 		}
+		rhi_->BindResetRenderTargets(1);
 		rhi_->SetBindReadOnlyDepthStencil(false);
 	}
 
@@ -1127,11 +1144,87 @@ namespace YumeEngine
 		{
 			SceneNode* node = renderables[i];
 
-			YumeMesh* geometry = node->GetGeometry();
+			StaticModel* mesh = static_cast<StaticModel*>(node);
 
-			rhi_->SetShaderParameter("world",node->GetTransformation());
+			const YumeVector<SharedPtr<RenderBatch> >::type& batch = mesh->GetBatches();
 
-			geometry->Render();
+			for(int b = 0; b < batch.size(); ++b)
+			{
+				YumeGeometry* geometry = batch[b]->geo_;
+				Material* material = batch[b]->material_;
+
+				DirectX::XMFLOAT3 max = geometry->GetBbMax();
+				DirectX::XMFLOAT3 min = geometry->GetBbMin();
+
+				
+
+				DirectX::XMVECTOR bbMax = DirectX::XMLoadFloat3(&max);
+				DirectX::XMVECTOR bbMin = DirectX::XMLoadFloat3(&min);
+
+				DirectX::XMVECTOR size = DirectX::XMVectorSubtract(bbMax,bbMin);
+				float len = DirectX::XMVector3Length(size).m128_f32[0];
+
+				DirectX::XMVECTOR center = DirectX::XMVectorAdd(bbMax,DirectX::XMVectorScale(DirectX::XMVectorSubtract(bbMax,bbMin),0.5f));
+			
+				
+				DirectX::XMFLOAT3 bbCenter;
+				DirectX::XMStoreFloat3(&bbCenter,center);
+
+				DirectX::XMFLOAT3 bbSize;
+				DirectX::XMStoreFloat3(&bbSize,size);
+
+				float fsize = bbSize.x;
+
+				if(!CheckBB(bbCenter.x,bbCenter.y,bbCenter.z,len))
+					continue;
+
+				const YumeMap<YumeHash,Variant>::type& parameters = material->GetParameters();
+				YumeMap<YumeHash,Variant>::const_iterator It = parameters.begin();
+
+				//Set material params
+				for(It; It != parameters.end(); ++It)
+					rhi_->SetShaderParameter(It->first,It->second);
+
+				const YumeMap<YumeHash,DirectX::XMFLOAT4>::type& vectors = material->GetShaderVectors4();
+				YumeMap<YumeHash,DirectX::XMFLOAT4>::const_iterator vIt = vectors.begin();
+
+				for(vIt; vIt != vectors.end(); ++vIt)
+				{
+					rhi_->SetShaderParameter(vIt->first,vIt->second);
+				}
+
+				const YumeMap<YumeHash,DirectX::XMFLOAT3>::type& vectors3 = material->GetShaderVectors3();
+				YumeMap<YumeHash,DirectX::XMFLOAT3>::const_iterator vIt3 = vectors3.begin();
+
+				for(vIt3; vIt3 != vectors3.end(); ++vIt3)
+				{
+					rhi_->SetShaderParameter(vIt3->first,vIt3->second);
+				}
+
+
+				const YumeVector<SharedPtr<YumeTexture> >::type textures = material->GetTextures();
+				YumeVector<TexturePtr>::type inputs;
+
+
+
+				if(textures.size())
+				{
+					TexturePtr diffuse = material->GetTexture(MT_DIFFUSE);
+					TexturePtr normal = material->GetTexture(MT_NORMAL);
+					TexturePtr specular = material->GetTexture(MT_SPECULAR);
+					TexturePtr alpha = material->GetTexture(MT_ALPHA);
+
+					TexturePtr textures[] ={diffuse,normal,specular,alpha};
+					rhi_->PSBindSRV(0,3,textures);
+				}
+
+				rhi_->SetShaderParameter("world",node->GetTransformation());
+
+				geometry->Draw(rhi_);
+			}
+
+
+
 		}
 	}
 
@@ -1152,6 +1245,180 @@ namespace YumeEngine
 		rhi_->SetShaderParameter(PSP_GBUFFERINVSIZE,Vector2(invSizeX,invSizeY));
 	}
 
+	void YumeMiscRenderer::ConstructFrustum(float depth)
+	{
+		XMMATRIX projMatrix = camera_->GetProjMatrix();
+
+		XMFLOAT4X4 proj;
+		XMStoreFloat4x4(&proj,projMatrix);
+
+
+
+		float zMinimum = -proj._43 / proj._33;
+		float r = depth / (depth - zMinimum);
+		proj._33 = r;
+		proj._43 = -r * zMinimum;
+
+		XMMATRIX matrix = XMMatrixMultiply(camera_->GetViewMatrix(),projMatrix);
+
+		XMFLOAT4X4 vp;
+		XMStoreFloat4x4(&vp,matrix);
+
+		float a,b,c,d;
+
+		a = vp._14 + vp._13;
+		b = vp._24 + vp._23;
+		c = vp._34 + vp._33;
+		d = vp._44 + vp._43;
+		frustumPlanes_[0] = XMVectorSet(a,b,c,d);
+		frustumPlanes_[0] = XMPlaneNormalize(frustumPlanes_[0]);
+
+		a = vp._14 - vp._13;
+		b = vp._24 - vp._23;
+		c = vp._34 - vp._33;
+		d = vp._44 - vp._43;
+		frustumPlanes_[1] = XMVectorSet(a,b,c,d);
+		frustumPlanes_[1] = XMPlaneNormalize(frustumPlanes_[1]);
+
+		a = vp._14 + vp._11;
+		b = vp._24 + vp._21;
+		c = vp._34 + vp._31;
+		d = vp._44 + vp._41;
+		frustumPlanes_[2] = XMVectorSet(a,b,c,d);
+		frustumPlanes_[2] = XMPlaneNormalize(frustumPlanes_[2]);
+
+
+		a = vp._14 - vp._11;
+		b = vp._24 - vp._21;
+		c = vp._34 - vp._31;
+		d = vp._44 - vp._41;
+		frustumPlanes_[3] = XMVectorSet(a,b,c,d);
+		frustumPlanes_[3] = XMPlaneNormalize(frustumPlanes_[3]);
+
+
+		a = vp._14 - vp._12;
+		b = vp._24 - vp._22;
+		c = vp._34 - vp._32;
+		d = vp._44 - vp._42;
+		frustumPlanes_[4] = XMVectorSet(a,b,c,d);
+		frustumPlanes_[4] = XMPlaneNormalize(frustumPlanes_[4]);
+
+
+		a = vp._14 + vp._12;
+		b = vp._24 + vp._22;
+		c = vp._34 + vp._32;
+		d = vp._44 + vp._42;
+		frustumPlanes_[5] = XMVectorSet(a,b,c,d);
+		frustumPlanes_[5] = XMPlaneNormalize(frustumPlanes_[5]);
+	}
+
+	bool YumeMiscRenderer::CheckPointAgainstFrustum(float x,float y,float z)
+	{
+		for(int i=0; i<6; i++)
+		{
+			float ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet(x,y,z,1.0f)));
+			if(ret < 0.0f)
+				return false;
+		}
+
+		return true;
+	}
+
+	bool YumeMiscRenderer::CheckBB(float xCenter,float yCenter,float zCenter,float size)
+	{
+		for(int i=0; i<6; i++)
+		{
+			float ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter - size),(yCenter - size),(zCenter - size),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter + size),(yCenter - size),(zCenter - size),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter - size),(yCenter + size),(zCenter - size),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter + size),(yCenter + size),(zCenter - size),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter - size),(yCenter - size),(zCenter + size),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter + size),(yCenter - size),(zCenter + size),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter - size),(yCenter + size),(zCenter + size),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter + size),(yCenter + size),(zCenter + size),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			return false;
+		}
+
+		return true;
+	}
+
+	bool YumeMiscRenderer::CheckSphere(float xCenter,float yCenter,float zCenter,float radius)
+	{
+		for(int i=0; i<6; i++)
+		{
+			float ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet(xCenter,yCenter,zCenter,1.0f)));
+			if(ret < -radius)
+				return false;
+		}
+
+		return true;
+	}
+
+	bool YumeMiscRenderer::CheckRectangle(float xCenter,float yCenter,float zCenter,float xSize,float ySize,float zSize)
+	{
+		for(int i=0; i<6; i++)
+		{
+			float ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter - xSize),(yCenter - ySize),(zCenter - zSize),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter + xSize),(yCenter - ySize),(zCenter - zSize),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter - xSize),(yCenter + ySize),(zCenter - zSize),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter - xSize),(yCenter - ySize),(zCenter + zSize),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter + xSize),(yCenter + ySize),(zCenter - zSize),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter + xSize),(yCenter - ySize),(zCenter + zSize),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter - xSize),(yCenter + ySize),(zCenter + zSize),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			ret = XMVectorGetX(XMPlaneDotCoord(frustumPlanes_[i],XMVectorSet((xCenter + xSize),(yCenter + ySize),(zCenter + zSize),1.0f)));
+			if(ret >= 0.0f)
+				continue;
+
+			return false;
+		}
+
+		return true;
+	}
 
 	void YumeMiscRenderer::SetGIDebug(bool enabled)
 	{
@@ -1214,10 +1481,10 @@ namespace YumeEngine
 		rhi_->SetShaderParameter("time",totalTime);
 	}
 
-	void YumeMiscRenderer::UpdateMeshBb(YumeMesh& mesh)
+	void YumeMiscRenderer::UpdateMeshBb(YumeGeometry* mesh,const DirectX::XMMATRIX& world)
 	{
-		DirectX::XMVECTOR v_bb_min = XMLoadFloat3(&mesh.bb_min());
-		DirectX::XMVECTOR v_bb_max = XMLoadFloat3(&mesh.bb_max());
+		DirectX::XMVECTOR v_bb_min = XMLoadFloat3(&mesh->GetBbMin());
+		DirectX::XMVECTOR v_bb_max = XMLoadFloat3(&mesh->GetBbMax());
 
 		DirectX::XMVECTOR v_diag = DirectX::XMVectorSubtract(v_bb_max,v_bb_min);
 
@@ -1229,7 +1496,7 @@ namespace YumeEngine
 		v_bb_min = DirectX::XMVectorSetW(v_bb_min,1.f);
 		v_bb_max = DirectX::XMVectorSetW(v_bb_max,1.f);
 
-		auto world = DirectX::XMLoadFloat4x4(&mesh.world());
+		
 		v_bb_min = DirectX::XMVector4Transform(v_bb_min,world);
 		v_bb_max = DirectX::XMVector4Transform(v_bb_max,world);
 

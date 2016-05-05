@@ -3,7 +3,7 @@
     <Rt Name="SSAOTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
   </RenderTargets>
   <RenderCalls>
-    <Triangle PassName="SSAO" Identifier="SSAO" Ps="SSAO" PsEntry="ps_ssao" Flags="NODS" Output="SSAOTarget">
+    <Triangle PassName="SSAO" Identifier="SSAO" Ps="SSAO" PsEntry="ps_ssao" Flags="NODS" Output="Backbuffer">
       <Samplers>
         <Ps Name="Standard" Register="0" />
         <Ps Name="ShadowFilter" Register="1" />

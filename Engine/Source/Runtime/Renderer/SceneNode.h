@@ -60,16 +60,20 @@ namespace YumeEngine
 
 		GeometryType GetType() const { return type_; }
 
-		YumeMesh* GetGeometry() const { return geometry_; };
-		void SetGeometry(YumeMesh* g) { geometry_ = g; }
+		void SetBoundingBox(const DirectX::XMFLOAT3& bbMin,const DirectX::XMFLOAT3& bbMax);
+
+		const DirectX::XMFLOAT3& GetBbMin() const { return bbMin; }
+		const DirectX::XMFLOAT3& GetBbMax() const { return bbMax; }
 	protected:
 		GeometryType type_;
-		YumeMesh* geometry_;
 
 		DirectX::XMFLOAT4 pos_;
 		DirectX::XMFLOAT4 initialPos_;
 		DirectX::XMFLOAT4 rot_;
 		DirectX::XMFLOAT4 dir_;
+
+		DirectX::XMFLOAT3 bbMin;
+		DirectX::XMFLOAT3 bbMax;
 
 		DirectX::XMFLOAT4X4 Scale;
 		DirectX::XMFLOAT4X4 World;

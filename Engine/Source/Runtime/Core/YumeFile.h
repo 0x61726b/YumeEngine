@@ -68,6 +68,8 @@ namespace YumeEngine
 		bool WriteBool(bool);
 		bool WriteFloat(float);
 		bool WriteDouble(double);
+		bool WriteVector4(DirectX::XMFLOAT4& v);
+		bool WriteVector3(DirectX::XMFLOAT3& v);
 		bool WriteVariantData(const Variant& v);
 
 		YumeString ReadString();

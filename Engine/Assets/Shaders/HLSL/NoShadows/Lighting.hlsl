@@ -36,7 +36,7 @@ float3 BRDFPointLight(in float3 diffuseAlbedo,in float3 normal,in float3 positio
 		float3 E = normalize(camera_pos - position); //E
 		float3 H = normalize(L + E); //H
 
-		float3 Ks = float3(0.7, 0.7, 0.7);
+		float3 Ks = float3(0.3, 0.3, 0.3);
 
 		float3 D = ((shininess + 2) / (2 * PI)) * (pow(max(0.01, dot(normal, H)), shininess));
 
@@ -51,18 +51,34 @@ float3 BRDFPointLight(in float3 diffuseAlbedo,in float3 normal,in float3 positio
 		return light*att;
 }
 
-float3 GetPointLightDiffuse(float3 normal,float3 pos,out float3 lightDir)
+float3 GetDirectionalLight(float3 diffuse,float4 specular,float3 viewRay,float depth,float3 normal)
 {
-	float3 L = LightPosition.xyz - pos;
-	float dist = length(L);
+	float3 V = viewRay;
+	float3 P = camera_pos + (-V * depth);;
 
-	lightDir = L / dist;
+	float3 Ll = -LightDirection.rgb;
 
-	return saturate(dot(normal,lightDir)) * PointLightAtt.Sample(StandardFilter, float2(dist,0.0)).r;
-}
+	float3 L = normalize(Ll);
 
-float GetSpecular(float3 normal,float3 eye,float3 lightDir,float power)
-{
-	float3 H = normalize(normalize(eye) + lightDir);
-	return saturate(pow(dot(normal,H),power));
+	float3 N = normal;
+
+  float3 Vv = camera_pos - P;
+	float3 H = normalize( L + Vv );
+
+	//Lambert
+	float NoL = saturate(dot(N,L));
+
+	float power = 1;
+
+	float3 Li = M_PI * (power * get_spotlight(L, N) * LightColor.rgb) / pow(length(Ll), 2);
+
+	float roughness = 1;
+
+	float3 f = brdf(L, V, N, diffuse, float3(0.6f, 0.6f, 0.6f), roughness);
+
+  float specPower = 16;
+  float specNormalizationFactor = ( ( specPower + 8.0f ) / ( 8.0f * 3.14159265f ) );
+	float3 S = pow( saturate( dot( N, H ) ), specPower ) * specNormalizationFactor * LightColor.xyz * float3(0.6f, 0.6f, 0.6f) * NoL;
+
+	return f * Li * NoL + S;
 }

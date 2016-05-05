@@ -68,6 +68,11 @@ namespace YumeEngine
 
 		
 		PrimitiveType GetPrimitiveType() const { return primitiveType_; }
+
+		const DirectX::XMFLOAT3& GetBbMin() const { return bbMin; }
+		const DirectX::XMFLOAT3& GetBbMax() const { return bbMax; }
+
+		void SetBoundingBox(const DirectX::XMFLOAT3& min,const DirectX::XMFLOAT3& max);
 		
 		unsigned GetIndexStart() const { return indexStart_; }		
 		unsigned GetIndexCount() const { return indexCount_; }		
@@ -97,6 +102,9 @@ namespace YumeEngine
 		unsigned rawElementMask_;		
 		unsigned rawIndexSize_;		
 		float lodDistance_;
+
+		DirectX::XMFLOAT3 bbMin;
+		DirectX::XMFLOAT3 bbMax;
 	};
 }
 

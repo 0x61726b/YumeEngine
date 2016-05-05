@@ -121,7 +121,7 @@ namespace YumeEngine
 		
 	}
 
-	void SparseVoxelOctree::Voxelize(RenderCall* call,YumeMesh* geo,bool clear)
+	void SparseVoxelOctree::Voxelize(RenderCall* call,YumeGeometry* geo,bool clear)
 	{
 		ClearPs();
 
@@ -158,7 +158,7 @@ namespace YumeEngine
 		SetModelMatrix(i,gYume->pRenderer->GetMinBb(),gYume->pRenderer->GetMaxBb());*/
 
 
-		geo->Render();
+		/*geo->Render();*/
 
 		TexturePtr clearUavs[2] ={0,0};
 		r->SetRenderTargetsAndUAVs(0,1,2,clearUavs);

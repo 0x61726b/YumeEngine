@@ -23,7 +23,6 @@
 #define __YumeCompositeMesh_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
-#include "AssimpMesh.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {

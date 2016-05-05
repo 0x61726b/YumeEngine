@@ -25,29 +25,6 @@
         <Rt Index="3" Name="SCENE_SPECULAR"/>
       </Outputs>
     </Scene>
-    <!-- <Triangle PassName="Deferred" Identifier="Main" Ps="NoShadows/DeferredNoShadows" PsEntry="ps_deferred" Flags="NODS" Output="PostProcessingTarget">
-      <Samplers>
-        <Ps Name="Standard" Register="0" />
-        <Ps Name="ShadowFilter" Register="1" />
-      </Samplers>
-      <Inputs>
-        <Rt Index="2" Name="SCENE_COLORS"/>
-        <Rt Index="3" Name="SCENE_SPECULAR" />
-        <Rt Index="4" Name="SCENE_NORMALS" />
-        <Rt Index="5" Name="SCENE_LINEARDEPTH" />
-      </Inputs>
-      <Parameters>
-        <Param Name="gi_scale" Value="1" />
-        <Param Name="debug_gi" Value="false" />
-        <Param Name="lpv_flux_amplifier" Value="4" />
-        <Param Name="scene_dim_max" Value="0 0 0 0" />
-        <Param Name="scene_dim_min" Value="0 0 0 0" />
-        <Param Name="light_vp_tex" />
-        <Param Name="light_vp" />
-        <Param Name="light_vp_inv" />
-        <Param Name="world_to_lpv" />
-        <Param Name="main_light_pos" Value="0 0 0 0" />
-      </Parameters>
-    </Triangle> -->
+    <Scene PassName="DeferredLights" Identifier="Main" Flags="DEFERRED_LIGHTS" Output="PostProcessingTarget"/>
   </RenderCalls>
 </Yume>
