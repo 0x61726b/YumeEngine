@@ -23,12 +23,13 @@ For updates from this engine development(and my other silly posts) you can check
 ##Current Features
 
 - Driving the engine through XML files,see [here](https://github.com/arkenthera/YumeEngine/blob/master/Engine/Assets/RenderCalls/ReflectiveShadowMap.xml) to see how Yume renders a Reflective Shadow Map for use in global illumination.
-- ASSIMP model/material loading
+- ASSIMP model/material loading and importer to a common format
 - Unique UI framework using Javascript bindings (Chromium Embedded Framework). See the side project [CEF3D](https://github.com/arkenthera/cef3d)
 - Everything is deferred!
 - [Deferred lights using depth-stencil test](http://arkenthera.github.io/Deferred-Lights-in-Yume-Engine-using-stencil-test/)
 - Global Illumination through [Voxel Cone Tracing](http://research.nvidia.com/sites/default/files/publications/GIVoxels-pg2011-authors.pdf)
 - [Light Propagation Volumes](http://cg.ibds.kit.edu/publications/p2010/CLPVFRII_Kaplanyan_2010/CLPVFRII_Kaplanyan_2010.pdf)
+- Frustum culling,batching
 - Post Processing effects such as, SSAO algorithm Scalable Ambient Obscurance, FXAA,DoF,Godrays,Auto Exposure
 
 ##Building
