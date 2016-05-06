@@ -87,6 +87,14 @@ namespace YumeEngine
 		}
 	}
 
+	void RenderPass::AddTexture(unsigned index,const YumeString& callName,TexturePtr tex)
+	{
+		RenderCallPtr call = GetCallByName(callName);
+
+		if(call)
+			call->SetInput(index,tex);
+	}
+
 	void RenderPass::Load(const YumeString& resource)
 	{
 		YumeXmlFile* fullPath = gYume->pResourceManager->PrepareResource<YumeXmlFile>(resource);
@@ -399,6 +407,9 @@ namespace YumeEngine
 						if(strcmp(flagsVector[i].c_str(),"CLEAR_DEPTH") == 0)
 							renderCall->SetClearFlags(CLEAR_DEPTH);
 
+						if(strcmp(flagsVector[i].c_str(),"CLEAR") == 0)
+							renderCall->SetMiscRenderingFlags(RF_CLEAR);
+
 						if(strcmp(flagsVector[i].c_str(),"CLEAR_COLOR") == 0)
 							renderCall->SetClearFlags(renderCall->GetClearFlags() | CLEAR_COLOR);
 
@@ -485,13 +496,24 @@ namespace YumeEngine
 
 	void RenderPass::DisableRenderCalls(const YumeString& id)
 	{
+		unsigned enabledCalls = 0;
 		for(int i=0; i < calls_.size(); ++i)
 		{
 			RenderCallPtr c = calls_[i];
 
 			if(!c->GetIdentifier().Compare(id))
 				c->SetEnabled(false);
+			else
+				++enabledCalls;
 		}
+
+		//Find the last render call and make sure its outputting to backbuffer. This may break tho not sure.
+
+		unsigned last = enabledCalls - 1;
+
+		RenderCallPtr c = calls_[last];
+
+		c->SetOutput(0,0);
 	}
 
 	void RenderPass::EnableRenderCalls(const YumeString& id)

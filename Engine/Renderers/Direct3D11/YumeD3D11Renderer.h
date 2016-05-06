@@ -80,7 +80,7 @@ namespace YumeEngine
 		/* */
 
 		virtual void							BindSampler(ShaderType type,unsigned start,unsigned count,unsigned* samplers);
-		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture** textures);
+		virtual void							PSBindSRV(unsigned start,unsigned count,YumeVector<YumeTexture*>::type);
 		virtual void							VSBindSRV(unsigned start,unsigned count,YumeTexture** textures);
 		virtual void							BindBackbuffer();
 		virtual void							CreateStandardSampler();
@@ -250,6 +250,8 @@ namespace YumeEngine
 		bool									initialized_;
 
 		YumeVector<ID3D11SamplerState*>::type	samplers_;
+		
+		std::vector<ID3D11ShaderResourceView*>  srvs_;
 
 		YumeD3D11RendererImpl*					impl_;
 		ShaderProgramMap::type					shaderPrograms_;

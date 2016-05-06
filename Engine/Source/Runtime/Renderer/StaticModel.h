@@ -40,6 +40,8 @@ namespace YumeEngine
 
 		const YumeVector<SharedPtr<RenderBatch> >::type& GetBatches() const { return batches_; }
 
+		void SetMaterial(MaterialPtr ptr);
+
 	public:
 		YumeVector<SharedPtr<RenderBatch> >::type batches_;
 		YumeString modelName_;

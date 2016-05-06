@@ -76,7 +76,10 @@ namespace YumeEngine
 		TexturePtr rsmColors = d->GetTextureByName("RSM_COLORS");
 		TexturePtr rsmNormals = d->GetTextureByName("RSM_NORMALS");
 
-		TexturePtr allTextures[] ={rsmDepth,rsmColors,rsmNormals};
+		YumeVector<TexturePtr>::type allTextures = gYume->pRenderer->GetFreeTextures();
+		allTextures[6] = rsmDepth;
+		allTextures[7] = rsmColors;
+		allTextures[8] = rsmNormals;
 
 		UINT num_vpls = 1024 * 1024;
 
@@ -167,8 +170,9 @@ namespace YumeEngine
 
 	void SparseVoxelOctree::ClearPs()
 	{
-		TexturePtr srv_null[] ={nullptr,nullptr};
-		gYume->pRHI->PSBindSRV(7,2,srv_null);
+		/*TexturePtr srv_null[] ={nullptr,nullptr};
+		gYume->pRHI->PSBindSRV(7,2,srv_null);*/
+		gYume->pRHI->BindResetTextures(7,2,true);
 	}
 
 	void SparseVoxelOctree::SetModelMatrix(const DirectX::XMFLOAT4X4& model,const DirectX::XMFLOAT3& svo_min,const DirectX::XMFLOAT3& svo_max)

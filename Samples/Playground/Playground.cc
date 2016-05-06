@@ -35,8 +35,9 @@
 
 #include "Renderer/Scene.h"
 #include "Renderer/Light.h"
+#include <Renderer/RenderPass.h>
 
-
+#include "Core/MersenneTwister.h"
 
 
 YUME_DEFINE_ENTRY_POINT(YumeEngine::PlaygroundDemo);
@@ -49,16 +50,32 @@ YUME_DEFINE_ENTRY_POINT(YumeEngine::PlaygroundDemo);
 #define CORNELL
 #define DISABLE_EVERYTHING
 
+#define SCALE ((1<<15))
+
 namespace YumeEngine
 {
 
-
+	MTRand Rng;
 
 	PlaygroundDemo::PlaygroundDemo()
 		: rot_(Quaternion::IDENTITY),
 		rotationAngle_(0.0f)
 	{
 		REGISTER_ENGINE_LISTENER;
+
+		m_RadiusMultiplier  = 1;
+		m_AngleBias         = 30;
+		m_NumDirs		    = 25;
+		m_NumSteps		    = 32;
+		m_Contrast          = 1.25f;
+		m_Attenuation       = 1.0f;
+		m_AORadius			= 10;
+
+		m_BlurRadius     = 7;
+		m_Sharpness      = 16.0f;
+		m_EdgeThreshold  = 0.1f;
+
+		m_NumSamples     = 1;
 	}
 
 	PlaygroundDemo::~PlaygroundDemo()
@@ -81,8 +98,23 @@ namespace YumeEngine
 #endif
 
 
-		StaticModel* plane = CreateModel("Models/cornell/cornellbox.yume");
+		StaticModel* dragon= CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(0,5,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		StaticModel* dragon2= CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(15,5,15),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		StaticModel* dragon3= CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(30,5,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		StaticModel* plane = CreateModel("Models/Primitives/plane.yume",DirectX::XMFLOAT3(0,0,0));
+
+		MaterialPtr diff = YumeAPINew Material;
+		diff->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
+		diff->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.7f,0.7f,0.7f,1));
+
+		plane->SetMaterial(diff);
+		dragon->SetMaterial(diff);
+		dragon2->SetMaterial(diff);
+		dragon3->SetMaterial(diff);
 		
+
+		/*StaticModel* plane = CreateModel("Models/cornell/cornellbox.yume");*/
+
 
 		DirectX::XMFLOAT3 min = gYume->pRenderer->GetMinBb();
 		DirectX::XMFLOAT3 max = gYume->pRenderer->GetMaxBb();
@@ -100,7 +132,7 @@ namespace YumeEngine
 		dirLight->SetPosition(DirectX::XMVectorSet(0,50,0,0));
 		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
-		dirLight->SetColor(YumeColor(0,0,0,1));
+		dirLight->SetColor(YumeColor(1,1,1,0));
 
 
 		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,45);
@@ -110,12 +142,123 @@ namespace YumeEngine
 
 
 
-		CreateLight(DirectX::XMFLOAT3(0,19,-15),YumeColor(1,1,1),40);
+		/*CreateLight(DirectX::XMFLOAT3(0,19,-15),YumeColor(1,1,1),40);*/
+		/*CreateLight(DirectX::XMFLOAT3(0,10,0),YumeColor(1,1,1),40);*/
 
 		gYume->pRenderer->GetScene()->AddNode(dirLight);
 
+
+		RenderTargetDesc desc;
+		desc.Index = 5;
+
+		randomMap_ = (gYume->pRHI->CreateTexture2D());
+		randomMap_->SetName("RandomVec");
+		randomMap_->SetDesc(desc);
+		randomMap_->SetSize(64,64,gYume->pRHI->GetRGBA16FormatNs(),TEXTURE_STATIC,1,1);
+
+		RenderPass* d = gYume->pRenderer->GetDefaultPass();
+
+		d->AddTexture(5,"HorizonBasedAO",randomMap_);
+
+		UpdateSSAO();
+		UpdateAngleBias();
+		UpdateRadius();
+
+		UpdateBlur();
+		UpdateSharpness();
+
+		float width = gYume->pRHI->GetWidth() * 0.5f;
+		float height = gYume->pRHI->GetHeight() * 0.5f;
+
+		float fovy = 60 * M_DEGTORAD;
+
+		m_FocalLen[0]      = 1.0f / tanf(fovy * 0.5f) *  (float)width / (float)height;
+		m_FocalLen[1]      = 1.0f / tanf(fovy * 0.5f);
+		m_InvFocalLen[0]   = 1.0f / m_FocalLen[0];
+		m_InvFocalLen[1]   = 1.0f / m_FocalLen[1];
+		m_InvResolution[0] = 1.0f / width;
+		m_InvResolution[1] = 1.0f / height;
+		m_Resolution[0]    = (float)width;
+		m_Resolution[1]    = (float)height;
+
+		d->SetShaderParameter("g_NumSteps",(float)m_NumSteps);
+		d->SetShaderParameter("g_Attenuation",m_Attenuation);
+		d->SetShaderParameter("g_FocalLen",Vector2(m_FocalLen[0],m_FocalLen[1]));
+		d->SetShaderParameter("g_InvFocalLen",Vector2(m_InvFocalLen[0],m_InvFocalLen[1]));
+
+		d->SetShaderParameter("g_Resolution",Vector2(m_Resolution[0],m_Resolution[1]));
+		d->SetShaderParameter("g_InvResolution",Vector2(m_InvResolution[0],m_InvResolution[1]));
+
+	}
+	inline float sqr(float x)
+	{
+		return x * x;
 	}
 
+	void PlaygroundDemo::UpdateBlur()
+	{
+		RenderPass* d = gYume->pRenderer->GetDefaultPass();
+
+
+		float radius     = m_BlurRadius;
+		float sigma      = (radius+1) / 2;
+		float inv_sigma2 = 1.0f / (2*sigma*sigma);
+
+		d->SetShaderParameter("g_BlurFalloff",(float)inv_sigma2);
+		d->SetShaderParameter("g_BlurRadius",(float)radius);
+
+		d->SetShaderParameter("g_EdgeThreshold",m_EdgeThreshold);
+	}
+
+	void PlaygroundDemo::UpdateSharpness()
+	{
+		RenderPass* d = gYume->pRenderer->GetDefaultPass();
+
+		float sharpness = sqr(m_Sharpness / m_AORadius);
+		d->SetShaderParameter("g_Sharpness",sharpness);
+	}
+
+	void PlaygroundDemo::UpdateRadius()
+	{
+		float R = m_RadiusMultiplier * m_AORadius;
+		gYume->pRenderer->GetDefaultPass()->SetShaderParameter("g_R",R);
+		gYume->pRenderer->GetDefaultPass()->SetShaderParameter("g_inv_R",1.0f / R);
+		gYume->pRenderer->GetDefaultPass()->SetShaderParameter("g_sqr_R",R * R);
+	}
+
+	void PlaygroundDemo::UpdateAngleBias()
+	{
+		float angle = m_AngleBias * M_PI/ 180;
+		gYume->pRenderer->GetDefaultPass()->SetShaderParameter("g_AngleBias",angle);
+		gYume->pRenderer->GetDefaultPass()->SetShaderParameter("g_TanAngleBias",tan(angle));
+		UpdateContrast();
+	}
+
+	void PlaygroundDemo::UpdateContrast()
+	{
+		float contrast = m_Contrast / (1.0f - sin(m_AngleBias * M_PI / 180));
+		gYume->pRenderer->GetDefaultPass()->SetShaderParameter("g_Contrast",contrast);
+	}
+
+	void PlaygroundDemo::UpdateSSAO()
+	{
+		Rng.seed((unsigned)0);
+
+		gYume->pRenderer->GetDefaultPass()->SetShaderParameter("g_NumDir",(float)m_NumDirs);
+
+		signed short f[64*64*4];
+		for(int i=0; i<64*64*4; i+=4)
+		{
+			float angle = 2.0f*M_PI * Rng.randExc() / (float)m_NumDirs;
+			f[i] = (signed short)(SCALE*cos(angle));
+			f[i+1] = (signed short)(SCALE*sin(angle));
+			f[i+2] = (signed short)(SCALE*Rng.randExc());
+			f[i+3] = 0;
+		}
+
+		randomMap_->SetData(0,0,0,64,64,f);
+
+	}
 
 	void PlaygroundDemo::CreateCircleOfPointLights(DirectX::XMFLOAT3 origin,float numberOfLights,float rad)
 	{
@@ -167,6 +310,7 @@ namespace YumeEngine
 		sm_->SetPosition(DirectX::XMLoadFloat3(&Pos),true);
 		sm_->SetRotation(DirectX::XMLoadFloat4(&rot));
 		sm_->SetScale(scale.x,scale.y,scale.z);
+
 
 		gYume->pRenderer->GetScene()->AddNode(sm_);
 		/*gYume->pRenderer->UpdateMeshBb(sm_->getge)*/

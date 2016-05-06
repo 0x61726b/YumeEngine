@@ -29,11 +29,16 @@ struct PS_INPUT
 	float3 view_ray	                : TEXCOORD1;
 };
 
+
+
 SamplerState StandardFilter	        : register(s0);
 SamplerState ShadowFilter	        : register(s1);
 
-Texture2D mainInput                : register(t0);
+Texture2D rt_output                : register(t0);
 Texture2D rt_colors                 : register(t1);
 Texture2D rt_specular               : register(t2);
 Texture2D rt_normals         	    : register(t3);
 Texture2D rt_lineardepth     	    : register(t4);
+
+Texture2D rt_blurred							: register(t8);
+Texture2D rt_main_full							: register(t9);

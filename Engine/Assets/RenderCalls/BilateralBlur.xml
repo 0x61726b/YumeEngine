@@ -1,49 +1,16 @@
 <Yume>
   <RenderTargets>
-    <Rt Name="SSAOTarget" Format="l" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="BlurTargetX" Format="l" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="BlurTargetY" Format="l" Mips="1" Width="1600" Height="900" ArraySize="1"/>
   </RenderTargets>
   <Samplers>
-    <Sampler Name="SSAOSampler" Filter="Nearest" Comprasion="Always" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
+    <Sampler Name="BlurSampler" Filter="Nearest" Comprasion="Always" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
     <Sampler Name="BlurSamplerLinear" Filter="Trilinear" Comprasion="Always" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
   </Samplers>
   <RenderCalls>
-    <Triangle PassName="HorizonBasedAO" Identifier="SSAO" Ps="SSAO" PsEntry="ps_ssao" Flags="NODS NOBLEND CLEAR" Output="SSAOTarget">
+    <Triangle PassName="BlurPassX" Identifier="BilateralBlur" Ps="BilateralBlur" PsEntry="ps_bilateral_blur_x" Flags="NODS" Output="BlurTargetX">
       <Samplers>
-        <Ps Name="SSAOSampler" Register="0" />
-      </Samplers>
-      <Inputs>
-        <Rt Index="0" Name="PostProcessingTarget"/>
-        <Rt Index="1" Name="SCENE_COLORS" />
-        <Rt Index="2" Name="SCENE_SPECULAR" />
-        <Rt Index="3" Name="SCENE_NORMALS" />
-        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
-      </Inputs>
-      <Parameters>
-        <Param Name="ssao_scale" Value="1" />
-        <Param Name="g_NumSteps" />
-        <Param Name="g_NumDir" />
-        <Param Name="g_R" />
-        <Param Name="g_inv_R" />
-        <Param Name="g_sqr_R" />
-        <Param Name="g_AngleBias" />
-        <Param Name="g_TanAngleBias" />
-        <Param Name="g_Attenuation" />
-        <Param Name="g_Contrast" />
-        <Param Name="g_AspectRatio" />
-        <Param Name="g_InvAspectRatio" />
-        <Param Name="g_FocalLen" />
-        <Param Name="g_InvFocalLen" />
-        <Param Name="g_InvResolution" />
-        <Param Name="g_Resolution" />
-        <Param Name="debug_ao" />
-        <Param Name="QualityMode" Value="0" />
-      </Parameters>
-    </Triangle>
-    <Triangle PassName="BlurPassX" Identifier="SSAO" Ps="BilateralBlur" PsEntry="ps_bilateral_blur_x" Flags="NODS" Output="BlurTargetX">
-      <Samplers>
-        <Ps Name="SSAOSampler" Register="0" />
+        <Ps Name="BlurSampler" Register="0" />
         <Ps Name="BlurSamplerLinear" Register="1" />
       </Samplers>
       <Inputs>
@@ -60,9 +27,9 @@
         <Param Name="g_ZLinParams" />
       </Parameters>
     </Triangle>
-    <Triangle PassName="BlurPassY" Identifier="SSAO" Ps="BilateralBlur" PsEntry="ps_bilateral_blur_y" Flags="NODS" Output="BlurTargetY">
+    <Triangle PassName="BlurPassY" Identifier="BilateralBlur" Ps="BilateralBlur" PsEntry="ps_bilateral_blur_y" Flags="NODS" Output="BlurTargetY">
       <Samplers>
-        <Ps Name="SSAOSampler" Register="0" />
+        <Ps Name="BlurSampler" Register="0" />
         <Ps Name="BlurSamplerLinear" Register="1" />
       </Samplers>
       <Inputs>
@@ -79,9 +46,9 @@
         <Param Name="g_ZLinParams" />
       </Parameters>
     </Triangle>
-    <Triangle PassName="SSAOBlurMerge" Identifier="SSAO" Ps="SSAO" PsEntry="ps_ssao_merge" Flags="NODS" Output="Backbuffer">
+    <Triangle PassName="SSAOBlurMerge" Identifier="SSAOBlurMerge" Ps="SSAO" PsEntry="ps_ssao_merge" Flags="NODS" Output="Backbuffer">
       <Samplers>
-        <Ps Name="SSAOSampler" Register="0" />
+        <Ps Name="BlurSampler" Register="0" />
         <Ps Name="BlurSamplerLinear" Register="1" />
       </Samplers>
       <Inputs>

@@ -101,7 +101,7 @@ namespace YumeEngine
 
 		//
 		virtual void							BindSampler(ShaderType type,unsigned start,unsigned count,unsigned* samplers) { };
-		virtual void							PSBindSRV(unsigned start,unsigned count,YumeTexture** textures) {};
+		virtual void							PSBindSRV(unsigned start,unsigned count,YumeVector<YumeTexture*>::type textures) {};
 		virtual void							VSBindSRV(unsigned start,unsigned count,YumeTexture** textures) {};
 		virtual void							BindBackbuffer() { };
 		virtual void							CreateStandardSampler() { };

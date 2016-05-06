@@ -331,7 +331,8 @@ namespace YumeEngine
 	enum MiscRenderingFlags
 	{
 		RF_NODEPTHSTENCIL = 0x1,
-		RF_NOBLENDSTATE = 0x2
+		RF_NOBLENDSTATE = 0x2,
+		RF_CLEAR = 0x4
 	};
 
 	struct GIParameters

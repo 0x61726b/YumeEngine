@@ -70,7 +70,7 @@ namespace YumeEngine
 		void AddTextures(unsigned size,TexturePtr* textures);
 
 		unsigned GetRendererFlags() const { return addFlags_;}
-		void SetMiscRenderingFlags(unsigned f) { addFlags_ = f; }
+		void SetMiscRenderingFlags(unsigned f) { addFlags_ |= f; }
 
 		CallType GetType() const { return type_; }
 

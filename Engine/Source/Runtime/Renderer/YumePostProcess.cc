@@ -140,7 +140,7 @@ namespace YumeEngine
 
 	void YumePostProcess::Render()
 	{
-		RHIEvent e("Post Processing");
+		/*RHIEvent e("Post Processing");
 
 		TexturePtr target = misc_->GetDefaultPass()->GetTextureByName("PostProcessTarget");
 		gYume->pRHI->GenerateMips(target);
@@ -200,7 +200,7 @@ namespace YumeEngine
 			std::swap(in,out);
 		}
 
-		gYume->pRHI->BindResetTextures(0,13);
+		gYume->pRHI->BindResetTextures(0,13);*/
 	}
 
 	void YumePostProcess::Bloom(TexturePtr frontbuffer)
@@ -254,132 +254,132 @@ namespace YumeEngine
 
 	void YumePostProcess::DoF(TexturePtr in,TexturePtr out)
 	{
-		RHIEvent e("DoF");
+		//RHIEvent e("DoF");
 
-		if(dof_enabled)
-			DoFBlur(in,frontBufferBlurred_);
+		//if(dof_enabled)
+		//	DoFBlur(in,frontBufferBlurred_);
 
-		TexturePtr textures[] ={frontBufferBlurred_};
-		TexturePtr texturesNull[] ={nullptr};
+		//TexturePtr textures[] ={frontBufferBlurred_};
+		//TexturePtr texturesNull[] ={nullptr};
 
-		gYume->pRHI->PSBindSRV(13,1,textures);
+		//gYume->pRHI->PSBindSRV(13,1,textures);
 
-		Render(dof_,in,out);
+		//Render(dof_,in,out);
 
-		gYume->pRHI->PSBindSRV(13,1,texturesNull);
+		//gYume->pRHI->PSBindSRV(13,1,texturesNull);
 	}
 
 	void YumePostProcess::DoFBlur(TexturePtr in,TexturePtr out)
 	{
-		RHIEvent e("DoF Blur");
+		//RHIEvent e("DoF Blur");
 
-		TexturePtr textures[] ={in};
+		//TexturePtr textures[] ={in};
 
-		gYume->pRHI->PSBindSRV(0,1,textures);
+		//gYume->pRHI->PSBindSRV(0,1,textures);
 
-		SetViewport(blurred_[0]);
-		Render(copy_,in,blurred_[0]);
+		//SetViewport(blurred_[0]);
+		//Render(copy_,in,blurred_[0]);
 
-		for(size_t i = 0; i < 2; ++i)
-		{
-			// apply v-blur
-			Render(gaussDofV_,blurred_[0],blurred_[5]);
+		//for(size_t i = 0; i < 2; ++i)
+		//{
+		//	// apply v-blur
+		//	Render(gaussDofV_,blurred_[0],blurred_[5]);
 
-			// apply h-blur
-			Render(gaussDofH_,blurred_[5],blurred_[0]);
-		}
+		//	// apply h-blur
+		//	Render(gaussDofH_,blurred_[5],blurred_[0]);
+		//}
 
-		SetViewport(out);
-		Render(copy_,blurred_[0],out);
+		//SetViewport(out);
+		//Render(copy_,blurred_[0],out);
 
-		TexturePtr texturesNull[] ={nullptr};
-		gYume->pRHI->PSBindSRV(0,1,texturesNull);
+		//TexturePtr texturesNull[] ={nullptr};
+		//gYume->pRHI->PSBindSRV(0,1,texturesNull);
 	}
 
 
 	void YumePostProcess::Godrays(TexturePtr in,TexturePtr out)
 	{
-		RHIEvent e("Godrays");
+		//RHIEvent e("Godrays");
 
-		if(godrays_enabled)
-		{
-			
-			TexturePtr noiseTex[] ={ noiseTex_ };
+		//if(godrays_enabled)
+		//{
+		//	
+		//	TexturePtr noiseTex[] ={ noiseTex_ };
 
-			gYume->pRHI->PSBindSRV(14,1,noiseTex);
-			
+		//	gYume->pRHI->PSBindSRV(14,1,noiseTex);
+		//	
 
-			SetViewport(blurred_[0]);
-			Render(copy_,in,blurred_[0]);
+		//	SetViewport(blurred_[0]);
+		//	Render(copy_,in,blurred_[0]);
 
-			Render(godrays_,blurred_[0],blurred_[5]);
-
-
-			TexturePtr textures[] ={nullptr};
-			gYume->pRHI->PSBindSRV(0,1,textures);
+		//	Render(godrays_,blurred_[0],blurred_[5]);
 
 
-			for(size_t i = 0; i < 2; ++i)
-			{
-				// apply v-blur
-				Render(gaussGodraysV_,blurred_[5],blurred_[0]);
+		//	TexturePtr textures[] ={nullptr};
+		//	gYume->pRHI->PSBindSRV(0,1,textures);
 
-				// apply h-blur
-				Render(gaussGodraysH_,blurred_[0],blurred_[5]);
-			}
 
-			SetViewport(out);
-			Render(copy_,blurred_[5],frontBufferBlurred_);
-		}
+		//	for(size_t i = 0; i < 2; ++i)
+		//	{
+		//		// apply v-blur
+		//		Render(gaussGodraysV_,blurred_[5],blurred_[0]);
 
-		TexturePtr textures[] ={frontBufferBlurred_};
-		TexturePtr texturesNull[] ={nullptr};
+		//		// apply h-blur
+		//		Render(gaussGodraysH_,blurred_[0],blurred_[5]);
+		//	}
 
-		gYume->pRHI->PSBindSRV(13,1,textures);
+		//	SetViewport(out);
+		//	Render(copy_,blurred_[5],frontBufferBlurred_);
+		//}
 
-		Render(godraysMerge_,in,out);
+		//TexturePtr textures[] ={frontBufferBlurred_};
+		//TexturePtr texturesNull[] ={nullptr};
 
-		gYume->pRHI->PSBindSRV(13,1,texturesNull);
+		//gYume->pRHI->PSBindSRV(13,1,textures);
+
+		//Render(godraysMerge_,in,out);
+
+		//gYume->pRHI->PSBindSRV(13,1,texturesNull);
 
 
 	}
 
 	void YumePostProcess::Render(YumeShaderVariation* ps,TexturePtr in,TexturePtr out)
 	{
-		YumeShaderVariation* triangle = gYume->pRHI->GetShader(VS,"LPV/fs_triangle");
+		//YumeShaderVariation* triangle = gYume->pRHI->GetShader(VS,"LPV/fs_triangle");
 
 
-		gYume->pRHI->SetShaders(triangle,ps,0);
-		misc_->SetCameraParameters(false);
+		//gYume->pRHI->SetShaders(triangle,ps,0);
+		//misc_->SetCameraParameters(false);
 
-		YumeGeometry* fs = misc_->GetFsTriangle();
+		//YumeGeometry* fs = misc_->GetFsTriangle();
 
-		TexturePtr textures[] ={in};
-		gYume->pRHI->PSBindSRV(10,1,textures);
+		//TexturePtr textures[] ={in};
+		//gYume->pRHI->PSBindSRV(10,1,textures);
 
-		
+		//
 
-		//TODO Move these out of here
-		gYume->pRHI->SetShaderParameter("scene_dim_max",DirectX::XMFLOAT4(misc_->GetMaxBb().x,misc_->GetMaxBb().y,misc_->GetMaxBb().z,1.0f));
-		gYume->pRHI->SetShaderParameter("scene_dim_min",DirectX::XMFLOAT4(misc_->GetMinBb().x,misc_->GetMinBb().y,misc_->GetMinBb().z,1.0f));
+		////TODO Move these out of here
+		//gYume->pRHI->SetShaderParameter("scene_dim_max",DirectX::XMFLOAT4(misc_->GetMaxBb().x,misc_->GetMaxBb().y,misc_->GetMaxBb().z,1.0f));
+		//gYume->pRHI->SetShaderParameter("scene_dim_min",DirectX::XMFLOAT4(misc_->GetMinBb().x,misc_->GetMinBb().y,misc_->GetMinBb().z,1.0f));
 
-		SetPPParameters();
-		misc_->SetPerFrameConstants();
-
-
-
-		if(out)
-		{
-			gYume->pRHI->SetRenderTarget(0,out);
-		}
-		else
-			gYume->pRHI->BindBackbuffer();
-
-		fs->Draw(gYume->pRHI);
+		//SetPPParameters();
+		//misc_->SetPerFrameConstants();
 
 
-		gYume->pRHI->BindResetRenderTargets(0);
-		gYume->pRHI->BindResetTextures(10,1);
+
+		//if(out)
+		//{
+		//	gYume->pRHI->SetRenderTarget(0,out);
+		//}
+		//else
+		//	gYume->pRHI->BindBackbuffer();
+
+		//fs->Draw(gYume->pRHI);
+
+
+		//gYume->pRHI->BindResetRenderTargets(0);
+		//gYume->pRHI->BindResetTextures(10,1);
 	}
 
 	void YumePostProcess::SSAO(TexturePtr target)

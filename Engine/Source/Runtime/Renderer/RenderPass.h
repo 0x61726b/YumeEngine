@@ -38,6 +38,8 @@ namespace YumeEngine
 
 		void Load(const YumeString& resource);
 
+		void AddTexture(unsigned index,const YumeString& callName,TexturePtr tex);
+
 		RenderCallPtr GetRenderCall(unsigned index) const { return calls_[index]; }
 
 		RenderCallPtr GetCallByName(const YumeString& name);

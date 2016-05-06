@@ -166,6 +166,7 @@ set( SRC_CORE
 	Core/YumeXmlFile.cc
 	Core/YumeJsFile.h
 	Core/YumeJsFile.cc
+	Core/MersenneTwister.h
 		)
 set( SRC_CORE_IO
 	Core/YumeIO.h

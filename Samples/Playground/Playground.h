@@ -31,6 +31,39 @@ namespace YumeEngine
 		virtual void HandleUpdate(float timeStep);
 		virtual void HandleRenderUpdate(float timeStep);
 
+		void UpdateSSAO();
+		void UpdateRadius();
+		void UpdateAngleBias();
+		void UpdateContrast();
+
+		void UpdateBlur();
+		void UpdateSharpness();
+
+		//SSAO
+		int							m_NumSteps;
+		int							m_NumDirs;
+		float						m_RadiusMultiplier;
+		float						m_AngleBias;
+		float						m_Attenuation;
+		float						m_Contrast;
+		float						m_AspectRatio;
+		float						m_InvAspectRatio;
+		float						m_InvFocalLen[2];
+		float						m_FocalLen[2];
+		float						m_InvResolution[2];
+		float						m_Resolution[2];
+
+		float								m_Sharpness;
+		float								m_BlurRadius;
+		float								m_EdgeThreshold;
+		int									m_NumSamples;
+
+		float m_AORadius; //Mesh scale
+
+		SharedPtr<YumeTexture2D> randomMap_;
+
+		//~
+
 		void SSAOOffsetVectors();
 
 		StaticModel* CreateModel(const YumeString& name,DirectX::XMFLOAT3 Pos = DirectX::XMFLOAT3(0,0,0),DirectX::XMFLOAT4 rot = DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3 scale = DirectX::XMFLOAT3(1,1,1));

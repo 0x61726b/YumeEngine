@@ -29,6 +29,11 @@ namespace YumeEngine
 	Material::Material()
 	{
 		textures_.resize(MAX_TEXTURE_UNITS);
+
+		for(int i=0; i < textures_.size(); ++i)
+			textures_[i] = 0;
+
+		numTextures = 0;
 	}
 
 	Material::~Material()
@@ -41,6 +46,8 @@ namespace YumeEngine
 			textures_.resize(index + 1);
 
 		textures_[index] = texture;
+
+		++numTextures;
 	}
 
 	void Material::SetShaderParameter(YumeHash param,const Variant& var)

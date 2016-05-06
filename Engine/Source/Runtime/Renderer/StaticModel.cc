@@ -175,6 +175,12 @@ namespace YumeEngine
 		return true;
 	}
 
+	void StaticModel::SetMaterial(MaterialPtr ptr)
+	{
+		for(int i=0; i < batches_.size(); ++i)
+			batches_[i]->material_ = ptr;
+	}
+
 	void StaticModel::Initialize()
 	{
 		SetWorld(DirectX::XMMatrixIdentity());

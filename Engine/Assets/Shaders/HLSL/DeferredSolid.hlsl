@@ -38,7 +38,7 @@ struct PS_MESH_OUTPUT
 cbuffer camera_vs               : register(b0)
 {
     float4x4 vp                 : packoffset(c0);
-    float4x4 vp_inv             : packoffset(c4);
+    float4x4 wv             : packoffset(c4);
     float3 camera_pos           : packoffset(c8);
     float pad                   : packoffset(c8.w);
 }
@@ -72,6 +72,7 @@ VS_MESH_OUTPUT MeshVs(in VS_MESH_INPUT input)
 	VS_MESH_OUTPUT output;
 
     float4 pos_world = mul(world, float4(input.pos, 1.0));
+
     output.ldepth = pos_world.xyz - camera_pos;
 
     output.pos = mul(vp, pos_world);

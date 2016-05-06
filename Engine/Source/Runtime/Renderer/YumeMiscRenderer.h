@@ -98,6 +98,8 @@ namespace YumeEngine
 
 
 		DirectX::XMVECTOR frustumPlanes_[6];
+
+		YumeVector<TexturePtr>::type GetFreeTextures();
  		//~
 
 		void Render();

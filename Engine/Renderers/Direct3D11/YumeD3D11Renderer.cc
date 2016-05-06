@@ -277,11 +277,13 @@ namespace YumeEngine
 			impl_->vertexOffsets_[i] = 0;
 		}
 
+		srvs_.resize(MAX_TEXTURE_UNITS);
 		for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
 		{
 			textures_[i] = 0;
 			impl_->shaderResourceViews_[i] = 0;
 			impl_->samplers_[i] = 0;
+			srvs_[i] = 0;
 		}
 
 		for(unsigned i = 0; i < MAX_RENDERTARGETS; ++i)
@@ -372,7 +374,7 @@ namespace YumeEngine
 		}
 	}
 
-	void YumeD3D11Renderer::SetRenderTargetsAndUAVs(unsigned numRtv,unsigned uavStart,unsigned numUAV,YumeTexture** textures) 
+	void YumeD3D11Renderer::SetRenderTargetsAndUAVs(unsigned numRtv,unsigned uavStart,unsigned numUAV,YumeTexture** textures)
 	{
 		std::vector<ID3D11UnorderedAccessView*> uavs;
 
@@ -384,7 +386,7 @@ namespace YumeEngine
 				uavs.push_back(nullptr);
 			textures++;
 		}
-		
+
 		for(int i=0; i < MAX_RENDERTARGETS; ++i)
 			renderTargets_[i] = 0;
 
@@ -1732,19 +1734,17 @@ namespace YumeEngine
 		}
 	}
 
-	void YumeD3D11Renderer::PSBindSRV(unsigned start,unsigned count,YumeTexture** textures)
+	void YumeD3D11Renderer::PSBindSRV(unsigned start,unsigned count,YumeVector<YumeTexture*>::type textures)
 	{
-		std::vector<ID3D11ShaderResourceView*> srvs;
+		for(int i=0; i< 16; ++i)
+			srvs_[i] = 0;
 
-		for(int i=0; i < count; ++i)
+		for(int i=start; i < 16; ++i)
 		{
-			if(*textures)
-				srvs.push_back((ID3D11ShaderResourceView*)(*textures)->GetShaderResourceView());
-			else
-				srvs.push_back(nullptr);
-			textures++;
+			if(textures[i])
+				srvs_[i] = ((ID3D11ShaderResourceView*)(textures[i])->GetShaderResourceView());
 		}
-		impl_->deviceContext_->PSSetShaderResources(start,count,&srvs[0]);
+		impl_->deviceContext_->PSSetShaderResources(0,MAX_TEXTURE_UNITS,&srvs_[0]);
 	}
 
 	void YumeD3D11Renderer::VSBindSRV(unsigned start,unsigned count,YumeTexture** textures)
@@ -2475,7 +2475,7 @@ namespace YumeEngine
 		if(depthStateDirty_)
 		{
 			unsigned newDepthStateHash =
-				(depthWrite_ ? 1 : 0) | (depthEnable_ ? 2 : 0 ) | (stencilTest_ ? 4 : 0) | (depthTestMode_ << 4) | ((stencilCompareMask_ & 0xff) << 5) |
+				(depthWrite_ ? 1 : 0) | (depthEnable_ ? 2 : 0) | (stencilTest_ ? 4 : 0) | (depthTestMode_ << 4) | ((stencilCompareMask_ & 0xff) << 5) |
 				((stencilWriteMask_ & 0xff) << 13) | (stencilTestMode_ << 21) |
 				((stencilFail_ + stencilZFail_ * 5 + stencilPass_ * 25) << 24);
 			if(newDepthStateHash != depthStateHash_ || stencilRefDirty_)

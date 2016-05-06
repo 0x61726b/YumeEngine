@@ -47,6 +47,8 @@ namespace YumeEngine
 		const YumeMap<YumeHash,DirectX::XMFLOAT4>::type& GetShaderVectors4() { return shaderVectors4; }
 
 		const YumeVector<SharedPtr<YumeTexture> >::type& GetTextures() const { return textures_; }
+
+		unsigned GetNumTextures() const { return numTextures; }
 	private:
 		typedef YumeVector<SharedPtr<YumeTexture> > MaterialTextures;
 		MaterialTextures::type textures_;
@@ -56,6 +58,8 @@ namespace YumeEngine
 
 		YumeMap<YumeHash,DirectX::XMFLOAT3>::type shaderVectors3;
 		YumeMap<YumeHash,DirectX::XMFLOAT4>::type shaderVectors4;
+
+		unsigned numTextures;
 	};
 
 	typedef Material* MaterialPtr;

@@ -2,7 +2,7 @@
   <RenderTargets>
     <Rt Name="SCENE_COLORS" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_NORMALS" Format="rgba10u2" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-    <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
 
     <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
