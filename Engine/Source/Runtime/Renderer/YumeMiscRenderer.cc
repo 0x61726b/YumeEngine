@@ -136,7 +136,8 @@ namespace YumeEngine
 		giEnabled_(true),
 		updateRsm_(true),
 		rsmSize(1024),
-		num_propagations_(64)
+		num_propagations_(64),
+		disableFrustumCull_(false)
 	{
 		rhi_ = gYume->pRHI ;
 
@@ -165,8 +166,10 @@ namespace YumeEngine
 		defaultPass_ = YumeAPINew RenderPass;
 
 		defaultPass_->Load("RenderCalls/Deferred.xml");
-		defaultPass_->Load("RenderCalls/SSAO.xml");
+		defaultPass_->Load("RenderCalls/ShowGBuffer.xml");
+		/*defaultPass_->Load("RenderCalls/SSAO.xml");*/
 		/*defaultPass_->Load("RenderCalls/BilateralBlur.xml");*/
+
 
 
 
@@ -752,6 +755,7 @@ namespace YumeEngine
 					YumeVector<TexturePtr>::type inputs;
 
 
+
 					unsigned startIndex = M_MAX_UNSIGNED;
 					unsigned inputSize = call->GetNumInputs();
 					for(unsigned i = 0; i < MAX_TEXTURE_UNITS; ++i)
@@ -1141,7 +1145,7 @@ namespace YumeEngine
 
 
 			YumeVector<TexturePtr>::type inputs = GetFreeTextures();
-			
+
 			inputs[2] = colors;
 			inputs[3] = spec;
 			inputs[4] = normals;
@@ -1213,9 +1217,11 @@ namespace YumeEngine
 
 				float fsize = bbSize.x;
 
-				if(!CheckBB(bbCenter.x,bbCenter.y,bbCenter.z,len))
-					continue;
-
+				if(!disableFrustumCull_)
+				{
+					if(!CheckBB(bbCenter.x,bbCenter.y,bbCenter.z,len))
+						continue;
+				}
 				const YumeMap<YumeHash,Variant>::type& parameters = material->GetParameters();
 				YumeMap<YumeHash,Variant>::const_iterator It = parameters.begin();
 
@@ -1253,7 +1259,7 @@ namespace YumeEngine
 					TexturePtr alpha = material->GetTexture(MT_ALPHA);
 
 					YumeVector<TexturePtr>::type textures = GetFreeTextures();
-					
+
 					textures[MT_DIFFUSE] = diffuse;
 					textures[MT_NORMAL] = normal;
 					textures[MT_SPECULAR] = specular;
@@ -1275,7 +1281,7 @@ namespace YumeEngine
 	{
 		YumeVector<TexturePtr>::type textures;
 
-		for( int i=0; i < 16; ++i)
+		for(int i=0; i < 16; ++i)
 			textures.push_back(0);
 
 		return textures;

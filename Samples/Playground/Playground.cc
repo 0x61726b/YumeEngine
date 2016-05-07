@@ -65,11 +65,11 @@ namespace YumeEngine
 
 		m_RadiusMultiplier  = 1;
 		m_AngleBias         = 30;
-		m_NumDirs		    = 25;
-		m_NumSteps		    = 32;
+		m_NumDirs		    = 16;
+		m_NumSteps		    = 8;
 		m_Contrast          = 1.25f;
 		m_Attenuation       = 1.0f;
-		m_AORadius			= 10;
+		m_AORadius			= 50;
 
 		m_BlurRadius     = 7;
 		m_Sharpness      = 16.0f;
@@ -98,7 +98,7 @@ namespace YumeEngine
 #endif
 
 
-		StaticModel* dragon= CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(0,5,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		/*StaticModel* dragon= CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(0,5,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
 		StaticModel* dragon2= CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(15,5,15),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
 		StaticModel* dragon3= CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(30,5,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
 		StaticModel* plane = CreateModel("Models/Primitives/plane.yume",DirectX::XMFLOAT3(0,0,0));
@@ -110,10 +110,10 @@ namespace YumeEngine
 		plane->SetMaterial(diff);
 		dragon->SetMaterial(diff);
 		dragon2->SetMaterial(diff);
-		dragon3->SetMaterial(diff);
+		dragon3->SetMaterial(diff);*/
 		
 
-		/*StaticModel* plane = CreateModel("Models/cornell/cornellbox.yume");*/
+		StaticModel* plane = CreateModel("Models/sponza/sponza.yume");
 
 
 		DirectX::XMFLOAT3 min = gYume->pRenderer->GetMinBb();
@@ -135,7 +135,7 @@ namespace YumeEngine
 		dirLight->SetColor(YumeColor(1,1,1,0));
 
 
-		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,45);
+		/*CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,45);*/
 		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,60);
 		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,90);
 		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,120);

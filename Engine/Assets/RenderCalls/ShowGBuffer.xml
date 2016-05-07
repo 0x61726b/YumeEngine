@@ -1,0 +1,18 @@
+<Yume>
+  <RenderTargets />
+  <Samplers />
+  <RenderCalls>
+    <Triangle PassName="ShowGBuffer" Identifier="ShowGBuffer" Ps="ShowGBuffer" PsEntry="ps_show_gbuffer" Flags="NODS NOBLEND CLEAR" Output="Backbuffer">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="PostProcessingTarget"/>
+        <Rt Index="1" Name="SCENE_COLORS" />
+        <Rt Index="2" Name="SCENE_SPECULAR" />
+        <Rt Index="3" Name="SCENE_NORMALS" />
+        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
+      </Inputs>
+    </Triangle>
+  </RenderCalls>
+</Yume>

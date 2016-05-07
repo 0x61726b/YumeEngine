@@ -81,14 +81,7 @@ namespace YumeEngine
 			drawDebug_ = !drawDebug_;
 
 		if(input->GetKeyPress(KEY_F1))
-			gYume->pRenderer->GetDefaultPass()->DisableRenderCalls("SSAO");
-
-		if(input->GetKeyPress(KEY_F2))
-			gYume->pRenderer->GetDefaultPass()->SetShaderParameter("QualityMode",0.0f);
-		if(input->GetKeyPress(KEY_F3))
-			gYume->pRenderer->GetDefaultPass()->SetShaderParameter("QualityMode",1.0f);
-		if(input->GetKeyPress(KEY_F4))
-			gYume->pRenderer->GetDefaultPass()->SetShaderParameter("QualityMode",2.0f);
+			gYume->pRenderer->GetDefaultPass()->DisableRenderCalls("ShowGBuffer");
 
 
 
