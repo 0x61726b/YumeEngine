@@ -69,7 +69,7 @@ namespace YumeEngine
 		m_NumSteps		    = 8;
 		m_Contrast          = 1.25f;
 		m_Attenuation       = 1.0f;
-		m_AORadius			= 50;
+		m_AORadius			= 2;
 
 		m_BlurRadius     = 7;
 		m_Sharpness      = 16.0f;
@@ -113,7 +113,7 @@ namespace YumeEngine
 		dragon3->SetMaterial(diff);*/
 		
 
-		StaticModel* plane = CreateModel("Models/sponza/sponza.yume");
+		StaticModel* plane = CreateModel("Models/cornell/cornellbox.yume");
 
 
 		DirectX::XMFLOAT3 min = gYume->pRenderer->GetMinBb();
@@ -129,7 +129,7 @@ namespace YumeEngine
 		dirLight->SetName("DirLight");
 		dirLight->SetType(LT_DIRECTIONAL);
 		/*dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));*/
-		dirLight->SetPosition(DirectX::XMVectorSet(0,50,0,0));
+		dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));
 		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
 		dirLight->SetColor(YumeColor(1,1,1,0));

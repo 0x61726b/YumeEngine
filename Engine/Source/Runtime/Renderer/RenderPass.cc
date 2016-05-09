@@ -127,6 +127,7 @@ namespace YumeEngine
 				const char* depth = child.attribute("Height").as_string();
 				const char* arraySize = child.attribute("ArraySize").as_string();
 				const char* clearColor= child.attribute("ClearColor").as_string();
+				const char* stencil = child.attribute("Stencil").as_string();
 
 				RenderTargetDesc desc;
 				ZeroMemory(&desc,sizeof(desc));
@@ -150,7 +151,11 @@ namespace YumeEngine
 				if(strcmp(type,"Ds") == 0)
 				{
 					desc.Type = RT_DEPTHSTENCIL;
-					desc.Usage = TextureUsage::TEXTURE_DEPTHSTENCIL;
+
+					if(strcmp(stencil,"readonly") == 0)
+						desc.Usage = TextureUsage::TEXTURE_DEPTHSTENCIL_READONLY;
+					else
+						desc.Usage = TextureUsage::TEXTURE_DEPTHSTENCIL;
 				}
 
 				if(strcmp(type,"Uav") == 0)
@@ -272,6 +277,8 @@ namespace YumeEngine
 
 				const char* singleOutput = child.attribute("Output").as_string();
 
+				const char* dstencil = child.attribute("Stencil").as_string();
+
 
 
 				RenderCallPtr renderCall = YumeAPINew RenderCall(ct,vertexShader,pixelShader,geometryShader,vertexEntry,pixelEntry,geometryEntry);
@@ -283,6 +290,12 @@ namespace YumeEngine
 					TexturePtr sOutput = GetTextureByName(singleOutput);
 					renderCall->SetOutput(0,sOutput);
 				}
+
+				if(strlen(dstencil) > 0)
+				{
+					renderCall->SetDepthStencil(GetTextureByName(dstencil));
+				}
+
 
 
 				XmlNode samplerBindings = child.child("Samplers");
@@ -424,6 +437,9 @@ namespace YumeEngine
 
 						if(!strcmp(flagsVector[i].c_str(),"DEFERRED"))
 							renderCall->SetDeferred(true);
+
+						if(!strcmp(flagsVector[i].c_str(),"WRITESTENCIL"))
+							renderCall->SetWriteStencil(true);
 					}
 				}
 				AddRenderCall(renderCall);
@@ -507,13 +523,13 @@ namespace YumeEngine
 				++enabledCalls;
 		}
 
-		//Find the last render call and make sure its outputting to backbuffer. This may break tho not sure.
+		//Find the last render call and make sure its outputting to backbuffer. This may break tho not sure. Of course it breaks something
 
-		unsigned last = enabledCalls - 1;
+		//unsigned last = enabledCalls - 1;
 
-		RenderCallPtr c = calls_[last];
+		//RenderCallPtr c = calls_[last];
 
-		c->SetOutput(0,0);
+		//c->SetOutput(0,0);
 	}
 
 	void RenderPass::EnableRenderCalls(const YumeString& id)

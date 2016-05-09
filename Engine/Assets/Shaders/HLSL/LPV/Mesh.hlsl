@@ -50,15 +50,15 @@ cbuffer meshdata_vs             : register(b1)
 
 cbuffer meshdata_ps             : register(b0)
 {
-	  float4 diffuse_color        : packoffset(c0);
-    float4 specular_color       : packoffset(c1);
-	  float4 emissive_color	    : packoffset(c2);
+	  float4 DiffuseColor        : packoffset(c0);
+    float4 SpecularColor       : packoffset(c1);
+	  float4 EmissiveColor	    : packoffset(c2);
 	  bool has_diffuse_tex        : packoffset(c3.x);
 	  bool has_normal_tex         : packoffset(c3.y);
 	  bool has_specular_tex       : packoffset(c3.z);
 	  bool has_alpha_tex          : packoffset(c3.w);
-    float shading_mode           : packoffset(c4.x);
-    float roughness             : packoffset(c4.y);
+    float ShadingMode           : packoffset(c4.x);
+    float Roughness             : packoffset(c4.y);
     float refractive_index      : packoffset(c4.z);
 }
 
@@ -115,15 +115,15 @@ PS_MESH_OUTPUT MeshPs(in VS_MESH_OUTPUT input)
 	if (has_diffuse_tex)
 		output.color = pow(abs(diffuse_tex.Sample(StandardFilter, input.texcoord)), GAMMA);
 	else
-        output.color = diffuse_color;
+        output.color = DiffuseColor;
 
     // emissive
-    if (length(emissive_color.rgb) > 0.0)
+    if (length(EmissiveColor.rgb) > 0.0)
     {
         if (has_diffuse_tex)
-            output.color *= emissive_color;
+            output.color *= EmissiveColor;
         else
-            output.color += emissive_color;
+            output.color += EmissiveColor;
     }
 
 	if (output.color.a < 1.0)
@@ -155,16 +155,16 @@ PS_MESH_OUTPUT MeshPs(in VS_MESH_OUTPUT input)
 	else
 		output.normal = float4(normalize(input.norm.xyz)/2.0 + 0.5, 1.0);
 
-    output.normal.a = shading_mode / 2.0;
+    output.normal.a = ShadingMode / 2.0;
 
     // specular
 	if (has_specular_tex)
 		output.specular.rgb = specular_tex.Sample(StandardFilter, input.texcoord).rrr;
 	else
-		output.specular.rgb = specular_color.rgb;
+		output.specular.rgb = SpecularColor.rgb;
 
     // TODO: FIX AA for roughness
-    output.specular.a = roughness;
+    output.specular.a = Roughness;
 
     // linear depth + z^2 moment for vsm
 	output.ldepth = float2(z, z*z);

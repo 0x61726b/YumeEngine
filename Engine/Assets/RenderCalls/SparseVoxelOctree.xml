@@ -1,49 +1,13 @@
 <Yume>
   <RenderTargets>
-    <Rt Name="RSM_COLORS" Format="rgba16f" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
-
-    <Rt Name="RSM_NORMALS" Format="rgba10u2" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
-    <Rt Name="RSM_LINEARDEPTH" Format="rg32f" Mips="0" Width="1024" Height="1024" ArraySize="1"/>
-    <Rt Name="RSM_SPECULAR" Format="rgba16f" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
-    <Ds Name="RSM_DEPTHSTENCIL" Format="r32typeless" Mips="1" Width="1024" Height="1024" ArraySize="1"/>
-
     <Uav Name="UAV_NORMAL" Format="rgba16f" Mips="0" Width="256" Height="256" Depth="256" ArraySize="1" />
     <Uav Name="UAV_RHO" Format="rgba16f" Mips="0" Width="256" Height="256" Depth="256" ArraySize="1" />
-
-    <Rt Name="SCENE_COLORS" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-    <Rt Name="SCENE_NORMALS" Format="rgba10u2" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-    <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
-    <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-
-    <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
   </RenderTargets>
   <Samplers>
-    <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />
     <Sampler Name="VPLFilter" Filter="Nearest" Comprasion="Always" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
     <Sampler Name="SVOFilter" Filter="Trilinear" Comprasion="Never" AddressU="Border" AddressV="Border" AddressW="Border" />
-    <Sampler Name="ShadowFilter" Filter="Trilinear" Comprasion="Never" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
   </Samplers>
   <RenderCalls>
-    <Clear PassName="ClearRSM" Identifier="RSM" ClearTargets="Default" Flags="CLEAR_DEPTH SHADOW">
-      <Targets>
-        <Rt Name="RSM_COLORS" ClearColor="0 0 0 1" />
-        <Rt Name="RSM_NORMALS" ClearColor="0 0 0 1" />
-        <Rt Name="RSM_LINEARDEPTH" ClearColor="10000 10000 10000 10000" />
-        <Rt Name="RSM_SPECULAR" ClearColor="0 0 0 1" />
-        <Ds Name="RSM_DEPTHSTENCIL" />
-      </Targets>
-    </Clear>
-    <Scene PassName="RenderRsm" Identifier="RSM" Vs="LPV/Mesh" Ps="LPV/Mesh" VsEntry="MeshVs" PsEntry="MeshPs" Flags="NOBLEND SHADOW">
-      <Samplers>
-        <Ps Name="Standard" Register="0" />
-      </Samplers>
-      <Outputs>
-        <Rt Index="0" Name="RSM_COLORS" />
-        <Rt Index="1" Name="RSM_NORMALS"/>
-        <Rt Index="2" Name="RSM_LINEARDEPTH"/>
-        <Rt Index="3" Name="RSM_SPECULAR"/>
-      </Outputs>
-    </Scene>
     <Scene PassName="VoxelizeScene" Identifier="RSMVoxelize" Vs="svo_voxelize" Ps="svo_voxelize" Gs="svo_voxelize" VsEntry="MeshVs" PsEntry="MeshPs" Flags="VOXELIZE">
       <Parameters>
         <Param Name="world_to_svo" />
@@ -70,51 +34,5 @@
         <Param Name="bb_max" />
       </Parameters>
     </SvoInject>
-    <Scene PassName="GBuffer" Identifier="Main" Vs="LPV/Mesh" Ps="LPV/Mesh" VsEntry="MeshVs" PsEntry="MeshPs" Flags="NOBLEND DEFERRED">
-      <Samplers>
-        <Ps Name="Standard" Register="0" />
-      </Samplers>
-      <Outputs>
-        <Rt Index="0" Name="SCENE_COLORS" />
-        <Rt Index="1" Name="SCENE_NORMALS"/>
-        <Rt Index="2" Name="SCENE_LINEARDEPTH"/>
-        <Rt Index="3" Name="SCENE_SPECULAR"/>
-      </Outputs>
-    </Scene>
-    <Mips PassName="GenMips" Identifier="Main">
-      <Inputs>
-        <Rt Index="0" Name="RSM_LINEARDEPTH"/>
-        <Rt Index="1" Name="SCENE_LINEARDEPTH" />
-      </Inputs>
-    </Mips>
-    <Triangle PassName="FinalizeSVO" Identifier="Main" Ps="deferred_vct" PsEntry="ps_vct" Flags="NODS" Output="Backbuffer">
-      <Samplers>
-        <Ps Name="Standard" Register="0" />
-        <Ps Name="SVOFilter" Register="1" />
-        <Ps Name="ShadowFilter" Register="2" />
-      </Samplers>
-      <Inputs>
-        <Rt Index="2" Name="SCENE_COLORS"/>
-        <Rt Index="3" Name="SCENE_SPECULAR" />
-        <Rt Index="4" Name="SCENE_NORMALS" />
-        <Rt Index="5" Name="SCENE_LINEARDEPTH" />
-        <Rt Index="6" Name="RSM_LINEARDEPTH" />
-        <Rt Index="7" Name="UAV_NORMAL" />
-        <Rt Index="8" Name="UAV_RHO" />
-      </Inputs>
-      <Parameters>
-        <Param Name="gi_scale" Value="1" />
-        <Param Name="glossiness" Value="4" />
-        <Param Name="debug_gi" Value="true" />
-        <Param Name="scene_dim_max" Value="0 0 0 0" />
-        <Param Name="scene_dim_min" Value="0 0 0 0" />
-        <Param Name="light_vp_tex" />
-        <Param Name="world_to_svo" />
-        <Param Name="light_vp" />
-        <Param Name="light_vp_inv" />
-        <Param Name="bb_min" />
-        <Param Name="bb_max" />
-      </Parameters>
-    </Triangle>
   </RenderCalls>
 </Yume>

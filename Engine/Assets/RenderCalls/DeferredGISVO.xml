@@ -1,0 +1,64 @@
+<Yume>
+  <RenderTargets>
+    <Rt Name="SCENE_COLORS" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_NORMALS" Format="rgba10u2" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+
+    <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+
+    <Ds Name="LightDSV" Format="d24s8" Mips="1" Width="1600" Height="900" ArraySize="1" Stencil="readonly"/>
+  </RenderTargets>
+  <Samplers>
+    <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />
+    <Sampler Name="ShadowFilter" Filter="Trilinear" Comprasion="Never" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
+  </Samplers>
+  <RenderCalls>
+    <Scene PassName="GBuffer" Identifier="Main" Vs="DeferredSolid" Ps="DeferredSolid" VsEntry="MeshVs" PsEntry="MeshPs" Flags="DEFERRED WRITESTENCIL" Stencil="LightDSV">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+      </Samplers>
+      <Outputs>
+        <Rt Index="0" Name="SCENE_COLORS" />
+        <Rt Index="1" Name="SCENE_NORMALS"/>
+        <Rt Index="2" Name="SCENE_LINEARDEPTH"/>
+        <Rt Index="3" Name="SCENE_SPECULAR"/>
+      </Outputs>
+    </Scene>
+    <Mips PassName="GenMips" Identifier="Main">
+      <Inputs>
+        <Rt Index="0" Name="RSM_LINEARDEPTH"/>
+        <Rt Index="1" Name="SCENE_LINEARDEPTH" />
+      </Inputs>
+    </Mips>
+    <Triangle PassName="FinalizeSVO" Identifier="Main" Ps="deferred_vct" PsEntry="ps_vct" Flags="NODS" Output="Backbuffer">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="SVOFilter" Register="1" />
+        <Ps Name="ShadowFilter" Register="2" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="2" Name="SCENE_COLORS"/>
+        <Rt Index="3" Name="SCENE_SPECULAR" />
+        <Rt Index="4" Name="SCENE_NORMALS" />
+        <Rt Index="5" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="6" Name="RSM_LINEARDEPTH" />
+        <Rt Index="7" Name="UAV_NORMAL" />
+        <Rt Index="8" Name="UAV_RHO" />
+      </Inputs>
+      <Parameters>
+        <Param Name="gi_scale" Value="100" />
+        <Param Name="glossiness" Value="4" />
+        <Param Name="debug_gi" Value="false" />
+        <Param Name="scene_dim_max" Value="0 0 0 0" />
+        <Param Name="scene_dim_min" Value="0 0 0 0" />
+        <Param Name="light_vp_tex" />
+        <Param Name="world_to_svo" />
+        <Param Name="light_vp" />
+        <Param Name="light_vp_inv" />
+        <Param Name="bb_min" />
+        <Param Name="bb_max" />
+      </Parameters>
+    </Triangle>
+  </RenderCalls>
+</Yume>

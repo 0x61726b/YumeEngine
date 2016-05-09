@@ -37,6 +37,8 @@ namespace YumeEngine
 	class YumePostProcess;
 	class RenderPass;
 	class Scene;
+	class SceneNode;
+	class GIVolume;
 
 	class YumeAPIExport YumeMiscRenderer : 
 		public YumeBase,
@@ -68,8 +70,8 @@ namespace YumeEngine
 		Scene* GetScene() const {return scene_; };
 		Scene* scene_;
 
-		LightPropagationVolume giLpvVolume_;
-		SparseVoxelOctree giSvoVolume_;
+		GIVolume* giVolume_;
+		/*SparseVoxelOctree giVolume_;*/
 
 		unsigned curr_;
 		unsigned next_;
@@ -136,7 +138,7 @@ namespace YumeEngine
 		void SetLightFlux(float f);
 		void SetLPVNumberIterations(int num);
 		
-		void UpdateMeshBb(YumeGeometry* mesh,const DirectX::XMMATRIX& world);
+		void UpdateMeshBb(SceneNode* node,const DirectX::XMMATRIX& world);
 	private: //Geometry stuff
 		SharedPtr<YumeGeometry> fullscreenTriangle_;
 		SharedPtr<YumeGeometry> pointLightGeometry_;

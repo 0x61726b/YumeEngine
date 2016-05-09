@@ -39,12 +39,20 @@
 #include "Light.h"
 #include "Material.h"
 #include "LightPropagationVolume.h"
+#include "GlobalIlluminationVolume.h"
 #include "StaticModel.h"
 
 using namespace DirectX;
 
 //#define DEBUGGING_RSM
 #define DISABLE_CALLS
+
+
+#define GIS_NO_GI 0
+#define GIS_LPV 1
+#define GIS_SVO 2
+
+#define GI_SOLUTION GIS_SVO
 
 namespace YumeEngine
 {
@@ -137,7 +145,7 @@ namespace YumeEngine
 		updateRsm_(true),
 		rsmSize(1024),
 		num_propagations_(64),
-		disableFrustumCull_(false)
+		disableFrustumCull_(true)
 	{
 		rhi_ = gYume->pRHI ;
 
@@ -165,25 +173,37 @@ namespace YumeEngine
 
 		defaultPass_ = YumeAPINew RenderPass;
 
-		defaultPass_->Load("RenderCalls/Deferred.xml");
-		defaultPass_->Load("RenderCalls/ShowGBuffer.xml");
+		/*defaultPass_->Load("RenderCalls/Deferred.xml");*/
+
+#if GI_SOLUTION == GIS_LPV
+		defaultPass_->Load("RenderCalls/ReflectiveShadowMap.xml");
+		defaultPass_->Load("RenderCalls/DeferredGI.xml");
+
+		giVolume_ = new LightPropagationVolume();
+
+		giVolume_->Create(32);
+
+		curr_ = 0;
+		next_ = 1;
+#else
+		defaultPass_->Load("RenderCalls/ReflectiveShadowMap.xml");
+		defaultPass_->Load("RenderCalls/SparseVoxelOctree.xml");
+		defaultPass_->Load("RenderCalls/DeferredGISVO.xml");
+
+
+		giVolume_ = new SparseVoxelOctree();
+
+		giVolume_->Create(256);
+#endif
+		/*defaultPass_->Load("RenderCalls/SSAO.xml");*/
+		/*defaultPass_->Load("RenderCalls/ShowGBuffer.xml");*/
+		/*defaultPass_->Load("RenderCalls/Deferred.xml");
+		defaultPass_->Load("RenderCalls/ShowGBuffer.xml");*/
 		/*defaultPass_->Load("RenderCalls/SSAO.xml");*/
 		/*defaultPass_->Load("RenderCalls/BilateralBlur.xml");*/
 
 
-
-
 		Setup();
-
-		giEnabled_ = false;
-
-		if(GetGIEnabled())
-		{
-			giSvoVolume_.Create(256);
-
-			curr_ = 0;
-			next_ = 1;
-		}
 
 
 
@@ -243,8 +263,6 @@ namespace YumeEngine
 		Light* dirLight = static_cast<Light*>(scene_->GetDirectionalLight());
 		dirLight->UpdateLightParameters();
 
-		SetGIParameters();
-
 		//abort variant matrices
 		defaultPass_->SetShaderParameter("scene_dim_max",XMFLOAT4(GetMaxBb().x,GetMaxBb().y,GetMaxBb().z,1.0f));
 		defaultPass_->SetShaderParameter("scene_dim_min",XMFLOAT4(GetMinBb().x,GetMinBb().y,GetMinBb().z,1.0f));
@@ -257,7 +275,7 @@ namespace YumeEngine
 			DirectX::XMStoreFloat4x4(&i,I);
 
 			/*giLpvVolume_.SetModelMatrix(i,bbMin,bbMax);*/
-			giSvoVolume_.SetModelMatrix(i,bbMin,bbMax);
+			giVolume_->SetModelMatrix(i,bbMin,bbMax);
 		}
 
 		ConstructFrustum(zFar);
@@ -349,7 +367,8 @@ namespace YumeEngine
 					if(call->GetDepthStencil())
 					{
 						gYume->pRHI->SetDepthStencil(call->GetDepthStencil());
-						rhi_->ClearDepthStencil(CLEAR_DEPTH | CLEAR_STENCIL,1.0f,0);
+						/*rhi_->ClearDepthStencil(CLEAR_DEPTH | CLEAR_STENCIL,1.0f,0);*/
+						rhi_->ClearDepthStencil(CLEAR_DEPTH,1.0f,0);
 					}
 
 
@@ -381,18 +400,19 @@ namespace YumeEngine
 						if(call->IsVoxelizePass())
 						{
 							//Voxelize scene
+							giVolume_->Voxelize(call,0,true);
 
-							SceneNodes::type& renderables = scene_->GetRenderables();
+							//SceneNodes::type& renderables = scene_->GetRenderables();
 
-							for(int i=0; i < renderables.size(); ++i)
-							{
-								SceneNode* node = renderables[i];
+							//for(int i=0; i < renderables.size(); ++i)
+							//{
+							//	SceneNode* node = renderables[i];
 
-								//YumeMesh* geometry = node->GetGeometry();
-								//auto geometries = geometry->GetGeometries();
+							//	//YumeMesh* geometry = node->GetGeometry();
+							//	//auto geometries = geometry->GetGeometries();
 
-								//giSvoVolume_.Voxelize(call,geometry,i == 0);
-							}
+							//	//giSvoVolume_.Voxelize(call,geometry,i == 0);
+							//}
 							/*gYume->pRenderer->GetDefaultPass()->DisableRenderCalls("RSM");
 							updateRsm_ = false;*/
 						}
@@ -409,32 +429,55 @@ namespace YumeEngine
 							TexturePtr lineardepth = call->GetOutput(2);
 							TexturePtr spec = call->GetOutput(3);
 
-							TexturePtr stencil = defaultPass_->GetTextureByName("LightDSV");
+
+							TexturePtr stencil = 0;
+
+							if(call->GetRendererFlags() & RF_NODEPTHSTENCIL)
+							{
+								rhi_->SetNoDepthStencil(true);
+							}
+							else
+							{
+								rhi_->SetNoDepthStencil(false);
+								stencil = call->GetDepthStencil();
+
+
+								if(!stencil)
+								{
+									rhi_->SetDepthStencil((Texture2DPtr)0);
+									rhi_->ClearDepthStencil(CLEAR_DEPTH,1.0f,0.0f);
+								}
+								else
+								{
+									rhi_->SetDepthStencil((Texture2DPtr)stencil);
+									rhi_->ClearDepthStencil(CLEAR_DEPTH | CLEAR_STENCIL,1.0f,0.0f);
+
+									if(call->GetStencilWrite())
+										rhi_->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,OP_KEEP,1);
+								}
+							}
 
 							rhi_->SetRenderTarget(0,colors);
 							rhi_->SetRenderTarget(1,normals);
 							rhi_->SetRenderTarget(2,lineardepth);
 							rhi_->SetRenderTarget(3,spec);
 
-							if(stencil)
-							{
-								rhi_->SetDepthStencil((Texture2DPtr)stencil);
-							}
-							rhi_->SetNoDepthStencil(false);
-							rhi_->SetDepthWrite(true);
+
+
+
 
 							rhi_->SetViewport(IntRect(0,0,rhi_->GetWidth(),rhi_->GetHeight()));
 
-							rhi_->ClearDepthStencil(CLEAR_DEPTH | CLEAR_STENCIL,1.0f,0.0f);
+
 							rhi_->ClearRenderTarget(0,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,0));
 							rhi_->ClearRenderTarget(1,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,0));
 							rhi_->ClearRenderTarget(2,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,0));
 							rhi_->ClearRenderTarget(3,CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,0));
 
-
 							rhi_->SetBlendMode(BLEND_REPLACE);
-							rhi_->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,OP_KEEP,1);
-							rhi_->SetDepthTest(CMP_LESS);
+							/*rhi_->SetBlendMode(BLEND_REPLACE);
+							rhi_->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,OP_KEEP,255);
+							rhi_->SetDepthTest(CMP_LESS);*/
 
 
 							rhi_->SetShaders(call->GetVs(),call->GetPs());
@@ -473,11 +516,6 @@ namespace YumeEngine
 					SetSamplers(call);
 
 					rhi_->SetShaders(call->GetVs(),call->GetPs(),call->GetGs());
-
-					DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
-					DirectX::XMFLOAT4X4 i;
-					DirectX::XMStoreFloat4x4(&i,I);
-					giLpvVolume_.SetModelMatrix(i,bbMin,bbMax);
 
 					ApplyShaderParameters(call);
 
@@ -574,11 +612,12 @@ namespace YumeEngine
 					TexturePtr clearUavs[1] ={0};
 					rhi_->SetRenderTargetsAndUAVs(0,1,1,clearUavs);
 
-					giSvoVolume_.Filter();
 
+					giVolume_->Filter();
 
+					defaultPass_->DisableRenderCalls("RSM");
 					defaultPass_->DisableRenderCalls("RSMVoxelize");
-					/*defaultPass_->DisableRenderCalls("RSMInject");*/
+					defaultPass_->DisableRenderCalls("RSMInject");
 					updateRsm_ = false;
 
 					rhi_->BindResetTextures(6,3);
@@ -637,15 +676,16 @@ namespace YumeEngine
 
 					rhi_->SetShaders(call->GetVs(),call->GetPs(),call->GetGs());
 
-					SetGIParameters();
+					/*SetGIParameters();*/
 
 
-
+#ifndef SVO
 					static YumeVector<YumeVertexBuffer*>::type vertexBuffers(1);
 					static YumeVector<unsigned>::type elementMasks(1);
-					vertexBuffers[0] = giLpvVolume_.GetLPVVolume()->GetVertexBuffer(0);
-					elementMasks[0] = giLpvVolume_.GetLPVVolume()->GetVertexBuffer(0)->GetElementMask();
+					vertexBuffers[0] = giVolume_->GetVolumeGeometry()->GetVertexBuffer(0);
+					elementMasks[0] = giVolume_->GetVolumeGeometry()->GetVertexBuffer(0)->GetElementMask();
 					rhi_->SetVertexBuffers(vertexBuffers,elementMasks);
+#endif
 
 					rhi_->BindNullIndexBuffer();
 
@@ -781,6 +821,10 @@ namespace YumeEngine
 
 					/*rhi_->BindDefaultDepthStencil();
 					rhi_->SetNoDepthStencil(false);*/
+					rhi_->SetNoDepthStencil(true);
+					rhi_->SetDepthStencil((Texture2DPtr)0);
+					rhi_->SetStencilTest(true,CMP_ALWAYS,OP_KEEP,OP_KEEP,OP_INCR,OP_DECR,0);
+
 
 					Light* light = static_cast<Light*>(scene_->GetDirectionalLight());
 
@@ -795,13 +839,18 @@ namespace YumeEngine
 						color.r_,color.g_,color.b_,color.a_
 					};
 
+
+
+
+
 					gYume->pRHI->SetShaderParameter("main_light",f,4*3);
 
 					bool deptheanble = rhi_->GetDepthState();
 					bool depthwrite = rhi_->GetDepthWrite();
 
-					rhi_->SetDepthEnable(false);
-					rhi_->SetDepthWrite(false);
+
+					/*rhi_->SetDepthEnable(false);
+					rhi_->SetDepthWrite(false);*/
 
 					SetCameraParameters(false);
 
@@ -821,6 +870,7 @@ namespace YumeEngine
 							rhi_->ClearRenderTarget(0,CLEAR_COLOR);
 					}
 
+					rhi_->SetNoBlendState(true);
 
 
 					gYume->pRHI->SetShaderParameter("scene_dim_max",XMFLOAT4(GetMaxBb().x,GetMaxBb().y,GetMaxBb().z,1.0f));
@@ -832,8 +882,8 @@ namespace YumeEngine
 
 
 
-					rhi_->SetDepthEnable(deptheanble);
-					rhi_->SetDepthWrite(depthwrite);
+					/*rhi_->SetDepthEnable(deptheanble);
+					rhi_->SetDepthWrite(depthwrite);*/
 
 
 					rhi_->BindResetRenderTargets(1);
@@ -977,13 +1027,15 @@ namespace YumeEngine
 		textures[9] = lpvb_curr;
 		gYume->pRHI->PSBindSRV(7,3,textures);
 
-		SetGIParameters();
+		/*SetGIParameters();*/
 
 		ApplyShaderParameters(call);
 
 		rhi_->BindNullIndexBuffer();
 
-		giLpvVolume_.GetLPVVolume()->Draw(gYume->pRHI);
+#ifndef SVO
+		giVolume_->GetVolumeGeometry()->Draw(gYume->pRHI);
+#endif
 
 		rhi_->BindResetRenderTargets(6);
 		rhi_->BindResetTextures(7,3,true);
@@ -1044,6 +1096,7 @@ namespace YumeEngine
 		rhi_->SetShaders(triangle,overlay,0);
 		rhi_->SetNoDepthStencil(true);
 
+		rhi_->SetDepthStencil((YumeTexture2D*)0);
 		rhi_->SetRenderTarget(0,(YumeTexture*)0);
 
 		fullscreenTriangle_->Draw(rhi_);
@@ -1092,6 +1145,9 @@ namespace YumeEngine
 				rhi_->SetBlendMode(BLEND_ADD);
 
 			}
+
+
+
 
 			if(ltype == LT_DIRECTIONAL)
 			{
@@ -1158,11 +1214,6 @@ namespace YumeEngine
 				pointLightGeometry_->Draw(rhi_);
 			else
 				GetFsTriangle()->Draw(rhi_);
-
-
-
-
-			//Left at; screen pos is wrong Kappa
 
 			//restore
 			rhi_->SetDepthTest(CMP_LESSEQUAL);
@@ -1268,7 +1319,7 @@ namespace YumeEngine
 				}
 
 				rhi_->SetShaderParameter("world",node->GetTransformation());
-
+				
 				geometry->Draw(rhi_);
 			}
 
@@ -1540,7 +1591,7 @@ namespace YumeEngine
 		rhi_->SetShaderParameter("time",totalTime);
 	}
 
-	void YumeMiscRenderer::UpdateMeshBb(YumeGeometry* mesh,const DirectX::XMMATRIX& world)
+	void YumeMiscRenderer::UpdateMeshBb(SceneNode* mesh,const DirectX::XMMATRIX& world)
 	{
 		DirectX::XMVECTOR v_bb_min = XMLoadFloat3(&mesh->GetBbMin());
 		DirectX::XMVECTOR v_bb_max = XMLoadFloat3(&mesh->GetBbMax());

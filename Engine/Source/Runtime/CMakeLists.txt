@@ -89,6 +89,8 @@ set(SRC_RENDERER
 	Renderer/Material.cc
 	Renderer/Batch.h
 	Renderer/Batch.cc
+	Renderer/GlobalIlluminationVolume.h
+	Renderer/GlobalIlluminationVolume.cc
 )
 set( SRC_LOGGING
 		Logging/logging.h

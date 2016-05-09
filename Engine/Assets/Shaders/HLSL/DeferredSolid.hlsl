@@ -38,7 +38,7 @@ struct PS_MESH_OUTPUT
 cbuffer camera_vs               : register(b0)
 {
     float4x4 vp                 : packoffset(c0);
-    float4x4 wv             : packoffset(c4);
+    float4x4 vp_inv             : packoffset(c4);
     float3 camera_pos           : packoffset(c8);
     float pad                   : packoffset(c8.w);
 }

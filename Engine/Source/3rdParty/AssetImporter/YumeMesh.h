@@ -53,10 +53,10 @@ namespace YumeEngine
 		 *
 		 * \param p The first point of a larger structure.
 		 */
-		inline void init_bb(const V& p)
-		{
-			bb_max_ = bb_min_ = p;
-		}
+			inline void init_bb(const V& p)
+			{
+				bb_max_ = bb_min_ = p;
+			}
 
 		/*!
 		 * \brief Update the bounding-box with a new point.

@@ -39,7 +39,7 @@ namespace YumeEngine
 	{
 	}
 
-	void SparseVoxelOctree::Create(int volumeSize)
+	void SparseVoxelOctree::Create(unsigned volumeSize)
 	{
 		volume_size_ = volumeSize;
 
@@ -161,7 +161,7 @@ namespace YumeEngine
 		SetModelMatrix(i,gYume->pRenderer->GetMinBb(),gYume->pRenderer->GetMaxBb());*/
 
 
-		/*geo->Render();*/
+		gYume->pRenderer->RenderScene();
 
 		TexturePtr clearUavs[2] ={0,0};
 		r->SetRenderTargetsAndUAVs(0,1,2,clearUavs);

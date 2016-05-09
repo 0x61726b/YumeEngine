@@ -38,7 +38,11 @@ float4 ps_show_gbuffer( in PS_INPUT input ): SV_Target
 		return rt_colors.Sample(StandardFilter, input.tex_coord * 2);
 	////Top right
 	if (screenPos.x > 0.5 && screenPos.y < 0.5)
-		return rt_normals.Sample(StandardFilter, float2(screenPos.x * 2 - 1, screenPos.y * 2));
+  {
+    float4 normals = rt_normals.Sample(StandardFilter, float2(screenPos.x * 2 - 1, screenPos.y * 2));
+    float3 normal = normals.xyz * 2.0 - 1.0;
+		return float4(normal,1.0f);
+  }
 	////Bottom left
 	if (screenPos.x < 0.5 && screenPos.y > 0.5)
 	{

@@ -126,10 +126,10 @@ namespace YumeEngine
 
 		if(mips_ == 0)
 		{
-			double dim = std::max(width, height);
-            mips_ = static_cast<UINT>(std::log(dim) / std::log(2.0));
+			double dim = std::max(width,height);
+			mips_ = static_cast<UINT>(std::log(dim) / std::log(2.0));
 		}
-		if(usage_ == TEXTURE_RENDERTARGET || usage_ == TEXTURE_DEPTHSTENCIL)
+		if(usage_ == TEXTURE_RENDERTARGET || usage_ == TEXTURE_DEPTHSTENCIL ||usage_ == TEXTURE_DEPTHSTENCIL_READONLY)
 		{
 			renderSurface_ = (new YumeD3D11Renderable(this));
 
@@ -465,7 +465,7 @@ namespace YumeEngine
 			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 		if(usage_ == TEXTURE_RENDERTARGET)
 			textureDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
-		else if(usage_ == TEXTURE_DEPTHSTENCIL)
+		else if(usage_ == TEXTURE_DEPTHSTENCIL || usage_ == TEXTURE_DEPTHSTENCIL_READONLY)
 			textureDesc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
 		textureDesc.CPUAccessFlags = usage_ == TEXTURE_DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
 
@@ -487,7 +487,7 @@ namespace YumeEngine
 			resourceViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
 		else if(resourceViewDesc.Format != DXGI_FORMAT_R24_UNORM_X8_TYPELESS)
 			resourceViewDesc.Format = textureDesc.Format;
-		
+
 
 		if(textureDesc.ArraySize > 1)
 		{
@@ -567,7 +567,38 @@ namespace YumeEngine
 			((ID3D11RenderTargetView*)renderSurface_->renderTargetView_)->SetPrivateData(WKPDID_D3DDebugObjectName,GetName().length(),GetName().c_str());
 
 			// Create also a read-only version of the view for simultaneous depth testing and sampling in shader
-			depthStencilViewDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH | D3D11_DSV_READ_ONLY_STENCIL;
+			depthStencilViewDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH; //Fix this
+			hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Resource*)object_,&depthStencilViewDesc,
+				(ID3D11DepthStencilView**)&renderSurface_->readOnlyView_);
+			if(FAILED(hr))
+			{
+				D3D_SAFE_RELEASE(renderSurface_->readOnlyView_);
+				YUMELOG_ERROR("Failed to create read-only depth-stencil view for texture" << hr);
+			}
+
+			YumeString newName = "ReadOnly";
+			newName.append(GetName());
+			((ID3D11DepthStencilView*)renderSurface_->readOnlyView_)->SetPrivateData(WKPDID_D3DDebugObjectName,newName.length(),newName.c_str());
+		}
+		else if(usage_ == TEXTURE_DEPTHSTENCIL_READONLY)
+		{
+			D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+			memset(&depthStencilViewDesc,0,sizeof depthStencilViewDesc);
+			depthStencilViewDesc.Format = (DXGI_FORMAT)GetDSVFormat(textureDesc.Format);
+			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+
+			hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Resource*)object_,&depthStencilViewDesc,
+				(ID3D11DepthStencilView**)&renderSurface_->renderTargetView_);
+			if(FAILED(hr))
+			{
+				D3D_SAFE_RELEASE(renderSurface_->renderTargetView_);
+				YUMELOG_ERROR("Failed to create depth-stencil view for texture",hr);
+				return false;
+			}
+			((ID3D11RenderTargetView*)renderSurface_->renderTargetView_)->SetPrivateData(WKPDID_D3DDebugObjectName,GetName().length(),GetName().c_str());
+
+			// Create also a read-only version of the view for simultaneous depth testing and sampling in shader
+			depthStencilViewDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH | D3D11_DSV_READ_ONLY_STENCIL ; //Fix this
 			hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateDepthStencilView((ID3D11Resource*)object_,&depthStencilViewDesc,
 				(ID3D11DepthStencilView**)&renderSurface_->readOnlyView_);
 			if(FAILED(hr))

@@ -24,25 +24,27 @@
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 #include "YumeTexture3D.h"
+#include "GlobalIlluminationVolume.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class RenderCall;
 
-	class YumeAPIExport SparseVoxelOctree : public YumeBase
+	class YumeAPIExport SparseVoxelOctree : public GIVolume
 	{
 	public:
 		SparseVoxelOctree();
 		virtual ~SparseVoxelOctree();
 
-		void Voxelize(RenderCall* call,YumeGeometry* geo,bool clear);
-		void Inject();
-		void Filter();
+		virtual void Voxelize(RenderCall* call,YumeGeometry* geo,bool clear);
+		virtual void Inject();
 
+		virtual void Create(unsigned volumeSize);
+		virtual void Filter();
 
-		void Create(int volumeSize);
+		virtual void SetModelMatrix(const DirectX::XMFLOAT4X4& model, const DirectX::XMFLOAT3& svo_min, const DirectX::XMFLOAT3& svo_max);
 
-		void SetModelMatrix(const DirectX::XMFLOAT4X4& model, const DirectX::XMFLOAT3& svo_min, const DirectX::XMFLOAT3& svo_max);
+		virtual YumeGeometry* GetVolumeGeometry() { return 0; }
 
 		void ClearPs();
 	private:

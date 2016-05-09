@@ -19,44 +19,18 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __StaticModel_h__
-#define __StaticModel_h__
-//----------------------------------------------------------------------------
-#include "YumeRequired.h"
-#include "SceneNode.h"
-#include "Batch.h"
-//----------------------------------------------------------------------------
+#include "YumeHeaders.h"
+#include "GlobalIlluminationVolume.h"
+
+
+
 namespace YumeEngine
 {
-	class YumeAPIExport StaticModel : public SceneNode
+	GIVolume::GIVolume()
 	{
-	public:
-		StaticModel(const YumeString& resName);
-		virtual ~StaticModel();
+	}
 
-		void Initialize();
-
-		bool LoadFromFile(const YumeString& file);
-
-		const YumeVector<SharedPtr<RenderBatch> >::type& GetBatches() const { return batches_; }
-
-		void SetMaterial(MaterialPtr ptr);
-
-		void UpdateBb(const DirectX::XMFLOAT3& V);
-
-		void InitBb(const DirectX::XMFLOAT3& p)
-		{
-			SetBoundingBox(p,p);
-		}
-
-	public:
-		YumeVector<SharedPtr<RenderBatch> >::type batches_;
-		YumeString modelName_;
-
-
-	};
+	GIVolume::~GIVolume()
+	{
+	}
 }
-
-
-//----------------------------------------------------------------------------
-#endif

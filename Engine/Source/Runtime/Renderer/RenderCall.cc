@@ -38,6 +38,7 @@ namespace YumeEngine
 		voxelizePass_(false),
 		deferredLightPass_(false),
 		deferred_(false),
+		writeToStencil_(false),
 		numVertexSamplers_(0),
 		numPixelSamplers_(0),
 		type_(type),

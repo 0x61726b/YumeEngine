@@ -19,64 +19,31 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
-#ifndef __YumeLPV_h__
-#define __YumeLPV_h__
+#ifndef __GlobalIlluminationVolume_h__
+#define __GlobalIlluminationVolume_h__
 //----------------------------------------------------------------------------
 #include "YumeRequired.h"
 #include <DirectXMath.h>
-#include "YumeGeometry.h"
-#include "GlobalIlluminationVolume.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
-	class YumeTexture2D;
-	class YumeVertexBuffer;
+	class YumeGeometry;
 
-	class YumeAPIExport LightPropagationVolume : public GIVolume
+	class YumeAPIExport GIVolume : public YumeBase
 	{
 	public:
-		LightPropagationVolume();
-		virtual ~LightPropagationVolume();
+		GIVolume();
+		~GIVolume();
 
-		virtual void Create(unsigned volumeSize);
-		void Render();
+		virtual void Create(unsigned volumeSize) = 0;
+		virtual void Inject() = 0;
 
-		virtual void Inject();
+		virtual void Voxelize(RenderCall* call,YumeGeometry* geo,bool clear) { } //SVO Only
+		virtual void Filter() { } //SVO Only
 
-		virtual void SetModelMatrix(const DirectX::XMFLOAT4X4& model,const DirectX::XMFLOAT3& lpvMin,const DirectX::XMFLOAT3& lpvMax);
+		virtual YumeGeometry* GetVolumeGeometry() = 0;
 
-		virtual YumeGeometry* GetVolumeGeometry() { return lpv_volume_geo_; }
-	private:
-		unsigned volume_size_;
-		unsigned curr_;
-		unsigned next_;
-		unsigned iterations_rendered_;
-
-		DirectX::XMFLOAT4X4 world_to_lpv_;
-
-		SharedPtr<YumeTexture2D> lpv_r_[2];
-		SharedPtr<YumeTexture2D> lpv_g_[2];
-		SharedPtr<YumeTexture2D> lpv_b_[2];
-
-		SharedPtr<YumeTexture2D> lpv_accum_r_;
-		SharedPtr<YumeTexture2D> lpv_accum_g_;
-		SharedPtr<YumeTexture2D> lpv_accum_b_;
-
-		SharedPtr<YumeTexture2D> lpv_inject_counter_;
-
-		SharedPtr<YumeVertexBuffer> lpv_volume_;
-		SharedPtr<YumeGeometry>		lpv_volume_geo_;
-
-		
-		YumeShaderVariation* injectVs_;
-		YumeShaderVariation* injectGs_;
-		YumeShaderVariation* injectPs_;
-
-		YumeShaderVariation* propogateVs_;
-		YumeShaderVariation* propogatePs_;
-		YumeShaderVariation* propogateGs_;
-
-		YumeShaderVariation* normalizePs_;
+		virtual void SetModelMatrix(const DirectX::XMFLOAT4X4& model,const DirectX::XMFLOAT3& lpvMin,const DirectX::XMFLOAT3& lpvMax) = 0;
 	};
 }
 

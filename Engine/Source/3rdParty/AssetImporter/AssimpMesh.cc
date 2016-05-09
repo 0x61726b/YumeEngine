@@ -481,6 +481,13 @@ namespace YumeEngine
 			materialFile->WriteString(specular_tex);
 			materialFile->WriteString(normal_tex);
 		}
+
+		//Write overall BB
+		DirectX::XMFLOAT3 bbMin = bb_min_;
+		DirectX::XMFLOAT3 bbMax = bb_max_;
+
+		file->WriteVector3(bbMin);
+		file->WriteVector3(bbMax);
 	}
 
 	bool YumeMesh::LoadFromFile(const YumeString& fileName)

@@ -7,14 +7,14 @@
 
     <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
 
-    <Ds Name="LightDSV" Format="d24s8" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Ds Name="LightDSV" Format="d24s8" Mips="1" Width="1600" Height="900" ArraySize="1" Stencil="readonly"/>
   </RenderTargets>
   <Samplers>
     <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />
     <Sampler Name="ShadowFilter" Filter="Trilinear" Comprasion="Never" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
   </Samplers>
   <RenderCalls>
-    <Scene PassName="GBuffer" Identifier="Main" Vs="DeferredSolid" Ps="DeferredSolid" VsEntry="MeshVs" PsEntry="MeshPs" Flags="DEFERRED">
+    <Scene PassName="GBuffer" Identifier="Main" Vs="DeferredSolid" Ps="DeferredSolid" VsEntry="MeshVs" PsEntry="MeshPs" Flags="DEFERRED WRITESTENCIL" Stencil="LightDSV">
       <Samplers>
         <Ps Name="Standard" Register="0" />
       </Samplers>
@@ -25,6 +25,6 @@
         <Rt Index="3" Name="SCENE_SPECULAR"/>
       </Outputs>
     </Scene>
-    <Scene PassName="DeferredLights" Identifier="Main" Flags="DEFERRED_LIGHTS" Output="PostProcessingTarget"/>
+    <Scene PassName="DeferredLights" Identifier="Main" Flags="DEFERRED_LIGHTS" Output="Backbuffer"/>
   </RenderCalls>
 </Yume>

@@ -122,6 +122,9 @@ namespace YumeEngine
 		bool GetDeferred() const { return deferred_; }
 		void SetDeferred(bool enabled) { deferred_ = enabled; }
 
+		void SetWriteStencil(bool b) { writeToStencil_ = b; }
+		bool GetStencilWrite() const { return writeToStencil_; }
+
 		Texture2DPtr GetDepthStencil() const { return depthStencil_; }
 	private:
 		bool enabled_;
@@ -134,6 +137,8 @@ namespace YumeEngine
 
 		unsigned numVertexSamplers_;
 		unsigned numPixelSamplers_;
+
+		bool writeToStencil_;
 
 		unsigned numInputs_;
 		unsigned numOutputs_;

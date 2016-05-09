@@ -1,0 +1,127 @@
+<Yume>
+  <RenderTargets>
+    <Rt Name="LPV_R_0" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_G_0" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_B_0" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+
+<Rt Name="LPV_R_1" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_G_1" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_B_1" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+
+<Rt Name="LPV_ACCUM_R" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_ACCUM_G" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+<Rt Name="LPV_ACCUM_B" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+
+<Rt Name="LPV_INJECT_COUNTER" Format="rgba16f" Mips="1" Width="32" Height="32" ArraySize="32"/>
+  </RenderTargets>
+  <Samplers>
+    <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />
+    <Sampler Name="VPLFilter" Filter="Nearest" Comprasion="Always" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
+    <Sampler Name="LPVFilter" Filter="Trilinear" Comprasion="Never" AddressU="Border" AddressV="Border" AddressW="Border" />
+    <Sampler Name="ShadowFilter" Filter="Trilinear" Comprasion="Never" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
+  </Samplers>
+  <RenderCalls>
+    <Clear PassName="ClearRSM" Identifier="RSM" ClearTargets="Default" Flags="CLEAR_DEPTH">
+      <Targets>
+        <Rt Name="RSM_COLORS" ClearColor="0 0 0 1" />
+        <Rt Name="RSM_NORMALS" ClearColor="0 0 0 1" />
+        <Rt Name="RSM_LINEARDEPTH" ClearColor="10000 10000 10000 10000" />
+        <Rt Name="RSM_SPECULAR" ClearColor="0 0 0 1" />
+        <Ds Name="RSM_DEPTHSTENCIL" />
+      </Targets>
+    </Clear>
+    <Scene PassName="RenderRsm" Identifier="RSM" Vs="DeferredSolid" Ps="DeferredSolid" VsEntry="MeshVs" PsEntry="MeshPs" Flags="NOBLEND SHADOW">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+      </Samplers>
+      <Outputs>
+        <Rt Index="0" Name="RSM_COLORS" />
+        <Rt Index="1" Name="RSM_NORMALS"/>
+        <Rt Index="2" Name="RSM_LINEARDEPTH"/>
+        <Rt Index="3" Name="RSM_SPECULAR"/>
+      </Outputs>
+    </Scene>
+    <Clear PassName="ClearInject" Identifier="RSM" ClearTargets="Default" Flags="CLEAR_COLOR NODS">
+      <Targets>
+        <Rt Name="LPV_R_1" ClearColor="0 0 0 0" />
+        <Rt Name="LPV_G_1" ClearColor="0 0 0 0" />
+        <Rt Name="LPV_B_1" ClearColor="0 0 0 0" />
+        <Rt Name="LPV_INJECT_COUNTER" ClearColor="0 0 0 0" />
+      </Targets>
+    </Clear>
+    <InjectLPV PassName="LpvInject" Identifier="RSM" Vs="LPV/LPVInject" Ps="LPV/LPVInject" Gs="LPV/LPVInject" VsEntry="LPVInjectVs" PsEntry="LPVInjectPs" GsEntry="LPVInjectGs" Flags="NODS">
+      <Samplers>
+        <Vs Name="VPLFilter" Register="0" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="6" Name="RSM_LINEARDEPTH"/>
+        <Rt Index="7" Name="RSM_COLORS" />
+        <Rt Index="8" Name="RSM_NORMALS"/>
+      </Inputs>
+      <Outputs>
+        <Rt Index="0" Name="LPV_R_1"/>
+        <Rt Index="1" Name="LPV_G_1" />
+        <Rt Index="2" Name="LPV_B_1" />
+        <Rt Index="3" Name="LPV_INJECT_COUNTER" />
+      </Outputs>
+      <Parameters>
+        <Param Name="main_light" />
+        <Param Name="light_vp_tex" />
+        <Param Name="light_vp" />
+        <Param Name="lpv_size" />
+        <Param Name="light_vp_inv" />
+        <Param Name="world_to_lpv" />
+      </Parameters>
+    </InjectLPV>
+    <Clear PassName="ClearNormalize" Identifier="RSM" ClearTargets="Default" Flags="CLEAR_COLOR NODS">
+      <Targets>
+        <Rt Name="LPV_R_0" ClearColor="0 0 0 0" />
+        <Rt Name="LPV_G_0" ClearColor="0 0 0 0" />
+        <Rt Name="LPV_B_0" ClearColor="0 0 0 0" />
+      </Targets>
+    </Clear>
+    <NormalizeLPV PassName="LpvNormalize" Identifier="RSM" Vs="LPV/LPVPropagate" Ps="LPV/LPVNormalize" Gs="LPV/LPVPropagate" VsEntry="LPVPropagateVs" PsEntry="LPVNormalizePs" GsEntry="LPVPropagateGs" Flags="NODS">
+      <Inputs>
+        <Rt Index="7" Name="LPV_R_1"/>
+        <Rt Index="8" Name="LPV_G_1" />
+        <Rt Index="9" Name="LPV_B_1" />
+        <Rt Index="10" Name="LPV_INJECT_COUNTER" />
+      </Inputs>
+      <Outputs>
+        <Rt Index="0" Name="LPV_R_0"/>
+        <Rt Index="1" Name="LPV_G_0" />
+        <Rt Index="2" Name="LPV_B_0" />
+      </Outputs>
+      <Parameters>
+        <Param Name="gi_scale" Value="1" />
+        <Param Name="lpv_flux_amplifier" Value="1" />
+      </Parameters>
+    </NormalizeLPV>
+    <Clear PassName="ClearAccums" Identifier="RSM" ClearTargets="Default" Flags="CLEAR_COLOR NODS">
+      <Targets>
+        <Rt Name="LPV_ACCUM_R" ClearColor="0 0 0 0" />
+        <Rt Name="LPV_ACCUM_G" ClearColor="0 0 0 0" />
+        <Rt Name="LPV_ACCUM_B" ClearColor="0 0 0 0" />
+      </Targets>
+    </Clear>
+    <PropagateLPV PassName="LpvPropagate" Identifier="RSM" Vs="LPV/LPVPropagate" Ps="LPV/LPVPropagate" Gs="LPV/LPVPropagate" VsEntry="LPVPropagateVs" PsEntry="LPVPropagatePs" GsEntry="LPVPropagateGs" Flags="NODS">
+      <Inputs>
+        <Rt Index="7" Name="LPV_R_0"/>
+        <Rt Index="8" Name="LPV_G_0" />
+        <Rt Index="9" Name="LPV_B_0" />
+      </Inputs>
+      <Outputs>
+        <Rt Index="0" Name="LPV_R_1"/>
+        <Rt Index="1" Name="LPV_G_1" />
+        <Rt Index="2" Name="LPV_B_1" />
+        <Rt Index="3" Name="LPV_ACCUM_R" />
+        <Rt Index="4" Name="LPV_ACCUM_G" />
+        <Rt Index="5" Name="LPV_ACCUM_B" />
+      </Outputs>
+      <Parameters>
+        <Param Name="gi_scale" Value="1" />
+        <Param Name="lpv_flux_amplifier" Value="4" />
+      </Parameters>
+    </PropagateLPV>
+  </RenderCalls>
+</Yume>

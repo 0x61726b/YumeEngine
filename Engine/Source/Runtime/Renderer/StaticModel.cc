@@ -37,6 +37,7 @@ namespace YumeEngine
 		: SceneNode(GT_STATIC),modelName_(model)
 	{
 		LoadFromFile(model);
+
 	}
 
 	StaticModel::~StaticModel()
@@ -118,6 +119,7 @@ namespace YumeEngine
 
 			geo->SetBoundingBox(bbMin,bbMax);
 
+
 			DirectX::XMFLOAT4 diffuseColor = m->ReadVector4();
 			DirectX::XMFLOAT4 emissiveColor = m->ReadVector4();
 			DirectX::XMFLOAT4 specularColor = m->ReadVector4();
@@ -172,6 +174,13 @@ namespace YumeEngine
 			batches_.push_back(batch);
 		}
 
+		DirectX::XMFLOAT3 meshBbMin = f->ReadVector3();
+		DirectX::XMFLOAT3 meshBbMax = f->ReadVector3();
+
+		SetBoundingBox(meshBbMin,meshBbMax);
+
+		gYume->pRenderer->UpdateMeshBb(this,GetTransformation());
+
 		return true;
 	}
 
@@ -184,5 +193,10 @@ namespace YumeEngine
 	void StaticModel::Initialize()
 	{
 		SetWorld(DirectX::XMMatrixIdentity());
+	}
+
+	void StaticModel::UpdateBb(const DirectX::XMFLOAT3& V)
+	{
+		SetBoundingBox(dmin(V,GetBbMin()),dmax(V,GetBbMax())); //on LPV bb_min_ doesnt work fix
 	}
 }

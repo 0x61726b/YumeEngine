@@ -361,8 +361,10 @@ namespace YumeEngine
 
 		if(depthStencil_)
 			impl_->deviceContext_->ClearDepthStencilView((ID3D11DepthStencilView*)depthStencil_->GetRenderTargetView(),depthClearFlags,depth,(UINT8)stencil);
-		else
+		else if(impl_->depthStencilView_)
 			impl_->deviceContext_->ClearDepthStencilView(impl_->depthStencilView_,depthClearFlags,depth,(UINT8)stencil);
+		else
+			impl_->deviceContext_->ClearDepthStencilView(impl_->defaultDepthStencilView_,depthClearFlags,depth,(UINT8)stencil);
 	}
 
 	void YumeD3D11Renderer::ClearUAV(YumeTexture* texture,const float* values)
@@ -917,13 +919,13 @@ namespace YumeEngine
 
 #ifdef _DEBUG
 		hr = impl_->device_->QueryInterface(IID_ID3D11Debug,(void**)(&impl_->debug_));
-		//ID3D11InfoQueue *d3dInfoQueue = nullptr;
-		//impl_->device_->QueryInterface(__uuidof(ID3D11InfoQueue),(void**)&d3dInfoQueue);
+		ID3D11InfoQueue *d3dInfoQueue = nullptr;
+		impl_->device_->QueryInterface(__uuidof(ID3D11InfoQueue),(void**)&d3dInfoQueue);
 
 
 
-		///*d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION,true);
-		//d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR,true);*/
+		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION,true);
+		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR,true);
 
 		//D3D11_MESSAGE_ID hide[] =
 		//{
