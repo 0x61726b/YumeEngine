@@ -7,7 +7,7 @@
         <Ps Name="Standard" Register="0" />
       </Samplers>
       <Inputs>
-        <Rt Index="0" Name="PostProcessingTarget"/>
+        <Rt Index="0" Name="Backbuffer"/>
         <Rt Index="1" Name="SCENE_COLORS" />
         <Rt Index="2" Name="SCENE_SPECULAR" />
         <Rt Index="3" Name="SCENE_NORMALS" />

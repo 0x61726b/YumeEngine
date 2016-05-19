@@ -1,0 +1,109 @@
+<Yume>
+  <RenderTargets>
+    <Rt Name="SCENE_COLORS" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_NORMALS" Format="rgba10u2" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+
+    <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="RaytraceBuffer" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="ColorBlurBufferA" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="ColorBlurBufferB" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="ColorBlurBufferCopy" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
+
+    <Ds Name="LightDSV" Format="d24s8" Mips="1" Width="1600" Height="900" ArraySize="1" Stencil="readonly"/>
+  </RenderTargets>
+  <Samplers>
+    <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />
+    <Sampler Name="ShadowFilter" Filter="Trilinear" Comprasion="Never" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
+  </Samplers>
+  <RenderCalls>
+    <Scene PassName="GBuffer" Identifier="Main" Vs="SSLR/DeferredSolid" Ps="SSLR/DeferredSolid" VsEntry="MeshVs" PsEntry="MeshPs" Flags="DEFERRED WRITESTENCIL" Stencil="LightDSV">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+      </Samplers>
+      <Outputs>
+        <Rt Index="0" Name="SCENE_COLORS" />
+        <Rt Index="1" Name="SCENE_NORMALS"/>
+        <Rt Index="2" Name="SCENE_LINEARDEPTH"/>
+        <Rt Index="3" Name="SCENE_SPECULAR"/>
+      </Outputs>
+    </Scene>
+    <Triangle PassName="Raytrace" Identifier="Raytrace" Ps="SSLR/Raytrace" PsEntry="ps_sslr_raytrace" Flags="NODS" Output="RaytraceBuffer">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="2" Name="SCENE_COLORS" />
+        <Rt Index="3" Name="SCENE_SPECULAR" />
+        <Rt Index="4" Name="SCENE_NORMALS" />
+        <Rt Index="5" Name="SCENE_LINEARDEPTH" />
+      </Inputs>
+      <Parameters>
+        <Param Name="cb_depthBufferSize" Value="1600 900" />
+        <Param Name="cb_zThickness" Value="0.0001" />
+        <Param Name="cb_nearPlaneZ" Value="0.2" />
+        <Param Name="cb_stride" Value="0.001" />
+        <Param Name="cb_maxSteps" Value="8" />
+        <Param Name="cb_maxDistance" Value="100" />
+        <Param Name="cb_strideZCutoff" Value="10" />
+        <Param Name="cb_numMips" Value="10" />
+        <Param Name="cb_fadeStart" Value="100" />
+        <Param Name="cb_fadeEnd" Value="1000" />
+      </Parameters>
+    </Triangle>
+    <Triangle PassName="ColorBlur" Identifier="Raytrace" Ps="SSLR/BlurColor" PsEntry="ps_sslr_blur_v" Flags="NODS" Output="ColorBlurBufferA">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="1" Name="SCENE_COLORS" />
+      </Inputs>
+    </Triangle>
+    <Triangle PassName="ColorBlurCopy" Identifier="Raytrace" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="ColorBlurBufferCopy">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="ColorBlurBufferA" />
+      </Inputs>
+    </Triangle>
+    <Triangle PassName="ColorBlur" Identifier="Raytrace" Ps="SSLR/BlurColor" PsEntry="ps_sslr_blur_h" Flags="NODS" Output="ColorBlurBufferB">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="1" Name="ColorBlurBufferCopy" />
+      </Inputs>
+    </Triangle>
+    <Triangle PassName="Raytrace" Identifier="Raytrace" Ps="SSLR/SSLR" PsEntry="ps_sslr" Flags="NODS" Output="Backbuffer">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="2" Name="ColorBlurBufferB" />
+        <Rt Index="3" Name="SCENE_SPECULAR" />
+        <Rt Index="4" Name="SCENE_NORMALS" />
+        <Rt Index="5" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="7" Name="RaytraceBuffer" />
+      </Inputs>
+      <Parameters>
+        <Param Name="cb_depthBufferSize" Value="1600 900" />
+        <Param Name="cb_zThickness" Value="0.0001" />
+        <Param Name="cb_nearPlaneZ" Value="0.2" />
+        <Param Name="cb_stride" Value="0.001" />
+        <Param Name="cb_maxSteps" Value="8" />
+        <Param Name="cb_maxDistance" Value="100" />
+        <Param Name="cb_strideZCutoff" Value="10" />
+        <Param Name="cb_numMips" Value="10" />
+        <Param Name="cb_fadeStart" Value="100" />
+        <Param Name="cb_fadeEnd" Value="1000" />
+      </Parameters>
+    </Triangle>
+  </RenderCalls>
+</Yume>

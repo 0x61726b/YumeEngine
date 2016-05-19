@@ -5,7 +5,7 @@
     <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
 
-    <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
 
     <Ds Name="LightDSV" Format="d24s8" Mips="1" Width="1600" Height="900" ArraySize="1" Stencil="readonly"/>
   </RenderTargets>
@@ -48,7 +48,7 @@
         <Rt Index="9" Name="LPV_ACCUM_B" />
       </Inputs>
       <Parameters>
-        <Param Name="gi_scale" Value="1" />
+        <Param Name="gi_scale" Value="0.1" />
         <Param Name="debug_gi" Value="false" />
         <Param Name="lpv_flux_amplifier" Value="4" />
         <Param Name="scene_dim_max" Value="0 0 0 0" />
@@ -60,5 +60,6 @@
         <Param Name="main_light_pos" Value="0 0 0 0" />
       </Parameters>
     </Triangle>
+    <Scene PassName="Skybox" Identifier="Main" Flags="SKYBOX" Output="Backbuffer"/>
   </RenderCalls>
 </Yume>

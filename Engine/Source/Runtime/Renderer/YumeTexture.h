@@ -59,6 +59,7 @@ namespace YumeEngine
 		void SetSRGB(bool enable);
 		void SetBackupTexture(YumeTexture* texture) ;
 		void SetMipsToSkip(int quality,int toSkip) ;
+		void SetArraySlice(int slice) { arraySlice_ = slice; }
 
 		virtual bool IsCompressed() const = 0;
 		virtual unsigned GetDataSize(int width,int height) const = 0;
@@ -118,6 +119,7 @@ namespace YumeEngine
 		int mips_;
 		unsigned arraySize_;
 		unsigned requestedLevels_;
+		int arraySlice_;
 		int width_;
 		int height_;
 		int depth_;

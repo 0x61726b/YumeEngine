@@ -41,7 +41,7 @@ namespace YumeEngine
 {
 	YumeUI::YumeUI()
 		: cef3d_(0),
-		renderUI_(false),
+		renderUI_(true),
 		mouseX_(0),
 		mouseY_(0),
 		lastTimeStep_(0.0f)
@@ -66,6 +66,7 @@ namespace YumeEngine
 		cef3d_->SetCustomExtensionSourceCode(cef3DExtension->GetContent().c_str());
 
 		gYume->pInput->AddListener(this);
+
 	}
 
 	YumeUI::~YumeUI()
@@ -100,8 +101,8 @@ namespace YumeEngine
 		CefUI::CefRect rect;
 		rect.x = element->GetRect().left_;
 		rect.y = element->GetRect().top_;
-		rect.width = element->GetRect().right_;
-		rect.height = element->GetRect().bottom_;
+		rect.width = element->GetRect().right_ - element->GetRect().left_;;
+		rect.height = element->GetRect().bottom_ - element->GetRect().top_;
 
 		YUMELOG_DEBUG("Creating CEF browser (" << rect.x << "," << rect.y << "," << rect.width << "," << rect.height << ") with URL " << element->GetURL().c_str());
 
@@ -131,6 +132,7 @@ namespace YumeEngine
 			if((*It)->GetVisible())
 				gYume->pRenderer->RenderFullScreenTexture((*It)->GetRect(),(*It)->GetTexture());
 		}
+
 	}
 
 	void YumeUI::OnDomEvent(const std::string& str,const std::string& event,const std::string& data)
@@ -159,7 +161,12 @@ namespace YumeEngine
 
 	void YumeUI::SendEvent(const YumeString& name,const YumeString& data)
 	{
-		cef3d_->SendEvent(0,name.c_str(),data.c_str());
+		cef3d_->SendEvent(1,name.c_str(),data.c_str());
+	}
+
+	void YumeUI::SetCppProperty(int browserIndex,const YumeString& name,const YumeString& data)
+	{
+		cef3d_->SetCppProperty(browserIndex,name.c_str(),data.c_str());
 	}
 
 	void YumeUI::OnRendererContextReady()

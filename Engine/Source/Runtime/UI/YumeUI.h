@@ -53,6 +53,12 @@ namespace YumeEngine
 	class YumeDebugOverlay;
 	class YumeUIElement;
 
+	struct CefBrowserDesc
+	{
+		int BrowserId;
+		YumeString Name;
+	};
+
 	class YumeAPIExport YumeUI :
 		public YumeBase,
 		public YumeTimerEventListener,
@@ -98,6 +104,7 @@ namespace YumeEngine
 		void SetUIEnabled(bool enable);
 
 		void SendEvent(const YumeString& name,const YumeString& data);
+		void SetCppProperty(int browserIndex,const YumeString& name,const YumeString& data);
 
 		const CefUI::Cef3D* GetCefWrapper() const { return cef3d_; }
 

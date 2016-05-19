@@ -1,0 +1,134 @@
+<Yume>
+  <RenderTargets>
+    <Rt Name="GodraysTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+
+    <Rt Name="GodraysBlurTarget0" Format="rgba16f" Mips="0" Size="2 2" ArraySize="1"/>
+    <Rt Name="GodraysBlurTarget1" Format="rgba16f" Mips="0" Size="4 4" ArraySize="1"/>
+    <Rt Name="GodraysBlurTarget2" Format="rgba16f" Mips="0" Size="8 8" ArraySize="1"/>
+    <Rt Name="GodraysBlurTarget3" Format="rgba16f" Mips="0" Size="16 16" ArraySize="1"/>
+    <Rt Name="GodraysBlurTarget4" Format="rgba16f" Mips="0" Size="16 16" ArraySize="1"/>
+    <Rt Name="GodraysBlurTarget5" Format="rgba16f" Mips="0" Size="2 2" ArraySize="1"/>
+  </RenderTargets>
+  <Samplers />
+  <RenderCalls>
+    <Triangle PassName="GodraysHalfRes" Identifier="Godrays" Ps="Godrays" PsEntry="ps_godrays_halfres" Flags="NODS" Output="GodraysBlurTarget5">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="1" Name="SCENE_COLORS" />
+        <Rt Index="2" Name="SCENE_SPECULAR" />
+        <Rt Index="3" Name="SCENE_NORMALS" />
+        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="7" Name="RSM_LINEARDEPTH" />
+      </Inputs>
+      <Parameters>
+        <Param Name="godrays_tau" Value="0.0005" />
+        <Param Name="MistSpeed" Value="20" />
+        <Param Name="NumSamples" Value="60" />
+        <Param Name="Dithering" Value="50" />
+        <Param Name="FogColor" Value="1 1 1 1" />
+        <Param Name="light_vp_tex" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="CopyToBlur0" Identifier="Godrays" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="GodraysBlurTarget0">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+      </Inputs>
+    </Triangle>
+
+    <!-- Blur V and H Iteration 0 -->
+    <Triangle PassName="BlurV1" Identifier="Godrays" Ps="Blur" PsEntry="ps_gauss_godrays_v" Flags="NODS" Output="GodraysBlurTarget0">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+        <Rt Index="1" Name="SCENE_COLORS" />
+        <Rt Index="2" Name="SCENE_SPECULAR" />
+        <Rt Index="3" Name="SCENE_NORMALS" />
+        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="9" Name="GodraysBlurTarget5"/>
+      </Inputs>
+    </Triangle>
+
+    <Triangle PassName="BlurH1" Identifier="Godrays" Ps="Blur" PsEntry="ps_gauss_godrays_h" Flags="NODS" Output="GodraysBlurTarget5">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+        <Rt Index="1" Name="SCENE_COLORS" />
+        <Rt Index="2" Name="SCENE_SPECULAR" />
+        <Rt Index="3" Name="SCENE_NORMALS" />
+        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="9" Name="GodraysBlurTarget0"/>
+      </Inputs>
+    </Triangle>
+    <!-- End Blur V and H -->
+
+    <!-- Blur V and H Iteration 0 -->
+    <Triangle PassName="BlurV2" Identifier="Godrays" Ps="Blur" PsEntry="ps_gauss_godrays_v" Flags="NODS" Output="GodraysBlurTarget0">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+        <Rt Index="1" Name="SCENE_COLORS" />
+        <Rt Index="2" Name="SCENE_SPECULAR" />
+        <Rt Index="3" Name="SCENE_NORMALS" />
+        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="9" Name="GodraysBlurTarget5"/>
+      </Inputs>
+    </Triangle>
+
+    <Triangle PassName="BlurH2" Identifier="Godrays" Ps="Blur" PsEntry="ps_gauss_godrays_h" Flags="NODS" Output="GodraysBlurTarget5">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+        <Rt Index="1" Name="SCENE_COLORS" />
+        <Rt Index="2" Name="SCENE_SPECULAR" />
+        <Rt Index="3" Name="SCENE_NORMALS" />
+        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="9" Name="GodraysBlurTarget0"/>
+      </Inputs>
+    </Triangle>
+    <!-- End Blur V and H -->
+
+
+    <!-- Copy back -->
+
+    <Triangle PassName="BlurCopyBack1" Identifier="Godrays" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="GodraysTarget">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="GodraysBlurTarget5"/>
+      </Inputs>
+    </Triangle>
+
+    <Triangle PassName="GodraysMerge" Identifier="Godrays" Ps="Godrays" PsEntry="ps_godrays_merge" Flags="NODS" Output="Backbuffer">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+        <Rt Index="5" Name="GodraysTarget"/> <!-- 5th texture will be luminance RT which will be bound in the code -->
+      </Inputs>
+    </Triangle>
+  </RenderCalls>
+</Yume>

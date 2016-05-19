@@ -24,6 +24,7 @@
 
 
 #include "UI/YumeDebugOverlay.h"
+#include "UI/YumeOptionsMenu.h"
 
 #include "Engine/YumeEngine.h"
 
@@ -49,6 +50,7 @@ YUME_DEFINE_ENTRY_POINT(YumeEngine::PlaygroundDemo);
 #define NO_PLANE
 #define CORNELL
 #define DISABLE_EVERYTHING
+//#define PBR_TEST_SPONZA
 
 #define SCALE ((1<<15))
 
@@ -69,7 +71,7 @@ namespace YumeEngine
 		m_NumSteps		    = 8;
 		m_Contrast          = 1.25f;
 		m_Attenuation       = 1.0f;
-		m_AORadius			= 2;
+		m_AORadius			= 25;
 
 		m_BlurRadius     = 7;
 		m_Sharpness      = 16.0f;
@@ -92,29 +94,112 @@ namespace YumeEngine
 		gYume->pInput->AddListener(this);
 
 #ifndef DISABLE_CEF
-		overlay_ = new YumeDebugOverlay;
+		/*overlay_ = new YumeDebugOverlay;
 		gYume->pUI->AddUIElement(overlay_);
-		overlay_->SetVisible(true);
+		overlay_->SetVisible(true);*/
+
+		optionsMenu_ = new YumeOptionsMenu;
+		gYume->pUI->AddUIElement(optionsMenu_);
+		optionsMenu_->SetVisible(true);
 #endif
-
-
-		/*StaticModel* dragon= CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(0,5,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
-		StaticModel* dragon2= CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(15,5,15),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
-		StaticModel* dragon3= CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(30,5,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
-		StaticModel* plane = CreateModel("Models/Primitives/plane.yume",DirectX::XMFLOAT3(0,0,0));
 
 		MaterialPtr diff = YumeAPINew Material;
 		diff->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
-		diff->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.7f,0.7f,0.7f,1));
+		diff->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		diff->SetShaderParameter("Roughness",1.0f);
+		diff->SetShaderParameter("ShadingMode",2.0f);
+		diff->SetShaderParameter("has_diffuse_tex",false);
+		diff->SetShaderParameter("has_alpha_tex",false);
+		diff->SetShaderParameter("has_specular_tex",false);
+		diff->SetShaderParameter("has_normal_tex",false);
+		diff->SetShaderParameter("has_roughness_tex",false);
 
-		plane->SetMaterial(diff);
+
+		StaticModel* dragon= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(0,0,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
 		dragon->SetMaterial(diff);
-		dragon2->SetMaterial(diff);
-		dragon3->SetMaterial(diff);*/
-		
+		dragon->SetPosition(DirectX::XMVectorSet(0,25,0,0));
+		StaticModel* sponza = CreateModel("Models/cornell/cornell-empty.yume");
+		sponza->SetRotation(DirectX::XMVectorSet(0,180 * M_DEGTORAD,0,1));
 
-		StaticModel* plane = CreateModel("Models/cornell/cornellbox.yume");
+		gYume->pRenderer->GetCamera()->SetPosition(DirectX::XMVectorSet(0,5,20,1));
+		gYume->pRenderer->GetCamera()->SetLookAt(DirectX::XMFLOAT3(0,5,20),DirectX::XMFLOAT3(0,0,0),DirectX::XMFLOAT3(0,1,0));
 
+#ifdef PBR_TEST_SPONZA
+		StaticModel* dragon= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(-40,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		StaticModel* dragon2= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(0,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		StaticModel* dragon3= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(40,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		StaticModel* dragon4= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(80,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		StaticModel* dragon5= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(120,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+
+		StaticModel* sponza = CreateModel("Models/sponza/sponza.yume");
+
+
+		MaterialPtr diff = YumeAPINew Material;
+		diff->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
+		diff->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		diff->SetShaderParameter("FloorRoughness",0.05f);
+		diff->SetShaderParameter("Roughness",0.05f);
+		diff->SetShaderParameter("has_diffuse_tex",false);
+		diff->SetShaderParameter("has_alpha_tex",false);
+		diff->SetShaderParameter("has_specular_tex",false);
+		diff->SetShaderParameter("has_normal_tex",false);
+		diff->SetShaderParameter("has_roughness_tex",false);
+		dragon->SetMaterial(diff);
+
+		MaterialPtr diff2 = YumeAPINew Material;
+		diff2->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
+		diff2->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8f,0.8f,0.8f,1));
+		diff2->SetShaderParameter("FloorRoughness",0.05f);
+		diff2->SetShaderParameter("Roughness",0.05f);
+		diff2->SetShaderParameter("has_diffuse_tex",false);
+		diff2->SetShaderParameter("has_alpha_tex",false);
+		diff2->SetShaderParameter("has_specular_tex",false);
+		diff2->SetShaderParameter("has_normal_tex",false);
+		diff2->SetShaderParameter("has_roughness_tex",false);
+		dragon2->SetMaterial(diff2);
+
+
+		MaterialPtr diff3 = YumeAPINew Material;
+		diff3->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
+		diff3->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8f,0.8f,0.8f,1));
+		diff3->SetShaderParameter("FloorRoughness",0.129f);
+		diff3->SetShaderParameter("Roughness",0.129f);
+		diff3->SetShaderParameter("has_diffuse_tex",false);
+		diff3->SetShaderParameter("has_alpha_tex",false);
+		diff3->SetShaderParameter("has_specular_tex",false);
+		diff3->SetShaderParameter("has_normal_tex",false);
+		diff3->SetShaderParameter("has_roughness_tex",false);
+		dragon3->SetMaterial(diff3);
+
+		MaterialPtr diff4 = YumeAPINew Material;
+		diff4->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
+		diff4->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8f,0.9f,0.8f,1));
+		diff4->SetShaderParameter("FloorRoughness",0.3f);
+		diff4->SetShaderParameter("Roughness",0.3f);
+		diff4->SetShaderParameter("has_diffuse_tex",false);
+		diff4->SetShaderParameter("has_alpha_tex",false);
+		diff4->SetShaderParameter("has_specular_tex",false);
+		diff4->SetShaderParameter("has_normal_tex",false);
+		diff4->SetShaderParameter("has_roughness_tex",false);
+		dragon4->SetMaterial(diff4);
+
+		MaterialPtr diff5 = YumeAPINew Material;
+		diff5->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
+		diff5->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8,0.8,0.8,1));
+		diff5->SetShaderParameter("FloorRoughness",1);
+		diff5->SetShaderParameter("Roughness",1);
+		diff5->SetShaderParameter("has_diffuse_tex",false);
+		diff5->SetShaderParameter("has_alpha_tex",false);
+		diff5->SetShaderParameter("has_specular_tex",false);
+		diff5->SetShaderParameter("has_normal_tex",false);
+		diff5->SetShaderParameter("has_roughness_tex",false);
+		dragon5->SetMaterial(diff5);
+
+		//dragon3->SetMaterial(diff);
+
+		/*StaticModel* yume = CreateModel("Models/Yume/yume.yume",DirectX::XMFLOAT3(0,0,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(50,50,50));*/
+
+#endif
 
 		DirectX::XMFLOAT3 min = gYume->pRenderer->GetMinBb();
 		DirectX::XMFLOAT3 max = gYume->pRenderer->GetMaxBb();
@@ -129,10 +214,11 @@ namespace YumeEngine
 		dirLight->SetName("DirLight");
 		dirLight->SetType(LT_DIRECTIONAL);
 		/*dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));*/
-		dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));
+		dirLight->SetPosition(DirectX::XMVectorSet(0,25,0,0));
 		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
 		dirLight->SetColor(YumeColor(1,1,1,0));
+
 
 
 		/*CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,45);*/
@@ -302,22 +388,6 @@ namespace YumeEngine
 
 	}
 
-	StaticModel* PlaygroundDemo::CreateModel(const YumeString& name,DirectX::XMFLOAT3 Pos,DirectX::XMFLOAT4 rot,DirectX::XMFLOAT3 scale)
-	{
-		StaticModel* sm_ = new StaticModel(name);
-		sm_->Initialize();
-		sm_->SetName("Cornell");
-		sm_->SetPosition(DirectX::XMLoadFloat3(&Pos),true);
-		sm_->SetRotation(DirectX::XMLoadFloat4(&rot));
-		sm_->SetScale(scale.x,scale.y,scale.z);
-
-
-		gYume->pRenderer->GetScene()->AddNode(sm_);
-		/*gYume->pRenderer->UpdateMeshBb(sm_->getge)*/
-
-		return sm_;
-	}
-
 	void PlaygroundDemo::CreateCube(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
 	{
 
@@ -348,7 +418,12 @@ namespace YumeEngine
 	}
 	void PlaygroundDemo::HandleRenderUpdate(float timeStep)
 	{
+		//rotationAngle_ += M_PI * 0.9f * timeStep;
 
+
+
+		//yume_->SetRotation(DirectX::XMVectorSet(0,rotationAngle_,0,1));
+		//gYume->pRenderer->UpdateGI();
 	}
 
 	void PlaygroundDemo::Setup()

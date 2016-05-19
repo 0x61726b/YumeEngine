@@ -31,10 +31,7 @@ namespace YumeEngine
 
 		void CreateLight(Vector3 pos,YumeColor color);
 
-		bool drawDebug;
-
-		YumeSceneNode* light1_;
-		Quaternion rot_;
+		StaticModel* dragon_;
 		float angle_;
 	};
 }

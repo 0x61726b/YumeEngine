@@ -17,6 +17,7 @@ cbuffer gi_parameters_ps        : register(b3)
 }
 
 Texture2D env_map               : register(t13);
+TextureCube EnvMap               : register(t14);
 
 float4 deferred_lpv_ps(PS_INPUT inp) : SV_Target
 {
@@ -55,12 +56,7 @@ float4 deferred_lpv_ps(PS_INPUT inp) : SV_Target
 	// half vector between L and V
 	float3 H = normalize(L+V);
 
-	// have no gloss maps, roughness is simply inverse spec color
-#if 1
-    float roughness = 1.0 - gb.specular_albedo.r;
-#else
-    float roughness = gb.specular_albedo.a;
-#endif
+  float roughness = gb.specular_albedo.a;
 
 	// calculate power of light and scale it to get the scene adequately lit
 	float power = 100 * length(scene_dim_max - scene_dim_min);
@@ -71,60 +67,21 @@ float4 deferred_lpv_ps(PS_INPUT inp) : SV_Target
 	// shadow attenuation factor
 	float attenuation = shadow_attenuation(pos, Ll, rt_rsm_lineardepth, 0.0, 0.0);
 
+  float3 Rr = 0;
+  if(gb.shading_mode == 10)
+  {
+    float3 toEye = camera_pos - pos;
+    float3 incident = -toEye;
+    float3 reflection = reflect(incident,N);
+
+    Rr = EnvMap.Sample(StandardFilter,reflection) * 1.0f;
+  }
+
 	// brdf
-#if 1
-    float alpha = roughness*roughness;
-
-    float NoV = dot(N, V);
-    float NoH = dot(N, H);
-    float LoH = dot(L, H);
-
-    // refractive index
-    float n = 1.5;
-    float f0 = pow((1 - n)/(1 + n), 2);
-
-    float3 Rs;
-
-    if (gb.shading_mode == 1)
-    {
-        // the fresnel term
-        float F = F_schlick(f0, LoH);
-
-        // the geometry term
-        float G = G_UE4(alpha, NoV);
-
-        // the NDF term
-        float D = D_ggx(alpha, NoH);
-
-        // specular term
-        Rs = gb.specular_albedo.rgb/M_PI *
-                    (F * G * D)/
-                    (4 * NoL * NoV);
-    }
-    else
-    {
-        roughness = gb.specular_albedo.a * (num_vpls - 1.0) / 512.0f;
-
-        gb.specular_albedo.rgb = float3(F0_GOLD);
-#if 1
-        Rs = specular_ibl_is(gb.specular_albedo.rgb, roughness, N, V, env_map, StandardFilter) * main_light.color.rgb;
-#else
-        Rs = ibl_specular_blinn_phong_mip(gb.diffuse_albedo.rgb, gb.specular_albedo.rgb, roughness, N, V, env_map, StandardFilter) * main_light.color.rgb;
-#endif
-    }
-
-    // diffuse fresnel, can be cheaper as 1-f0
-    float Fd = F_schlick(f0, NoL);
-
-    float3 Rd = gb.diffuse_albedo.rgb/M_PI * (1.0f - Fd);
-
-    float3 f = (Rd + Rs);
-#else
-    float3 f = brdf(L, V, N, gb.diffuse_albedo.rgb, gb.specular_albedo.rgb, roughness);
-#endif
+  float3 f = brdf(L, V, N, gb.diffuse_albedo.rgb, gb.specular_albedo.rgb, roughness);
 
 	// emissive
-	float3 T0 = 0;
+	float3 T0 = Rr;
 
 	// direct
 	float3 T1 = f * Li * attenuation * NoL;
@@ -137,5 +94,5 @@ float4 deferred_lpv_ps(PS_INPUT inp) : SV_Target
 
     float3 T2 = indirect * gb.diffuse_albedo.rgb / M_PI;
 
-    return float4(max(T0 + T1 + T2, 0.0f), 1.0f);
+    return float4(max(T0 + T1 + T2 + Rr, 0.0f), 1.0f);
 }

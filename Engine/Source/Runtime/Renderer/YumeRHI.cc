@@ -344,9 +344,9 @@ namespace YumeEngine
 		if(nameLower == "readabledepth" || nameLower == "hwdepth")
 			return GetReadableDepthFormatNs();
 		if(nameLower == "rgba10u2")
-			return DXGI_FORMAT_R10G10B10A2_UNORM;
+			return 24; //DXGI_FORMAT_R10G10B10A2_UNORM
 		if(nameLower =="r32typeless")
-			return DXGI_FORMAT_R32_TYPELESS;
+			return 39; //DXGI_FORMAT_R32_TYPELESS
 
 		return GetRGBFormatNs();
 	}

@@ -89,7 +89,7 @@ namespace YumeEngine
 			ib->SetShadowed(true);
 			ib->SetSize(indexCount,true);
 			void* ibbuffer = ib->Lock(0,indexCount);
-			f->Read(ibbuffer,(indexCount) * indexSize);
+			f->Read(ibbuffer,(indexCount)* indexSize);
 			ib->Unlock();
 
 
@@ -99,7 +99,7 @@ namespace YumeEngine
 			geo->SetIndexBuffer(ib);
 			geo->SetDrawRange(TRIANGLE_LIST,0,ib->GetIndexCount());
 
-			
+
 
 
 			//Read bounding box
@@ -132,25 +132,41 @@ namespace YumeEngine
 			YumeString emissive_tex = m->ReadString();
 			YumeString specular_tex = m->ReadString();
 			YumeString normal_tex = m->ReadString();
+			YumeString roughness_tex = m->ReadString();
 
 			SharedPtr<Material> material(new Material);
+
+			if(!diffuse_tex.Compare("textures_pbr\\Sponza_Floor_diffuse.tga"))
+			{
+				floorMaterial_ = material;
+				shadingmMode = 0.0f;
+			}
+			else
+				shadingmMode = 0.0f;
 
 			material->SetShaderParameter("DiffuseColor",diffuseColor);
 			material->SetShaderParameter("EmissiveColor",emissiveColor);
 			material->SetShaderParameter("SpecularColor",specularColor);
 			material->SetShaderParameter("ShadingMode",shadingmMode);
 			material->SetShaderParameter("Roughness",roughness);
+			material->SetShaderParameter("FloorRoughness",roughness);
 
 
 			material->SetShaderParameter("has_diffuse_tex",true);
 			material->SetShaderParameter("has_alpha_tex",true);
 			material->SetShaderParameter("has_specular_tex",true);
 			material->SetShaderParameter("has_normal_tex",true);
+			material->SetShaderParameter("has_roughness_tex",true);
 
 			if(!material->HasTexture(diffuse_tex))
 				material->SetShaderParameter("has_diffuse_tex",false);
 			else
 				material->SetTexture(MT_DIFFUSE,gYume->pResourceManager->PrepareResource<YumeTexture2D>(diffuse_tex));
+
+			if(!material->HasTexture(roughness_tex))
+				material->SetShaderParameter("has_roughness_tex",false);
+			else
+				material->SetTexture(MT_ROUGHNESS,gYume->pResourceManager->PrepareResource<YumeTexture2D>(roughness_tex));
 
 			if(!material->HasTexture(alpha_tex))
 				material->SetShaderParameter("has_alpha_tex",false);
@@ -167,7 +183,7 @@ namespace YumeEngine
 			else
 				material->SetTexture(MT_NORMAL,gYume->pResourceManager->PrepareResource<YumeTexture2D>(normal_tex));
 
-			
+
 			SharedPtr<RenderBatch> batch(new RenderBatch);
 			batch->geo_ = geo;
 			batch->material_ = material;
@@ -179,9 +195,14 @@ namespace YumeEngine
 
 		SetBoundingBox(meshBbMin,meshBbMax);
 
-		gYume->pRenderer->UpdateMeshBb(this,GetTransformation());
+		
 
 		return true;
+	}
+
+	void StaticModel::SetFloorRoughness(float f)
+	{
+		floorMaterial_->SetShaderParameter("FloorRoughness",f);
 	}
 
 	void StaticModel::SetMaterial(MaterialPtr ptr)

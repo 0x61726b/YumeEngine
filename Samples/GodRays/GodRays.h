@@ -30,21 +30,15 @@ namespace YumeEngine
 		virtual void HandleUpdate(float timeStep);
 		virtual void HandleRenderUpdate(float timeStep);
 
-		YumeSceneNode* CreateModel(Vector3 Pos,Quaternion Rot,float scale,const YumeString& model);
-		void CreateCube(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
-		void CreateSphere(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
-		void CreateCylinder(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
-		void CreatePyramid(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
-		void CreateCone(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
 
-		YumeSceneNode* cubeNode_;
-		YumeSceneNode* dirLightNode_;
-		Quaternion rot_;
+		StaticModel* boxBlue;
+		StaticModel* boxRed;
+		StaticModel* boxPink;
 
-		YumeSceneNode* buddha_;
-		YumeSceneNode* dragon_;
+		float angle1_;
 
-		Vector4Vector::type mOffsets;
+		float updown1_;
+		float leftRight1_;
 	};
 }
 

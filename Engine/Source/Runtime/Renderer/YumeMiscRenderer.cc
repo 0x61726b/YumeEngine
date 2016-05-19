@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------
+﻿//----------------------------------------------------------------------------
 //Yume Engine
 //Copyright (C) 2015  arkenthera
 //This program is free software; you can redistribute it and/or modify
@@ -42,17 +42,24 @@
 #include "GlobalIlluminationVolume.h"
 #include "StaticModel.h"
 
+#include "YumeTextureCube.h"
+
+#include "Logging/logging.h"
 using namespace DirectX;
 
 //#define DEBUGGING_RSM
 #define DISABLE_CALLS
+//#define DYNAMIC_ENV_MAP
 
 
 #define GIS_NO_GI 0
 #define GIS_LPV 1
 #define GIS_SVO 2
 
-#define GI_SOLUTION GIS_SVO
+#define GI_SOLUTION GIS_LPV
+
+#define CAMERA_MOVE_SPEED 200
+
 
 namespace YumeEngine
 {
@@ -145,31 +152,44 @@ namespace YumeEngine
 		updateRsm_(true),
 		rsmSize(1024),
 		num_propagations_(64),
-		disableFrustumCull_(true)
+		disableFrustumCull_(true),
+		updateCubemap_(true),
+		currentAdaptedLuminance_(true),
+		backbufferModified_(false),
+		usedResolve_(false),
+		currentRenderTarget_(0),
+		cameraMoveSpeed_(CAMERA_MOVE_SPEED)
 	{
 		rhi_ = gYume->pRHI ;
+
 
 		gYume->pEngine->AddListener(this);
 
 		scene_ = YumeAPINew Scene;
 
+
+
 		giParams_.DebugView = false;
 		giParams_.LPVFlux = 4;
 		giParams_.Scale = 1.0f;
+
+		bbMin = XMFLOAT3(M_INFINITY,M_INFINITY,M_INFINITY);
+		bbMax = XMFLOAT3(-M_INFINITY,-M_INFINITY,-M_INFINITY);
 	}
 
 	YumeMiscRenderer::~YumeMiscRenderer()
 	{
 
+
 	}
 	void YumeMiscRenderer::Initialize()
 	{
-		camera_ = YumeAPINew YumeLPVCamera;
-		camera_->SetViewParams(XMVectorSet(0,5,-20,1),XMVectorSet(0,0,0,0));
 		float width = gYume->pRHI->GetWidth();
 		float height = gYume->pRHI->GetHeight();
-		camera_->SetProjParams(60 * M_DEGTORAD,width / height,zNear,zFar);
-		camera_->SetScalers(0.0099f,3);
+
+		camera_ = YumeAPINew FirstPersonCamera(width / height,60.0f * M_DEGTORAD,zNear,zFar);
+		camera_->SetLookAt(XMFLOAT3(0,7,-26),XMFLOAT3(0,9,0),XMFLOAT3(0,1,0));
+
 
 		defaultPass_ = YumeAPINew RenderPass;
 
@@ -177,7 +197,15 @@ namespace YumeEngine
 
 #if GI_SOLUTION == GIS_LPV
 		defaultPass_->Load("RenderCalls/ReflectiveShadowMap.xml");
+		defaultPass_->Load("RenderCalls/LightPropagationVolume.xml");
 		defaultPass_->Load("RenderCalls/DeferredGI.xml");
+		//defaultPass_->Load("RenderCalls/LensFlare.xml",true);
+
+		defaultPass_->Load("RenderCalls/Bloom.xml",true);
+		defaultPass_->Load("RenderCalls/FXAA.xml",true);
+		//defaultPass_->Load("RenderCalls/DepthOfField.xml",true);
+		defaultPass_->Load("RenderCalls/LensDistortion.xml",true);
+
 
 		giVolume_ = new LightPropagationVolume();
 
@@ -185,26 +213,66 @@ namespace YumeEngine
 
 		curr_ = 0;
 		next_ = 1;
-#else
+#elif GI_SOLUTION == GIS_SVO
 		defaultPass_->Load("RenderCalls/ReflectiveShadowMap.xml");
 		defaultPass_->Load("RenderCalls/SparseVoxelOctree.xml");
 		defaultPass_->Load("RenderCalls/DeferredGISVO.xml");
-
+		defaultPass_->Load("RenderCalls/Bloom.xml",true);
+		defaultPass_->Load("RenderCalls/FXAA.xml",true);
+		//defaultPass_->Load("RenderCalls/Godrays.xml",true);
+		/*defaultPass_->DisableRenderCalls("Bloom");*/
 
 		giVolume_ = new SparseVoxelOctree();
 
 		giVolume_->Create(256);
-#endif
-		/*defaultPass_->Load("RenderCalls/SSAO.xml");*/
-		/*defaultPass_->Load("RenderCalls/ShowGBuffer.xml");*/
-		/*defaultPass_->Load("RenderCalls/Deferred.xml");
-		defaultPass_->Load("RenderCalls/ShowGBuffer.xml");*/
-		/*defaultPass_->Load("RenderCalls/SSAO.xml");*/
-		/*defaultPass_->Load("RenderCalls/BilateralBlur.xml");*/
+#elif GI_SOLUTION == GIS_NO_GI
+		giVolume_ = 0;
+		giEnabled_ = false;
+		defaultPass_->Load("RenderCalls/Deferred.xml");
 
+#endif
 
 		Setup();
 
+
+
+		XMFLOAT3 skyVerts[8] =
+		{
+			XMFLOAT3(-1,1,1),
+			XMFLOAT3(1,1,1),
+			XMFLOAT3(1,-1,1),
+			XMFLOAT3(-1,-1,1),
+			XMFLOAT3(1,1,-1),
+			XMFLOAT3(-1,1,-1),
+			XMFLOAT3(-1,-1,-1),
+			XMFLOAT3(1,-1,-1),
+		};
+
+		unsigned short skyIndices[36] =
+		{
+			0,1,2,2,3,0,   // Front
+			1,4,7,7,2,1,   // Right
+			4,5,6,6,7,4,   // Back
+			5,0,3,3,6,5,   // Left
+			5,4,1,1,0,5,   // Top
+			3,2,7,7,6,3    // Bottom
+		};
+
+
+		SharedPtr<YumeVertexBuffer> skyVb(rhi_->CreateVertexBuffer());
+		skyVb->SetShadowed(true);
+		skyVb->SetSize(8,MASK_POSITION);
+		skyVb->SetData(skyVerts);
+
+		SharedPtr<YumeIndexBuffer> skyIb(rhi_->CreateIndexBuffer());
+		skyIb->SetShadowed(true);
+		skyIb->SetSize(36,false);
+		skyIb->SetData(skyIndices);
+
+		skyGeometry_ = SharedPtr<YumeGeometry>(new YumeGeometry);
+		skyGeometry_->SetIndexBuffer(skyIb);
+		skyGeometry_->SetVertexBuffer(0,skyVb);
+		skyGeometry_->SetDrawRange(TRIANGLE_LIST,0,skyIb->GetIndexCount());
 
 
 
@@ -227,7 +295,8 @@ namespace YumeEngine
 		pp_->Setup();*/
 
 
-
+		screenBuffers_.clear();
+		screenBufferAllocations_.clear();
 	}
 
 	void YumeMiscRenderer::Setup()
@@ -251,32 +320,74 @@ namespace YumeEngine
 
 		lightMap = rhi_->CreateTexture2D();
 		lightMap->SetSize(1600,900,rhi_->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET);
+
+
+		for(int i=0; i < 2; ++i)
+			adaptLuminance[i] = 0;
+
+		backBufferSub_ = rhi_->CreateTexture2D();
+		backBufferSub_->SetSize(1600,900,rhi_->GetRGBAFloat16FormatNs(),TEXTURE_RENDERTARGET);
+
+		unsigned CubemapSize = 256;
+		cubemapRt_ = (rhi_->CreateTextureCube());
+		cubemapRt_->SetNumLevels(9);
+		cubemapRt_->SetName("CubeMap");
+		cubemapRt_->SetSize(CubemapSize,rhi_->GetRGBAFormatNs(),TEXTURE_RENDERTARGET);
+
+		cubemapDsv_ = (rhi_->CreateTexture2D());
+		cubemapDsv_->SetName("DSCubeMap");
+		cubemapDsv_->SetSize(CubemapSize,CubemapSize,39,TEXTURE_DEPTHSTENCIL);
+
+
+		CreateCubemapCameras(0,15,0);
+	}
+
+	void YumeMiscRenderer::CreateCubemapCameras(float x,float y,float z)
+	{
+		// Generate the cube map about the given position.
+		XMFLOAT3 center(x,y,z);
+		XMFLOAT3 worldUp(0.0f,1.0f,0.0f);
+
+		// Look along each coordinate axis.
+		XMFLOAT3 targets[6] =
+		{
+			XMFLOAT3(x+1.0f,y,z), // +X
+			XMFLOAT3(x-1.0f,y,z), // -X
+			XMFLOAT3(x,y+1.0f,z), // +Y
+			XMFLOAT3(x,y-1.0f,z), // -Y
+			XMFLOAT3(x,y,z+1.0f), // +Z
+			XMFLOAT3(x,y,z-1.0f)  // -Z
+		};
+
+		// Use world up vector (0,1,0) for all directions except +Y/-Y.  In these cases, we
+		// are looking down +Y or -Y, so we need a different "up" vector.
+		XMFLOAT3 ups[6] =
+		{
+			XMFLOAT3(0.0f,1.0f,0.0f),  // +X
+			XMFLOAT3(0.0f,1.0f,0.0f),  // -X
+			XMFLOAT3(0.0f,0.0f,-1.0f), // +Y
+			XMFLOAT3(0.0f,0.0f,+1.0f), // -Y
+			XMFLOAT3(0.0f,1.0f,0.0f),	 // +Z
+			XMFLOAT3(0.0f,1.0f,0.0f)	 // -Z
+		};
+
+		for(int i=0; i < 6; ++i)
+		{
+			YumeCamera* cam(new FirstPersonCamera(1,M_PI * 0.5f,0.1f,1000.0f));
+			cam->SetLookAt(center,targets[i],ups[i]);
+
+			cubemapCams_.push_back(cam);
+		}
+
 	}
 
 	void YumeMiscRenderer::Update(float timeStep)
 	{
-		if(!gYume->pInput->GetMouseButtonDown(MOUSEB_LEFT))
-			camera_->FrameMove(timeStep);
+		/*if(!gYume->pInput->GetMouseButtonDown(MOUSEB_LEFT))
+			camera_->FrameMove(timeStep);*/
 
-		camera_->Update();
-
-		Light* dirLight = static_cast<Light*>(scene_->GetDirectionalLight());
-		dirLight->UpdateLightParameters();
-
-		//abort variant matrices
-		defaultPass_->SetShaderParameter("scene_dim_max",XMFLOAT4(GetMaxBb().x,GetMaxBb().y,GetMaxBb().z,1.0f));
-		defaultPass_->SetShaderParameter("scene_dim_min",XMFLOAT4(GetMinBb().x,GetMinBb().y,GetMinBb().z,1.0f));
-
-
-		if(updateRsm_)
-		{
-			DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
-			DirectX::XMFLOAT4X4 i;
-			DirectX::XMStoreFloat4x4(&i,I);
-
-			/*giLpvVolume_.SetModelMatrix(i,bbMin,bbMax);*/
-			giVolume_->SetModelMatrix(i,bbMin,bbMax);
-		}
+		UpdateCamera(timeStep);
+		UpdateLights();
 
 		ConstructFrustum(zFar);
 
@@ -318,6 +429,161 @@ namespace YumeEngine
 		}
 	}
 
+	void YumeMiscRenderer::RemoveUnusedBuffers()
+	{
+		for(YumeMap<long long,YumeVector<SharedPtr<YumeTexture> >::type >::iterator i = screenBuffers_.begin(); i != screenBuffers_.end();)
+		{
+			HashMap<long long,Vector<SharedPtr<YumeTexture> > >::Iterator current = i++;
+			YumeVector<SharedPtr<YumeTexture> >::type& buffers = current->second;
+			for(unsigned j = buffers.size() - 1; j < buffers.size(); --j)
+			{
+				TexturePtr buffer = buffers[j];
+				if(buffer->GetUseTimer() > 1000U)
+				{
+					YUMELOG_DEBUG("Removed unused screen buffer size " << String(buffer->GetWidth()).c_str() << "x" << String(buffer->GetHeight()).c_str() <<
+						" format " << String(buffer->GetFormat()).c_str());
+					buffers.erase(j);
+				}
+			}
+			if(buffers.empty())
+			{
+				screenBufferAllocations_.erase(current->first);
+				screenBuffers_.erase(current);
+			}
+		}
+	}
+	TexturePtr YumeMiscRenderer::AllocateAdditionalBuffers(int width,int height,unsigned format,bool cubemap,bool filtered,bool srgb,bool mips,
+		unsigned persistentKey)
+	{
+		bool depthStencil = false;
+
+		if(depthStencil)
+		{
+			filtered = false;
+			srgb = false;
+		}
+
+		if(cubemap)
+			height = width;
+
+		long long searchKey = ((long long)format << 32) | (width << 16) | height;
+		if(filtered)
+			searchKey |= 0x8000000000000000LL;
+		if(srgb)
+			searchKey |= 0x4000000000000000LL;
+		if(cubemap)
+			searchKey |= 0x2000000000000000LL;
+		if(mips)
+			searchKey |= 0x160000000000000LL;
+
+		// Add persistent key if defined
+		if(persistentKey)
+			searchKey += ((long long)persistentKey << 32);
+
+		if(screenBuffers_.find(searchKey) == screenBuffers_.end())
+			screenBufferAllocations_[searchKey] = 0;
+
+		// Reuse depth-stencil buffers whenever the size matches, instead of allocating new
+		unsigned allocations = screenBufferAllocations_[searchKey];
+		if(!depthStencil)
+			++screenBufferAllocations_[searchKey];
+
+		if(allocations >= screenBuffers_[searchKey].size())
+		{
+			SharedPtr<YumeTexture> newBuffer;
+
+			if(!cubemap)
+			{
+				SharedPtr<YumeTexture2D> newTex2D(rhi_->CreateTexture2D());
+				YumeString name = "AllocBuffer_";
+				name.AppendWithFormat("%i",searchKey);
+				newTex2D->SetName(name);
+				RenderTargetDesc desc;
+				desc.Name = name;
+				desc.Usage = depthStencil ? TEXTURE_DEPTHSTENCIL : TEXTURE_RENDERTARGET;
+				desc.Index = 0;
+				desc.Type = RT_INPUT | RT_OUTPUT;
+				newTex2D->SetDesc(desc);
+				newTex2D->SetSRGB(true);
+				newTex2D->SetSize(width,height,format,depthStencil ? TEXTURE_DEPTHSTENCIL : TEXTURE_RENDERTARGET,1,mips ? 0 : 1);
+
+
+				newBuffer = newTex2D;
+
+			}
+			else
+			{
+				//Cube
+			}
+
+			newBuffer->SetSRGB(srgb);
+			newBuffer->SetFilterMode(filtered ? FILTER_BILINEAR : FILTER_NEAREST);
+			newBuffer->ResetUseTimer();
+			screenBuffers_[searchKey].push_back(newBuffer);
+
+			YUMELOG_DEBUG("Allocated new screen buffer size " << YumeString(width).c_str() << "x" << YumeString(height).c_str() << " format " << YumeString(format).c_str());
+			return newBuffer;
+		}
+		else
+		{
+			TexturePtr buffer = screenBuffers_[searchKey][allocations];
+			return buffer;
+		}
+	}
+
+	void YumeMiscRenderer::PrepareRendering()
+	{
+
+		//Reset allocations
+		for(YumeMap<long long,unsigned>::iterator i = screenBufferAllocations_.begin(); i != screenBufferAllocations_.end(); ++i)
+			i->second = 0;
+
+
+		bool hasBackbufferRead = false;
+		bool hasPingpong = false;
+		bool needSubstitute = false;
+		bool hasPostProcess = false;
+
+		unsigned numViewportTextures = 0;
+
+		for(unsigned i = 0; i < defaultPass_->calls_.size();++i)
+		{
+			RenderCallPtr call = defaultPass_->calls_[i];
+
+			if(!call->GetEnabled())
+				continue;
+
+			if(!hasBackbufferRead && call->GetReadBackbuffer())
+				hasBackbufferRead = true;
+
+			if(!hasPingpong && CheckPingPong(call,i))
+				hasPingpong = true;
+
+			if(!hasPostProcess && call->GetPostProcessPass())
+				hasPostProcess = true;
+		}
+
+
+		if(hasBackbufferRead)
+		{
+			++numViewportTextures;
+
+			if(hasPingpong && !needSubstitute)
+				++numViewportTextures;
+
+			for(unsigned i = 0; i < 2; ++i)
+			{
+				viewportTextures_[i] = i < numViewportTextures ? AllocateAdditionalBuffers(rhi_->GetWidth(),rhi_->GetHeight(),rhi_->GetRGBAFormatNs(),false,true,true,false) : (TexturePtr)0;
+			}
+		}
+
+		if(hasPostProcess)
+		{
+			viewportTextures_[numViewportTextures] = AllocateAdditionalBuffers(rhi_->GetWidth(),rhi_->GetHeight(),rhi_->GetRGBA16FormatNs(),false,true,true,true);
+			++numViewportTextures;
+		}
+	}
+
 	void YumeMiscRenderer::Render()
 	{
 		if(!defaultPass_->calls_.size())
@@ -327,18 +593,113 @@ namespace YumeEngine
 		}
 		else
 		{
+			PrepareRendering();
+
+			if(updateCubemap_)
+			{
+				RenderIntoCubemap();
+#ifdef DYNAMIC_ENV_MAP
+				updateCubemap_ = true;
+#else
+				updateCubemap_ = false;
+#endif
+			}
+
+			currentRenderTarget_ = 0;
+
+
+			bool isPingPonging = false;
+
 			unsigned callSize = defaultPass_->calls_.size();
+
+			unsigned lastCallIndex = 0;
+			for(int i=0; i < callSize; ++i)
+			{
+				if(defaultPass_->calls_[i]->GetEnabled())
+					lastCallIndex = i;
+			}
 
 			for(int i=0; i < callSize; ++i)
 			{
 				RenderCallPtr call = defaultPass_->calls_[i];
 
+				//Debugging purposes,no use
+				YumeString callName = call->GetPassName();
+
 				if(!call->GetEnabled())
 					continue;
+
+				bool backbufferRead = call->GetReadBackbuffer();
+				bool backbufferWrite = call->GetWriteBackbuffer();
+				bool pingpong = CheckPingPong(call,i);
+
+
+				unsigned outputCount = call->GetNumOutputs();
+
 
 
 				ApplyRendererFlags(call);
 
+				if(backbufferRead && backbufferModified_)
+				{
+					if(currentRenderTarget_ && pingpong)
+						isPingPonging = true;
+
+					if(!isPingPonging)
+					{
+						if(!currentRenderTarget_)
+						{
+							rhi_->ResolveToTexture(dynamic_cast<Texture2DPtr>(viewportTextures_[0]),IntRect(0,0,rhi_->GetWidth(),rhi_->GetHeight()));
+							currentViewportTexture_ = viewportTextures_[0];
+							backbufferModified_ = false;
+							usedResolve_ = true;
+						}
+						else
+						{
+							if(backbufferWrite)
+							{
+
+							}
+							else
+							{
+								currentViewportTexture_ = currentRenderTarget_->GetParentTexture();
+							}
+						}
+					}
+					else
+					{
+						viewportTextures_[1] = viewportTextures_[0];
+						viewportTextures_[0] = currentRenderTarget_->GetParentTexture();
+						currentViewportTexture_ = viewportTextures_[0];
+						backbufferModified_ = false;
+					}
+				}
+
+				if(pingpong)
+					isPingPonging = true;
+
+				if(backbufferWrite)
+				{
+					if(isPingPonging)
+					{
+						currentRenderTarget_ = ((Texture2DPtr)viewportTextures_[1])->GetRenderSurface();
+
+						if(call->GetType() == FSTRIANGLE && i == lastCallIndex)
+						{
+							if(call->GetOutput(0))
+								currentRenderTarget_ = ((Texture2DPtr)call->GetOutput(0))->GetRenderSurface();
+							else
+								currentRenderTarget_ = 0;
+						}
+					}
+					else
+					{
+						if(call->GetOutput(0))
+							currentRenderTarget_ = ((Texture2DPtr)call->GetOutput(0))->GetRenderSurface();
+						else
+							currentRenderTarget_ = 0;
+					}
+				}
 
 				switch(call->GetType())
 				{
@@ -419,7 +780,73 @@ namespace YumeEngine
 
 						if(call->IsDeferredLightPass())
 						{
-							RenderLights(call);
+							RenderLights(call,0);
+						}
+
+						if(call->GetSkyboxPass())
+						{
+							RenderSky(0,camera_);
+						}
+
+						if(call->IsForwardPass())
+						{
+							rhi_->SetRenderTarget(0,(YumeTexture*)0);
+
+							TexturePtr stencil = 0;
+
+							if(call->GetRendererFlags() & RF_NODEPTHSTENCIL)
+							{
+								rhi_->SetNoDepthStencil(true);
+							}
+							else
+							{
+								rhi_->SetNoDepthStencil(false);
+								stencil = call->GetDepthStencil();
+
+
+								if(!stencil)
+								{
+									rhi_->SetDepthStencil((Texture2DPtr)0);
+									rhi_->ClearDepthStencil(CLEAR_DEPTH,1.0f,0.0f);
+								}
+								else
+								{
+									rhi_->SetDepthStencil((Texture2DPtr)stencil);
+									rhi_->ClearDepthStencil(CLEAR_DEPTH | CLEAR_STENCIL,1.0f,0.0f);
+
+									if(call->GetStencilWrite())
+										rhi_->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,OP_KEEP,1);
+								}
+
+								rhi_->SetViewport(IntRect(0,0,rhi_->GetWidth(),rhi_->GetHeight()));
+
+								rhi_->Clear(CLEAR_COLOR | CLEAR_DEPTH,YumeColor(0,0,0,0));
+
+								rhi_->SetBlendMode(BLEND_REPLACE);
+
+								rhi_->SetShaders(call->GetVs(),call->GetPs());
+
+								Light* light = static_cast<Light*>(scene_->GetDirectionalLight());
+
+								const DirectX::XMFLOAT4& pos = light->GetPosition();
+								const DirectX::XMFLOAT4& dir = light->GetDirection();
+								const YumeColor& color = light->GetColor();
+
+								const unsigned fSize = 4 * 3 * 4;
+								float f[fSize] ={
+									pos.x,pos.y,pos.z,pos.w,
+									dir.x,dir.y,dir.z,dir.w,
+									color.r_,color.g_,color.b_,color.a_
+								};
+
+								rhi_->SetShaderParameter("main_light",f,4*3);
+
+
+								SetSamplers(call);
+								SetCameraParameters(false,camera_);
+								RenderScene();
+								rhi_->BindResetRenderTargets(0);
+							}
 						}
 
 						if(call->GetDeferred())
@@ -485,7 +912,7 @@ namespace YumeEngine
 							SetSamplers(call);
 
 							//rhi_->BindSampler(PS,0,1,0); //0 is standard filter
-							SetCameraParameters(false);
+							SetCameraParameters(false,camera_);
 							RenderScene();
 							rhi_->BindResetRenderTargets(0);
 						}
@@ -615,10 +1042,12 @@ namespace YumeEngine
 
 					giVolume_->Filter();
 
+#ifndef DEBUGGING_RSM
 					defaultPass_->DisableRenderCalls("RSM");
 					defaultPass_->DisableRenderCalls("RSMVoxelize");
 					defaultPass_->DisableRenderCalls("RSMInject");
 					updateRsm_ = false;
+#endif
 
 					rhi_->BindResetTextures(6,3);
 				}
@@ -776,6 +1205,89 @@ namespace YumeEngine
 					}
 				}
 				break;
+				case ADAPT_LUMINANCE:
+				{
+					TexturePtr target = currentViewportTexture_;
+					TexturePtr ppInput = viewportTextures_[2];
+					BlitRenderTarget(target,ppInput,false);
+					/*TexturePtr ppInput = target;*/
+
+
+
+					rhi_->GenerateMips(ppInput);
+
+					currentAdaptedLuminance_= !currentAdaptedLuminance_;
+
+					gYume->pRHI->SetViewport(IntRect(0,0,1,1));
+
+					TexturePtr adaptLum1 = defaultPass_->GetTextureByName("RT_ADAPT_LUMINANCE_1");
+					TexturePtr adaptLum0 = defaultPass_->GetTextureByName("RT_ADAPT_LUMINANCE_0");
+
+					TexturePtr bloomFull = defaultPass_->GetTextureByName("BloomTarget");
+
+					adaptLuminance[0] = adaptLum0;
+					adaptLuminance[1] = adaptLum1;
+
+					YumeShaderVariation* fsTriangle = rhi_->GetShader(VS,"LPV/fs_triangle","","fs_triangle_vs");
+					{
+						RHIEvent e("Adapt Luminance");
+
+
+						YumeShaderVariation* ps = gYume->pRHI->GetShader(PS,"Bloom","","ps_adapt_exposure");
+
+						gYume->pRHI->SetShaders(fsTriangle,ps,0);
+						SetCameraParameters(false,camera_);
+
+						YumeGeometry* fs = GetFsTriangle();
+
+						auto textures = gYume->pRenderer->GetFreeTextures();
+						textures[0] = ppInput;
+						textures[5] = adaptLuminance[!currentAdaptedLuminance_];
+						gYume->pRHI->PSBindSRV(0,1,textures);
+
+						ApplyShaderParameters(call);
+						SetPerFrameConstants();
+
+						gYume->pRHI->SetRenderTarget(0,adaptLuminance[currentAdaptedLuminance_]);
+
+						fs->Draw(gYume->pRHI);
+
+
+						gYume->pRHI->BindResetRenderTargets(0);
+						gYume->pRHI->BindResetTextures(0,1);
+					}
+
+
+					{
+						RHIEvent e("Bloom Threshold");
+
+						gYume->pRHI->SetViewport(IntRect(0,0,rhi_->GetWidth(),rhi_->GetHeight()));
+						YumeShaderVariation* threshold = gYume->pRHI->GetShader(PS,"Bloom","BLOOM_THRESHOLD","ps_bloom_treshold");
+
+						gYume->pRHI->SetShaders(fsTriangle,threshold,0);
+						SetCameraParameters(false,camera_);
+
+						YumeGeometry* fs = GetFsTriangle();
+
+						auto textures = gYume->pRenderer->GetFreeTextures();
+						textures[0] = ppInput;
+						textures[5] = adaptLuminance[!currentAdaptedLuminance_];
+						gYume->pRHI->PSBindSRV(0,2,textures);
+
+						ApplyShaderParameters(call);
+						SetPerFrameConstants();
+
+						gYume->pRHI->SetRenderTarget(0,bloomFull);
+
+
+						fs->Draw(gYume->pRHI);
+
+						gYume->pRHI->BindResetTextures(0,13);
+						gYume->pRHI->BindResetRenderTargets(0);
+					}
+
+				}
+				break;
 				case CallType::FSTRIANGLE:
 				{
 					RHIEvent ev;
@@ -790,7 +1302,9 @@ namespace YumeEngine
 
 					YumeShaderVariation* fsTriangle = rhi_->GetShader(VS,"LPV/fs_triangle","","fs_triangle_vs");
 
+
 					rhi_->SetShaders(fsTriangle,call->GetPs());
+
 
 					YumeVector<TexturePtr>::type inputs;
 
@@ -808,23 +1322,44 @@ namespace YumeEngine
 							inputs.push_back(input);
 						}
 						else
-							inputs.push_back(0);
+						{
+							if(i == 0 && call->GetReadBackbuffer())
+							{
+								inputs.push_back(currentViewportTexture_);
+								startIndex = i;
+							}
+							else
+								inputs.push_back(0);
+						}
 					}
 
+					if(call->GetPassName() == "BloomFinal")
+						inputs[5] = adaptLuminance[currentAdaptedLuminance_];
 
+					inputs[14] = cubemapRt_; //Change this,noise texture conflict
 
-					rhi_->PSBindSRV(startIndex,inputSize,inputs);
 
 					//Variants
 					ApplyShaderParameters(call);
 
-
 					/*rhi_->BindDefaultDepthStencil();
 					rhi_->SetNoDepthStencil(false);*/
-					rhi_->SetNoDepthStencil(true);
+					/*rhi_->SetNoDepthStencil(true);
 					rhi_->SetDepthStencil((Texture2DPtr)0);
-					rhi_->SetStencilTest(true,CMP_ALWAYS,OP_KEEP,OP_KEEP,OP_INCR,OP_DECR,0);
+					rhi_->SetStencilTest(true,CMP_ALWAYS,OP_KEEP,OP_KEEP,OP_INCR,OP_DECR,0);*/
+					/*rhi_->SetDepthEnable(false);*/
 
+					if(!call->GetPostProcessPass())
+					{
+						TexturePtr stencil = defaultPass_->GetTextureByName("LightDSV");
+						rhi_->SetNoDepthStencil(true);
+						rhi_->SetDepthStencil((Texture2DPtr)stencil);
+						rhi_->SetDepthEnable(false);
+						rhi_->SetDepthTest(CMP_LESS);
+						rhi_->SetStencilTest(true,CMP_EQUAL,OP_KEEP,OP_KEEP,OP_KEEP,OP_KEEP,1,M_MAX_UNSIGNED,0);
+						rhi_->SetDepthWrite(false);
+						rhi_->SetBindReadOnlyDepthStencil(true);
+					}
 
 					Light* light = static_cast<Light*>(scene_->GetDirectionalLight());
 
@@ -840,9 +1375,14 @@ namespace YumeEngine
 					};
 
 
+					if(call->GetPostProcessPass())
+					{
+						auto noise = gYume->pResourceManager->PrepareResource<YumeTexture3D>("Textures/noise.dds");
+						inputs[14] = noise;
+						++inputSize;
+					}
 
-
-
+					rhi_->PSBindSRV(startIndex,inputSize,inputs);
 					gYume->pRHI->SetShaderParameter("main_light",f,4*3);
 
 					bool deptheanble = rhi_->GetDepthState();
@@ -852,19 +1392,31 @@ namespace YumeEngine
 					/*rhi_->SetDepthEnable(false);
 					rhi_->SetDepthWrite(false);*/
 
-					SetCameraParameters(false);
+					SetCameraParameters(false,camera_);
+					SetPerFrameConstants();
 
 					TexturePtr output = call->GetOutput(0);
-					if(!output)
+
+					if(!output && !currentRenderTarget_)
 					{
+						gYume->pRHI->SetViewport(IntRect(0,0,rhi_->GetWidth(),rhi_->GetHeight()));
 						rhi_->SetRenderTarget(0,(YumeTexture*)0);
 						rhi_->Clear(CLEAR_COLOR,YumeColor(0,0,0,1));
+
 					}
-					else
+					else if(output)
 					{
 						gYume->pRHI->SetViewport(IntRect(0,0,output->GetWidth(),output->GetHeight()));
 						rhi_->SetRenderTarget(0,output);
 						/*rhi_->ClearRenderTarget(0,CLEAR_COLOR);*/
+
+						if(call->GetRendererFlags() & RF_CLEAR)
+							rhi_->ClearRenderTarget(0,CLEAR_COLOR);
+					}
+					else if(currentRenderTarget_)
+					{
+						gYume->pRHI->SetViewport(IntRect(0,0,currentRenderTarget_->GetWidth(),currentRenderTarget_->GetHeight()));
+						rhi_->SetRenderTarget(0,currentRenderTarget_);
 
 						if(call->GetRendererFlags() & RF_CLEAR)
 							rhi_->ClearRenderTarget(0,CLEAR_COLOR);
@@ -878,23 +1430,123 @@ namespace YumeEngine
 
 					/*pp_->SetPPParameters*/
 
+
+
 					GetFsTriangle()->Draw(gYume->pRHI);
+
 
 
 
 					/*rhi_->SetDepthEnable(deptheanble);
 					rhi_->SetDepthWrite(depthwrite);*/
 
+					unsigned nextCall = i + 1;
 
-					rhi_->BindResetRenderTargets(1);
+					bool resetRt = true;
+
+					if(nextCall < callSize)
+					{
+						RenderCallPtr nc = defaultPass_->calls_[nextCall];
+						if(nc)
+						{
+							if(!nc->GetPassName().Compare("Skybox"))
+							{
+								resetRt = false;
+							}
+						}
+					}
+
+					if(resetRt)
+						rhi_->BindResetRenderTargets(1);
 					rhi_->BindResetTextures(0,MAX_TEXTURE_UNITS);
+					rhi_->SetBindReadOnlyDepthStencil(false);
+					rhi_->SetDepthTest(CMP_LESSEQUAL);
+					rhi_->SetStencilTest(true,CMP_ALWAYS);
+					rhi_->SetCullMode(CULL_CCW);
+					rhi_->SetDepthWrite(true);
 				}
 				break;
 				default:
 					break;
 				}
+				if(backbufferWrite)
+					backbufferModified_ = true;
 			}
 		}
+		RemoveUnusedBuffers();
+	}
+
+	bool YumeMiscRenderer::CheckPingPong(RenderCall* call,unsigned index)
+	{
+		CallType al;
+		if(call->GetType() == ADAPT_LUMINANCE)
+			al = FSTRIANGLE;
+		else
+			al = call->GetType();
+
+
+		if((al != FSTRIANGLE)|| !call->GetReadBackbuffer() || !call->GetWriteBackbuffer())
+			return false;
+
+
+		for(int i=index + 1; i < defaultPass_->calls_.size(); ++i)
+		{
+			RenderCall* c = defaultPass_->calls_[i];
+
+			if(!c->GetEnabled())
+				continue;
+
+			if(c->GetWriteBackbuffer())
+			{
+				if(c->GetType() != FSTRIANGLE)
+					return false;
+			}
+		}
+
+		return true;
+	}
+
+	void YumeMiscRenderer::BlitRenderTarget(TexturePtr source,TexturePtr destination,bool depthWrite)
+	{
+		if(!source)
+			return;
+
+		RHIEvent e("Blit");
+
+		// If blitting to the destination rendertarget, use the actual viewport. Intermediate textures on the other hand
+		// are always viewport-sized
+		IntVector2 srcSize(source->GetWidth(),source->GetHeight());
+		IntVector2 destSize = destination ? IntVector2(destination->GetWidth(),destination->GetHeight()) : IntVector2(
+			rhi_->GetWidth(),rhi_->GetHeight());
+
+		IntRect srcRect = IntRect(0,0,srcSize.x_,srcSize.y_);
+		IntRect destRect = IntRect(0,0,destSize.x_,destSize.y_);
+
+
+		rhi_->SetRenderTarget(0,destination);
+		for(unsigned i = 1; i < MAX_RENDERTARGETS; ++i)
+			rhi_->SetRenderTarget(i,(YumeRenderable*)0);
+		rhi_->SetViewport(destRect);
+
+		rhi_->SetNoDepthStencil(true);
+		static const String shaderName("Copy");
+		YumeShaderVariation* triangle = rhi_->GetShader(VS,"LPV/fs_triangle","","fs_triangle_vs");
+		rhi_->SetShaders(triangle,rhi_->GetShader(PS,shaderName,shaderName,"ps_copy"));
+
+		SetGBufferShaderParameters(srcSize,srcRect);
+
+		auto textures = GetFreeTextures();
+		textures[0] = source;
+
+		rhi_->PSBindSRV(0,1,textures);
+		unsigned sampler = defaultPass_->GetSamplerByName("ShadowFilter").second;
+		unsigned samplers[2] ={0,sampler};
+		rhi_->BindSampler(PS,0,2,samplers); //Standard
+
+		GetFsTriangle()->Draw(rhi_);
+
+		rhi_->SetNoDepthStencil(true);
+		rhi_->BindResetRenderTargets(1);
 	}
 
 	void YumeMiscRenderer::RenderReflectiveShadowMap(RenderCall* call)
@@ -925,7 +1577,7 @@ namespace YumeEngine
 			//Set shaders
 			rhi_->SetShaders(call->GetVs(),call->GetPs(),0);
 
-			SetCameraParameters(true);
+			SetCameraParameters(true,camera_);
 			RenderScene();
 
 			rhi_->BindResetRenderTargets(4);
@@ -1040,9 +1692,29 @@ namespace YumeEngine
 		rhi_->BindResetRenderTargets(6);
 		rhi_->BindResetTextures(7,3,true);
 
+	}
 
+	void YumeMiscRenderer::UpdateGI()
+	{
+		defaultPass_->EnableRenderCalls("RSM");
+		defaultPass_->EnableRenderCalls("RSMVoxelize");
+		defaultPass_->EnableRenderCalls("RSMInject");
+		updateRsm_ = true;
+	}
 
+	void YumeMiscRenderer::SetFloorRoughness(float f)
+	{
+		SceneNodes::type& renderables = scene_->GetRenderables();
 
+		SceneNode* floorNode = 0;
+		for(int i=0; i < renderables.size(); ++i)
+		{
+			SceneNode* node = renderables[i];
+
+			floorNode = node;
+		}
+
+		static_cast<StaticModel*>(floorNode)->SetFloorRoughness(f);
 	}
 
 	YumeString YumeMiscRenderer::GetTextureName(const YumeString& s,int num)
@@ -1082,38 +1754,87 @@ namespace YumeEngine
 		texture[10] = overlaytexture;
 		rhi_->PSBindSRV(10,1,texture);
 
-
-
 		YumeShaderVariation* triangle = rhi_->GetShader(VS,"LPV/fs_triangle","","fs_triangle_vs");
 		YumeShaderVariation* overlay = rhi_->GetShader(PS,"LPV/Overlay");
 
 		rhi_->SetBlendMode(BLEND_PREMULALPHA);
 
-		unsigned sampler = defaultPass_->GetSamplerByName("Standard").second;
-		unsigned samplers[1] ={sampler};
-		rhi_->BindSampler(PS,0,1,samplers); //Standard
+		unsigned samplerSt = defaultPass_->GetSamplerByName("Standard").second;
+		unsigned samplerSh = defaultPass_->GetSamplerByName("ShadowFilter").second;
+		unsigned samplers[2] ={samplerSt,samplerSh};
+		rhi_->BindSampler(PS,0,2,samplers); //Standard
 
 		rhi_->SetShaders(triangle,overlay,0);
 		rhi_->SetNoDepthStencil(true);
+
+
+		rhi_->SetViewport(rect);
 
 		rhi_->SetDepthStencil((YumeTexture2D*)0);
 		rhi_->SetRenderTarget(0,(YumeTexture*)0);
 
 		fullscreenTriangle_->Draw(rhi_);
+
 	}
 
-	void YumeMiscRenderer::RenderSky()
+	void YumeMiscRenderer::RenderSky(YumeRenderable* target,YumeCamera* camera)
 	{
 		//Sky will set its shaders.
 
+		YumeShaderVariation* skyVs = rhi_->GetShader(VS,"ClearSky","ClearSky","sky_vs");
+		YumeShaderVariation* skyGs = rhi_->GetShader(GS,"ClearSky","ClearSky","sky_gs");
+		YumeShaderVariation* skyPs = rhi_->GetShader(PS,"ClearSky","ClearSky","sky_ps");
+
+
+
+
+		rhi_->SetShaders(skyVs,skyPs,skyGs);
+
+		SetCameraParameters(false,camera);
+
+		DirectX::XMVECTOR eyePos = camera->Position();
+		XMMATRIX T = XMMatrixTranslationFromVector(eyePos);
+
+		rhi_->SetShaderParameter("wvp",T * camera->ViewMatrix() * camera->ProjectionMatrix());
+
+		//XMMATRIX view = camera->GetViewMatrix();
+		//XMFLOAT4X4 skyView;
+		//XMStoreFloat4x4(&skyView,view);
+
+		//skyView._41 = 0;
+		//skyView._42 = 0;
+		//skyView._43 = 0;
+		//rhi_->SetShaderParameter("vp",DirectX::XMMatrixMultiply(XMLoadFloat4x4(&skyView),camera->GetProjMatrix()));
+		//rhi_->SetShaderParameter("world",XMMatrixScaling(5000,5000,5000));
+
+		//rhi_->SetDepthEnable(false);
+		//rhi_->SetDepthTest(CMP_LESS);
+		/*rhi_->SetStencilTest(true,CMP_EQUAL,OP_KEEP,OP_KEEP,OP_KEEP,OP_KEEP,1,M_MAX_UNSIGNED,0);
+		rhi_->SetBlendMode(BLEND_REPLACE);
+		rhi_->SetCullMode(CULL_NONE);*/
+		rhi_->SetNoDepthStencil(false);
+		//rhi_->SetDepthStencil((Texture2DPtr)0);
+		rhi_->SetDepthTest(CMP_LESSEQUAL);
+		rhi_->SetStencilTest(true,CMP_ALWAYS);
+		rhi_->SetDepthEnable(true);
+		/*rhi_->SetCullMode(CULL_CCW);
+		rhi_->SetDepthWrite(true);*/
+
+		rhi_->SetRenderTarget(0,target);
+		rhi_->SetShaderParameter("SunDirection",DirectX::XMFLOAT4(0.577350300f,0.577350300f,0.577350300f,1));
+
+		skyGeometry_->Draw(rhi_);
+
+
+		rhi_->BindResetRenderTargets(1);
 	}
 
-	void YumeMiscRenderer::RenderLights(RenderCall* call)
+	void YumeMiscRenderer::RenderLights(RenderCall* call,TexturePtr t)
 	{
 		SceneNodes::type& renderables = scene_->GetLights();
 
-		TexturePtr stencil = defaultPass_->GetTextureByName("LightDSV");
 		TexturePtr target = call->GetOutput(0);
+		TexturePtr stencil = defaultPass_->GetTextureByName("LightDSV");
 		rhi_->SetNoDepthStencil(false);
 		rhi_->SetDepthStencil((Texture2DPtr)stencil);
 		rhi_->SetRenderTarget(0,target);
@@ -1167,7 +1888,7 @@ namespace YumeEngine
 			else
 			{
 				YumeShaderVariation* deferredLightVs = rhi_->GetShader(VS,"NoShadows/FsTriangle","","fs_triangle_vs");
-				YumeShaderVariation* deferredLightPs = rhi_->GetShader(PS,"NoShadows/DeferredLightPS","DIRECTIONALLIGHT","ps_df");
+				YumeShaderVariation* deferredLightPs = rhi_->GetShader(PS,"NoShadows/DeferredLightPS","DIRECTIONALLIGHT","ps_df_pbr");
 
 				rhi_->SetShaders(deferredLightVs,deferredLightPs);
 			}
@@ -1177,28 +1898,22 @@ namespace YumeEngine
 			XMMATRIX volumeTransform = DirectX::XMMatrixTranslationFromVector(DirectX::XMVectorSet(light->GetPosition().x,light->GetPosition().y,light->GetPosition().z,1.0f));
 			volumeTransform = DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(light->GetRange(),light->GetRange(),light->GetRange()),volumeTransform);
 
-			SetCameraParameters(false);
+			SetCameraParameters(false,camera_);
 
 
-			XMMATRIX wv = DirectX::XMMatrixMultiply(volumeTransform,camera_->GetViewMatrix());
+
+			XMMATRIX wv = DirectX::XMMatrixMultiply(volumeTransform,camera_->ViewMatrix());
 			rhi_->SetShaderParameter("wv",wv);
 			rhi_->SetShaderParameter("LightColor",light->GetColor());
 			rhi_->SetShaderParameter("LightPosition",light->GetPosition());
 			rhi_->SetShaderParameter("LightDirection",DirectX::XMFLOAT4(-0.577350300f,-0.577350300f,-0.577350300f,light->GetRange()));
 			rhi_->SetShaderParameter("volume_transform",volumeTransform);
-			rhi_->SetShaderParameter("camera_rot",DirectX::XMLoadFloat4x4(&camera_->GetRotationMatrix()));
-
-
-
-
+			/*rhi_->SetShaderParameter("camera_rot",DirectX::XMLoadFloat4x4(&camera_->()));*/
 
 			TexturePtr colors = defaultPass_->GetTextureByName("SCENE_COLORS");
 			TexturePtr normals = defaultPass_->GetTextureByName("SCENE_NORMALS");
 			TexturePtr spec = defaultPass_->GetTextureByName("SCENE_SPECULAR");
 			TexturePtr ld = defaultPass_->GetTextureByName("SCENE_LINEARDEPTH");
-
-
-
 
 			YumeVector<TexturePtr>::type inputs = GetFreeTextures();
 
@@ -1206,6 +1921,7 @@ namespace YumeEngine
 			inputs[3] = spec;
 			inputs[4] = normals;
 			inputs[5] = ld;
+			inputs[14] = cubemapRt_;
 			rhi_->PSBindSRV(2,4,inputs);
 
 			SetGBufferShaderParameters(IntVector2(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight()),IntRect(0,0,gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight()));
@@ -1223,10 +1939,53 @@ namespace YumeEngine
 			rhi_->SetBlendMode(blend);
 			rhi_->SetDepthEnable(oldDepthState);
 
-			rhi_->BindResetTextures(2,4,true);
+
+
+			rhi_->BindResetTextures(0,MAX_TEXTURE_UNITS,true);
 		}
 		rhi_->BindResetRenderTargets(1);
 		rhi_->SetBindReadOnlyDepthStencil(false);
+	}
+
+	void YumeMiscRenderer::RenderIntoCubemap()
+	{
+		//setup camera
+
+		//Render cubemap
+		unsigned CubemapSize = 256;
+		rhi_->SetViewport(IntRect(0,0,CubemapSize,CubemapSize));
+		rhi_->SetStencilTest(true,CMP_ALWAYS,OP_REF,OP_KEEP,OP_KEEP,OP_KEEP,1);
+
+		RHIEvent e("RenderCubemap");
+
+		for(int i=0; i < MAX_CUBEMAP_FACES; ++i)
+		{
+			RHIEvent ev("RenderFace");
+			CubeMapFace cube = (CubeMapFace)i;
+
+			YumeRenderable* target = cubemapRt_->GetRenderSurface(cube);
+
+			rhi_->SetRenderTarget(0,target);
+			rhi_->SetDepthStencil(cubemapDsv_);
+			rhi_->Clear(CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL,YumeColor(0.75f,0.75f,0.75f));
+
+			YumeShaderVariation* vs = rhi_->GetShader(VS,"ForwardSolidVertex","ForwardSolidVertex","MeshVs");
+			YumeShaderVariation* ps = rhi_->GetShader(PS,"ForwardSolid","ForwardSolid","MeshPs");
+
+			rhi_->SetShaders(vs,ps);
+
+			unsigned sampler = defaultPass_->GetSamplerByName("ShadowFilter").second;
+			unsigned samplers[2] ={0,sampler};
+			rhi_->BindSampler(PS,0,2,samplers); //Standard
+
+			SetCameraParameters(false,cubemapCams_[i]);
+			RenderScene();
+
+			RenderSky(target,cubemapCams_[i]);
+		}
+
+		rhi_->GenerateMips(cubemapRt_);
+		//
 	}
 
 	void YumeMiscRenderer::RenderScene()
@@ -1302,12 +2061,14 @@ namespace YumeEngine
 
 
 
+
 				if(material->GetNumTextures() > 0)
 				{
 					TexturePtr diffuse = material->GetTexture(MT_DIFFUSE);
 					TexturePtr normal = material->GetTexture(MT_NORMAL);
 					TexturePtr specular = material->GetTexture(MT_SPECULAR);
 					TexturePtr alpha = material->GetTexture(MT_ALPHA);
+					TexturePtr roughness = material->GetTexture(MT_ROUGHNESS);
 
 					YumeVector<TexturePtr>::type textures = GetFreeTextures();
 
@@ -1315,11 +2076,12 @@ namespace YumeEngine
 					textures[MT_NORMAL] = normal;
 					textures[MT_SPECULAR] = specular;
 					textures[MT_ALPHA] = alpha;
-					rhi_->PSBindSRV(0,3,textures);
+					textures[MT_ROUGHNESS] = roughness;
+					rhi_->PSBindSRV(0,5,textures);
 				}
 
 				rhi_->SetShaderParameter("world",node->GetTransformation());
-				
+
 				geometry->Draw(rhi_);
 			}
 
@@ -1357,7 +2119,7 @@ namespace YumeEngine
 
 	void YumeMiscRenderer::ConstructFrustum(float depth)
 	{
-		XMMATRIX projMatrix = camera_->GetProjMatrix();
+		XMMATRIX projMatrix = camera_->ProjectionMatrix();
 
 		XMFLOAT4X4 proj;
 		XMStoreFloat4x4(&proj,projMatrix);
@@ -1369,7 +2131,7 @@ namespace YumeEngine
 		proj._33 = r;
 		proj._43 = -r * zMinimum;
 
-		XMMATRIX matrix = XMMatrixMultiply(camera_->GetViewMatrix(),projMatrix);
+		XMMATRIX matrix = XMMatrixMultiply(camera_->ViewMatrix(),projMatrix);
 
 		XMFLOAT4X4 vp;
 		XMStoreFloat4x4(&vp,matrix);
@@ -1530,6 +2292,63 @@ namespace YumeEngine
 		return true;
 	}
 
+	void YumeMiscRenderer::UpdateCamera(float dt)
+	{
+		YumeInput* i = gYume->pInput;
+
+		float CamMoveSpeed = cameraMoveSpeed_ * dt;
+		const float CamRotSpeed = 0.180f * dt;
+
+		XMVECTOR camPos = camera_->Position();
+
+		if(i->GetKeyDown('W'))
+			camPos += XMVectorScale(camera_->Forward(),CamMoveSpeed);
+		if(i->GetKeyDown('S'))
+			camPos += XMVectorScale(camera_->Back(),CamMoveSpeed);
+		if(i->GetKeyDown('A'))
+			camPos += XMVectorScale(camera_->Left(),CamMoveSpeed);
+		if(i->GetKeyDown('D'))
+			camPos += XMVectorScale(camera_->Right(),CamMoveSpeed);
+
+		camera_->SetPosition(camPos);
+
+		float xRot = camera_->XRotation();
+		float yRot = camera_->YRotation();
+
+		if(i->GetMouseButtonDown(MOUSEB_RIGHT))
+		{
+
+			IntVector2 md = i->GetMouseMove();
+
+			xRot += md.y_ * 0.005f;
+			yRot += md.x_ * 0.005f;
+
+			camera_->SetXRotation(xRot);
+			camera_->SetYRotation(yRot);
+		}
+	}
+
+	void YumeMiscRenderer::UpdateLights()
+	{
+		Light* dirLight = static_cast<Light*>(scene_->GetDirectionalLight());
+		dirLight->UpdateLightParameters();
+
+		//abort variant matrices
+		defaultPass_->SetShaderParameter("scene_dim_max",XMFLOAT4(GetMaxBb().x,GetMaxBb().y,GetMaxBb().z,1.0f));
+		defaultPass_->SetShaderParameter("scene_dim_min",XMFLOAT4(GetMinBb().x,GetMinBb().y,GetMinBb().z,1.0f));
+
+
+		if(updateRsm_ && giEnabled_)
+		{
+			DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
+			DirectX::XMFLOAT4X4 i;
+			DirectX::XMStoreFloat4x4(&i,I);
+
+			/*giLpvVolume_.SetModelMatrix(i,bbMin,bbMax);*/
+			giVolume_->SetModelMatrix(i,bbMin,bbMax);
+		}
+	}
+
 	void YumeMiscRenderer::SetGIDebug(bool enabled)
 	{
 		giParams_.DebugView = enabled;
@@ -1610,15 +2429,23 @@ namespace YumeEngine
 		v_bb_min = DirectX::XMVector4Transform(v_bb_min,world);
 		v_bb_max = DirectX::XMVector4Transform(v_bb_max,world);
 
+
+		DirectX::XMFLOAT3 bMin;
+		DirectX::XMFLOAT3 bMax;
+
 		DirectX::XMStoreFloat3(&bbMin,v_bb_min);
 		DirectX::XMStoreFloat3(&bbMax,v_bb_max);
+
+		//bbMin = dmin(bMin,bbMin);
+		//bbMax = dmax(bMax,bbMax);
+
 	}
 
-	void YumeMiscRenderer::SetCameraParameters(bool shadowPass)
+	void YumeMiscRenderer::SetCameraParameters(bool shadowPass,YumeCamera* camera)
 	{
-		XMMATRIX view = GetCamera()->GetViewMatrix();
-		XMMATRIX proj = GetCamera()->GetProjMatrix();
-		XMFLOAT4 cameraPos;
+		XMMATRIX view = camera->ViewMatrix();
+		XMMATRIX proj = camera->ProjectionMatrix();
+		XMFLOAT3 cameraPos;
 
 		SceneNode* dirLight = scene_->GetDirectionalLight();
 
@@ -1627,28 +2454,42 @@ namespace YumeEngine
 
 		if(shadowPass)
 		{
-			XMStoreFloat4(&cameraPos,XMLoadFloat4(&dirLight->GetPosition()));
+			XMStoreFloat3(&cameraPos,XMLoadFloat4(&dirLight->GetPosition()));
 			XMMATRIX lightView = XMMatrixLookToLH(XMLoadFloat4(&dirLight->GetPosition()),XMLoadFloat4(&dirLight->GetDirection()),XMLoadFloat4(&dirLight->GetRotation()));
 
 			view = lightView;
 			proj = MakeProjection();
 		}
 		else
-			XMStoreFloat4(&cameraPos,GetCamera()->GetEyePt());
+		{
+			XMStoreFloat3(&cameraPos,camera->Position());
+		}
 
 		XMMATRIX vp = view * proj;
 		XMMATRIX vpInv = XMMatrixInverse(nullptr,vp);
 
 
 		gYume->pRHI->SetShaderParameter("vp",vp);
+		gYume->pRHI->SetShaderParameter("view",view);
 		gYume->pRHI->SetShaderParameter("vp_inv",vpInv);
 		gYume->pRHI->SetShaderParameter("ProjMatrix",proj);
 		gYume->pRHI->SetShaderParameter("camera_pos",cameraPos);
+		gYume->pRHI->SetShaderParameter("camera_pos_ps",cameraPos); // ¯\_(ツ)_/¯
 		gYume->pRHI->SetShaderParameter("z_far",zFar);
 
-		XMFLOAT3 n,f;
+		DirectX::XMMATRIX tex
+			(
+			0.5f,0.0f,0.0f,0.0f,
+			0.0f,-0.5f,0.0f,0.0f,
+			0.f,0.f,0.5f,0.0f,
+			0.5f,0.5f,0.5f,1.0f
+			);
+
+		rhi_->SetShaderParameter("viewToTextureSpaceMatrix",proj*tex);
+
+		/*XMFLOAT3 n,f;
 		camera_->GetFrustumSize(n,f);
-		rhi_->SetShaderParameter("FrustumSize",f);
+		rhi_->SetShaderParameter("FrustumSize",f);*/
 	}
 
 

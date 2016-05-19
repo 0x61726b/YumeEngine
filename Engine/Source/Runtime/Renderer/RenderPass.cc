@@ -95,7 +95,7 @@ namespace YumeEngine
 			call->SetInput(index,tex);
 	}
 
-	void RenderPass::Load(const YumeString& resource)
+	void RenderPass::Load(const YumeString& resource,bool isPostProcess)
 	{
 		YumeXmlFile* fullPath = gYume->pResourceManager->PrepareResource<YumeXmlFile>(resource);
 
@@ -132,10 +132,26 @@ namespace YumeEngine
 				RenderTargetDesc desc;
 				ZeroMemory(&desc,sizeof(desc));
 
+				if(strlen(width) > 0)
+					desc.Width = atoi(width);
+				if(strlen(height) > 0)
+					desc.Height = atoi(height);
+				if(strlen(depth) > 0)
+					desc.Depth = atoi(depth);
+
+				const char* size = child.attribute("Size").as_string();
+
+				if(strlen(size) > 0)
+				{
+					YumeVector<YumeString>::type sizeVector = ParseFlags(size);
+					int ws = atoi(sizeVector[0].c_str());
+					int hs = atoi(sizeVector[1].c_str());
+
+					desc.Width = gYume->pRHI->GetWidth() / ws;
+					desc.Height = gYume->pRHI->GetHeight() / hs;
+				}
+
 				desc.ArraySize = atoi(arraySize);
-				desc.Width = atoi(width);
-				desc.Height = atoi(height);
-				desc.Depth = atoi(depth);
 				desc.Format = gYume->pRHI->GetFormatNs(format);
 				desc.Mips = atoi(mips);
 
@@ -262,6 +278,10 @@ namespace YumeEngine
 				{
 					ct = CallType::SVO_INJECT;
 				}
+				else if(strcmp(type,"AdaptLuminance") == 0)
+				{
+					ct = CallType::ADAPT_LUMINANCE;
+				}
 
 				const char* passName = child.attribute("PassName").as_string();
 				const char* identifier = child.attribute("Identifier").as_string();
@@ -284,11 +304,15 @@ namespace YumeEngine
 				RenderCallPtr renderCall = YumeAPINew RenderCall(ct,vertexShader,pixelShader,geometryShader,vertexEntry,pixelEntry,geometryEntry);
 				renderCall->SetIdentifier(identifier);
 				renderCall->SetPassName(passName);
+				renderCall->SetPostProcessPass(isPostProcess);
 
 				if(strlen(singleOutput) > 0)
 				{
 					TexturePtr sOutput = GetTextureByName(singleOutput);
 					renderCall->SetOutput(0,sOutput);
+
+					if(strcmp(singleOutput,"Backbuffer") == 0)
+						renderCall->SetBackbufferWrite(true);
 				}
 
 				if(strlen(dstencil) > 0)
@@ -401,6 +425,9 @@ namespace YumeEngine
 					const char* index = input.attribute("Index").as_string();
 					const char* name = input.attribute("Name").as_string();
 
+					if(strcmp(name,"Backbuffer") == 0)
+						renderCall->SetBackbufferRead(true);
+
 					renderCall->SetInput(atoi(index),GetTextureByName(name));
 				}
 
@@ -435,8 +462,14 @@ namespace YumeEngine
 						if(!strcmp(flagsVector[i].c_str(),"DEFERRED_LIGHTS"))
 							renderCall->SetDeferredLightPass(true);
 
+						if(!strcmp(flagsVector[i].c_str(),"SKYBOX"))
+							renderCall->SetSkyboxPass(true);
+
 						if(!strcmp(flagsVector[i].c_str(),"DEFERRED"))
 							renderCall->SetDeferred(true);
+
+						if(!strcmp(flagsVector[i].c_str(),"FORWARD"))
+							renderCall->SetForwardPass(true);
 
 						if(!strcmp(flagsVector[i].c_str(),"WRITESTENCIL"))
 							renderCall->SetWriteStencil(true);
@@ -445,6 +478,20 @@ namespace YumeEngine
 				AddRenderCall(renderCall);
 			}
 		}
+	}
+
+	const Variant& RenderPass::GetShaderParameter(YumeHash param) const
+	{
+		for(int i=0; i < calls_.size(); ++i)
+		{
+			if(calls_[i]->ContainsParameter(param))
+			{
+				const YumeMap<YumeHash,Variant>::const_iterator it= calls_[i]->GetShaderVariants().find(param);
+
+				return it->second;
+			}
+		}
+		return Variant();
 	}
 
 	YumeTexture* RenderPass::GetTextureByName(const YumeString& name)

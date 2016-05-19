@@ -1,0 +1,24 @@
+<Yume>
+  <RenderTargets>
+    <Rt Name="LensFlareTarget1" Format="rgba16f" Mips="1" Size="2 2" ArraySize="1"/>
+
+  </RenderTargets>
+  <Samplers>
+    <Sampler Name="PointSampler" Filter="Nearest" Comprasion="Always" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
+  </Samplers>
+  <RenderCalls>
+    <Triangle PassName="LensFlareTarget1" Identifier="LensFlare" Ps="LensFlare" PsEntry="ps_lensflare_threshold" Flags="NODS" Output="LensFlareTarget1">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="PointSampler" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer" />
+      </Inputs>
+      <Parameters>
+        <Param Name="Bias" Value="0 0 0 0" />
+        <Param Name="Scale" Value="1 1 1 1" />
+      </Parameters>
+    </Triangle>
+  </RenderCalls>
+</Yume>

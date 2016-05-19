@@ -23,6 +23,8 @@
 
 Texture2D PointLightAtt : register(t6);
 
+TextureCube EnvMap : register(t14);
+
 cbuffer LightParameters : register(b3)
 {
   float4 LightColor;
@@ -63,6 +65,53 @@ float toksvig_ft(in float3 Na, in float roughness)
     return len/lerp(s, 1, len);
 }
 
+float4 ps_df_pbr(in PS_INPUT_POS inp) : SV_Target
+{
+  gbuffer gb = unpack_gbuffer(inp.TexCoord);
+
+  float3 N = normalize(gb.normal.xyz * 2.0 - 1.0);
+
+  float3 V = -normalize(inp.ViewRay.xyz);
+
+  if (dot(gb.normal, gb.normal) == 0)
+        return gb.diffuse_albedo * float4(main_light.color.rgb, 1.0);
+
+  float3 P = camera_pos + (-V * gb.depth);
+
+  float3 Ll = -LightDirection.xyz;
+  float3 L = Ll;
+
+  float NoL = saturate(dot(N, L));
+
+  float roughness = gb.specular_albedo.a;
+
+  const float3 lcolor = float3(1,1,1);
+
+  float power = 1;
+  float3 Li = M_PI * (power * get_spotlight(L, N) * lcolor) / pow(length(Ll),2);
+
+  float3 f = brdf(L, V, N, gb.diffuse_albedo.rgb, gb.specular_albedo.rgb, roughness);
+
+  float3 T1 = f * Li * NoL;
+
+  float3 toEye = camera_pos - P;
+
+  toEye /= length(toEye);
+
+  float3 Rr = 0;
+  if(gb.shading_mode == 10)
+  {
+    float3 toEye = camera_pos - P;
+    float3 reflectionColor = 0;
+    float3 incident = -toEye;
+    float3 reflection = reflect(incident,N);
+    Rr = EnvMap.Sample(StandardFilter,reflection) * roughness;
+  }
+
+  float3 T0 = Rr;
+
+  return float4(max(T0 + T1,0.0f),1.0f);
+}
 
 float4 ps_df(in PS_INPUT_POS inp) : SV_Target
 {

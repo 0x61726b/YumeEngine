@@ -241,7 +241,9 @@ UI/YumeDebugOverlay.cc
 UI/YumeUIBinding.h
 UI/YumeUIBinding.cc
 UI/YumeUIElement.h
-UI/YumeUIElement.cc)
+UI/YumeUIElement.cc
+UI/YumeOptionsMenu.h
+UI/YumeOptionsMenu.cc)
 
 file(GLOB CONTAINER_SOURCES "Container/*.cpp" "Container/*.h")
 

@@ -1,0 +1,15 @@
+<Yume>
+  <RenderTargets>
+  </RenderTargets>
+  <Samplers />
+  <RenderCalls>
+    <Triangle PassName="LensDistortion" Identifier="LensDistortion" Ps="LensDistortion" PsEntry="ps_lens" Flags="NODS" Output="Backbuffer">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer" />
+      </Inputs>
+    </Triangle>
+  </RenderCalls>
+</Yume>

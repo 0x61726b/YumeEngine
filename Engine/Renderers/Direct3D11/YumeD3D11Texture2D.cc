@@ -530,7 +530,7 @@ namespace YumeEngine
 			if(textureDesc.ArraySize > 1)
 			{
 				renderTargetViewDesc.Texture2DArray.ArraySize = textureDesc.ArraySize;
-				renderTargetViewDesc.Texture2DArray.FirstArraySlice = 0;
+				renderTargetViewDesc.Texture2DArray.FirstArraySlice = arraySlice_;
 				renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
 			}
 			else
@@ -547,7 +547,10 @@ namespace YumeEngine
 				return false;
 			}
 
-			((ID3D11RenderTargetView*)renderSurface_->renderTargetView_)->SetPrivateData(WKPDID_D3DDebugObjectName,GetName().length(),GetName().c_str());
+			YumeString rtvName = GetName();
+			rtvName.append("_RTV");
+
+			((ID3D11RenderTargetView*)renderSurface_->renderTargetView_)->SetPrivateData(WKPDID_D3DDebugObjectName,rtvName.length(),rtvName.c_str());
 		}
 		else if(usage_ == TEXTURE_DEPTHSTENCIL)
 		{

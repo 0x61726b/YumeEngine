@@ -361,6 +361,7 @@ namespace YumeEngine
 			mesh.specular_tex_str = "Textures/default.png";
 			mesh.normal_tex_str = "Textures/default.png";
 			mesh.alpha_tex_str = "Textures/default.png";
+			mesh.roughness_tex_str = "Textures/default.png";
 
 			str.Clear();
 			if(mat->Get(AI_MATKEY_TEXTURE_DIFFUSE(0),str) == AI_SUCCESS)
@@ -375,6 +376,12 @@ namespace YumeEngine
 				mesh.specular_tex_str = (YumeString(str.C_Str()));
 
 			str.Clear();
+			if(mat->Get(AI_MATKEY_TEXTURE_SHININESS(0),str) == AI_SUCCESS)
+			{
+				mesh.roughness_tex_str = str.C_Str();
+			}
+
+			str.Clear();
 			//mat->Get(AI_MATKEY_TEXTURE_NORMALS(0), str);
 			if(mat->Get(AI_MATKEY_TEXTURE_HEIGHT(0),str) == AI_SUCCESS)
 				mesh.normal_tex_str = (YumeString(str.C_Str()));
@@ -382,6 +389,8 @@ namespace YumeEngine
 			str.Clear();
 			if(mat->Get(AI_MATKEY_TEXTURE_OPACITY(0),str) == AI_SUCCESS)
 				mesh.alpha_tex_str = (YumeString(str.C_Str()));
+			
+			
 
 			materials_.push_back(internalMaterial);
 			meshes_.push_back(mesh);
@@ -466,6 +475,7 @@ namespace YumeEngine
 			YumeString emissive_tex = data.emissive_tex_str;
 			YumeString specular_tex = data.specular_tex_str;
 			YumeString normal_tex = data.normal_tex_str;
+			YumeString roughness_tex = data.roughness_tex_str;
 
 			materialFile->WriteVector4(diffuseColor);
 			materialFile->WriteVector4(emissiveColor);
@@ -480,6 +490,7 @@ namespace YumeEngine
 			materialFile->WriteString(emissive_tex);
 			materialFile->WriteString(specular_tex);
 			materialFile->WriteString(normal_tex);
+			materialFile->WriteString(roughness_tex);
 		}
 
 		//Write overall BB

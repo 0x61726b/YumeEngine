@@ -11,31 +11,24 @@
 #include "Lighting.h"
 #include "Logging/logging.h"
 #include "Core/YumeMain.h"
-#include "Scene/YumeOctree.h"
-#include "Renderer/YumeCamera.h"
+
 #include <boost/shared_ptr.hpp>
 
 #include "Input/YumeInput.h"
-#include "Renderer/YumeViewport.h"
 
-#include "Renderer/YumeRenderer.h"
-#include "Renderer/YumeDrawable.h"
-#include "Renderer/YumeRenderView.h"
-#include "Renderer/YumeMaterial.h"
-#include "Renderer/YumeAuxRenderer.h"
-#include "Renderer/YumeSkybox.h"
-#include "Renderer/YumeRendererEnv.h"
 #include "Renderer/YumeTexture2D.h"
 
 #include "Renderer/YumeResourceManager.h"
-
-#include "Renderer/YumeModel.h"
-#include "Renderer/YumeStaticModel.h"
 
 #include "Engine/YumeEngine.h"
 
 #include "UI/YumeDebugOverlay.h"
 
+#include "Renderer/Light.h"
+#include "Renderer/StaticModel.h"
+#include "Renderer/Scene.h"
+
+#include "UI/YumeOptionsMenu.h"
 
 YUME_DEFINE_ENTRY_POINT(YumeEngine::LightingDemo);
 
@@ -57,126 +50,59 @@ namespace YumeEngine
 
 	void LightingDemo::Start()
 	{
-		BaseApplication::Start();
-
-		overlay_->GetBinding("SampleName")->SetValue("Lighting");
-		gYume->pUI->SetUIEnabled(false);
-
 		YumeResourceManager* rm_ = gYume->pResourceManager;
+		YumeMiscRenderer* renderer = gYume->pRenderer;
+		Scene* scene = renderer->GetScene();
+		YumeCamera* camera = renderer->GetCamera();
 
-		scene_ = SharedPtr<YumeScene>(new YumeScene);
-		scene_->SetName("Scene");
+		gYume->pInput->AddListener(this);
 
-		scene_->CreateComponent<Octree>();
-		scene_->CreateComponent<YumeDebugRenderer>();
-
-
-		CreateLight(Vector3(-3,2.8f,0),YumeColor(1,0,0));
-		CreateLight(Vector3(0,2.8f,0),YumeColor(0,1,0));
-		CreateLight(Vector3(3,2.8f,0),YumeColor(0,0,1));
-
+#ifndef DISABLE_CEF
+		optionsMenu_ = new YumeOptionsMenu;
+		gYume->pUI->AddUIElement(optionsMenu_);
+		optionsMenu_->SetVisible(true);
 
 
-		YumeSceneNode* plane = scene_->CreateChild("Plane");
-		plane->SetPosition(Vector3(0,0,0));
-		plane->SetRotation(Quaternion::IDENTITY);
-		plane->SetScale(Vector3(100,1,100));
+		overlay_ = new YumeDebugOverlay;
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);
+#endif
 
-		YumeStaticModel* planeModel = plane->CreateComponent<YumeStaticModel>();
-		planeModel->SetModel(rm_->PrepareResource<YumeModel>("Models/Plane.mdl"));
-		planeModel->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/StoneTiled.xml"));
+		MaterialPtr diff = YumeAPINew Material;
+		diff->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(1,0,0,1));
+		diff->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		diff->SetShaderParameter("Roughness",1.0f);
+		diff->SetShaderParameter("ShadingMode",0);
+		diff->SetShaderParameter("has_diffuse_tex",false);
+		diff->SetShaderParameter("has_alpha_tex",false);
+		diff->SetShaderParameter("has_specular_tex",false);
+		diff->SetShaderParameter("has_normal_tex",false);
+		diff->SetShaderParameter("has_roughness_tex",false);
 
-
-		YumeSceneNode* test = scene_->CreateChild("Test");
-		test->SetPosition(Vector3(1.5f,0.5f,0));
-		test->SetRotation(Quaternion::IDENTITY);
-		YumeStaticModel* drawable = test->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		drawable->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
-		drawable->SetCastShadows(true);
-
-		YumeSceneNode* test2 = scene_->CreateChild("Test");
-		test2->SetPosition(Vector3(-2.0f,0.5f,0));
-		test2->SetRotation(Quaternion(45,Vector3(0,1,0)));
-		YumeStaticModel* drawable2 = test2->CreateComponent<YumeStaticModel>();
-		drawable2->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		drawable2->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
-		drawable2->SetCastShadows(true);
+		StaticModel* model = CreateModel("Models/sponza/sponza.yume");
 
 
-		YumeSceneNode* test3 = scene_->CreateChild("Test");
-		test3->SetPosition(Vector3(0,5,7));
-		test3->SetRotation(Quaternion::IDENTITY);
-		test3->SetScale(10);
-		YumeStaticModel* large = test3->CreateComponent<YumeStaticModel>();
-		large->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		large->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
-		large->SetCastShadows(true);
-		large->SetOccluder(true);
+		Light* dirLight = new Light;
+		dirLight->SetName("DirLight");
+		dirLight->SetType(LT_DIRECTIONAL);
+		dirLight->SetPosition(DirectX::XMVectorSet(0,2500,0,0));
+		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
+		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
+		dirLight->SetColor(YumeColor(1,1,1,0));
 
-		//YumeSceneNode* skyNode = scene_->CreateChild("Sky");
-		//skyNode->SetScale(500.0f); // The scale actually does not matter
-		//YumeSkybox* skybox = skyNode->CreateComponent<YumeSkybox>();
-		//skybox->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		//skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Skybox.xml"));
-
-		cameraNode_ = scene_->CreateChild("Camera");
-		YumeCamera* camera = cameraNode_->CreateComponent<YumeCamera>();
-		cameraNode_->SetPosition(Vector3(0.0f,1.0f,-5.0f));
-		camera->SetFarClip(300.0f);
-
-
-
-		SharedPtr<YumeViewport> viewport(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>()));
-
-		YumeRenderer* renderer = gYume->pRenderer;
-		renderer->SetViewport(0,viewport);
-
+		scene->AddNode(dirLight);
 
 	}
 
 	void LightingDemo::CreateLight(Vector3 pos,YumeColor color)
 	{
-		YumeSceneNode* pnode = scene_->CreateChild("plight");
-		pnode->SetPosition(pos);
-		YumeLight* plight = pnode->CreateComponent<YumeLight>();
-		plight->SetLightType(LIGHT_POINT);
-		plight->SetRange(5);
-		plight->SetFov(60);
-		plight->SetColor(color);
-		plight->SetCastShadows(true);
+
 
 	}
 
 
 	void LightingDemo::MoveCamera(float timeStep)
 	{
-		float MOVE_SPEED = 5.0f;
-		const float MOUSE_SENSITIVITY = 0.1f;
-
-		YumeInput* input = gYume->pInput;
-
-		if(!input->HasFocus())
-			return;
-
-		IntVector2 mouseMove = input->GetMouseMove();
-		yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
-		pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
-		pitch_ = Clamp(pitch_,-90.0f,90.0f);
-
-
-		cameraNode_->SetRotation(Quaternion(pitch_,yaw_,0.0f));
-
-		if(input->GetKeyDown(KEY_SHIFT))
-			MOVE_SPEED = 35.0f;
-		if(input->GetKeyDown('W'))
-			cameraNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('S'))
-			cameraNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('A'))
-			cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('D'))
-			cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
 
 	}
 

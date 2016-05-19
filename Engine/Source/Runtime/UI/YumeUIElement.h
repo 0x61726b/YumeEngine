@@ -33,13 +33,17 @@ namespace YumeEngine
 		public YumeBase
 	{
 	public:
-		YumeUIElement(const YumeString& name = "UIElement");
+		YumeUIElement(int width,int height,const YumeString& name = "UIElement");
 		virtual ~YumeUIElement();
 
 		void AddBinding(YumeUIBinding* binding);
 		void SetRect(const IntRect& rect);
 		void SetURL(const YumeString& string);
 		void SetVisible(bool enable);
+
+		void SetWidth(int width);
+		void SetHeight(int height);
+		void SetPosition(int x,int y);
 
 		virtual void OnContextReady() { }
 		virtual void Update();

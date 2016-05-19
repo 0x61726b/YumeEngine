@@ -52,7 +52,7 @@ namespace YumeEngine
 		TexturePtr vRho;
 
 		int volume_size_;
-		UINT last_bound_;
+		int last_bound_;
 		DirectX::XMFLOAT4X4 worldToSvo_;
 		DirectX::XMFLOAT3			svo_min_, svo_max_;
 	};

@@ -38,7 +38,8 @@ namespace YumeEngine
 		LPV_INJECT,
 		LPV_NORMALIZE,
 		LPV_PROPAGATE,
-		SVO_INJECT
+		SVO_INJECT,
+		ADAPT_LUMINANCE
 	};
 
 	class YumeAPIExport RenderCall : public YumeBase
@@ -62,14 +63,14 @@ namespace YumeEngine
 		void SetPassName(const YumeString& name);
 		void SetIdentifier(const YumeString& name);
 
-		
+
 
 
 		void AddTexture(RenderTargetInOut type,unsigned index,TexturePtr tex);
 		TexturePtr AddTexture(const RenderTargetDesc& desc);
 		void AddTextures(unsigned size,TexturePtr* textures);
 
-		unsigned GetRendererFlags() const { return addFlags_;}
+		unsigned GetRendererFlags() const { return addFlags_; }
 		void SetMiscRenderingFlags(unsigned f) { addFlags_ |= f; }
 
 		CallType GetType() const { return type_; }
@@ -90,13 +91,13 @@ namespace YumeEngine
 		unsigned GetPixelSampler(unsigned i) const { return psSamplers_[i]; }
 
 		const YumeColor& GetClearColor(unsigned index) const { return inputs_[index]->GetDesc().ClearColor; }
-		
+
 		TexturePtr GetInput(unsigned index) const { return inputs_[index]; }
 
 		TexturePtr GetOutput(unsigned index) const { return outputs_[index]; }
 
-		unsigned GetNumVertexSamplers() const {return numVertexSamplers_;}
-		unsigned GetNumPixelSamplers() const {return numPixelSamplers_;}
+		unsigned GetNumVertexSamplers() const { return numVertexSamplers_; }
+		unsigned GetNumPixelSamplers() const { return numPixelSamplers_; }
 
 		void RemoveInput(int);
 
@@ -109,7 +110,7 @@ namespace YumeEngine
 		bool IsVoxelizePass() const { return voxelizePass_; }
 		bool IsDeferredLightPass() const { return deferredLightPass_; }
 
-		void SetClearFlags(unsigned flags ) { clearFlags = flags; }
+		void SetClearFlags(unsigned flags) { clearFlags = flags; }
 		unsigned GetClearFlags() const { return clearFlags; }
 
 		void SetShadowPass(bool b) { shadowPass_ = b; }
@@ -119,11 +120,26 @@ namespace YumeEngine
 		void SetEnabled(bool enabled) { enabled_ = enabled; }
 		bool GetEnabled() const { return enabled_; }
 
+		void SetBackbufferRead(bool enabled) { readBackbuffer_= enabled; }
+		bool GetReadBackbuffer() const { return readBackbuffer_; }
+
+		void SetBackbufferWrite(bool enabled) { writeBackbuffer_ = enabled; }
+		bool GetWriteBackbuffer() const { return writeBackbuffer_; }
+
 		bool GetDeferred() const { return deferred_; }
 		void SetDeferred(bool enabled) { deferred_ = enabled; }
 
 		void SetWriteStencil(bool b) { writeToStencil_ = b; }
 		bool GetStencilWrite() const { return writeToStencil_; }
+
+		void SetPostProcessPass(bool b) { postProcessPass_ = b; }
+		bool GetPostProcessPass() const { return postProcessPass_; }
+
+		void SetSkyboxPass(bool b) { skyboxPass_ = b; }
+		bool GetSkyboxPass() const { return skyboxPass_; }
+
+		void SetForwardPass(bool b) { forwardPass_ = b; }
+		bool IsForwardPass() const { return forwardPass_; }
 
 		Texture2DPtr GetDepthStencil() const { return depthStencil_; }
 	private:
@@ -131,7 +147,13 @@ namespace YumeEngine
 		bool shadowPass_;
 		bool voxelizePass_;
 		bool deferredLightPass_;
-		
+		bool postProcessPass_;
+		bool skyboxPass_;
+		bool forwardPass_;
+
+		bool readBackbuffer_;
+		bool writeBackbuffer_;
+
 		bool hasVsSampler_;
 		bool hasPsSampler_;
 

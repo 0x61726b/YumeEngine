@@ -1,0 +1,16 @@
+<Yume>
+  <RenderTargets>
+    <Ds Name="LightDSV" Format="d24s8" Mips="1" Width="1600" Height="900" ArraySize="1" Stencil="readonly"/>
+  </RenderTargets>
+  <Samplers>
+    <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />
+    <Sampler Name="ShadowFilter" Filter="Trilinear" Comprasion="Never" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />
+  </Samplers>
+  <RenderCalls>
+    <Scene PassName="Forward" Identifier="Main" Vs="ForwardSolidVertex" Ps="ForwardSolid" VsEntry="MeshVs" PsEntry="MeshPs" Flags="FORWARD WRITESTENCIL" Stencil="LightDSV" Output="Backbuffer">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+      </Samplers>
+    </Scene>
+  </RenderCalls>
+</Yume>

@@ -6,6 +6,7 @@
 
 #include "deferred.hlsl"
 #include "vct_tools.hlsl"
+#include "importance.hlsl"
 
 cbuffer gi_parameters_ps    : register(b3)
 {
@@ -15,19 +16,20 @@ cbuffer gi_parameters_ps    : register(b3)
     bool debug_gi           : packoffset(c0.w);
 }
 
+Texture2D env_map               : register(t13);
+TextureCube EnvMap               : register(t14);
+
 #ifndef DVCT
 float3 gi_from_vct(in float2 tc, in float3 P, in float3 N, in float3 V, in float3 diffuse, in float3 specular, in float roughness)
 {
-    return diffuse_from_vct(tc, P, N, V).rgb         * diffuse +
+    return diffuse_from_vct(tc, P, N, V,1).rgb         * diffuse +
            specular_from_vct(P, N, V, roughness).rgb * specular;
 }
 
 float4 ps_vct(in PS_INPUT inp) : SV_Target
 {
     gbuffer gb = unpack_gbuffer(inp.tex_coord);
-#ifdef TEST_ROUGHNESS
-    gb.specular_albedo = float4(F0_GLASS,1.0f);
-#endif
+
     // normal
     float3 N = normalize(gb.normal.xyz * 2.0 - 1.0);
 
@@ -58,12 +60,7 @@ float4 ps_vct(in PS_INPUT inp) : SV_Target
     // lambert
     float NoL = saturate(dot(N, L));
 
-    // have no gloss maps, roughness is simply inverse spec color/smoothness
-#ifdef TEST_ROUGHNESS
-    float roughness = 0.000001f;
-#else
-    float roughness = 1;
-#endif
+    float roughness = gb.specular_albedo.a;
 
     // calculate power of light and scale it to get the scene adequately lit
     float power = 100 * length(scene_dim_max - scene_dim_min);
@@ -78,11 +75,22 @@ float4 ps_vct(in PS_INPUT inp) : SV_Target
     float attenuation = shadow_cone(P, L, N, 0.00002);
 #endif
 
+    //float3 Rs = specular_ibl_is(gb.specular_albedo.rgb, roughness, N, V, env_map, StandardFilter) * main_light.color.rgb;
     // brdf
     float3 f = brdf(L, V, N, gb.diffuse_albedo.rgb, gb.specular_albedo.rgb, roughness);
 
+    float3 Rr = 0;
+    if(gb.shading_mode == 10)
+    {
+      float3 toEye = camera_pos - P;
+      float3 reflectionColor = 0;
+      float3 incident = -toEye;
+      float3 reflection = reflect(incident,N);
+      Rr = EnvMap.Sample(StandardFilter,reflection) * roughness;
+    }
+
     // emissive
-    float3 T0 = 0;
+    float3 T0 = Rr;
 
     // direct
     float3 T1 = f * Li * attenuation * NoL;

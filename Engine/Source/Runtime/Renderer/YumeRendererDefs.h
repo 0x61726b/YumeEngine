@@ -247,10 +247,11 @@ namespace YumeEngine
 	enum MaterialTextures
 	{
 		MT_DIFFUSE,
-		MT_SPECULAR,
-		MT_EMISSIVE,
 		MT_NORMAL,
-		MT_ALPHA
+		MT_SPECULAR,
+		MT_ALPHA,
+		MT_ROUGHNESS,
+		MT_EMISSIVE,
 	};
 
 	enum RenderTargetInOut

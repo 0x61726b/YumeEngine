@@ -1,6 +1,7 @@
 <Yume>
   <RenderTargets>
     <Rt Name="SSAOTarget" Format="l" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SSAOTargetFinal" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="BlurTargetX" Format="l" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="BlurTargetY" Format="l" Mips="1" Width="1600" Height="900" ArraySize="1"/>
   </RenderTargets>
@@ -14,7 +15,7 @@
         <Ps Name="SSAOSampler" Register="0" />
       </Samplers>
       <Inputs>
-        <Rt Index="0" Name="PostProcessingTarget"/>
+        <Rt Index="0" Name="Backbuffer" />
         <Rt Index="1" Name="SCENE_COLORS" />
         <Rt Index="2" Name="SCENE_SPECULAR" />
         <Rt Index="3" Name="SCENE_NORMALS" />
@@ -85,7 +86,7 @@
         <Ps Name="BlurSamplerLinear" Register="1" />
       </Samplers>
       <Inputs>
-        <Rt Index="0" Name="PostProcessingTarget"/>
+        <Rt Index="0" Name="Backbuffer"/>
         <Rt Index="8" Name="BlurTargetY"/>
       </Inputs>
       <Parameters>

@@ -18,64 +18,109 @@
 // Comments :
 //###############################################################################
 
+var GIOptionsPanel = require('./GIOptions');
+var PostProcessingOptions = require('./PostProcessing');
+var OptionsPanel = require('./MainOptions');
 
 var Router = window.ReactRouter;
 var BrowserHistory = Router.BrowserHistory;
 var Route = Router.Route;
+var History = Router.History;
+var Tools = require('./Tools');
+
+var YumeCef;
+if(typeof Cef3D === "undefined") {
+  YumeCef = Tools.Cef3D;
+  console.log("Creating Mock");
+}
+else {
+  YumeCef = Cef3D;
+}
+
 
 var Options = React.createClass({
+  componentDidMount: function() {
+    $(".navigation ul li").click(function() {
+      $("div.navigation ul li").removeClass("active");
+      $(this).toggleClass("active");
+    });
+  },
   render: function() {
-    return(<div className="container">
-              <div className="leftPanel">
-                <div>Yume Engine Options Panel</div>
+    return(<div className="leftPanel">
                 <div className="navigation">
                   <ul>
-                    <li className="active"><ReactRouter.Link to="GIOptions">Global Illumination</ReactRouter.Link></li>
+                    <li className="active" id="testo"><ReactRouter.Link to="Home">General</ReactRouter.Link></li>
+                    <li><ReactRouter.Link to="GIOptions">Global Illumination</ReactRouter.Link></li>
                     <li><ReactRouter.Link to="PostProcessing">Post Processing</ReactRouter.Link></li>
-                    <li><a href="#">Global Illumination</a></li>
                   </ul>
                 </div>
-              </div>
-          </div>)
+              </div>)
   }
 });
 
-const YumeRouter = React.createClass({
+//<div className="titleBar">
+//  Yume Engine Options Panel
+//</div>
+//<div>
+//  <Options />
+//</div>
+const SliderMenu = React.createClass({
+  currentTab:"General",
+  onLeftClick: function(e) {
+    console.log("Left");
+  },
+  onRightClick: function(e) {
+    console.log("Right");
+  },
   render: function() {
     return(
-    <div><Options /><div>{this.props.children}</div></div>
+      <div>
+        <div className="sliderMenuText">
+          <ReactRouter.Link to="GIOptions"><i className="fa fa-arrow-left" id="sliderMenuLeftArrow" aria-hidden="true"></i></ReactRouter.Link>
+          <ReactRouter.Link to="Home">General Options</ReactRouter.Link>
+          <ReactRouter.Link to="PostProcessing"><i className="fa fa-arrow-right" id="sliderMenuRightArrow" aria-hidden="true"></i></ReactRouter.Link>
+          </div>
+      </div>)
+  }
+});
+const YumeRouter = React.createClass({
+  componentDidMount: function() {
+
+  },
+  render: function() {
+    return(<div>
+    <div className="main">
+      <SliderMenu />
+      <div className="testcontainer">
+        <div className="menuContent">
+          {this.props.children}
+        </div>
+      </div>
+    </div>
+  </div>
   )
   }
 });
 
-const GIOptions = React.createClass({
-  render: function() {
-    return(
-      <div> GI Options </div>
-    )
-  }
-})
-
-const PostProcessingOptions = React.createClass({
-  render: function() {
-    return(
-      <div> Post Processing Options </div>
-    )
-  }
-})
-
 var Root = React.createClass({
   render: function() {
-    return(<div>
+    return(
       <ReactRouter.Router>
-      <ReactRouter.Route path="/" component={YumeRouter}>
-        <ReactRouter.Route name="GIOptions" path="GIOptions" component={GIOptions}/>
+      <ReactRouter.Route component={YumeRouter}>
+        <ReactRouter.Route name="Home" path="Home" component={OptionsPanel}/>
+        <ReactRouter.Route name="GIOptions" path="GIOptions" component={GIOptionsPanel}/>
         <ReactRouter.Route name="PostProcessing" path="PostProcessing" component={PostProcessingOptions}/>
       </ReactRouter.Route>
-    </ReactRouter.Router></div>
+      <ReactRouter.Redirect from="/" to="Home" />
+    </ReactRouter.Router>
     );
   }
 });
+
+document.addEventListener("DOMContentLoaded", function() {
+
+  YumeCef.OnDomReady();
+}, false);
 
 ReactDOM.render(
   React.createElement(Root),

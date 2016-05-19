@@ -49,9 +49,13 @@ namespace YumeEngine
 			SetBoundingBox(p,p);
 		}
 
+		void SetFloorRoughness(float f);
+
 	public:
 		YumeVector<SharedPtr<RenderBatch> >::type batches_;
 		YumeString modelName_;
+
+		MaterialPtr floorMaterial_;
 
 
 	};

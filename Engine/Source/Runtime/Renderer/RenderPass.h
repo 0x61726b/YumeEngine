@@ -36,7 +36,7 @@ namespace YumeEngine
 		void AddRenderCall(RenderCall* call);
 		void RemoveRenderCall(RenderCall* call);
 
-		void Load(const YumeString& resource);
+		void Load(const YumeString& resource,bool isPostProcess = false);
 
 		void AddTexture(unsigned index,const YumeString& callName,TexturePtr tex);
 
@@ -52,6 +52,8 @@ namespace YumeEngine
 		void SetShaderParameter(YumeHash param,const DirectX::XMFLOAT3& matrix);
 		void SetShaderParameter(YumeHash param,const DirectX::XMFLOAT4& matrix);
 		void SetShaderParameter(YumeHash param,const DirectX::XMMATRIX& matrix);
+
+		const Variant& GetShaderParameter(YumeHash param) const;
 
 		YumeTexture* GetTextureByName(const YumeString&);
 

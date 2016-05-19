@@ -7,43 +7,30 @@
 //BasicRenderWindow.cpp
 //--------------------------------------------------------------------------------
 
+
 #include "Core/YumeHeaders.h"
 #include "GodRays.h"
 #include "Logging/logging.h"
 #include "Core/YumeMain.h"
-#include "Scene/YumeOctree.h"
-#include "Renderer/YumeCamera.h"
+#include "Renderer/YumeLPVCamera.h"
 #include <boost/shared_ptr.hpp>
 
 #include "Input/YumeInput.h"
-#include "Renderer/YumeViewport.h"
 
-#include "Renderer/YumeRenderer.h"
-#include "Renderer/YumeDrawable.h"
-#include "Renderer/YumeRenderView.h"
-#include "Renderer/YumeMaterial.h"
-#include "Renderer/YumeAuxRenderer.h"
-#include "Renderer/YumeSkybox.h"
-#include "Renderer/YumeRendererEnv.h"
 #include "Renderer/YumeTexture2D.h"
-#include "Renderer/YumeRenderPass.h"
 
 #include "Renderer/YumeResourceManager.h"
 
-#include "Renderer/YumeRHI.h"
-
-#include "Renderer/YumeModel.h"
-#include "Renderer/YumeStaticModel.h"
-
-#include "UI/YumeDebugOverlay.h"
 
 #include "Engine/YumeEngine.h"
 
-#include "Core/SharedPtr.h"
+#include "UI/YumeDebugOverlay.h"
 
-#include "UI/YumeUI.h"
+#include "Renderer/Light.h"
+#include "Renderer/StaticModel.h"
+#include "Renderer/Scene.h"
 
-#include "Renderer/YumeRenderPipeline.h"
+#include "UI/YumeOptionsMenu.h"
 
 YUME_DEFINE_ENTRY_POINT(YumeEngine::GodRays);
 
@@ -59,7 +46,9 @@ namespace YumeEngine
 
 
 	GodRays::GodRays()
-		: rot_(Quaternion::IDENTITY)
+		: angle1_(0),
+		updown1_(0),
+		leftRight1_(0)
 	{
 		REGISTER_ENGINE_LISTENER;
 	}
@@ -72,203 +61,124 @@ namespace YumeEngine
 	void GodRays::Start()
 	{
 		YumeResourceManager* rm_ = gYume->pResourceManager;
+		YumeMiscRenderer* renderer = gYume->pRenderer;
+		Scene* scene = renderer->GetScene();
+		YumeCamera* camera = renderer->GetCamera();
 
-		scene_ = SharedPtr<YumeScene>(new YumeScene);
-		scene_->SetName("Scene");
+		gYume->pInput->AddListener(this);
 
-		scene_->CreateComponent<Octree>();
-		scene_->CreateComponent<YumeDebugRenderer>();
+#ifndef DISABLE_CEF
+		/*overlay_ = new YumeDebugOverlay;
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);*/
 
-		dirLightNode_ = scene_->CreateChild("DirectionalLight");
-		dirLightNode_->SetDirection(Vector3(-2,-5,-2).Normalized()); // The direction vector does not need to be normalized
-		YumeLight* light = dirLightNode_->CreateComponent<YumeLight>();
-		light->SetLightType(LIGHT_DIRECTIONAL);
-		light->SetShadowBias(BiasParameters(0.00025f,0.5f));
-		light->SetCastShadows(true);
-
-
-#ifndef NO_PLANE
-		YumeSceneNode* plane = scene_->CreateChild("Cube");
-		plane->SetPosition(Vector3(0,0,0));
-		plane->SetRotation(Quaternion::IDENTITY);
-		plane->SetScale(Vector3(50,1,50));
-		YumeStaticModel* drawable = plane->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(rm_->PrepareResource<YumeModel>("Models/Plane.mdl"));
-		YumeMaterial* planeMat = rm_->PrepareResource<YumeMaterial>("Materials/StoneTiled.xml");
-		drawable->SetMaterial(planeMat);
+		optionsMenu_ = new YumeOptionsMenu;
+		gYume->pUI->AddUIElement(optionsMenu_);
+		optionsMenu_->SetVisible(true);
 #endif
 
-#ifndef NO_SKYBOX
-		YumeSceneNode* skyNode = scene_->CreateChild("Sky");
-		skyNode->SetScale(500.0f); // The scale actually does not matter
-		YumeSkybox* skybox = skyNode->CreateComponent<YumeSkybox>();
-		skybox->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/CustomSky.xml"));
-#endif
-#ifndef NO_MODEL
-		dragon_ = CreateModel(Vector3(0,0,0),Quaternion::IDENTITY,1,"dragon");
-		CreateModel(Vector3(0.75f,1,0),Quaternion(90,Vector3(0,1,0)),1,"dragon");
-		buddha_ = CreateModel(Vector3(1.5f,0,0),Quaternion::IDENTITY,1,"buddha");
-#endif
+		MaterialPtr emissiveBlue = YumeAPINew Material;
+		emissiveBlue->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0,0,1,1));
+		emissiveBlue->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		emissiveBlue->SetShaderParameter("Roughness",1.0f);
+		emissiveBlue->SetShaderParameter("ShadingMode",0);
+		emissiveBlue->SetShaderParameter("has_diffuse_tex",false);
+		emissiveBlue->SetShaderParameter("has_alpha_tex",false);
+		emissiveBlue->SetShaderParameter("has_specular_tex",false);
+		emissiveBlue->SetShaderParameter("has_normal_tex",false);
+		emissiveBlue->SetShaderParameter("has_roughness_tex",false);
 
-		cameraNode_ = scene_->CreateChild("Camera");
-		YumeCamera* camera = cameraNode_->CreateComponent<YumeCamera>();
-		cameraNode_->SetPosition(Vector3(0,1,-1));
+		MaterialPtr emissiveRed = YumeAPINew Material;
+		emissiveRed->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(1,0,0,1));
+		emissiveRed->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		emissiveRed->SetShaderParameter("Roughness",1.0f);
+		emissiveRed->SetShaderParameter("ShadingMode",0);
+		emissiveRed->SetShaderParameter("has_diffuse_tex",false);
+		emissiveRed->SetShaderParameter("has_alpha_tex",false);
+		emissiveRed->SetShaderParameter("has_specular_tex",false);
+		emissiveRed->SetShaderParameter("has_normal_tex",false);
+		emissiveRed->SetShaderParameter("has_roughness_tex",false);
 
-		Quaternion q;
-		q.FromLookRotation((cameraNode_->GetWorldPosition() * -1).Normalized());
-		cameraNode_->SetRotation(q);
-		camera->SetFarClip(1000.0f);
-		camera->SetFov(60);
+		MaterialPtr emissivePink = YumeAPINew Material;
+		emissivePink->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(1,0.0784314f,0.576471f,1));
+		emissivePink->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		emissivePink->SetShaderParameter("Roughness",1.0f);
+		emissivePink->SetShaderParameter("ShadingMode",0);
+		emissivePink->SetShaderParameter("has_diffuse_tex",false);
+		emissivePink->SetShaderParameter("has_alpha_tex",false);
+		emissivePink->SetShaderParameter("has_specular_tex",false);
+		emissivePink->SetShaderParameter("has_normal_tex",false);
+		emissivePink->SetShaderParameter("has_roughness_tex",false);
 
-		BaseApplication::Start();
 
-		overlay_->GetBinding("SampleName")->SetValue("Playground");
-		gYume->pUI->SetUIEnabled(false);
+		float boxScale = 0.15f;
+
+		boxBlue = CreateModel("Models/Primitives/box.yume",DirectX::XMFLOAT3(2,5,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(1,1,1));
+		boxBlue->SetMaterial(emissiveBlue);
+		boxBlue->SetScale(boxScale ,boxScale ,boxScale );
+
+		boxRed = CreateModel("Models/Primitives/box.yume",DirectX::XMFLOAT3(2,14,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(1,1,1));
+		boxRed->SetMaterial(emissiveRed);
+		boxRed->SetScale(boxScale ,boxScale ,boxScale );
+
+		boxPink = CreateModel("Models/Primitives/box.yume",DirectX::XMFLOAT3(-7,8,5),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(1,1,1));
+		boxPink->SetMaterial(emissivePink);
+		boxPink->SetScale(boxScale ,boxScale ,boxScale );
+
+		StaticModel* jeyjeyModel = CreateModel("Models/cornell/cornell-empty.yume");
+
+
+		Light* dirLight = new Light;
+		dirLight->SetName("DirLight");
+		dirLight->SetType(LT_DIRECTIONAL);
+		dirLight->SetPosition(DirectX::XMVectorSet(0,30,0,0));
+		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
+		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
+		dirLight->SetColor(YumeColor(1,1,1,0));
+
+		scene->AddNode(dirLight);
 	}
 
-	YumeSceneNode* GodRays::CreateModel(Vector3 Pos,Quaternion Rot,float scale,const YumeString& model)
-	{
-		YumeSceneNode* cubeNode_ = scene_->CreateChild("Cube");
-		cubeNode_->SetPosition(Pos);
-		cubeNode_->SetRotation(Rot);
-		cubeNode_->SetScale(scale);
-		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/" + model + ".yume"));
-		/*drawable->ApplyMaterialList("Models/cryteksponza.txt");*/
-		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
-		drawable->SetMaterial(mat);
-#ifdef OBJECTS_CAST_SHADOW
-		drawable->SetCastShadows(true);
-#endif
-		return cubeNode_;
-	}
 
-	void GodRays::CreateCube(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
-	{
-		YumeSceneNode* cubeNode_ = scene_->CreateChild("Cube");
-		cubeNode_->SetPosition(Pos);
-		cubeNode_->SetRotation(Rot);
-		cubeNode_->SetScale(size);
-		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/Column.mdl"));
-		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
-		mat->SetShaderParameter("MatDiffColor",color);
-		drawable->SetMaterial(mat);
-#ifdef OBJECTS_CAST_SHADOW
-		drawable->SetCastShadows(true);
-#endif
-	}
-	void GodRays::CreateSphere(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
-	{
-		YumeSceneNode* cubeNode_ = scene_->CreateChild("Sphere");
-		cubeNode_->SetPosition(Pos);
-		cubeNode_->SetRotation(Rot);
-		cubeNode_->SetScale(size);
-		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/Sphere.mdl"));
-		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
-		mat->SetShaderParameter("MatDiffColor",color);
-		drawable->SetMaterial(mat);
-#ifdef OBJECTS_CAST_SHADOW
-		drawable->SetCastShadows(true);
-#endif
-	}
-	void GodRays::CreateCylinder(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
-	{
-		YumeSceneNode* cubeNode_ = scene_->CreateChild("Sphere");
-		cubeNode_->SetPosition(Pos);
-		cubeNode_->SetRotation(Rot);
-		cubeNode_->SetScale(size);
-		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/Cylinder.mdl"));
-		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
-		mat->SetShaderParameter("MatDiffColor",color);
-		drawable->SetMaterial(mat);
-#ifdef OBJECTS_CAST_SHADOW
-		drawable->SetCastShadows(true);
-#endif
-	}
-	void GodRays::CreatePyramid(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
-	{
-		YumeSceneNode* cubeNode_ = scene_->CreateChild("Sphere");
-		cubeNode_->SetPosition(Pos);
-		cubeNode_->SetRotation(Rot);
-		cubeNode_->SetScale(size);
-		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/Pyramid.mdl"));
-		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
-		mat->SetShaderParameter("MatDiffColor",color);
-		drawable->SetMaterial(mat);
-#ifdef OBJECTS_CAST_SHADOW
-		drawable->SetCastShadows(true);
-#endif
-	}
-	void GodRays::CreateCone(Vector3 Pos,Quaternion Rot,float size,YumeColor color)
-	{
-		YumeSceneNode* cubeNode_ = scene_->CreateChild("Sphere");
-		cubeNode_->SetPosition(Pos);
-		cubeNode_->SetRotation(Rot);
-		cubeNode_->SetScale(size);
-		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/Cone.mdl"));
-		SharedPtr<YumeMaterial> mat = gYume->pResourceManager->PrepareResource<YumeMaterial>("Materials/DefaultGrey.xml")->Clone();
-		mat->SetShaderParameter("MatDiffColor",color);
-		drawable->SetMaterial(mat);
-
-#ifdef OBJECTS_CAST_SHADOW
-		drawable->SetCastShadows(true);
-#endif
-	}
 	void GodRays::MoveCamera(float timeStep)
 	{
-		float MOVE_SPEED = 5.0f;
-		const float MOUSE_SENSITIVITY = 0.1f;
 
-		YumeInput* input = gYume->pInput;
-
-		if(!input->HasFocus())
-			return;
-
-		if(input->GetMouseButtonDown(MOUSEB_RIGHT))
-		{
-			IntVector2 mouseMove = input->GetMouseMove();
-			yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
-			pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
-			pitch_ = Clamp(pitch_,-90.0f,90.0f);
-
-
-			cameraNode_->SetRotation(Quaternion(pitch_,yaw_,0.0f));
-		}
-
-		if(input->GetKeyDown(KEY_SHIFT))
-			MOVE_SPEED = 35.0f;
-		if(input->GetKeyDown('W'))
-			cameraNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('S'))
-			cameraNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('A'))
-			cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('D'))
-			cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
 	}
 
 
 	void GodRays::HandleUpdate(float timeStep)
 	{
-		MoveCamera(timeStep);
+		const float YOrbitRadius = 5.f;
+		const float ZOrbitRadius = 5.f;
+		const float XOrbitRadius = 8;
+		angle1_ += M_PI * 0.1f * timeStep;
+		updown1_ += M_PI * 0.8f * timeStep;
+		leftRight1_ += M_PI * 0.34f * timeStep;
 
-		dragon_->Rotate(Quaternion(45 * timeStep,Vector3(0,1,0)));
-		buddha_->Rotate(Quaternion(45 * timeStep,Vector3(0,1,1)));
+		if(updown1_ > M_PI * 2)
+			updown1_ = 0.0f;
+
+		DirectX::XMVECTOR blueRot = DirectX::XMVectorSet(-angle1_,angle1_,0,0);
+		DirectX::XMVECTOR bluePos = DirectX::XMVectorAdd(DirectX::XMLoadFloat4(&boxBlue->GetInitialPosition()),DirectX::XMVectorSet(cosf(leftRight1_) * XOrbitRadius,0,sinf(leftRight1_) * ZOrbitRadius,0));
+
+		boxBlue->SetRotation(blueRot);
+		boxBlue->SetPosition(bluePos);
+
+		DirectX::XMVECTOR redRot = DirectX::XMVectorSet(-angle1_,angle1_,0,0);
+		DirectX::XMVECTOR redPos = DirectX::XMVectorAdd(DirectX::XMLoadFloat4(&boxRed->GetInitialPosition()),DirectX::XMVectorSet(cosf(updown1_) * YOrbitRadius,0,0,0));
+
+		boxRed->SetRotation(redRot);
+		boxRed->SetPosition(redPos);
+
+		DirectX::XMVECTOR pinkRot = DirectX::XMVectorSet(-angle1_,angle1_,0,0);
+		DirectX::XMVECTOR pinkPos = DirectX::XMVectorAdd(DirectX::XMLoadFloat4(&boxPink->GetInitialPosition()),DirectX::XMVectorSet(0,sinf(leftRight1_) * YOrbitRadius,0,0));
+
+		boxPink->SetRotation(pinkRot);
+		boxPink->SetPosition(pinkPos);
 	}
 	void GodRays::HandleRenderUpdate(float timeStep)
 	{
-		YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
-		YumeRenderPipeline* fx = viewport->GetRenderPath();
-		YumeCamera* cam = viewport->GetCamera();
 
-
-		fx->SetShaderParameter("ViewThree",cam->GetView().ToMatrix3());
 	}
 
 	void GodRays::Setup()

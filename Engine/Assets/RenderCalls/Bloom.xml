@@ -1,0 +1,255 @@
+<Yume>
+  <RenderTargets>
+    <Rt Name="BloomTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+
+    <Rt Name="RT_ADAPT_LUMINANCE_0" Format="r32f" Mips="1" Width="1" Height="1" ArraySize="1"/>
+    <Rt Name="RT_ADAPT_LUMINANCE_1" Format="r32f" Mips="1" Width="1" Height="1" ArraySize="1"/>
+
+    <Rt Name="BlurTarget0" Format="rgba16f" Mips="0" Size="2 2" ArraySize="1"/>
+    <Rt Name="BlurTarget1" Format="rgba16f" Mips="0" Size="4 4" ArraySize="1"/>
+    <Rt Name="BlurTarget2" Format="rgba16f" Mips="0" Size="8 8" ArraySize="1"/>
+    <Rt Name="BlurTarget3" Format="rgba16f" Mips="0" Size="16 16" ArraySize="1"/>
+    <Rt Name="BlurTarget4" Format="rgba16f" Mips="0" Size="16 16" ArraySize="1"/>
+    <Rt Name="BlurTarget5" Format="rgba16f" Mips="0" Size="2 2" ArraySize="1"/>
+  </RenderTargets>
+  <Samplers />
+  <RenderCalls>
+    <AdaptLuminance PassName="AdaptLuminance" Identifier="Bloom" Ps="Bloom" PsEntry="ps_adapt_exposure" Output="BloomTarget" Flags="NODS">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="exposure_speed" Value="0.4" />
+        <Param Name="exposure_key" Value="0.05" />
+        <Param Name="bloom_treshold" Value="0.5" />
+      </Parameters>
+    </AdaptLuminance>
+    <Triangle PassName="CopyToBlur0" Identifier="Bloom" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="BlurTarget0">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BloomTarget"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="exposure_speed" Value="0.4" />
+        <Param Name="exposure_key" Value="0.05" />
+        <Param Name="bloom_treshold" Value="0.5" />
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="CopyToBlur1" Identifier="Bloom" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="BlurTarget1">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget0"/>
+      </Inputs>
+    </Triangle>
+
+    <Triangle PassName="CopyToBlur2" Identifier="Bloom" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="BlurTarget2">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget1"/>
+      </Inputs>
+    </Triangle>
+
+    <Triangle PassName="CopyToBlur3" Identifier="Bloom" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="BlurTarget3">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget2"/>
+      </Inputs>
+    </Triangle>
+
+    <!-- Blur V and H Iteration 0 -->
+    <Triangle PassName="BlurV1" Identifier="Bloom" Ps="Bloom" PsEntry="ps_gauss_bloom_v" Flags="NODS" Output="BlurTarget4">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget3"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="BlurH1" Identifier="Bloom" Ps="Bloom" PsEntry="ps_gauss_bloom_h" Flags="NODS" Output="BlurTarget3">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget4"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+    <!-- End Blur V and H -->
+
+    <!-- Blur V and H Iteration 1 -->
+    <Triangle PassName="BlurV1" Identifier="Bloom" Ps="Bloom" PsEntry="ps_gauss_bloom_v" Flags="NODS" Output="BlurTarget4">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget3"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="BlurH1" Identifier="Bloom" Ps="Bloom" PsEntry="ps_gauss_bloom_h" Flags="NODS" Output="BlurTarget3">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget4"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+    <!-- End Blur V and H -->
+
+    <!-- Blur V and H Iteration 2 -->
+    <Triangle PassName="BlurV1" Identifier="Bloom" Ps="Bloom" PsEntry="ps_gauss_bloom_v" Flags="NODS" Output="BlurTarget4">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget3"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="BlurH1" Identifier="Bloom" Ps="Bloom" PsEntry="ps_gauss_bloom_h" Flags="NODS" Output="BlurTarget3">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget4"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+    <!-- End Blur V and H -->
+
+    <!-- Blur V and H Iteration 3 -->
+    <Triangle PassName="BlurV1" Identifier="Bloom" Ps="Bloom" PsEntry="ps_gauss_bloom_v" Flags="NODS" Output="BlurTarget4">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget3"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="BlurH1" Identifier="Bloom" Ps="Bloom" PsEntry="ps_gauss_bloom_h" Flags="NODS" Output="BlurTarget3">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget4"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+    <!-- End Blur V and H -->
+
+    <!-- Copy back -->
+
+    <Triangle PassName="BlurCopyBack2" Identifier="Bloom" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="BlurTarget2">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget3"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="BlurCopyBack1" Identifier="Bloom" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="BlurTarget1">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget2"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="BlurCopyBack0" Identifier="Bloom" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="BlurTarget0">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget1"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="BlurCopyFull" Identifier="Bloom" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="BloomTarget">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="BlurTarget0"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="bloom_sigma" Value="0.5" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="BloomFinal" Identifier="Bloom" Ps="Bloom" PsEntry="ps_bloom" Flags="NODS" Output="Backbuffer">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+        <Rt Index="6" Name="BloomTarget"/> <!-- 5th texture will be luminance RT which will be bound in the code -->
+      </Inputs>
+    </Triangle>
+
+
+  </RenderCalls>
+</Yume>

@@ -101,22 +101,6 @@ bool intersect(in float3 P, in float3 V, in float t0, in float t1)
     return ((tmin < t1) && (tmax > t0));
 }
 
-#ifdef DVCT
-// Fetch a voxel from the SVO (V_mu or V_rho) with colors and average occlusion.
-float4 voxel_fetch(in float3 sample_pos, in float3 vV, in float mip, in bool is_real_surface)
-{
-    float3 v_d = v_delta.SampleLevel(SVOFilter, sample_pos, mip).rgb;
-    float3 v_r = v_rho.SampleLevel(SVOFilter, sample_pos, mip).rgb;
-    float4 N = v_normal.SampleLevel(SVOFilter, sample_pos, mip).rgba;
-    float occlusion = N.a;
-
-    if (is_real_surface)
-        return float4(v_d, occlusion);
-    else
-        return float4(v_r, occlusion);
-}
-#endif
-
 // Fetch a voxel from the SVO with colors and average occlusion.
 float4 voxel_fetch(in float3 sample_pos, in float3 vV, in float mip)
 {
@@ -137,11 +121,7 @@ float4 voxel_fetch(in float3 sample_pos, in float3 vV, in float mip)
 // Origin, dir, and max_dist are in texture space
 // dir should be normalized
 // cone_ratio is the cone diameter to height ratio (2.0 for 90-degree cone)
-#ifdef DVCT
-float4 trace_cone(in float3 origin, in float3 dir, in float cone_ratio, in float max_dist, in float bias, in bool is_real_surface)
-#else
 float4 trace_cone(in float3 origin, in float3 dir, in float cone_ratio, in float max_dist, in float bias)
-#endif
 {
     if (!intersect(origin, dir, 0, 1))
         return 0;
@@ -275,11 +255,8 @@ float shadow_ao(in float3 P, in float3 L, in float3 N, in float cone_angle)
     return saturate(trace_shadow_cone(vP, vL, cone_angle, 2, 8))+0.2;
 }
 
-#ifdef DVCT
-float4 specular_from_vct(in float3 P, in float3 N, in float3 V, float cone_angle, bool is_real)
-#else
+
 float4 specular_from_vct(in float3 P, in float3 N, in float3 V, float cone_angle)
-#endif
 {
     float3 R = reflect(-V, N);
 
@@ -295,23 +272,14 @@ float4 specular_from_vct(in float3 P, in float3 N, in float3 V, float cone_angle
     // get more fingerained specular refs here
     float3 vvR = normalize(vR) / 0.5;
 
-#ifdef DVCT
-    float4 spec_bounce = trace_cone(vP, vvR, cone_angle, 11, 1, is_real);
-#else
     float4 spec_bounce = trace_cone(vP, vvR, cone_angle, 11, 1);
-#endif
-
     // TODO: add actual material properties here
     float3 f = brdf(R, V, N, 1, 1, 0);
 
     return float4(spec_bounce.rgb * NdotL * f.rgb, spec_bounce.w);
 }
 
-#ifdef DVCT
-float4 diffuse_from_vct(in float2 tc, in float3 P, in float3 N, in float3 V, bool is_real)
-#else
-float4 diffuse_from_vct(in float2 tc, in float3 P, in float3 N, in float3 V)
-#endif
+float4 diffuse_from_vct(in float2 tc, in float3 P, in float3 N, in float3 V,int vctR)
 {
     float3 vP = mul(world_to_svo, float4(P, 1.0)).xyz;
 
@@ -355,11 +323,7 @@ float4 diffuse_from_vct(in float2 tc, in float3 P, in float3 N, in float3 V)
         // TODO: add actual material properties here
         float4 f = float4(brdf(normalize(D), V, N, 1, 0, 1), 1);
 
-#ifdef DVCT
-        diffuse += trace_cone(vP, normalize(vD), diff_angle, 5, 20, is_real) * NdotL * f;
-#else
         diffuse += trace_cone(vP, normalize(vD), diff_angle, 2, 5) * NdotL * f;
-#endif
     }
 
     diffuse *= 4.0 * M_PI / num_d;

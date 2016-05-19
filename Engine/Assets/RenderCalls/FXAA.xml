@@ -1,0 +1,14 @@
+<Yume>
+  <RenderTargets />
+  <Samplers />
+  <RenderCalls>
+    <Triangle PassName="FXAA" Identifier="FXAA" Ps="FXAA" PsEntry="ps_fxaa" Flags="NODS" Output="Backbuffer">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer" />
+      </Inputs>
+    </Triangle>
+  </RenderCalls>
+</Yume>

@@ -170,6 +170,7 @@ namespace YumeEngine
 			YumeString specular_tex_str;
 			YumeString normal_tex_str;
 			YumeString alpha_tex_str;
+			YumeString roughness_tex_str;
 
 
 			float shading_mode;

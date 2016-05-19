@@ -96,10 +96,6 @@ namespace YumeEngine
 		{
 			for(unsigned i = 0; i < MAX_CUBEMAP_FACES; ++i)
 				renderSurfaces_[i] = SharedPtr<YumeD3D11Renderable>(new YumeD3D11Renderable(this));
-
-			// Nearest filtering and mipmaps disabled by default
-			filterMode_ = FILTER_NEAREST;
-			requestedLevels_ = 1;
 		}
 		else if(usage_ == TEXTURE_DYNAMIC)
 			requestedLevels_ = 1;
@@ -478,6 +474,9 @@ namespace YumeEngine
 			textureDesc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
 		textureDesc.CPUAccessFlags = usage_ == TEXTURE_DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
 		textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+		if(levels_ != 1)
+			textureDesc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
 		HRESULT hr = static_cast<YumeD3D11Renderer*>(gYume->pRHI)->GetImpl()->GetDevice()->CreateTexture2D(&textureDesc,0,(ID3D11Texture2D**)&object_);
 		if(FAILED(hr))

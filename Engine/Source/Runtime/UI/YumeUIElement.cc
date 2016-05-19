@@ -30,14 +30,14 @@
 
 namespace YumeEngine
 {
-	YumeUIElement::YumeUIElement(const YumeString& name)
+	YumeUIElement::YumeUIElement(int width,int height,const YumeString& name)
 		: name_(name),
 		url_(String::EMPTY),
 		texture_(0),
 		browserIndex_(0),
 		visible_(false)
 	{
-		rect_ = IntRect(0,0,gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight());
+		rect_ = IntRect(0,0,width,height);
 	}
 
 	YumeUIElement::~YumeUIElement()
@@ -48,7 +48,7 @@ namespace YumeEngine
 	void YumeUIElement::PrepareResources()
 	{
 		texture_ = (gYume->pRHI->CreateTexture2D());
-		texture_->SetSize(rect_.right_,rect_.bottom_,gYume->pRHI->GetBGRAFormatNs(),TEXTURE_DYNAMIC);
+		texture_->SetSize(rect_.right_ - rect_.left_,rect_.bottom_ - rect_.top_,gYume->pRHI->GetBGRAFormatNs(),TEXTURE_DYNAMIC);
 
 		browserIndex_ = gYume->pUI->CreateBrowser(this);
 	}
@@ -69,6 +69,36 @@ namespace YumeEngine
 		}
 
 		bindingsNeedUpdate_ = false;
+	}
+
+	void YumeUIElement::SetWidth(int width)
+	{
+		int oldWidth = rect_.right_ - rect_.left_;
+		int right = rect_.right_;
+		int left = rect_.left_;
+		int top = rect_.top_;
+		int bottom = rect_.bottom_;
+
+		int newRight = left + width;
+		rect_.right_ = newRight;
+	}
+
+	void YumeUIElement::SetHeight(int height)
+	{
+		int oldWidth = rect_.right_ - rect_.left_;
+		int right = rect_.right_;
+		int left = rect_.left_;
+		int top = rect_.top_;
+		int bottom = rect_.bottom_;
+
+		int newBottom = top + height;
+		rect_.bottom_ = newBottom;
+	}
+
+	void YumeUIElement::SetPosition(int x,int y)
+	{
+		rect_.left_ = x;
+		rect_.top_ = y;
 	}
 
 	void YumeUIElement::MarkForUpdate()

@@ -19,6 +19,9 @@
 // Comments :
 //
 //----------------------------------------------------------------------------
+#ifndef PP_HLSL_
+#define PP_HLSL_
+
 #include "common.h"
 #include "tools.hlsl"
 
@@ -29,6 +32,27 @@ struct PS_INPUT
 	float3 view_ray	                : TEXCOORD1;
 };
 
+cbuffer per_frame_ps : register(b5)
+{
+	float time                      : packoffset(c0.x);
+    float time_delta                : packoffset(c0.y);
+    float2 pad0                     : packoffset(c0.z);
+}
+
+cbuffer light_ps : register(b2)
+{
+	directional_light main_light	: packoffset(c0);
+	float4x4 light_vp				: packoffset(c3);
+    float4x4 light_vp_inv			: packoffset(c7);
+    float4x4 light_vp_tex			: packoffset(c11);
+	float flux_scale				: packoffset(c15);
+}
+
+cbuffer onetime_ps : register(b6)
+{
+	float4 scene_dim_max            : packoffset(c0);
+    float4 scene_dim_min            : packoffset(c1);;
+}
 
 
 SamplerState StandardFilter	        : register(s0);
@@ -39,6 +63,14 @@ Texture2D rt_colors                 : register(t1);
 Texture2D rt_specular               : register(t2);
 Texture2D rt_normals         	    : register(t3);
 Texture2D rt_lineardepth     	    : register(t4);
+Texture2D rt_pp_one							: register(t5);
+Texture2D rt_pp_two							: register(t6);
+
+Texture2D rt_rsm_lineardepth 	    : register(t7);
 
 Texture2D rt_blurred							: register(t8);
-Texture2D rt_main_full							: register(t9);
+Texture2D rt_main_front							: register(t9);
+
+Texture3D<float> noise_tex		    : register(t14);
+
+#endif

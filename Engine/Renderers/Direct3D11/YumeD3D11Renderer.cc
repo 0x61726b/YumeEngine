@@ -1662,7 +1662,7 @@ namespace YumeEngine
 
 	void YumeD3D11Renderer::BindDepthStateEnable()
 	{
-		impl_->deviceContext_->OMSetDepthStencilState(dss_enableDepthTest_,0);
+		impl_->deviceContext_->OMSetDepthStencilState(nullptr,0);
 	}
 
 	void YumeD3D11Renderer::BindDepthStateDisable()
@@ -1821,6 +1821,8 @@ namespace YumeEngine
 			renderTargets_[i] = 0;
 			impl_->renderTargetViews_[i] = 0;
 		}
+
+		renderTargetsDirty_ = true;
 	}
 
 	void YumeD3D11Renderer::BindInjectBlendState()

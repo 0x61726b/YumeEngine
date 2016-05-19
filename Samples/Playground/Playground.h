@@ -66,7 +66,6 @@ namespace YumeEngine
 
 		void SSAOOffsetVectors();
 
-		StaticModel* CreateModel(const YumeString& name,DirectX::XMFLOAT3 Pos = DirectX::XMFLOAT3(0,0,0),DirectX::XMFLOAT4 rot = DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3 scale = DirectX::XMFLOAT3(1,1,1));
 		void CreateCube(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
 		void CreateCube(Vector3 Pos,Quaternion Rot,Vector3 size,YumeColor color);
 		void CreateSphere(Vector3 Pos,Quaternion Rot,float size,YumeColor color);
@@ -85,6 +84,8 @@ namespace YumeEngine
 
 		YumeVector<Light*>::type lights_;
 		float rotationAngle_;
+
+		StaticModel* yume_;
 	};
 }
 

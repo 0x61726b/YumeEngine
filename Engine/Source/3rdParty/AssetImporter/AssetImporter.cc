@@ -75,6 +75,7 @@ int main(int argc,char* argv[])
 
 	engine_->Initialize(variants);
 
+
 	unsigned argSize = YumeEngine::GetArguments().size();
 
 	if(argSize <= 1)
@@ -84,11 +85,12 @@ int main(int argc,char* argv[])
 	else
 	{
 		YumeEngine::YumeString fileName = YumeEngine::GetArguments().At(1);
-		
+
 		using namespace YumeEngine;
 
 		YumeMesh mesh;
 		mesh.Load(fileName);
+		/*mesh.Load("D:/Arken/C++/Yume/v2/YumeEngine/Engine/Assets/Models/Sponza/sponza.obj");*/
 
 		mesh.SaveMesh(fileName);
 	}
@@ -256,10 +258,10 @@ void ExportMaterialToFile(const char* pFile,const aiScene* scene)
 		mat.Append(buffer);
 		mat.Append(".mat\n");
 		o << mat.C_Str();
-	}
+			}
 #endif
 	o.close();
-}
+		}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -424,8 +426,8 @@ void ExportToFile(const aiScene* scene)
 			std::fwrite(&scene->mMeshes[iMesh]->mFaces[iIdx].mIndices[0],sizeof(u32),1,fOut);
 			std::fwrite(&scene->mMeshes[iMesh]->mFaces[iIdx].mIndices[1],sizeof(u32),1,fOut);
 			std::fwrite(&scene->mMeshes[iMesh]->mFaces[iIdx].mIndices[2],sizeof(u32),1,fOut);
-		}
 	}
+}
 	fclose(fOut);
 #endif
 	return;

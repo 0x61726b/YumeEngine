@@ -88,7 +88,7 @@ namespace YumeEngine
 
 		YumeString GetTextureName(const YumeString&,int num);
 
-		void RenderLights(RenderCall* call);
+		void RenderLights(RenderCall* call,TexturePtr target);
 
 		void SetGBufferShaderParameters(const IntVector2& texSize,const IntRect& viewRect);
 
@@ -98,28 +98,72 @@ namespace YumeEngine
 		bool CheckSphere(float xCenter, float yCenter, float zCenter, float radius);
 		bool CheckRectangle(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize);
 
+		void PrepareRendering();
+		TexturePtr AllocateAdditionalBuffers(int width,int height,unsigned format,bool cubemap,bool filtered,bool srgb,bool mips,
+		unsigned persistentKey = 0);
+
+		void BlitRenderTarget(TexturePtr source,TexturePtr dest,bool depthWrite);
 
 		DirectX::XMVECTOR frustumPlanes_[6];
 
 		YumeVector<TexturePtr>::type GetFreeTextures();
 
 		bool disableFrustumCull_;
+
+		void UpdateGI();
+
+		Texture2DPtr backBufferSub_;
+
+		TexturePtr adaptLuminance[2];
+		bool currentAdaptedLuminance_;
+
+		bool backbufferModified_;
+		bool usedResolve_;
+
+		bool CheckPingPong(RenderCall* call,unsigned index);
+
+		TexturePtr viewportTextures_[3];
+		TexturePtr currentViewportTexture_;
+		YumeMap<long long, YumeVector<SharedPtr<YumeTexture> >::type >::type screenBuffers_;
+		YumeMap<long long, unsigned>::type screenBufferAllocations_;
+
+		void RemoveUnusedBuffers();
+
+		YumeRenderable* currentRenderTarget_;
+
+		SharedPtr<YumeGeometry> skyGeometry_;
+
+		void SetFloorRoughness(float f);
+
+		void RenderIntoCubemap();
+		void CreateCubemapCameras(float x,float y,float z);
+		bool updateCubemap_;
+
+		YumeVector<YumeCamera*>::type cubemapCams_;
+
+		SharedPtr<YumeTextureCube> cubemapRt_;
+		SharedPtr<YumeTexture2D> cubemapDsv_;
+
+		void UpdateCamera(float dt);
+		void UpdateLights();
+
+		float cameraMoveSpeed_;
  		//~
 
 		void Render();
-		void RenderSky();
+		void RenderSky(YumeRenderable* target,YumeCamera* cam);
 		void RenderScene();
 
 		void RenderFullScreenTexture(const IntRect& rect,YumeTexture2D*);
 
 		virtual void HandlePostRenderUpdate(float timeStep);
 
-		void SetCameraParameters(bool shadowPass);
+		void SetCameraParameters(bool shadowPass,YumeCamera* camera);
 		void SetPerFrameConstants();
 
 		void Update(float timeStep);
 
-		YumeLPVCamera* GetCamera() const { return camera_; }
+		YumeCamera* GetCamera() const { return camera_; }
 
 		YumePostProcess* GetPP() const {return pp_; }
 
@@ -148,7 +192,7 @@ namespace YumeEngine
 		DirectX::XMFLOAT3 bbMax;
 
 	private:
-		SharedPtr<YumeLPVCamera> camera_;
+		SharedPtr<FirstPersonCamera> camera_;
 
 	private:
 		unsigned rsmSize;

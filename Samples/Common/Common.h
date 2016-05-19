@@ -24,11 +24,13 @@
 //----------------------------------------------------------------------------
 #include "Engine/YumeApplication.h"
 #include "Core/YumeEventHub.h"
+#include "Renderer/StaticModel.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
 	class YumeSceneNode;
 	class YumeDebugOverlay;
+	class YumeOptionsMenu;
 
 	class BaseApplication : public YumeApplication,
 		public InputEventListener,
@@ -50,7 +52,7 @@ namespace YumeEngine
 		virtual void HandleMouseButtonUp(int button,unsigned buttons) { }
 		//~
 
-		
+		StaticModel* CreateModel(const YumeString& name,DirectX::XMFLOAT3 Pos = DirectX::XMFLOAT3(0,0,0),DirectX::XMFLOAT4 rot = DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3 scale = DirectX::XMFLOAT3(1,1,1));
 
 		virtual void HandlePostRenderUpdate(float timeStep);
 
@@ -58,6 +60,7 @@ namespace YumeEngine
 
 		YumeSceneNode* cameraNode_;
 		SharedPtr<YumeDebugOverlay> overlay_;
+		SharedPtr<YumeOptionsMenu> optionsMenu_;
 
 		int ssaoCommandIndex_;
 		int gbufferDebugIndex_;

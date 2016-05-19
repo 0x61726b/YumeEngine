@@ -1,4 +1,4 @@
-/* 
+/*
  * FXAA effect by Tobias Alexander Franke (tob@cyberhead.de) 2012
  * For copyright and license see LICENSE
  * http://www.tobias-franke.eu
@@ -15,9 +15,6 @@
 
 float4 ps_fxaa(in PS_INPUT inp) : SV_TARGET
 {
-    if (!fxaa_enabled)
-        return frontbuffer.Sample(StandardFilter, inp.tex_coord);
-
     float4 unused = float4(0,0,0,0);
 
     FxaaFloat2 pos = inp.tex_coord;
@@ -25,12 +22,12 @@ float4 ps_fxaa(in PS_INPUT inp) : SV_TARGET
     FxaaTex tex = { StandardFilter, frontbuffer };
     FxaaTex fxaaConsole360TexExpBiasNegOne = { StandardFilter, frontbuffer };
     FxaaTex fxaaConsole360TexExpBiasNegTwo = { StandardFilter, frontbuffer };
-    
+
 	float w,h;
 	frontbuffer.GetDimensions(w,h);
-	
+
     FxaaFloat2 fxaaQualityRcpFrame = float2(1.0/w, 1.0/h);
-    
+
     FxaaFloat4 fxaaConsoleRcpFrameOpt = unused;
     FxaaFloat4 fxaaConsoleRcpFrameOpt2 = unused;
     FxaaFloat4 fxaaConsole360RcpFrameOpt2 = unused;
@@ -43,9 +40,9 @@ float4 ps_fxaa(in PS_INPUT inp) : SV_TARGET
     FxaaFloat4 fxaaConsole360ConstDir = unused;
 
     return FxaaPixelShader(
-        pos, 
-        fxaaConsolePosPos, 
-        tex, 
+        pos,
+        fxaaConsolePosPos,
+        tex,
         fxaaConsole360TexExpBiasNegOne,
         fxaaConsole360TexExpBiasNegTwo,
         fxaaQualityRcpFrame,

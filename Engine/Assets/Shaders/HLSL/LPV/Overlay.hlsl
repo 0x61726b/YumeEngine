@@ -5,6 +5,7 @@
  */
 
 SamplerState StandardFilter   : register(s0);
+SamplerState ShadowFilter   : register(s1);
 
 struct PS_OVERLAY_INPUT
 {
@@ -31,7 +32,9 @@ float4 PS(in PS_OVERLAY_INPUT In) : SV_Target
 {
 	float2 ntex = (In.tex_coord);
 
-	float4 over = overlay_tex.Sample(StandardFilter, ntex);
+	//Correcting SRGB
+	float4 chromeTexture = overlay_tex.Sample(ShadowFilter, ntex);
+	float3 linearCorrected = pow((chromeTexture.rgb + 0.055) / 1.055, 2.4);
 
-  return over;
+	return float4(linearCorrected, chromeTexture.a);
 }

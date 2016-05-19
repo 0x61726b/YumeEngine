@@ -99,15 +99,15 @@ namespace YumeEngine
 		float exposure_key;
 		float exposure_speed;
 
-		TexturePtr temporaryRt_;
-		TexturePtr adaptadLuminanceRt_[2];
+		Texture2DPtr temporaryRt_;
+		Texture2DPtr adaptadLuminanceRt_[2];
 
-		TexturePtr blurred_[6];
-		TexturePtr bloomFull_;
+		Texture2DPtr blurred_[6];
+		Texture2DPtr bloomFull_;
 
-		TexturePtr frontBufferBlurred_;
+		Texture2DPtr frontBufferBlurred_;
 
-		TexturePtr noiseTex_;
+		Texture3DPtr noiseTex_;
 
 	private:
 		YumeShaderVariation* ssaoPs_;

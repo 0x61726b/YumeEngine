@@ -18,7 +18,6 @@
 // Comments :
 //###############################################################################
 function testo(name,params){
-  //alert(name); To debug
   params = JSON.parse(params);
   var event = new CustomEvent(name, {"detail": params});
   try {
@@ -28,11 +27,22 @@ function testo(name,params){
   }
 }
 
+function setCppProperty(name,property) {
+  Cef3D.Constants.set(name,property);
+}
+
 var Cef3D = Cef3D || {};
+
+Cef3D.ComponentMap = new Map();
+Cef3D.Constants = new Map();
 
 Cef3D.OnDomReady = function() {
   native function OnDomReady();
+
   OnDomReady();
+
+
+
 };
 
 Cef3D.SendDomEvent = function(callback,s,type,v) {
@@ -40,3 +50,7 @@ Cef3D.SendDomEvent = function(callback,s,type,v) {
 
   SendDomEvent(callback,s,type,v);
 };
+
+Cef3D.RegisterComponent = function(name,component) {
+  Cef3D.ComponentMap.set(name,component);
+}

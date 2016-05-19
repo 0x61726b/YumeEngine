@@ -5,7 +5,7 @@
     <Rt Name="SCENE_LINEARDEPTH" Format="rg32f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
     <Rt Name="SCENE_SPECULAR" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
 
-    <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="PostProcessingTarget" Format="rgba16f" Mips="0" Width="1600" Height="900" ArraySize="1"/>
 
     <Ds Name="LightDSV" Format="d24s8" Mips="1" Width="1600" Height="900" ArraySize="1" Stencil="readonly"/>
   </RenderTargets>
@@ -26,5 +26,6 @@
       </Outputs>
     </Scene>
     <Scene PassName="DeferredLights" Identifier="Main" Flags="DEFERRED_LIGHTS" Output="Backbuffer"/>
+    <Scene PassName="Skybox" Identifier="Main" Flags="SKYBOX" Output="Backbuffer"/>
   </RenderCalls>
 </Yume>

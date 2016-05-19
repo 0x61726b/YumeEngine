@@ -394,6 +394,9 @@ namespace YumeEngine
 		UINT mips = static_cast<UINT>(std::log2(width_));
 		mips_ = mips;
 
+		if(width_ == 64)
+			mips_ = 1;
+
 		D3D11_TEXTURE3D_DESC textureDesc;
 		memset(&textureDesc,0,sizeof textureDesc);
 		textureDesc.Width = (UINT)width_;
@@ -444,7 +447,7 @@ namespace YumeEngine
 
 			((ID3D11ShaderResourceView*)shaderResourceView_)->SetPrivateData(WKPDID_D3DDebugObjectName,srvName.length(),srvName.c_str());
 		}
-		if(usage_ = TEXTURE_UAV)
+		if(usage_ == TEXTURE_UAV)
 		{
 			D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
 			ZeroMemory(&uav_desc,sizeof(uav_desc));

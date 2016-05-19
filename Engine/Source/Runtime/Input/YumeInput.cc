@@ -672,7 +672,7 @@ namespace YumeEngine
 		{
 		case SDL_SYSWMEVENT:
 		{
-			gYume->pRenderer->GetCamera()->HandleMessages(evt.syswm.msg->msg.win.hwnd,evt.syswm.msg->msg.win.msg,evt.syswm.msg->msg.win.wParam,evt.syswm.msg->msg.win.lParam);
+			
 			break;
 		}
 		break;

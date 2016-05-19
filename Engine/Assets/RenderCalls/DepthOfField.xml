@@ -1,0 +1,114 @@
+<Yume>
+  <RenderTargets>
+    <Rt Name="DoFTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+
+    <Rt Name="DofBlurTarget0" Format="rgba16f" Mips="0" Size="2 2" ArraySize="1"/>
+    <Rt Name="DofBlurTarget5" Format="rgba16f" Mips="0" Size="2 2" ArraySize="1"/>
+  </RenderTargets>
+  <Samplers />
+  <RenderCalls>
+    <Triangle PassName="CopyToBlur0" Identifier="DoF" Ps="Copy" PsEntry="ps_copy" Flags="NODS" Output="DofBlurTarget0">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+      </Inputs>
+    </Triangle>
+
+    <Triangle PassName="DoFVBlur1" Identifier="DoF" Ps="Dof" PsEntry="ps_gauss_dof_v" Flags="NODS" Output="DofBlurTarget5">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+        <Rt Index="1" Name="SCENE_COLORS" />
+        <Rt Index="2" Name="SCENE_SPECULAR" />
+        <Rt Index="3" Name="SCENE_NORMALS" />
+        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="9" Name="DofBlurTarget0"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="dof_coc_scale" Value="1.5f" />
+        <Param Name="dof_focal_plane" Value="2000" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="DoFHBlur1" Identifier="DoF" Ps="Dof" PsEntry="ps_gauss_dof_h" Flags="NODS" Output="DofBlurTarget0">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+        <Rt Index="1" Name="SCENE_COLORS" />
+        <Rt Index="2" Name="SCENE_SPECULAR" />
+        <Rt Index="3" Name="SCENE_NORMALS" />
+        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="9" Name="DofBlurTarget5"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="dof_coc_scale" Value="1.5f" />
+        <Param Name="dof_focal_plane" Value="2000" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="DoFVBlur2" Identifier="DoF" Ps="Dof" PsEntry="ps_gauss_dof_v" Flags="NODS" Output="DofBlurTarget5">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+        <Rt Index="1" Name="SCENE_COLORS" />
+        <Rt Index="2" Name="SCENE_SPECULAR" />
+        <Rt Index="3" Name="SCENE_NORMALS" />
+        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="9" Name="DofBlurTarget0"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="dof_coc_scale" Value="1.5f" />
+        <Param Name="dof_focal_plane" Value="2000" />
+      </Parameters>
+    </Triangle>
+
+    <Triangle PassName="DoFHBlur2" Identifier="DoF" Ps="Dof" PsEntry="ps_gauss_dof_h" Flags="NODS" Output="DofBlurTarget0">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+        <Rt Index="1" Name="SCENE_COLORS" />
+        <Rt Index="2" Name="SCENE_SPECULAR" />
+        <Rt Index="3" Name="SCENE_NORMALS" />
+        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="9" Name="DofBlurTarget5"/>
+      </Inputs>
+      <Parameters>
+        <Param Name="dof_coc_scale" Value="1.5f" />
+        <Param Name="dof_focal_plane" Value="2000" />
+      </Parameters>
+    </Triangle>
+
+
+    <Triangle PassName="DoFMain" Identifier="DoF" Ps="Dof" PsEntry="ps_depth_of_field" Flags="NODS" Output="Backbuffer">
+      <Samplers>
+        <Ps Name="Standard" Register="0" />
+        <Ps Name="ShadowFilter" Register="1" />
+      </Samplers>
+      <Inputs>
+        <Rt Index="0" Name="Backbuffer"/>
+        <Rt Index="4" Name="SCENE_LINEARDEPTH" />
+        <Rt Index="5" Name="DofBlurTarget0" />
+      </Inputs>
+      <Parameters>
+        <Param Name="dof_coc_scale" Value="1.5f" />
+        <Param Name="dof_focal_plane" Value="2000" />
+      </Parameters>
+    </Triangle>
+
+  </RenderCalls>
+</Yume>

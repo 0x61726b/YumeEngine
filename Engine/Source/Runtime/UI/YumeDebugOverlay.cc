@@ -52,8 +52,12 @@ static const char* shadowQualityTexts[] =
 namespace YumeEngine
 {
 	YumeDebugOverlay::YumeDebugOverlay()
-		: YumeUIElement("Overlay")
+		: YumeUIElement(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),"Overlay")
 	{
+		SetPosition(0,0);
+		SetWidth(gYume->pRHI->GetWidth());
+		SetHeight(gYume->pRHI->GetHeight());
+
 		Initialize();
 	}
 	YumeDebugOverlay::~YumeDebugOverlay()
@@ -285,6 +289,8 @@ namespace YumeEngine
 		ret.AppendWithFormat("\"BatchCount\": \"%i\"",batchCount);
 
 
+
+
 		ret.append("}");
 		gYume->pUI->SendEvent("setFrameInfo",ret);
 
@@ -298,15 +304,15 @@ namespace YumeEngine
 		camera.append("}");
 		gYume->pUI->SendEvent("setCameraInfo",camera);
 #else
-		YumeLPVCamera* cam = gYume->pRenderer->GetCamera();
+		YumeCamera* cam = gYume->pRenderer->GetCamera();
 
 		YumeString camera;
 		camera.append("{");
-		camera.AppendWithFormat("\"CameraPos\": \"%s\",",XMVectorToString(cam->GetEyePt()).c_str());
-		/*camera.AppendWithFormat("\"CameraRot\": \"%s\",",cam->GetNode()->GetWorldRotation().ToString().c_str());*/
-		camera.AppendWithFormat("\"CameraFov\": \"%f\"",45.0f);
+		camera.AppendWithFormat("\"CameraPos\": \"%s\",",XMVectorToString(cam->Position()).c_str());
+		camera.AppendWithFormat("\"CameraRot\": \"%s\",",XMVectorToString(cam->Orientation()).c_str());
+		camera.AppendWithFormat("\"CameraFov\": \"%f\"",60.0f);
 		camera.append("}");
-		/*gYume->pUI->SendEvent("setCameraInfo",camera);*/
+		gYume->pUI->SendEvent("setCameraInfo",camera);
 #endif
 		YumeUIElement::Update();
 

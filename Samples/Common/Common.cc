@@ -30,8 +30,10 @@
 #include "Input/YumeInput.h"
 
 #include "UI/YumeDebugOverlay.h"
+#include "UI/YumeOptionsMenu.h"
 #include "Renderer/RenderPass.h"
 
+#include "Renderer/Scene.h"
 namespace YumeEngine
 {
 	BaseApplication::BaseApplication()
@@ -58,6 +60,23 @@ namespace YumeEngine
 		//Set engine parameters
 
 		engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
+	}
+
+	
+	StaticModel* BaseApplication::CreateModel(const YumeString& name,DirectX::XMFLOAT3 Pos,DirectX::XMFLOAT4 rot,DirectX::XMFLOAT3 scale)
+	{
+		StaticModel* sm_ = new StaticModel(name);
+		sm_->Initialize();
+		sm_->SetName("Cornell");
+		sm_->SetPosition(DirectX::XMLoadFloat3(&Pos),true);
+		sm_->SetRotation(DirectX::XMLoadFloat4(&rot));
+		sm_->SetScale(scale.x,scale.y,scale.z);
+
+
+		gYume->pRenderer->GetScene()->AddNode(sm_);
+		gYume->pRenderer->UpdateMeshBb(sm_,sm_->GetTransformation());
+
+		return sm_;
 	}
 
 

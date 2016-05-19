@@ -1,14 +1,8 @@
-set(SAMPLE_TARGET "Lighting")
+set(SAMPLE_TARGET "SponzaGIShowcase")
 
 set(SOURCE_FILES Lighting.cc)
 
 set(HEADER_FILES Lighting.h)
-
-if(OS_LINUX OR OS_MACOSX)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DBOOST_ALL_NO_LIB=1 -g -O0 --coverage")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage")
-	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
-endif()
 
 include_directories(${YUME_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -25,11 +19,6 @@ if(MSVC)
 endif()
 if(NOT MSVC)
 	add_executable(${SAMPLE_TARGET} ${HEADER_FILES} ${SOURCE_FILES} ${COMMON_SOURCES})
-endif()
-
-if(YUME_BUILD_OPENGL)
-	target_link_libraries(${SAMPLE_TARGET} GLEW)
-	include_directories(${YUME_3RDPARTY_PATH}/GLEW)
 endif()
 
 target_link_libraries(${SAMPLE_TARGET} ${YUME})
