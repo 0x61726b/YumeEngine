@@ -41,6 +41,7 @@ namespace YumeEngine
 		pitch_(0.0f),
 		drawDebug_(false),
 		ssaoDebug_(false),
+		toggleGDebug_(false),
 		gbufferDebugIndex_(0)
 	{
 		REGISTER_ENGINE_LISTENER;
@@ -62,7 +63,7 @@ namespace YumeEngine
 		engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
 	}
 
-	
+
 	StaticModel* BaseApplication::CreateModel(const YumeString& name,DirectX::XMFLOAT3 Pos,DirectX::XMFLOAT4 rot,DirectX::XMFLOAT3 scale)
 	{
 		StaticModel* sm_ = new StaticModel(name);
@@ -100,11 +101,34 @@ namespace YumeEngine
 			drawDebug_ = !drawDebug_;
 
 		if(input->GetKeyPress(KEY_F1))
-			gYume->pRenderer->GetDefaultPass()->DisableRenderCalls("ShowGBuffer");
+		{
+			toggleGDebug_ = !toggleGDebug_;
+			if(toggleGDebug_)
+				gYume->pRenderer->GetDefaultPass()->EnableRenderCalls("ShowGBuffer");
+			else
+				gYume->pRenderer->GetDefaultPass()->DisableRenderCalls("ShowGBuffer");
+		}
 
 
+		if(input->GetKeyPress(KEY_1))
+			ToggleShaderParameter("showDiffuse");
+		if(input->GetKeyPress(KEY_2))
+			ToggleShaderParameter("showNormals");
+		if(input->GetKeyPress(KEY_3))
+			ToggleShaderParameter("showSpec");
+		if(input->GetKeyPress(KEY_4))
+			ToggleShaderParameter("showDepth");
 
-	
+
+	}
+
+	void BaseApplication::ToggleShaderParameter(YumeHash param)
+	{
+		RenderPass* dp = gYume->pRenderer->GetDefaultPass();
+
+		bool c = dp->GetShaderParameter(param).Get<bool>();
+
+		dp->SetShaderParameter(param,!c);
 	}
 
 	void BaseApplication::HandlePostRenderUpdate(float timeStep)

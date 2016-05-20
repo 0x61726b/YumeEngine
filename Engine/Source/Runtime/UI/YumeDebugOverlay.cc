@@ -52,7 +52,7 @@ static const char* shadowQualityTexts[] =
 namespace YumeEngine
 {
 	YumeDebugOverlay::YumeDebugOverlay()
-		: YumeUIElement(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),"Overlay")
+		: YumeUIElement(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),Overlay,"Overlay")
 	{
 		SetPosition(0,0);
 		SetWidth(gYume->pRHI->GetWidth());

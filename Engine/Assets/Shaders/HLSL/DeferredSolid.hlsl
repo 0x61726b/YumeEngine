@@ -174,7 +174,10 @@ PS_MESH_OUTPUT MeshPs(in VS_MESH_OUTPUT input)
 	else
 		output.specular.rgb = SpecularColor.rgb;
 
-    output.specular.a = Roughness;
+    if(Roughness != 1)
+      output.specular.a = Roughness;
+    else
+      output.specular.a = roughness_tex.Sample(StandardFilter,input.texcoord).r;
 
     // linear depth + z^2 moment for vsm
 	output.ldepth = float2(z, z*z);

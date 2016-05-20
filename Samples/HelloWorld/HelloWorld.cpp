@@ -11,37 +11,24 @@
 #include "HelloWorld.h"
 #include "Logging/logging.h"
 #include "Core/YumeMain.h"
-#include "Scene/YumeOctree.h"
-#include "Renderer/YumeCamera.h"
+
 #include <boost/shared_ptr.hpp>
 
 #include "Input/YumeInput.h"
-#include "Renderer/YumeViewport.h"
 
-#include "Renderer/YumeRenderer.h"
-#include "Renderer/YumeDrawable.h"
-#include "Renderer/YumeRenderView.h"
-#include "Renderer/YumeMaterial.h"
-#include "Renderer/YumeAuxRenderer.h"
-#include "Renderer/YumeSkybox.h"
-#include "Renderer/YumeRendererEnv.h"
 #include "Renderer/YumeTexture2D.h"
-#include "Renderer/YumeRenderPass.h"
 
 #include "Renderer/YumeResourceManager.h"
 
-#include "Renderer/YumeRHI.h"
-
-#include "Renderer/YumeModel.h"
-#include "Renderer/YumeStaticModel.h"
+#include "Engine/YumeEngine.h"
 
 #include "UI/YumeDebugOverlay.h"
 
-#include "Engine/YumeEngine.h"
+#include "Renderer/Light.h"
+#include "Renderer/StaticModel.h"
+#include "Renderer/Scene.h"
 
-#include "Core/SharedPtr.h"
-
-#include "UI/YumeUI.h"
+#include "UI/YumeOptionsMenu.h"
 
 YUME_DEFINE_ENTRY_POINT(YumeEngine::HelloWorld);
 
@@ -51,7 +38,6 @@ namespace YumeEngine
 
 
 	HelloWorld::HelloWorld()
-		: rot_(Quaternion::IDENTITY)
 	{
 		REGISTER_ENGINE_LISTENER;
 	}
@@ -63,87 +49,113 @@ namespace YumeEngine
 
 	void HelloWorld::Start()
 	{
-		BaseApplication::Start();
-
-		overlay_->GetBinding("SampleName")->SetValue("HelloWorld");
-		gYume->pUI->SetUIEnabled(false);
-
 		YumeResourceManager* rm_ = gYume->pResourceManager;
+		YumeMiscRenderer* renderer = gYume->pRenderer;
+		Scene* scene = renderer->GetScene();
+		YumeCamera* camera = renderer->GetCamera();
 
-		scene_ = SharedPtr<YumeScene>(new YumeScene);
-		scene_->SetName("Scene");
+		gYume->pInput->AddListener(this);
 
-		scene_->CreateComponent<Octree>();
+#ifndef DISABLE_CEF
+		/*overlay_ = new YumeDebugOverlay;
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);*/
 
-		YumeSceneNode* lightNode = scene_->CreateChild("DirectionalLight");
-		lightNode->SetDirection(Vector3(0.6f,-1.0f,0.8f)); // The direction vector does not need to be normalized
-		YumeLight* light = lightNode->CreateComponent<YumeLight>();
-		light->SetLightType(LIGHT_DIRECTIONAL);
+		optionsMenu_ = new YumeOptionsMenu;
+		gYume->pUI->AddUIElement(optionsMenu_);
+		optionsMenu_->SetVisible(true);
+#endif
 
+		StaticModel* dragon= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(-40,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		StaticModel* dragon2= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(0,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		StaticModel* dragon3= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(40,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		StaticModel* dragon4= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(80,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		StaticModel* dragon5= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(120,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
 
-		cubeNode_ = scene_->CreateChild("Cube");
-		cubeNode_->SetPosition(Vector3(0,0,0));
-		cubeNode_->SetRotation(Quaternion::IDENTITY);
-		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		drawable->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Yume.xml"));
-		drawable->SetCastShadows(true);
-
-		cameraNode_ = scene_->CreateChild("Camera");
-		YumeCamera* camera = cameraNode_->CreateComponent<YumeCamera>();
-		cameraNode_->SetPosition(Vector3(2,1,-1));
-		
-		Quaternion q;
-		q.FromLookRotation( (cameraNode_->GetWorldPosition() * -1 ).Normalized() );
-		cameraNode_->SetRotation(q);
-		camera->SetFarClip(300.0f);
+		StaticModel* sponza = CreateModel("Models/sponza/sponza.yume");
 
 
+		MaterialPtr diff = YumeAPINew Material;
+		diff->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
+		diff->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		diff->SetShaderParameter("FloorRoughness",0.05f);
+		diff->SetShaderParameter("Roughness",0.05f);
+		diff->SetShaderParameter("has_diffuse_tex",false);
+		diff->SetShaderParameter("has_alpha_tex",false);
+		diff->SetShaderParameter("has_specular_tex",false);
+		diff->SetShaderParameter("has_normal_tex",false);
+		diff->SetShaderParameter("has_roughness_tex",false);
+		dragon->SetMaterial(diff);
 
-		SharedPtr<YumeViewport> viewport(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>()));
+		MaterialPtr diff2 = YumeAPINew Material;
+		diff2->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
+		diff2->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8f,0.8f,0.8f,1));
+		diff2->SetShaderParameter("FloorRoughness",0.05f);
+		diff2->SetShaderParameter("Roughness",0.05f);
+		diff2->SetShaderParameter("has_diffuse_tex",false);
+		diff2->SetShaderParameter("has_alpha_tex",false);
+		diff2->SetShaderParameter("has_specular_tex",false);
+		diff2->SetShaderParameter("has_normal_tex",false);
+		diff2->SetShaderParameter("has_roughness_tex",false);
+		dragon2->SetMaterial(diff2);
 
-		YumeRenderer* renderer = gYume->pRenderer;
-		renderer->SetViewport(0,viewport);
+
+		MaterialPtr diff3 = YumeAPINew Material;
+		diff3->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
+		diff3->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8f,0.8f,0.8f,1));
+		diff3->SetShaderParameter("FloorRoughness",0.129f);
+		diff3->SetShaderParameter("Roughness",0.129f);
+		diff3->SetShaderParameter("has_diffuse_tex",false);
+		diff3->SetShaderParameter("has_alpha_tex",false);
+		diff3->SetShaderParameter("has_specular_tex",false);
+		diff3->SetShaderParameter("has_normal_tex",false);
+		diff3->SetShaderParameter("has_roughness_tex",false);
+		dragon3->SetMaterial(diff3);
+
+		MaterialPtr diff4 = YumeAPINew Material;
+		diff4->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
+		diff4->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8f,0.9f,0.8f,1));
+		diff4->SetShaderParameter("FloorRoughness",0.3f);
+		diff4->SetShaderParameter("Roughness",0.3f);
+		diff4->SetShaderParameter("has_diffuse_tex",false);
+		diff4->SetShaderParameter("has_alpha_tex",false);
+		diff4->SetShaderParameter("has_specular_tex",false);
+		diff4->SetShaderParameter("has_normal_tex",false);
+		diff4->SetShaderParameter("has_roughness_tex",false);
+		dragon4->SetMaterial(diff4);
+
+		MaterialPtr diff5 = YumeAPINew Material;
+		diff5->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
+		diff5->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8,0.8,0.8,1));
+		diff5->SetShaderParameter("FloorRoughness",1);
+		diff5->SetShaderParameter("Roughness",1);
+		diff5->SetShaderParameter("has_diffuse_tex",false);
+		diff5->SetShaderParameter("has_alpha_tex",false);
+		diff5->SetShaderParameter("has_specular_tex",false);
+		diff5->SetShaderParameter("has_normal_tex",false);
+		diff5->SetShaderParameter("has_roughness_tex",false);
+		dragon5->SetMaterial(diff5);
+
+		Light* dirLight = new Light;
+		dirLight->SetName("DirLight");
+		dirLight->SetType(LT_DIRECTIONAL);
+		dirLight->SetPosition(DirectX::XMVectorSet(100,2000,200,0));
+		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
+		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
+		dirLight->SetColor(YumeColor(1,1,1,0));
+
+		scene->AddNode(dirLight);
 	}
 
 	void HelloWorld::MoveCamera(float timeStep)
 	{
-		float MOVE_SPEED = 5.0f;
-		const float MOUSE_SENSITIVITY = 0.1f;
-
-		YumeInput* input = gYume->pInput;
-
-		if(!input->HasFocus())
-			return;
-
-		//IntVector2 mouseMove = input->GetMouseMove();
-		//yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
-		//pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
-		//pitch_ = Clamp(pitch_,-90.0f,90.0f);
-
-
-		//cameraNode_->SetRotation(Quaternion(pitch_,yaw_,0.0f));
-
-		//if(input->GetKeyDown(KEY_SHIFT))
-		//	MOVE_SPEED = 35.0f;
-		//if(input->GetKeyDown('W'))
-		//	cameraNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
-		//if(input->GetKeyDown('S'))
-		//	cameraNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
-		//if(input->GetKeyDown('A'))
-		//	cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
-		//if(input->GetKeyDown('D'))
-		//	cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+		
 	}
 
 
 	void HelloWorld::HandleUpdate(float timeStep)
 	{
-		MoveCamera(timeStep);
 
-		Quaternion thisFrame(45*timeStep,Vector3(0,1,0));
-
-		cubeNode_->Rotate(thisFrame);
 	}
 
 	void HelloWorld::Setup()

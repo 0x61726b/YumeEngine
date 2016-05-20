@@ -52,7 +52,7 @@ float4 ps_show_gbuffer( in PS_INPUT input ): SV_Target
 	}
 	////Bottom right
 	if (screenPos.x > 0.5 && screenPos.y > 0.5)
-		return rt_specular.Sample(StandardFilter, screenPos * 2 - 1);
+		return rt_specular.Sample(StandardFilter, screenPos * 2 - 1).a;
 
 	return float4(0, 1, 0, 0);
 }

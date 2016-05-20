@@ -10,10 +10,15 @@
 
 cbuffer gi_parameters_ps    : register(b3)
 {
-    float gi_scale          : packoffset(c0.x);
-    float glossiness        : packoffset(c0.y);
-    uint num_vpls		    : packoffset(c0.z);
-    bool debug_gi           : packoffset(c0.w);
+    float gi_scale;
+    float glossiness;
+    uint num_vpls;
+    bool debug_gi;
+
+    bool showDiffuse;
+    bool showNormals;
+    bool showSpec;
+    bool showDepth;
 }
 
 Texture2D env_map               : register(t13);
@@ -22,7 +27,7 @@ TextureCube EnvMap               : register(t14);
 #ifndef DVCT
 float3 gi_from_vct(in float2 tc, in float3 P, in float3 N, in float3 V, in float3 diffuse, in float3 specular, in float roughness)
 {
-    return diffuse_from_vct(tc, P, N, V,1).rgb         * diffuse +
+    return diffuse_from_vct(tc, P, N, V,roughness).rgb         * diffuse +
            specular_from_vct(P, N, V, roughness).rgb * specular;
 }
 
@@ -41,9 +46,17 @@ float4 ps_vct(in PS_INPUT inp) : SV_Target
     float3 vV = mul(world_to_svo, float4(-V, 0.0)).xyz;
     return trace_cone(vP, normalize(vV), 0.001, 50, 0.1);
 #endif
+    if(showDiffuse)
+      return gb.diffuse_albedo;
 
+    if(showNormals)
+      return float4(N,1);
+    if(showDepth)
+      return (gb.depth / z_far);
+    if(showSpec)
+      return gb.specular_albedo.a;
     // if shading_mode == 2, the color is actually emissive
-    if (gb.shading_mode == 2)
+    if (gb.shading_mode == 10)
         return gb.diffuse_albedo;
 
     // ignore parts with no normals

@@ -189,7 +189,7 @@ namespace YumeEngine
 			frameTimer_.Reset();
 
 			gYume->pRenderer = (YumeAPINew YumeMiscRenderer());
-			gYume->pRenderer->Initialize();
+			gYume->pRenderer->Initialize((GISolution)gYume->pEnv->GetVariant("GI").Get<int>());
 			/*gYume->pRenderer->Setup();*/
 
 			gYume->pInput = (YumeAPINew YumeInput);

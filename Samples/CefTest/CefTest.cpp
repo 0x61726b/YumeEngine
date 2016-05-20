@@ -23,43 +23,30 @@
 #include "CefTest.h"
 #include "Logging/logging.h"
 #include "Core/YumeMain.h"
-#include "Scene/YumeOctree.h"
-#include "Renderer/YumeCamera.h"
+#include "Renderer/YumeLPVCamera.h"
+#include <boost/shared_ptr.hpp>
 
 #include "Input/YumeInput.h"
-#include "Renderer/YumeViewport.h"
 
-#include "Renderer/YumeRenderer.h"
-#include "Renderer/YumeDrawable.h"
-#include "Renderer/YumeRenderView.h"
-#include "Renderer/YumeMaterial.h"
-#include "Renderer/YumeAuxRenderer.h"
-#include "Renderer/YumeSkybox.h"
-#include "Renderer/YumeRendererEnv.h"
 #include "Renderer/YumeTexture2D.h"
-#include "Renderer/YumeRenderPass.h"
 
 #include "Renderer/YumeResourceManager.h"
 
-#include "Renderer/YumeRHI.h"
-
-#include "Renderer/YumeModel.h"
-#include "Renderer/YumeStaticModel.h"
 
 #include "Engine/YumeEngine.h"
 
-#include "Core/SharedPtr.h"
+#include "UI/YumeDebugOverlay.h"
 
-#include "UI/YumeUI.h"
+#include "Renderer/Light.h"
+#include "Renderer/StaticModel.h"
+#include "Renderer/Scene.h"
+
+#include "UI/YumeOptionsMenu.h"
 
 
 
 YUME_DEFINE_ENTRY_POINT(YumeEngine::CefTest);
 
-int LogicalToDevice(int value,float device_scale_factor) {
-	float scaled_val = static_cast<float>(value)* device_scale_factor;
-	return static_cast<int>(std::floor(scaled_val));
-}
 
 namespace YumeEngine
 {
@@ -80,112 +67,117 @@ namespace YumeEngine
 
 	void CefTest::Start()
 	{
-		BaseApplication::Start();
-
-		gYume->pTimer->AddTimeEventListener(this);
-
 		YumeResourceManager* rm_ = gYume->pResourceManager;
+		YumeMiscRenderer* renderer = gYume->pRenderer;
+		Scene* scene = renderer->GetScene();
+		YumeCamera* camera = renderer->GetCamera();
 
-		scene_ = SharedPtr<YumeScene>(new YumeScene);
-		scene_->SetName("Scene");
+		gYume->pInput->AddListener(this);
 
-		scene_->CreateComponent<Octree>();
-		scene_->CreateComponent<YumeDebugRenderer>();
+#ifndef DISABLE_CEF
+		optionsMenu_ = new YumeOptionsMenu;
+		gYume->pUI->AddUIElement(optionsMenu_);
+		optionsMenu_->SetVisible(true);
 
-		YumeSceneNode* zoneNode = scene_->CreateChild("Zone");
-		YumeRendererEnvironment* zone = zoneNode->CreateComponent<YumeRendererEnvironment>();
-		zone->SetBoundingBox(BoundingBox(-1000.0f,1000.0f));
-		zone->SetAmbientColor(YumeColor(0.15f,0.15f,0.15f));
-		zone->SetFogColor(YumeColor(0,0,0));
-		zone->SetFogStart(100.0f);
-		zone->SetFogEnd(300.0f);
+		overlay_ = new YumeDebugOverlay;
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);
+#endif
 
-		YumeSceneNode* lightNode = scene_->CreateChild("DirectionalLight");
-		lightNode->SetDirection(Vector3(0.6f,-1.0f,0.8f));
-		YumeLight* light = lightNode->CreateComponent<YumeLight>();
-		light->SetLightType(LIGHT_DIRECTIONAL);
-		light->SetCastShadows(true);
-		light->SetShadowBias(BiasParameters(0.00025f,0.5f));
-		light->SetShadowCascade(CascadeParameters(10.0f,50.0f,200.0f,0.0f,0.8f));
+		MaterialPtr leftBrowserMat = YumeAPINew Material;
+		leftBrowserMat->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(1,1,1,1));
+		leftBrowserMat->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		leftBrowserMat->SetShaderParameter("Roughness",1.0f);
+		leftBrowserMat->SetShaderParameter("ShadingMode",4.0f);
+		leftBrowserMat->SetShaderParameter("has_diffuse_tex",true);
+		leftBrowserMat->SetShaderParameter("has_alpha_tex",false);
+		leftBrowserMat->SetShaderParameter("has_specular_tex",false);
+		leftBrowserMat->SetShaderParameter("has_normal_tex",false);
+		leftBrowserMat->SetShaderParameter("has_roughness_tex",false);
 
+		MaterialPtr rightBrowserMat = YumeAPINew Material;
+		rightBrowserMat->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(1,1,1,1));
+		rightBrowserMat->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		rightBrowserMat->SetShaderParameter("Roughness",1.0f);
+		rightBrowserMat->SetShaderParameter("ShadingMode",4.0f);
+		rightBrowserMat->SetShaderParameter("has_diffuse_tex",true);
+		rightBrowserMat->SetShaderParameter("has_alpha_tex",false);
+		rightBrowserMat->SetShaderParameter("has_specular_tex",false);
+		rightBrowserMat->SetShaderParameter("has_normal_tex",false);
+		rightBrowserMat->SetShaderParameter("has_roughness_tex",false);
 
-		cameraNode_ = scene_->CreateChild("Camera");
-		cameraNode_->SetRotation(Quaternion(90.0f,0.0f,0.0f));
+		MaterialPtr middleBrowserMat = YumeAPINew Material;
+		middleBrowserMat->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(1,0.0784314f,0.576471f,1));
+		middleBrowserMat->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		middleBrowserMat->SetShaderParameter("Roughness",1.0f);
+		middleBrowserMat->SetShaderParameter("ShadingMode",4.0f);
+		middleBrowserMat->SetShaderParameter("has_diffuse_tex",true);
+		middleBrowserMat->SetShaderParameter("has_alpha_tex",false);
+		middleBrowserMat->SetShaderParameter("has_specular_tex",false);
+		middleBrowserMat->SetShaderParameter("has_normal_tex",false);
+		middleBrowserMat->SetShaderParameter("has_roughness_tex",false);
 
-		YumeCamera* camera = cameraNode_->CreateComponent<YumeCamera>();
-		cameraNode_->SetPosition(Vector3(0.0f,5.0f,-10.0f));
-		camera->SetFarClip(300.0f);
-
-
-		//Create browsers
 		
-		CefUI::CefRect browser1(0,0,1024,768);
-		int browser1Index = gYume->pUI->CreateBrowser(browser1,"http://www.google.co.uk");
+		float planeScale = 0.3f;
+
+		StaticModel* browserRightModel = CreateModel("Models/Primitives/cefplane.yume");
+		browserRightModel->SetPosition(DirectX::XMVectorSet(11,7,-2,1));
+		browserRightModel->SetRotation(DirectX::XMVectorSet(0,M_DEGTORAD * 30,-M_DEGTORAD * 90,0));
+		browserRightModel->SetScale(planeScale,planeScale,planeScale);
+		browserRightModel->SetMaterial(rightBrowserMat);
+
+		StaticModel* browserMiddleModel = CreateModel("Models/Primitives/cefplane.yume");
+		browserMiddleModel->SetPosition(DirectX::XMVectorSet(0,7,1,1));
+		browserMiddleModel->SetRotation(DirectX::XMVectorSet(0,0,-M_DEGTORAD * 90,0));
+		browserMiddleModel->SetScale(planeScale,planeScale,planeScale);
+		browserMiddleModel->SetMaterial(middleBrowserMat);
+
+		StaticModel* browserLeftModel = CreateModel("Models/Primitives/cefplane.yume");
+		browserLeftModel->SetPosition(DirectX::XMVectorSet(-11,7,-2,1));
+		browserLeftModel->SetRotation(DirectX::XMVectorSet(0,-M_DEGTORAD * 30,-M_DEGTORAD * 90,0));
+		browserLeftModel->SetScale(planeScale,planeScale,planeScale);
+		browserLeftModel->SetMaterial(leftBrowserMat);
+
+		YumeUI* pUI = gYume->pUI;
+
+		YumeUIElement* rightBrowser = new YumeUIElement(1280,720,Element,"RightBrowser");
+		rightBrowser->SetPosition(0,0);
+		rightBrowser->SetWidth(1280);
+		rightBrowser->SetHeight(900);
+		rightBrowser->SetURL("http://arkenthera.github.io/");
+		pUI->AddUIElement(rightBrowser);
+
+		YumeUIElement* leftBrowser = new YumeUIElement(1280,720,Element,"LeftBrowser");
+		leftBrowser->SetPosition(0,0);
+		leftBrowser->SetWidth(1280);
+		leftBrowser->SetHeight(720);
+		leftBrowser->SetURL("https://youtu.be/bbrnPtybNd4?t=10m20s");
+		pUI->AddUIElement(leftBrowser);
+
+		YumeUIElement* middleBrowser = new YumeUIElement(1280,720,Element,"MiddleBrowser");
+		middleBrowser->SetPosition(0,0);
+		middleBrowser->SetWidth(1280);
+		middleBrowser->SetHeight(720);
+		middleBrowser->SetURL("https://www.taleworlds.com/");
+		pUI->AddUIElement(middleBrowser);
+
+		rightBrowserMat->SetTexture(MT_DIFFUSE,rightBrowser->GetTexture());
+		leftBrowserMat->SetTexture(MT_DIFFUSE,leftBrowser->GetTexture());
+		middleBrowserMat->SetTexture(MT_DIFFUSE,middleBrowser->GetTexture());
+		
+		StaticModel* plane = CreateModel("Models/Primitives/HighPlane.yume");
+		plane->SetFloorRoughness(0);
 		
 
-		CefUI::CefRect browser2 = CefUI::CefRect(0,0,1024,768);
-		int browser2Index = gYume->pUI->CreateBrowser(browser2,"http://www.reddit.com/r/dota2");
+		Light* dirLight = new Light;
+		dirLight->SetName("DirLight");
+		dirLight->SetType(LT_DIRECTIONAL);
+		dirLight->SetPosition(DirectX::XMVectorSet(0,35,0,0));
+		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
+		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
+		dirLight->SetColor(YumeColor(1,1,1,0));
 
-
-		CefUI::CefRect browser3 = CefUI::CefRect(0,0,1024,768);
-		int browser3Index = gYume->pUI->CreateBrowser(browser2,"http://www.chiika.moe");
-
-		//
-		YumeSceneNode* screenNode = scene_->CreateChild("Screen");
-		screenNode->SetPosition(Vector3(0.0f,10.0f,-0.27f));
-		screenNode->SetRotation(Quaternion(-90.0f,0.0f,0.0f));
-		screenNode->SetScale(Vector3(20.0f,0.0f,15.0f));
-		YumeStaticModel* screenObject = screenNode->CreateComponent<YumeStaticModel>();
-		screenObject->SetModel(rm_->PrepareResource<YumeModel>("Models/Plane.mdl"));
-
-
-		SharedPtr<YumeMaterial> renderMaterial(new YumeMaterial);
-		renderMaterial->SetTechnique(0,rm_->PrepareResource<YumeRenderTechnique>("Techniques/DiffUnlit.xml"));
-		renderMaterial->SetTexture(TU_DIFFUSE,gYume->pUI->GetBrowserImage(browser1Index,false).second);
-		screenObject->SetMaterial(renderMaterial);
-
-
-		//
-		YumeSceneNode* screenNodeRight = scene_->CreateChild("Screen");
-		screenNodeRight->SetPosition(Vector3(17.0f,10.0f,-7.0f));
-		screenNodeRight->SetRotation(Quaternion(-90.0f,0.0f,45.0f));
-		screenNodeRight->SetScale(Vector3(20.0f,0.0f,15.0f));
-		YumeStaticModel* screenObjectRight = screenNodeRight->CreateComponent<YumeStaticModel>();
-		screenObjectRight->SetModel(rm_->PrepareResource<YumeModel>("Models/Plane.mdl"));
-
-		SharedPtr<YumeMaterial> renderMaterialRight(new YumeMaterial);
-		renderMaterialRight->SetTechnique(0,rm_->PrepareResource<YumeRenderTechnique>("Techniques/DiffUnlit.xml"));
-		renderMaterialRight->SetTexture(TU_DIFFUSE,gYume->pUI->GetBrowserImage(browser2Index,false).second);
-		screenObjectRight->SetMaterial(renderMaterialRight);
-		//
-
-		//
-		YumeSceneNode* screenNodeLeft = scene_->CreateChild("Screen");
-		screenNodeLeft->SetPosition(Vector3(-17.0f,10.0f,-7.0f));
-		screenNodeLeft->SetRotation(Quaternion(-90.0f,0.0f,-45.0f));
-		screenNodeLeft->SetScale(Vector3(20.0f,0.0f,15.0f));
-		YumeStaticModel* screenObjectLeft = screenNodeLeft->CreateComponent<YumeStaticModel>();
-		screenObjectLeft->SetModel(rm_->PrepareResource<YumeModel>("Models/Plane.mdl"));
-
-		SharedPtr<YumeMaterial> renderMaterialLeft(new YumeMaterial);
-		renderMaterialLeft->SetTechnique(0,rm_->PrepareResource<YumeRenderTechnique>("Techniques/DiffUnlit.xml"));
-		renderMaterialLeft->SetTexture(TU_DIFFUSE,gYume->pUI->GetBrowserImage(browser3Index,false).second);
-		screenObjectLeft->SetMaterial(renderMaterialLeft);
-		//
-
-
-		//YumeSceneNode* skyNode = scene_->CreateChild("Sky");
-		//skyNode->SetScale(500.0f); // The scale actually does not matter
-		//YumeSkybox* skybox = skyNode->CreateComponent<YumeSkybox>();
-		//skybox->SetModel(rm_->PrepareResource<YumeModel>("Models/Box.mdl"));
-		//skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Skybox.xml"));
-
-
-		SharedPtr<YumeViewport> viewport(new YumeViewport(scene_,cameraNode_->GetComponent<YumeCamera>()));
-
-		YumeRenderer* renderer = gYume->pRenderer;
-		renderer->SetViewport(0,viewport);
-
+		scene->AddNode(dirLight);
 
 	}
 
@@ -196,33 +188,7 @@ namespace YumeEngine
 
 	void CefTest::MoveCamera(float timeStep)
 	{
-		float MOVE_SPEED = 5.0f;
-		const float MOUSE_SENSITIVITY = 0.1f;
-
-		YumeInput* input = gYume->pInput;
-
-		if(!input->HasFocus())
-			return;
-
-		IntVector2 mouseMove = input->GetMouseMove();
-		yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
-		pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
-		pitch_ = Clamp(pitch_,-90.0f,90.0f);
-
-
-		cameraNode_->SetRotation(Quaternion(pitch_,yaw_,0.0f));
-
-		if(input->GetKeyDown(KEY_SHIFT))
-			MOVE_SPEED = 35.0f;
-		if(input->GetKeyDown('W'))
-			cameraNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('S'))
-			cameraNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('A'))
-			cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('D'))
-			cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
-
+		
 	}
 
 

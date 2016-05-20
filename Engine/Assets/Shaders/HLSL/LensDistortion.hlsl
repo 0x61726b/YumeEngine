@@ -28,7 +28,7 @@ float4 ps_lens(in PS_INPUT inp) : SV_TARGET
 
   float2 tex = inp.tex_coord;
 
-  float k = -0.15;
+  float k = -0.20;
 
   float kcube = 0.15;
 

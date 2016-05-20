@@ -58,6 +58,10 @@
         <Param Name="light_vp_inv" />
         <Param Name="bb_min" />
         <Param Name="bb_max" />
+        <Param Name="showDiffuse" Value="false" />
+        <Param Name="showNormals" Value="false" />
+        <Param Name="showSpec" Value="false" />
+        <Param Name="showDepth" Value="false" />
       </Parameters>
     </Triangle>
     <Scene PassName="Skybox" Identifier="Main" Flags="SKYBOX" Output="Backbuffer"/>

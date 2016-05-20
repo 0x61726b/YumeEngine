@@ -48,6 +48,8 @@ namespace YumeEngine
 	class YumeWorkQueue;
 	class YumeInput;
 
+	
+
 	class YumeAPIExport YumeEngine3D : public YumeBase
 	{
 	public:

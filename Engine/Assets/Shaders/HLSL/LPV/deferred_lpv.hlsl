@@ -10,10 +10,15 @@
 
 cbuffer gi_parameters_ps        : register(b3)
 {
-    float gi_scale              : packoffset(c0.x);
-    float lpv_flux_amplifier    : packoffset(c0.y);
-    uint num_vpls				: packoffset(c0.z);
-    bool debug_gi               : packoffset(c0.w);
+    float gi_scale;
+    float lpv_flux_amplifier;
+    uint num_vpls;
+    bool debug_gi;
+
+    bool showDiffuse;
+    bool showNormals;
+    bool showSpec;
+    bool showDepth;
 }
 
 Texture2D env_map               : register(t13);
@@ -28,6 +33,16 @@ float4 deferred_lpv_ps(PS_INPUT inp) : SV_Target
 
     // view
 	float3 V = -normalize(inp.view_ray.xyz);
+
+  if(showDiffuse)
+    return gb.diffuse_albedo;
+
+  if(showNormals)
+    return float4(N,1);
+  if(showDepth)
+    return gb.depth / 1000;
+  if(showSpec)
+    return gb.specular_albedo.a;
 
 	// if diffuse_albedo has alpha = 0, the color is actually emissive
 	if (gb.diffuse_albedo.a == 0.0)
@@ -68,14 +83,8 @@ float4 deferred_lpv_ps(PS_INPUT inp) : SV_Target
 	float attenuation = shadow_attenuation(pos, Ll, rt_rsm_lineardepth, 0.0, 0.0);
 
   float3 Rr = 0;
-  if(gb.shading_mode == 10)
-  {
-    float3 toEye = camera_pos - pos;
-    float3 incident = -toEye;
-    float3 reflection = reflect(incident,N);
-
-    Rr = EnvMap.Sample(StandardFilter,reflection) * 1.0f;
-  }
+  if (gb.shading_mode == 10)
+      return gb.diffuse_albedo;
 
 	// brdf
   float3 f = brdf(L, V, N, gb.diffuse_albedo.rgb, gb.specular_albedo.rgb, roughness);

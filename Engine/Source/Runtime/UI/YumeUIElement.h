@@ -29,11 +29,18 @@ namespace YumeEngine
 {
 	class YumeTexture2D;
 
+
+	enum UIElementType
+	{
+		Overlay = 0,
+		Element
+	};
+
 	class YumeAPIExport YumeUIElement :
 		public YumeBase
 	{
 	public:
-		YumeUIElement(int width,int height,const YumeString& name = "UIElement");
+		YumeUIElement(int width,int height,UIElementType type = Overlay,const YumeString& name = "UIElement");
 		virtual ~YumeUIElement();
 
 		void AddBinding(YumeUIBinding* binding);
@@ -65,6 +72,7 @@ namespace YumeEngine
 		const YumeString& GetName() const { return name_; }
 		unsigned GetBrowserIndex() const { return browserIndex_; }
 		bool GetVisible() const {return visible_; }
+		UIElementType GetType() const {return type_; }
 
 	protected:
 		YumeTexture2D* texture_;
@@ -72,6 +80,8 @@ namespace YumeEngine
 		UIBindings::type bindings_;
 		YumeString name_;
 		YumeString url_;
+		UIElementType type_;
+
 		unsigned browserIndex_;
 		bool visible_;
 		bool bindingsNeedUpdate_;

@@ -56,6 +56,7 @@ namespace YumeEngine
 
 		virtual void HandlePostRenderUpdate(float timeStep);
 
+		void ToggleShaderParameter(YumeHash param);
 		void SetupWindowProperties();
 
 		YumeSceneNode* cameraNode_;
@@ -68,6 +69,8 @@ namespace YumeEngine
 
 		float yaw_;
 		float pitch_;
+
+		bool toggleGDebug_;
 
 		bool drawDebug_;
 	};

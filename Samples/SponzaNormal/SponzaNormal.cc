@@ -9,7 +9,7 @@
 
 
 #include "Core/YumeHeaders.h"
-#include "GodRays.h"
+#include "SponzaNormal.h"
 #include "Logging/logging.h"
 #include "Core/YumeMain.h"
 #include "Renderer/YumeLPVCamera.h"
@@ -68,13 +68,14 @@ namespace YumeEngine
 		gYume->pInput->AddListener(this);
 
 #ifndef DISABLE_CEF
-		/*overlay_ = new YumeDebugOverlay;
-		gYume->pUI->AddUIElement(overlay_);
-		overlay_->SetVisible(true);*/
 
 		optionsMenu_ = new YumeOptionsMenu;
 		gYume->pUI->AddUIElement(optionsMenu_);
 		optionsMenu_->SetVisible(true);
+
+		overlay_ = new YumeDebugOverlay;
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);
 #endif
 
 		MaterialPtr emissiveBlue = YumeAPINew Material;
@@ -111,22 +112,9 @@ namespace YumeEngine
 		emissivePink->SetShaderParameter("has_roughness_tex",false);
 
 
-		float boxScale = 0.15f;
+		StaticModel* jeyjeyModel = CreateModel("Models/sponza/sponza.yume");
 
-		boxBlue = CreateModel("Models/Primitives/box.yume",DirectX::XMFLOAT3(2,5,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(1,1,1));
-		boxBlue->SetMaterial(emissiveBlue);
-		boxBlue->SetScale(boxScale ,boxScale ,boxScale );
-
-		boxRed = CreateModel("Models/Primitives/box.yume",DirectX::XMFLOAT3(2,16.2f,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(1,1,1));
-		boxRed->SetMaterial(emissiveRed);
-		boxRed->SetScale(boxScale ,boxScale ,boxScale );
-
-		boxPink = CreateModel("Models/Primitives/box.yume",DirectX::XMFLOAT3(-7,8,5),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(1,1,1));
-		boxPink->SetMaterial(emissivePink);
-		boxPink->SetScale(boxScale ,boxScale ,boxScale );
-
-		StaticModel* jeyjeyModel = CreateModel("Models/cornell/cornell-empty.yume");
-
+		jeyjeyModel->SetFloorRoughness(0);
 
 		Light* dirLight = new Light;
 		dirLight->SetName("DirLight");
@@ -135,6 +123,74 @@ namespace YumeEngine
 		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
 		dirLight->SetColor(YumeColor(1,1,1,0));
+
+		Light* pointLight = new Light;
+		pointLight->SetName("PointLight");
+		pointLight->SetType(LT_POINT);
+		pointLight->SetPosition(DirectX::XMVectorSet(46,550,80,0),true);
+		pointLight->SetColor(YumeColor(1,1,1,0));
+		pointLight->SetRange(500);
+
+		Light* pointLight2 = new Light;
+		pointLight2->SetName("PointLight");
+		pointLight2->SetType(LT_POINT);
+		pointLight2->SetPosition(DirectX::XMVectorSet(-700,550,80,0),true);
+		pointLight2->SetColor(YumeColor(1,1,1,0));
+		pointLight2->SetRange(500);
+
+		Light* pointLight3 = new Light;
+		pointLight3->SetName("PointLight");
+		pointLight3->SetType(LT_POINT);
+		pointLight3->SetPosition(DirectX::XMVectorSet(1140,218,65,0),true);
+		pointLight3->SetColor(YumeColor(1,1,1,0));
+		pointLight3->SetRange(500);
+
+		Light* pointLight4 = new Light;
+		pointLight4->SetName("PointLight");
+		pointLight4->SetType(LT_POINT);
+		pointLight4->SetPosition(DirectX::XMVectorSet(-800,50,465,0),true);
+		pointLight4->SetColor(YumeColor(1,0,0,0));
+		pointLight4->SetRange(500);
+
+		Light* pointLight5 = new Light;
+		pointLight5->SetName("PointLight");
+		pointLight5->SetType(LT_POINT);
+		pointLight5->SetPosition(DirectX::XMVectorSet(-350,50,465,0),true);
+		pointLight5->SetColor(YumeColor(0,0,1,0));
+		pointLight5->SetRange(500);
+
+		Light* pointLight6 = new Light;
+		pointLight6->SetName("PointLight");
+		pointLight6->SetType(LT_POINT);
+		pointLight6->SetPosition(DirectX::XMVectorSet(50,50,465,0),true);
+		pointLight6->SetColor(YumeColor(0,1,0,0));
+		pointLight6->SetRange(500);
+
+		Light* pointLight7 = new Light;
+		pointLight7->SetName("PointLight");
+		pointLight7->SetType(LT_POINT);
+		pointLight7->SetPosition(DirectX::XMVectorSet(500,50,465,0),true);
+		pointLight7->SetColor(YumeColor(1,0,0,0));
+		pointLight7->SetRange(500);
+
+		Light* pointLight8 = new Light;
+		pointLight8->SetName("PointLight");
+		pointLight8->SetType(LT_POINT);
+		pointLight8->SetPosition(DirectX::XMVectorSet(950,50,465,0),true);
+		pointLight8->SetColor(YumeColor(0,0,1,0));
+		pointLight8->SetRange(500);
+
+		scene->AddNode(pointLight);
+		scene->AddNode(pointLight2);
+		scene->AddNode(pointLight3);
+		scene->AddNode(pointLight4);
+		scene->AddNode(pointLight5);
+		scene->AddNode(pointLight6);
+		scene->AddNode(pointLight7);
+		scene->AddNode(pointLight8);
+
+
+
 
 		scene->AddNode(dirLight);
 	}
@@ -148,33 +204,7 @@ namespace YumeEngine
 
 	void GodRays::HandleUpdate(float timeStep)
 	{
-		const float YOrbitRadius = 5.f;
-		const float ZOrbitRadius = 5.f;
-		const float XOrbitRadius = 8;
-		angle1_ += M_PI * 0.1f * timeStep;
-		updown1_ += M_PI * 0.8f * timeStep;
-		leftRight1_ += M_PI * 0.34f * timeStep;
 
-		if(updown1_ > M_PI * 2)
-			updown1_ = 0.0f;
-
-		DirectX::XMVECTOR blueRot = DirectX::XMVectorSet(-angle1_,angle1_,0,0);
-		DirectX::XMVECTOR bluePos = DirectX::XMVectorAdd(DirectX::XMLoadFloat4(&boxBlue->GetInitialPosition()),DirectX::XMVectorSet(cosf(leftRight1_) * XOrbitRadius,0,sinf(leftRight1_) * ZOrbitRadius,0));
-
-		boxBlue->SetRotation(blueRot);
-		boxBlue->SetPosition(bluePos);
-
-		DirectX::XMVECTOR redRot = DirectX::XMVectorSet(-angle1_,angle1_,0,0);
-		DirectX::XMVECTOR redPos = DirectX::XMVectorAdd(DirectX::XMLoadFloat4(&boxRed->GetInitialPosition()),DirectX::XMVectorSet(cosf(updown1_) * YOrbitRadius,0,0,0));
-
-		boxRed->SetRotation(redRot);
-		boxRed->SetPosition(redPos);
-
-		DirectX::XMVECTOR pinkRot = DirectX::XMVectorSet(-angle1_,angle1_,0,0);
-		DirectX::XMVECTOR pinkPos = DirectX::XMVectorAdd(DirectX::XMLoadFloat4(&boxPink->GetInitialPosition()),DirectX::XMVectorSet(0,sinf(leftRight1_) * YOrbitRadius,0,0));
-
-		boxPink->SetRotation(pinkRot);
-		boxPink->SetPosition(pinkPos);
 	}
 	void GodRays::HandleRenderUpdate(float timeStep)
 	{

@@ -127,6 +127,8 @@ namespace YumeEngine
 			float roughness = m->ReadFloat();
 			float refractiveIndex = m->ReadFloat();
 
+			roughness = 1;
+
 			YumeString diffuse_tex = m->ReadString();
 			YumeString alpha_tex = m->ReadString();
 			YumeString emissive_tex = m->ReadString();
@@ -136,13 +138,25 @@ namespace YumeEngine
 
 			SharedPtr<Material> material(new Material);
 
+			if(i == 0 && modelName_ == "Models/Primitives/HighPlane.yume")
+			{
+				floorMaterial_ = material;
+				specularColor = DirectX::XMFLOAT4(1,1,1,1);
+			}
+
 			if(!diffuse_tex.Compare("textures_pbr\\Sponza_Floor_diffuse.tga"))
 			{
 				floorMaterial_ = material;
 				shadingmMode = 0.0f;
+				specularColor = DirectX::XMFLOAT4(1,1,1,1);
 			}
 			else
 				shadingmMode = 0.0f;
+
+			if(modelName_ == "Models/DarkSouls/Ornstein/c5270outout.yume") //Whoops..
+			{
+				diffuseColor = DirectX::XMFLOAT4(0,0,0,1);
+			}
 
 			material->SetShaderParameter("DiffuseColor",diffuseColor);
 			material->SetShaderParameter("EmissiveColor",emissiveColor);
@@ -150,7 +164,6 @@ namespace YumeEngine
 			material->SetShaderParameter("ShadingMode",shadingmMode);
 			material->SetShaderParameter("Roughness",roughness);
 			material->SetShaderParameter("FloorRoughness",roughness);
-
 
 			material->SetShaderParameter("has_diffuse_tex",true);
 			material->SetShaderParameter("has_alpha_tex",true);
@@ -202,7 +215,7 @@ namespace YumeEngine
 
 	void StaticModel::SetFloorRoughness(float f)
 	{
-		floorMaterial_->SetShaderParameter("FloorRoughness",f);
+		floorMaterial_->SetShaderParameter("Roughness",f);
 	}
 
 	void StaticModel::SetMaterial(MaterialPtr ptr)

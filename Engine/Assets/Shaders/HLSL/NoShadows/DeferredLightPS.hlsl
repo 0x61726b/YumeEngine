@@ -30,6 +30,11 @@ cbuffer LightParameters : register(b3)
   float4 LightColor;
   float4 LightPosition;
   float4 LightDirection;
+
+  bool showDiffuse;
+  bool showNormals;
+  bool showSpec;
+  bool showDepth;
 }
 
 #ifdef POINTLIGHT_STANDARD
@@ -65,6 +70,8 @@ float toksvig_ft(in float3 Na, in float roughness)
     return len/lerp(s, 1, len);
 }
 
+#ifdef DIRECTIONALLIGHT
+
 float4 ps_df_pbr(in PS_INPUT_POS inp) : SV_Target
 {
   gbuffer gb = unpack_gbuffer(inp.TexCoord);
@@ -75,6 +82,19 @@ float4 ps_df_pbr(in PS_INPUT_POS inp) : SV_Target
 
   if (dot(gb.normal, gb.normal) == 0)
         return gb.diffuse_albedo * float4(main_light.color.rgb, 1.0);
+
+  if(gb.shading_mode == 10)
+    return gb.diffuse_albedo;
+
+  if(showDiffuse)
+    return gb.diffuse_albedo;
+
+  if(showNormals)
+    return float4(N,1);
+  if(showDepth)
+    return gb.depth / 1000;
+  if(showSpec)
+    return gb.specular_albedo;
 
   float3 P = camera_pos + (-V * gb.depth);
 
@@ -88,7 +108,7 @@ float4 ps_df_pbr(in PS_INPUT_POS inp) : SV_Target
   const float3 lcolor = float3(1,1,1);
 
   float power = 1;
-  float3 Li = M_PI * (power * get_spotlight(L, N) * lcolor) / pow(length(Ll),2);
+  float3 Li = M_PI * (power * main_light.color.rgb) / pow(length(Ll),2);
 
   float3 f = brdf(L, V, N, gb.diffuse_albedo.rgb, gb.specular_albedo.rgb, roughness);
 
@@ -98,21 +118,15 @@ float4 ps_df_pbr(in PS_INPUT_POS inp) : SV_Target
 
   toEye /= length(toEye);
 
-  float3 Rr = 0;
-  if(gb.shading_mode == 10)
-  {
-    float3 toEye = camera_pos - P;
-    float3 reflectionColor = 0;
-    float3 incident = -toEye;
-    float3 reflection = reflect(incident,N);
-    Rr = EnvMap.Sample(StandardFilter,reflection) * roughness;
-  }
 
-  float3 T0 = Rr;
+
+  float3 T0 = 0;
 
   return float4(max(T0 + T1,0.0f),1.0f);
 }
 
+
+#endif
 float4 ps_df(in PS_INPUT_POS inp) : SV_Target
 {
   float4 screenPos = inp.Position;

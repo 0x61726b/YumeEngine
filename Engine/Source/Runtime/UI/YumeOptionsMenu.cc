@@ -32,7 +32,7 @@
 namespace YumeEngine
 {
 	YumeOptionsMenu::YumeOptionsMenu()
-		: YumeUIElement(1600,900,"OptionsMenu"),
+		: YumeUIElement(1600,900,Overlay,"OptionsMenu"),
 		lightWarmth(0),
 		lightFlux(0)
 	{
@@ -64,6 +64,7 @@ namespace YumeEngine
 		SetURL(path.c_str());
 
 		gYume->pUI->AddDOMListener(this);
+
 
 
 		return true;
@@ -276,8 +277,6 @@ namespace YumeEngine
 				RenderPass* dp = gYume->pRenderer->GetDefaultPass();
 
 				float value = atof(data.c_str());
-
-				value /= 50;
 
 				dp->SetShaderParameter("gi_scale",value);
 

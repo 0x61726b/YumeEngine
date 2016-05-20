@@ -66,7 +66,7 @@ float ps_adapt_exposure(in PS_INPUT inp) : SV_Target
     float last_lum = rt_pp_one.Load(uint3(0, 0, 0)).x;
 
     float v = last_lum + (curr_lum - last_lum) * (1 - exp(-time_delta * exposure_speed));
-    return 0.5f;
+    return v;
 }
 
 float4 ps_bloom_treshold(in PS_INPUT inp) : SV_TARGET

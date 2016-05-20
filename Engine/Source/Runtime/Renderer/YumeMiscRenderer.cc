@@ -52,12 +52,6 @@ using namespace DirectX;
 //#define DYNAMIC_ENV_MAP
 
 
-#define GIS_NO_GI 0
-#define GIS_LPV 1
-#define GIS_SVO 2
-
-#define GI_SOLUTION GIS_LPV
-
 #define CAMERA_MOVE_SPEED 200
 
 
@@ -179,10 +173,9 @@ namespace YumeEngine
 
 	YumeMiscRenderer::~YumeMiscRenderer()
 	{
-
-
 	}
-	void YumeMiscRenderer::Initialize()
+
+	void YumeMiscRenderer::Initialize(GISolution gi)
 	{
 		float width = gYume->pRHI->GetWidth();
 		float height = gYume->pRHI->GetHeight();
@@ -195,42 +188,46 @@ namespace YumeEngine
 
 		/*defaultPass_->Load("RenderCalls/Deferred.xml");*/
 
-#if GI_SOLUTION == GIS_LPV
-		defaultPass_->Load("RenderCalls/ReflectiveShadowMap.xml");
-		defaultPass_->Load("RenderCalls/LightPropagationVolume.xml");
-		defaultPass_->Load("RenderCalls/DeferredGI.xml");
-		//defaultPass_->Load("RenderCalls/LensFlare.xml",true);
+		if(gi == LPV)
+		{
+			defaultPass_->Load("RenderCalls/ReflectiveShadowMap.xml");
+			defaultPass_->Load("RenderCalls/LightPropagationVolume.xml");
+			defaultPass_->Load("RenderCalls/DeferredGI.xml");
 
-		defaultPass_->Load("RenderCalls/Bloom.xml",true);
-		defaultPass_->Load("RenderCalls/FXAA.xml",true);
-		//defaultPass_->Load("RenderCalls/DepthOfField.xml",true);
-		defaultPass_->Load("RenderCalls/LensDistortion.xml",true);
+			giVolume_ = new LightPropagationVolume();
+
+			giVolume_->Create(32);
+
+			curr_ = 0;
+			next_ = 1;
 
 
-		giVolume_ = new LightPropagationVolume();
 
-		giVolume_->Create(32);
+		}
+		if(gi == SVO)
+		{
+			defaultPass_->Load("RenderCalls/ReflectiveShadowMap.xml");
+			defaultPass_->Load("RenderCalls/SparseVoxelOctree.xml");
+			defaultPass_->Load("RenderCalls/DeferredGISVO.xml");
+			defaultPass_->Load("RenderCalls/Bloom.xml",true);
+			defaultPass_->Load("RenderCalls/FXAA.xml",true);
+			//defaultPass_->Load("RenderCalls/Godrays.xml",true);
+			/*defaultPass_->DisableRenderCalls("Bloom");*/
 
-		curr_ = 0;
-		next_ = 1;
-#elif GI_SOLUTION == GIS_SVO
-		defaultPass_->Load("RenderCalls/ReflectiveShadowMap.xml");
-		defaultPass_->Load("RenderCalls/SparseVoxelOctree.xml");
-		defaultPass_->Load("RenderCalls/DeferredGISVO.xml");
-		defaultPass_->Load("RenderCalls/Bloom.xml",true);
-		defaultPass_->Load("RenderCalls/FXAA.xml",true);
-		//defaultPass_->Load("RenderCalls/Godrays.xml",true);
-		/*defaultPass_->DisableRenderCalls("Bloom");*/
+			giVolume_ = new SparseVoxelOctree();
 
-		giVolume_ = new SparseVoxelOctree();
-
-		giVolume_->Create(256);
-#elif GI_SOLUTION == GIS_NO_GI
-		giVolume_ = 0;
-		giEnabled_ = false;
-		defaultPass_->Load("RenderCalls/Deferred.xml");
-
-#endif
+			giVolume_->Create(256);
+		}
+		if(gi == NoGI)
+		{
+			giVolume_ = 0;
+			giEnabled_ = false;
+			defaultPass_->Load("RenderCalls/Deferred.xml");
+			defaultPass_->Load("RenderCalls/Bloom.xml",true);
+			defaultPass_->Load("RenderCalls/FXAA.xml",true);
+			defaultPass_->Load("RenderCalls/LensDistortion.xml",true);
+			defaultPass_->Load("RenderCalls/ShowGBuffer.xml",true);
+		}
 
 		Setup();
 
@@ -257,6 +254,7 @@ namespace YumeEngine
 			5,4,1,1,0,5,   // Top
 			3,2,7,7,6,3    // Bottom
 		};
+
 
 
 		SharedPtr<YumeVertexBuffer> skyVb(rhi_->CreateVertexBuffer());
@@ -1893,13 +1891,25 @@ namespace YumeEngine
 				rhi_->SetShaders(deferredLightVs,deferredLightPs);
 			}
 
-
-
 			XMMATRIX volumeTransform = DirectX::XMMatrixTranslationFromVector(DirectX::XMVectorSet(light->GetPosition().x,light->GetPosition().y,light->GetPosition().z,1.0f));
 			volumeTransform = DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(light->GetRange(),light->GetRange(),light->GetRange()),volumeTransform);
 
 			SetCameraParameters(false,camera_);
+			ApplyShaderParameters(call);
 
+			Light* dirlight = static_cast<Light*>(scene_->GetDirectionalLight());
+
+			const DirectX::XMFLOAT4& pos = dirlight->GetPosition();
+			const DirectX::XMFLOAT4& dir = dirlight->GetDirection();
+			const YumeColor& color = dirlight->GetColor();
+
+			const unsigned fSize = 4 * 3 * 4;
+			float f[fSize] ={
+				pos.x,pos.y,pos.z,pos.w,
+				dir.x,dir.y,dir.z,dir.w,
+				color.r_,color.g_,color.b_,color.a_
+			};
+			rhi_->SetShaderParameter("main_light",f,4*3);
 
 
 			XMMATRIX wv = DirectX::XMMatrixMultiply(volumeTransform,camera_->ViewMatrix());
@@ -1926,6 +1936,7 @@ namespace YumeEngine
 
 			SetGBufferShaderParameters(IntVector2(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight()),IntRect(0,0,gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight()));
 
+
 			if(light->GetType() == LT_POINT)
 				pointLightGeometry_->Draw(rhi_);
 			else
@@ -1940,9 +1951,10 @@ namespace YumeEngine
 			rhi_->SetDepthEnable(oldDepthState);
 
 
-
 			rhi_->BindResetTextures(0,MAX_TEXTURE_UNITS,true);
 		}
+
+
 		rhi_->BindResetRenderTargets(1);
 		rhi_->SetBindReadOnlyDepthStencil(false);
 	}

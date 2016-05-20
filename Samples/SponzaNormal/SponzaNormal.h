@@ -16,11 +16,11 @@ namespace YumeEngine
 	class YumeScene;
 	class YumeSceneNode;
 
-	class AODemo : public BaseApplication
+	class GodRays : public BaseApplication
 	{
 	public:
-		AODemo();
-		~AODemo();
+		GodRays();
+		~GodRays();
 
 		virtual void Start();
 		virtual void Setup();
@@ -29,6 +29,16 @@ namespace YumeEngine
 
 		virtual void HandleUpdate(float timeStep);
 		virtual void HandleRenderUpdate(float timeStep);
+
+
+		StaticModel* boxBlue;
+		StaticModel* boxRed;
+		StaticModel* boxPink;
+
+		float angle1_;
+
+		float updown1_;
+		float leftRight1_;
 	};
 }
 

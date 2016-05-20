@@ -33,6 +33,10 @@ add_subdirectory(AmbientOcclusion1)
 
 add_subdirectory(GodRays)
 
+add_subdirectory(SponzaNormal)
+
+add_subdirectory(PostProcessing)
+
 if(NOT OS_MACOSX)
   #add_subdirectory(TestSuite)
 endif()

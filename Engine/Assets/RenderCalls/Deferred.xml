@@ -25,7 +25,14 @@
         <Rt Index="3" Name="SCENE_SPECULAR"/>
       </Outputs>
     </Scene>
-    <Scene PassName="DeferredLights" Identifier="Main" Flags="DEFERRED_LIGHTS" Output="Backbuffer"/>
+    <Scene PassName="DeferredLights" Identifier="Main" Flags="DEFERRED_LIGHTS" Output="Backbuffer">
+      <Parameters>
+        <Param Name="showDiffuse" Value="false" />
+        <Param Name="showNormals" Value="false" />
+        <Param Name="showSpec" Value="false" />
+        <Param Name="showDepth" Value="false" />
+      </Parameters>
+    </Scene>
     <Scene PassName="Skybox" Identifier="Main" Flags="SKYBOX" Output="Backbuffer"/>
   </RenderCalls>
 </Yume>

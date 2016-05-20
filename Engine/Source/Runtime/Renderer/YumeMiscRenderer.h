@@ -40,6 +40,13 @@ namespace YumeEngine
 	class SceneNode;
 	class GIVolume;
 
+	enum GISolution
+	{
+		NoGI = 0,
+		SVO = 1,
+		LPV = 2
+	};
+
 	class YumeAPIExport YumeMiscRenderer : 
 		public YumeBase,
 		public EngineEventListener
@@ -49,7 +56,7 @@ namespace YumeEngine
 		virtual ~YumeMiscRenderer();
 
 		void Setup();
-		void Initialize();
+		void Initialize(GISolution gi = GISolution::NoGI);
 
 
 		//New era starts here
@@ -148,6 +155,8 @@ namespace YumeEngine
 		void UpdateLights();
 
 		float cameraMoveSpeed_;
+
+		GISolution gi_;
  		//~
 
 		void Render();

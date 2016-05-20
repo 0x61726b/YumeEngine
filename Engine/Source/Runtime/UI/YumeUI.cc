@@ -184,12 +184,14 @@ namespace YumeEngine
 		int width,
 		int height)
 	{
-		if(!renderUI_)
-			return;
 		if(uiElements_.size())
 		{
 			YumeUIElement* element = uiElements_[browserIndex];
-			if(element)
+			if(element && element->GetType() == Element)
+			{
+				element->GetTexture()->SetData(0,0,0,width,height,buffer);
+			}
+			else if(element->GetType() == Overlay && renderUI_)
 				element->GetTexture()->SetData(0,0,0,width,height,buffer);
 		}
 	}

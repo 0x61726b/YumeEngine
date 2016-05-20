@@ -30,12 +30,13 @@
 
 namespace YumeEngine
 {
-	YumeUIElement::YumeUIElement(int width,int height,const YumeString& name)
+	YumeUIElement::YumeUIElement(int width,int height,UIElementType type,const YumeString& name)
 		: name_(name),
 		url_(String::EMPTY),
 		texture_(0),
 		browserIndex_(0),
-		visible_(false)
+		visible_(false),
+		type_(type)
 	{
 		rect_ = IntRect(0,0,width,height);
 	}

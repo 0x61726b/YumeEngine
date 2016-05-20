@@ -71,7 +71,7 @@ namespace YumeEngine
 		m_NumSteps		    = 8;
 		m_Contrast          = 1.25f;
 		m_Attenuation       = 1.0f;
-		m_AORadius			= 25;
+		m_AORadius			= 1;
 
 		m_BlurRadius     = 7;
 		m_Sharpness      = 16.0f;
@@ -115,92 +115,6 @@ namespace YumeEngine
 		diff->SetShaderParameter("has_roughness_tex",false);
 
 
-		StaticModel* dragon= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(0,0,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
-		dragon->SetMaterial(diff);
-		dragon->SetPosition(DirectX::XMVectorSet(0,25,0,0));
-		StaticModel* sponza = CreateModel("Models/cornell/cornell-empty.yume");
-		sponza->SetRotation(DirectX::XMVectorSet(0,180 * M_DEGTORAD,0,1));
-
-		gYume->pRenderer->GetCamera()->SetPosition(DirectX::XMVectorSet(0,5,20,1));
-		gYume->pRenderer->GetCamera()->SetLookAt(DirectX::XMFLOAT3(0,5,20),DirectX::XMFLOAT3(0,0,0),DirectX::XMFLOAT3(0,1,0));
-
-#ifdef PBR_TEST_SPONZA
-		StaticModel* dragon= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(-40,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
-		StaticModel* dragon2= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(0,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
-		StaticModel* dragon3= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(40,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
-		StaticModel* dragon4= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(80,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
-		StaticModel* dragon5= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(120,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
-
-		StaticModel* sponza = CreateModel("Models/sponza/sponza.yume");
-
-
-		MaterialPtr diff = YumeAPINew Material;
-		diff->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
-		diff->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
-		diff->SetShaderParameter("FloorRoughness",0.05f);
-		diff->SetShaderParameter("Roughness",0.05f);
-		diff->SetShaderParameter("has_diffuse_tex",false);
-		diff->SetShaderParameter("has_alpha_tex",false);
-		diff->SetShaderParameter("has_specular_tex",false);
-		diff->SetShaderParameter("has_normal_tex",false);
-		diff->SetShaderParameter("has_roughness_tex",false);
-		dragon->SetMaterial(diff);
-
-		MaterialPtr diff2 = YumeAPINew Material;
-		diff2->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
-		diff2->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8f,0.8f,0.8f,1));
-		diff2->SetShaderParameter("FloorRoughness",0.05f);
-		diff2->SetShaderParameter("Roughness",0.05f);
-		diff2->SetShaderParameter("has_diffuse_tex",false);
-		diff2->SetShaderParameter("has_alpha_tex",false);
-		diff2->SetShaderParameter("has_specular_tex",false);
-		diff2->SetShaderParameter("has_normal_tex",false);
-		diff2->SetShaderParameter("has_roughness_tex",false);
-		dragon2->SetMaterial(diff2);
-
-
-		MaterialPtr diff3 = YumeAPINew Material;
-		diff3->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
-		diff3->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8f,0.8f,0.8f,1));
-		diff3->SetShaderParameter("FloorRoughness",0.129f);
-		diff3->SetShaderParameter("Roughness",0.129f);
-		diff3->SetShaderParameter("has_diffuse_tex",false);
-		diff3->SetShaderParameter("has_alpha_tex",false);
-		diff3->SetShaderParameter("has_specular_tex",false);
-		diff3->SetShaderParameter("has_normal_tex",false);
-		diff3->SetShaderParameter("has_roughness_tex",false);
-		dragon3->SetMaterial(diff3);
-
-		MaterialPtr diff4 = YumeAPINew Material;
-		diff4->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
-		diff4->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8f,0.9f,0.8f,1));
-		diff4->SetShaderParameter("FloorRoughness",0.3f);
-		diff4->SetShaderParameter("Roughness",0.3f);
-		diff4->SetShaderParameter("has_diffuse_tex",false);
-		diff4->SetShaderParameter("has_alpha_tex",false);
-		diff4->SetShaderParameter("has_specular_tex",false);
-		diff4->SetShaderParameter("has_normal_tex",false);
-		diff4->SetShaderParameter("has_roughness_tex",false);
-		dragon4->SetMaterial(diff4);
-
-		MaterialPtr diff5 = YumeAPINew Material;
-		diff5->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
-		diff5->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(0.8,0.8,0.8,1));
-		diff5->SetShaderParameter("FloorRoughness",1);
-		diff5->SetShaderParameter("Roughness",1);
-		diff5->SetShaderParameter("has_diffuse_tex",false);
-		diff5->SetShaderParameter("has_alpha_tex",false);
-		diff5->SetShaderParameter("has_specular_tex",false);
-		diff5->SetShaderParameter("has_normal_tex",false);
-		diff5->SetShaderParameter("has_roughness_tex",false);
-		dragon5->SetMaterial(diff5);
-
-		//dragon3->SetMaterial(diff);
-
-		/*StaticModel* yume = CreateModel("Models/Yume/yume.yume",DirectX::XMFLOAT3(0,0,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(50,50,50));*/
-
-#endif
-
 		DirectX::XMFLOAT3 min = gYume->pRenderer->GetMinBb();
 		DirectX::XMFLOAT3 max = gYume->pRenderer->GetMaxBb();
 
@@ -214,22 +128,30 @@ namespace YumeEngine
 		dirLight->SetName("DirLight");
 		dirLight->SetType(LT_DIRECTIONAL);
 		/*dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));*/
-		dirLight->SetPosition(DirectX::XMVectorSet(0,25,0,0));
+		dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));
 		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
 		dirLight->SetColor(YumeColor(1,1,1,0));
 
+		
+		StaticModel* jeyjeyModel = CreateModel("Models/dragon/dragon.yume");
 
+		StaticModel* mitsubaLeft = CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(-5,0,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(2.3f,2.3f,2.3f));
+		StaticModel* mitsubaRight = CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(5,0,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(2.3f,2.3f,2.3f));
 
-		/*CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,45);*/
-		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,60);
-		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,90);
-		//CreateCircleOfPointLights(DirectX::XMFLOAT3(0,0,0),30,120);
+		mitsubaLeft->SetMaterial(diff);
+		mitsubaRight->SetMaterial(diff);
 
+		StaticModel* dragon= CreateModel("Models/cornell/cornell-empty.yume");
+		jeyjeyModel->SetScale(18,18,18);
+		jeyjeyModel->SetPosition(DirectX::XMVectorSet(0,10,0,1));
+		jeyjeyModel->SetRotation(DirectX::XMVectorSet(0,M_DEGTORAD * 90,0,1));
 
-
-		/*CreateLight(DirectX::XMFLOAT3(0,19,-15),YumeColor(1,1,1),40);*/
-		/*CreateLight(DirectX::XMFLOAT3(0,10,0),YumeColor(1,1,1),40);*/
+		RenderPass* dp = gYume->pRenderer->GetDefaultPass();
+		//dp->Load("RenderCalls/Bloom.xml",true);
+		dp->Load("RenderCalls/FXAA.xml",true);
+		dp->Load("RenderCalls/LensDistortion.xml",true);
+		dp->Load("RenderCalls/SSAO.xml",true);
 
 		gYume->pRenderer->GetScene()->AddNode(dirLight);
 
@@ -432,5 +354,6 @@ namespace YumeEngine
 
 		engineVariants_["WindowWidth"] = 1600;
 		engineVariants_["WindowHeight"] = 900;
+		engineVariants_["GI"] = SVO;
 	}
 }

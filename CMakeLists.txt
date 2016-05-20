@@ -30,7 +30,6 @@ set(CMAKE_MODULE_PATH
   "${CMAKE_SOURCE_DIR}/CMake/Packages"
 )
 
-find_package(DXUT REQUIRED)
 find_package(D3D REQUIRED)
 
 #Include path variables

@@ -11,39 +11,25 @@
 #include "AO.h"
 #include "Logging/logging.h"
 #include "Core/YumeMain.h"
-#include "Scene/YumeOctree.h"
-#include "Renderer/YumeCamera.h"
+#include "Renderer/YumeLPVCamera.h"
 #include <boost/shared_ptr.hpp>
 
 #include "Input/YumeInput.h"
-#include "Renderer/YumeViewport.h"
 
-#include "Renderer/YumeRenderer.h"
-#include "Renderer/YumeDrawable.h"
-#include "Renderer/YumeRenderView.h"
-#include "Renderer/YumeMaterial.h"
-#include "Renderer/YumeAuxRenderer.h"
-#include "Renderer/YumeSkybox.h"
-#include "Renderer/YumeRendererEnv.h"
 #include "Renderer/YumeTexture2D.h"
-#include "Renderer/YumeRenderPass.h"
 
 #include "Renderer/YumeResourceManager.h"
 
-#include "Renderer/YumeRHI.h"
-
-#include "Renderer/YumeModel.h"
-#include "Renderer/YumeStaticModel.h"
-
-#include "UI/YumeDebugOverlay.h"
 
 #include "Engine/YumeEngine.h"
 
-#include "Core/SharedPtr.h"
+#include "UI/YumeDebugOverlay.h"
 
-#include "UI/YumeUI.h"
+#include "Renderer/Light.h"
+#include "Renderer/StaticModel.h"
+#include "Renderer/Scene.h"
 
-#include "Renderer/YumeRenderPipeline.h"
+#include "UI/YumeOptionsMenu.h"
 
 YUME_DEFINE_ENTRY_POINT(YumeEngine::AODemo);
 
@@ -58,7 +44,6 @@ namespace YumeEngine
 
 
 	AODemo::AODemo()
-		: rot_(Quaternion::IDENTITY)
 	{
 		REGISTER_ENGINE_LISTENER;
 	}
@@ -71,101 +56,96 @@ namespace YumeEngine
 	void AODemo::Start()
 	{
 		YumeResourceManager* rm_ = gYume->pResourceManager;
+		YumeMiscRenderer* renderer = gYume->pRenderer;
+		Scene* scene = renderer->GetScene();
+		YumeCamera* camera = renderer->GetCamera();
 
-		scene_ = SharedPtr<YumeScene>(new YumeScene);
-		scene_->SetName("Scene");
+		gYume->pInput->AddListener(this);
 
-		scene_->CreateComponent<Octree>();
-		scene_->CreateComponent<YumeDebugRenderer>();
+#ifndef DISABLE_CEF
+		optionsMenu_ = new YumeOptionsMenu;
+		gYume->pUI->AddUIElement(optionsMenu_);
+		optionsMenu_->SetVisible(true);
 
-		YumeSceneNode* lightNode = scene_->CreateChild("DirectionalLight");
-		lightNode->SetDirection(Vector3(0.6f,-1.0f,0.8f)); // The direction vector does not need to be normalized
-		YumeLight* light = lightNode->CreateComponent<YumeLight>();
-		light->SetLightType(LIGHT_DIRECTIONAL);
-		light->SetShadowBias(BiasParameters(0.00025f,0.5f));
-		light->SetCastShadows(true);
-
-
-#ifndef NO_PLANE
-		YumeSceneNode* plane = scene_->CreateChild("Cube");
-		plane->SetPosition(Vector3(0,0,0));
-		plane->SetRotation(Quaternion::IDENTITY);
-		plane->SetScale(Vector3(50,1,50));
-		YumeStaticModel* drawable = plane->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(rm_->PrepareResource<YumeModel>("Models/Plane.mdl"));
-		YumeMaterial* planeMat = rm_->PrepareResource<YumeMaterial>("Materials/StoneTiled.xml");
-		drawable->SetMaterial(planeMat);
+		overlay_ = new YumeDebugOverlay;
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);
 #endif
 
-		CreateModel(Vector3(0,1.5f,0),Quaternion(180,Vector3(0,1,0)));
+		MaterialPtr emissiveBlue = YumeAPINew Material;
+		emissiveBlue->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.1f,0.1f,0.1f,1));
+		emissiveBlue->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		emissiveBlue->SetShaderParameter("Roughness",1.0f);
+		emissiveBlue->SetShaderParameter("ShadingMode",0);
+		emissiveBlue->SetShaderParameter("has_diffuse_tex",false);
+		emissiveBlue->SetShaderParameter("has_alpha_tex",false);
+		emissiveBlue->SetShaderParameter("has_specular_tex",false);
+		emissiveBlue->SetShaderParameter("has_normal_tex",false);
+		emissiveBlue->SetShaderParameter("has_roughness_tex",false);
 
-#ifndef NO_SKYBOX
-		YumeSceneNode* skyNode = scene_->CreateChild("Sky");
-		skyNode->SetScale(500.0f); // The scale actually does not matter
-		YumeSkybox* skybox = skyNode->CreateComponent<YumeSkybox>();
-		skybox->SetModel(rm_->PrepareResource<YumeModel>("Models/Sphere.mdl"));
-		skybox->SetMaterial(rm_->PrepareResource<YumeMaterial>("Materials/Skydome.xml"));
-#endif
-		cameraNode_ = scene_->CreateChild("Camera");
-		YumeCamera* camera = cameraNode_->CreateComponent<YumeCamera>();
-		cameraNode_->SetPosition(Vector3(0,5,-10));
+		MaterialPtr emissiveRed = YumeAPINew Material;
+		emissiveRed->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(1,0,0,1));
+		emissiveRed->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		emissiveRed->SetShaderParameter("Roughness",1.0f);
+		emissiveRed->SetShaderParameter("ShadingMode",0);
+		emissiveRed->SetShaderParameter("has_diffuse_tex",false);
+		emissiveRed->SetShaderParameter("has_alpha_tex",false);
+		emissiveRed->SetShaderParameter("has_specular_tex",false);
+		emissiveRed->SetShaderParameter("has_normal_tex",false);
+		emissiveRed->SetShaderParameter("has_roughness_tex",false);
 
-		Quaternion q;
-		q.FromLookRotation((cameraNode_->GetWorldPosition() * -1).Normalized());
-		cameraNode_->SetRotation(q);
-		camera->SetFarClip(1000.0f);
-		camera->SetFov(60);
+		MaterialPtr emissivePink = YumeAPINew Material;
+		emissivePink->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(1,0.0784314f,0.576471f,1));
+		emissivePink->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
+		emissivePink->SetShaderParameter("Roughness",1.0f);
+		emissivePink->SetShaderParameter("ShadingMode",0);
+		emissivePink->SetShaderParameter("has_diffuse_tex",false);
+		emissivePink->SetShaderParameter("has_alpha_tex",false);
+		emissivePink->SetShaderParameter("has_specular_tex",false);
+		emissivePink->SetShaderParameter("has_normal_tex",false);
+		emissivePink->SetShaderParameter("has_roughness_tex",false);
 
-		BaseApplication::Start();
 
-		overlay_->GetBinding("SampleName")->SetValue("AODemo");
-		gYume->pUI->SetUIEnabled(false);
+		float boxScale = 0.15f;
+
+
+		StaticModel* ornstein = CreateModel("Models/DarkSouls/Ornstein/c5270outout.yume");
+		ornstein->SetPosition(DirectX::XMVectorSet(-15,0,0,0));
+		ornstein->SetScale(3,3,3);
+
+		StaticModel* smough = CreateModel("Models/DarkSouls/Smough/smough.yume");
+		smough->SetPosition(DirectX::XMVectorSet(-10,0,0,0));
+		smough->SetScale(3,3,3);
+
+		StaticModel* capra = CreateModel("Models/DarkSouls/Capra/capra.yume");
+		capra->SetPosition(DirectX::XMVectorSet(5,0,0,0));
+
+		StaticModel* channeler = CreateModel("Models/DarkSouls/Channeler/channeler.yume");
+		channeler->SetPosition(DirectX::XMVectorSet(10,0,0,0));
+
+
+		StaticModel* gsk= CreateModel("Models/DarkSouls/GSK/giantstoneknight.yume");
+		gsk->SetPosition(DirectX::XMVectorSet(5,0,-13,0));
+		gsk->SetScale(4,4,4);
+
+
+		StaticModel* plane = CreateModel("Models/Primitives/HighPlane.yume");
+
+
+
+		Light* dirLight = new Light;
+		dirLight->SetName("DirLight");
+		dirLight->SetType(LT_DIRECTIONAL);
+		dirLight->SetPosition(DirectX::XMVectorSet(0,35,0,0));
+		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
+		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
+		dirLight->SetColor(YumeColor(1,1,1,0));
+
+		scene->AddNode(dirLight);
 	}
 
-	void AODemo::CreateModel(Vector3 Pos,Quaternion Rot)
-	{
-		YumeSceneNode* cubeNode_ = scene_->CreateChild("Cube");
-		cubeNode_->SetPosition(Pos);
-		cubeNode_->SetRotation(Rot);
-		cubeNode_->SetScale(0.01);
-		YumeStaticModel* drawable = cubeNode_->CreateComponent<YumeStaticModel>();
-		drawable->SetModel(gYume->pResourceManager->PrepareResource<YumeModel>("Models/cryteksponza.yume"));
-		drawable->ApplyMaterialList("Models/cryteksponza.txt");
-#ifdef OBJECTS_CAST_SHADOW
-		drawable->SetCastShadows(true);
-#endif
-	}
 	void AODemo::MoveCamera(float timeStep)
 	{
-		float MOVE_SPEED = 5.0f;
-		const float MOUSE_SENSITIVITY = 0.1f;
-
-		YumeInput* input = gYume->pInput;
-
-		if(!input->HasFocus())
-			return;
-
-		if(input->GetMouseButtonDown(MOUSEB_RIGHT))
-		{
-			IntVector2 mouseMove = input->GetMouseMove();
-			yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
-			pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
-			pitch_ = Clamp(pitch_,-90.0f,90.0f);
-
-
-			cameraNode_->SetRotation(Quaternion(pitch_,yaw_,0.0f));
-		}
-
-		if(input->GetKeyDown(KEY_SHIFT))
-			MOVE_SPEED = 35.0f;
-		if(input->GetKeyDown('W'))
-			cameraNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('S'))
-			cameraNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('A'))
-			cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
-		if(input->GetKeyDown('D'))
-			cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
 	}
 
 
@@ -175,12 +155,7 @@ namespace YumeEngine
 	}
 	void AODemo::HandleRenderUpdate(float timeStep)
 	{
-		YumeViewport* viewport = gYume->pRenderer->GetViewport(0);
-		YumeRenderPipeline* fx = viewport->GetRenderPath();
-		YumeCamera* cam = viewport->GetCamera();
 
-
-		fx->SetShaderParameter("ViewThree",cam->GetView().ToMatrix3());
 	}
 
 	void AODemo::Setup()

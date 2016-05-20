@@ -1,8 +1,8 @@
-set(SAMPLE_TARGET "DarkSoulsAnorLondo")
+set(SAMPLE_TARGET "PostProcessing")
 
-set(SOURCE_FILES AO.cc)
+set(SOURCE_FILES PostProcessing.cc)
 
-set(HEADER_FILES AO.h)
+set(HEADER_FILES PostProcessing.h)
 
 include_directories(${YUME_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -20,6 +20,7 @@ endif()
 if(NOT MSVC)
 	add_executable(${SAMPLE_TARGET} ${HEADER_FILES} ${SOURCE_FILES} ${COMMON_SOURCES})
 endif()
+
 
 target_link_libraries(${SAMPLE_TARGET} ${YUME})
 set_target_properties(${SAMPLE_TARGET} PROPERTIES FOLDER "Samples")
