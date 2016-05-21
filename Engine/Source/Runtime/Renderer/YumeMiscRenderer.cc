@@ -47,12 +47,12 @@
 #include "Logging/logging.h"
 using namespace DirectX;
 
-//#define DEBUGGING_RSM
+#define DEBUGGING_RSM
 #define DISABLE_CALLS
-//#define DYNAMIC_ENV_MAP
+#define DYNAMIC_ENV_MAP
 
 
-#define CAMERA_MOVE_SPEED 200
+#define CAMERA_MOVE_SPEED 75
 
 
 namespace YumeEngine

@@ -205,8 +205,8 @@ namespace YumeEngine
 	{
 		BaseApplication::Setup();
 
-		engineVariants_["WindowWidth"] = 1600;
-		engineVariants_["WindowHeight"] = 900;
+		engineVariants_["WindowWidth"] = 2000;
+		engineVariants_["WindowHeight"] = 2000;
 
 	}
 }

@@ -31,6 +31,7 @@
 #include "Renderer/Scene.h"
 
 #include "UI/YumeOptionsMenu.h"
+#include "Renderer/RenderPass.h"
 
 YUME_DEFINE_ENTRY_POINT(YumeEngine::GodRays);
 
@@ -68,9 +69,9 @@ namespace YumeEngine
 		gYume->pInput->AddListener(this);
 
 #ifndef DISABLE_CEF
-		/*overlay_ = new YumeDebugOverlay;
+		overlay_ = new YumeDebugOverlay;
 		gYume->pUI->AddUIElement(overlay_);
-		overlay_->SetVisible(true);*/
+		overlay_->SetVisible(true);
 
 		optionsMenu_ = new YumeOptionsMenu;
 		gYume->pUI->AddUIElement(optionsMenu_);
@@ -109,6 +110,8 @@ namespace YumeEngine
 		emissivePink->SetShaderParameter("has_specular_tex",false);
 		emissivePink->SetShaderParameter("has_normal_tex",false);
 		emissivePink->SetShaderParameter("has_roughness_tex",false);
+
+
 
 
 		float boxScale = 0.15f;

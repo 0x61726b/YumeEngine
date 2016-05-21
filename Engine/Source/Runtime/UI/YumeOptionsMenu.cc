@@ -276,7 +276,7 @@ namespace YumeEngine
 			{
 				RenderPass* dp = gYume->pRenderer->GetDefaultPass();
 
-				float value = atof(data.c_str());
+				float value = atof(data.c_str()) / 100;
 
 				dp->SetShaderParameter("gi_scale",value);
 

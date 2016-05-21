@@ -30,6 +30,7 @@
 #include "Renderer/Scene.h"
 
 #include "UI/YumeOptionsMenu.h"
+#include "Renderer/RenderPass.h"
 
 YUME_DEFINE_ENTRY_POINT(YumeEngine::ShadowsDemo);
 
@@ -59,14 +60,20 @@ namespace YumeEngine
 		gYume->pInput->AddListener(this);
 
 #ifndef DISABLE_CEF
-		/*overlay_ = new YumeDebugOverlay;
-		gYume->pUI->AddUIElement(overlay_);
-		overlay_->SetVisible(true);*/
-
 		optionsMenu_ = new YumeOptionsMenu;
 		gYume->pUI->AddUIElement(optionsMenu_);
 		optionsMenu_->SetVisible(true);
+
+		overlay_ = new YumeDebugOverlay;
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);
 #endif
+
+		RenderPass* dp = renderer->GetDefaultPass();
+		dp->Load("RenderCalls/Bloom.xml",true);
+		dp->Load("RenderCalls/FXAA.xml",true);
+		dp->Load("RenderCalls/LensDistortion.xml",true);
+
 
 		MaterialPtr diff = YumeAPINew Material;
 		diff->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0.4f,0.4f,0.4f,1));
@@ -132,5 +139,6 @@ namespace YumeEngine
 
 		engineVariants_["WindowWidth"] = 1600;
 		engineVariants_["WindowHeight"] = 900;
+		engineVariants_["GI"] = LPV;
 	}
 }

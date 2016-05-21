@@ -83,8 +83,14 @@ float4 deferred_lpv_ps(PS_INPUT inp) : SV_Target
 	float attenuation = shadow_attenuation(pos, Ll, rt_rsm_lineardepth, 0.0, 0.0);
 
   float3 Rr = 0;
-  if (gb.shading_mode == 10)
-      return gb.diffuse_albedo;
+  if(gb.shading_mode == 10)
+  {
+    float3 toEye = camera_pos - pos;
+    float3 reflectionColor = 0;
+    float3 incident = -toEye;
+    float3 reflection = reflect(incident,N);
+    Rr = EnvMap.Sample(StandardFilter,reflection);
+  }
 
 	// brdf
   float3 f = brdf(L, V, N, gb.diffuse_albedo.rgb, gb.specular_albedo.rgb, roughness);
