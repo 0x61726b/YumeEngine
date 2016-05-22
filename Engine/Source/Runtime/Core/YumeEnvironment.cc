@@ -72,6 +72,7 @@ namespace YumeEngine
 
 		for(int i=0; i < commandLine.size(); ++i)
 		{
+			YumeString c = commandLine[i];
 			engineVariants_.insert(MakePair(YumeHash(commandLine[i].c_str()),Variant("1")));
 		}
 	}

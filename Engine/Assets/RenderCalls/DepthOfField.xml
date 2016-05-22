@@ -1,6 +1,6 @@
 <Yume>
   <RenderTargets>
-    <Rt Name="DoFTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="DoFTarget" Format="rgba16f" Mips="1" Size="1 1" ArraySize="1"/>
 
     <Rt Name="DofBlurTarget0" Format="rgba16f" Mips="0" Size="2 2" ArraySize="1"/>
     <Rt Name="DofBlurTarget5" Format="rgba16f" Mips="0" Size="2 2" ArraySize="1"/>

@@ -232,9 +232,9 @@ macro( copy_assets )
                                     COMMAND ${CMAKE_COMMAND} -E copy_directory
                                     "${CMAKE_SOURCE_DIR}/Engine/Assets/RenderCalls"
                                   "${CMAKE_BINARY_DIR}/Yume/Engine/Assets/RenderCalls" COMMENT "Copying assets...")
-                                  add_custom_command(TARGET ${YUME} POST_BUILD
-                                                                    COMMAND ${CMAKE_COMMAND} -E copy_directory
-                                                                    "${CMAKE_SOURCE_DIR}/Engine/Assets/UI"
-                                                                  "${CMAKE_BINARY_DIR}/Yume/Engine/Assets/UI" COMMENT "Copying assets...")                                             
+  #add_custom_command(TARGET ${YUME} POST_BUILD
+  #                                  COMMAND ${CMAKE_COMMAND} -E copy_directory
+  #                                  "${CMAKE_SOURCE_DIR}/Engine/Assets/UI"
+  #                                "${CMAKE_BINARY_DIR}/Yume/Engine/Assets/UI" COMMENT "Copying assets...")                                             
 
 endmacro( copy_assets )

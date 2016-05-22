@@ -22,9 +22,5 @@ if(YUME_BUILD_DIRECT3D11)
   add_subdirectory(Direct3D11)
 endif()
 
-if(YUME_BUILD_OPENGL)
-  add_subdirectory(OpenGL)
-endif()
-
 #Screw testing for now
 #add_subdirectory(Null)

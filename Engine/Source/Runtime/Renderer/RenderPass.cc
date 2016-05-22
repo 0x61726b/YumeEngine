@@ -29,6 +29,8 @@
 #include "Core/YumeFile.h"
 #include "Core/YumeDefaults.h"
 
+#include "Logging/logging.h"
+
 #include <pugixml/src/pugixml.hpp>
 
 namespace YumeEngine
@@ -114,9 +116,17 @@ namespace YumeEngine
 			XmlNode RenderCalls = Root.child("RenderCalls");
 			XmlNode Samplers = Root.child("Samplers");
 
+			unsigned commandCount = 0;
+			unsigned inputCount = 0;
+			unsigned outputCount = 0;
+			unsigned rtCount = 0;
+			unsigned samplerCount = 0;
+
 
 			for(XmlNode child = Rts.first_child(); child; child = child.next_sibling())
 			{
+				rtCount++;
+
 				const char* type = child.name();
 
 				const char* name = child.attribute("Name").as_string();
@@ -202,6 +212,8 @@ namespace YumeEngine
 			//Samplers
 			for(XmlNode child = Samplers.first_child(); child; child = child.next_sibling())
 			{
+				samplerCount++;
+
 				const char* name = child.attribute("Name").as_string();
 				const char* filter = child.attribute("Filter").as_string();
 				const char* comparison = child.attribute("Comprasion").as_string();
@@ -243,6 +255,8 @@ namespace YumeEngine
 
 			for(XmlNode child = RenderCalls.first_child(); child; child = child.next_sibling())
 			{
+				commandCount++;
+
 				const char* type = child.name();
 				CallType ct;
 
@@ -413,6 +427,8 @@ namespace YumeEngine
 
 				for(XmlNode output = Outputs.first_child(); output; output = output.next_sibling())
 				{
+					outputCount++;
+
 					const char* index = output.attribute("Index").as_string();
 					const char* name = output.attribute("Name").as_string();
 
@@ -422,6 +438,8 @@ namespace YumeEngine
 
 				for(XmlNode input = Inputs.first_child(); input;input = input.next_sibling())
 				{
+					inputCount++;
+
 					const char* index = input.attribute("Index").as_string();
 					const char* name = input.attribute("Name").as_string();
 
@@ -477,6 +495,18 @@ namespace YumeEngine
 				}
 				AddRenderCall(renderCall);
 			}
+
+			YUMELOG_INFO("Render Calls " << resource.c_str() << " is loaded successfully." <<
+				"Post Process " << isPostProcess <<
+				"Render Target Count: " << rtCount <<
+				"Input Count: " << inputCount <<
+				"Output Count: " << outputCount <<
+				"Sampler Count: " << samplerCount <<
+				"Render Command Count: " << commandCount);
+		}
+		else
+		{
+			YUMELOG_ERROR("Render Call " << resource.c_str() << " couldn't be loaded. This should not happen! ");
 		}
 	}
 
@@ -606,6 +636,9 @@ namespace YumeEngine
 	{
 		for(int i=0; i < calls_.size(); ++i)
 		{
+			if(!calls_[i])
+				assert(false);
+
 			if(calls_[i]->ContainsParameter(param))
 			{
 				calls_[i]->SetShaderParameter(param,matrix);

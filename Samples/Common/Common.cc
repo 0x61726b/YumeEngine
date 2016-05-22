@@ -61,6 +61,40 @@ namespace YumeEngine
 		//Set engine parameters
 
 		engineVariants_["ResourceTree"] = YumeString("Engine/Assets");
+
+		YumeVector<YumeString>::type params = GetArguments();
+
+		if(params.size() > 1)
+		{
+			for(int i=1; i < params.size(); ++i)
+			{
+				YumeString param = params[i];
+
+				
+
+				if(param.Contains('='))
+				{
+					YumeVector<YumeString>::type split = param.Split('=');
+					YumeString left = split[0];
+					YumeString right = split[1];
+
+					if(left == "WindowWidth")
+						engineVariants_["WindowWidth"] = atoi(right.c_str());
+					if(left == "WindowHeight")
+						engineVariants_["WindowHeight"] = atoi(right.c_str());
+					if(left == "GI")
+						engineVariants_["GI"] = atoi(right.c_str());
+					if(left == "CamMoveSpeed")
+						engineVariants_["CamMoveSpeed"] = atoi(right.c_str());
+				}
+
+			}
+		}
+		else
+		{
+			engineVariants_["WindowWidth"] = 1024;;
+			engineVariants_["WindowHeight"] = 768;
+		}
 	}
 
 

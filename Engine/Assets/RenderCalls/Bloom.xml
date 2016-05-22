@@ -1,6 +1,6 @@
 <Yume>
   <RenderTargets>
-    <Rt Name="BloomTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="BloomTarget" Format="rgba16f" Mips="1" Size="1 1" ArraySize="1"/>
 
     <Rt Name="RT_ADAPT_LUMINANCE_0" Format="r32f" Mips="1" Width="1" Height="1" ArraySize="1"/>
     <Rt Name="RT_ADAPT_LUMINANCE_1" Format="r32f" Mips="1" Width="1" Height="1" ArraySize="1"/>

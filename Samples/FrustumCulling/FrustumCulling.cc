@@ -9,7 +9,7 @@
 
 
 #include "Core/YumeHeaders.h"
-#include "PostProcessing.h"
+#include "FrustumCulling.h"
 #include "Logging/logging.h"
 #include "Core/YumeMain.h"
 #include "Renderer/YumeLPVCamera.h"
@@ -29,9 +29,9 @@
 #include "Renderer/Light.h"
 #include "Renderer/StaticModel.h"
 #include "Renderer/Scene.h"
-#include "Renderer/RenderPass.h"
 
 #include "UI/YumeOptionsMenu.h"
+#include "Renderer/RenderPass.h"
 
 YUME_DEFINE_ENTRY_POINT(YumeEngine::GodRays);
 
@@ -75,30 +75,26 @@ namespace YumeEngine
 		optionsMenu_->SetVisible(true);
 
 		overlay_ = new YumeDebugOverlay;
+		overlay_->GetBinding("SampleName")->SetValue("Frustum Culling");
 		gYume->pUI->AddUIElement(overlay_);
 		overlay_->SetVisible(true);
-		overlay_->GetBinding("SampleName")->SetValue("Post Processing");
+
+
+		SharedPtr<RenderPass> newPass = SharedPtr<RenderPass>(new RenderPass);
+		newPass->Load("RenderCalls/DeferredNoSkybox.xml");
+		newPass->Load("RenderCalls/Bloom.xml",true);
+		newPass->Load("RenderCalls/FXAA.xml",true);
+		newPass->Load("RenderCalls/LensDistortion.xml",true);
+		newPass->Load("RenderCalls/ShowGBuffer.xml",true);
+		newPass->DisableRenderCalls("ShowGBuffer");
+		newPass->DisableRenderCalls("Bloom");
+		renderer->SetDefaultPass(newPass);
 #endif
 
-		//Define post processing effects
-		RenderPass* dp = renderer->GetDefaultPass();
-		dp->Load("RenderCalls/Bloom.xml",true);
-		dp->Load("RenderCalls/FXAA.xml",true);
-		dp->Load("RenderCalls/LensDistortion.xml",true);
-		dp->Load("RenderCalls/Godrays.xml",true);
-		dp->Load("RenderCalls/ShowGBuffer.xml",true);
-		dp->DisableRenderCalls("ShowGBuffer");
-		dp->DisableRenderCalls("Godrays");
-		dp->DisableRenderCalls("Bloom");
-		
-		
-
-
-
 		MaterialPtr emissiveBlue = YumeAPINew Material;
-		emissiveBlue->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0,0,1,1));
+		emissiveBlue->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(1,1,1,1));
 		emissiveBlue->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
-		emissiveBlue->SetShaderParameter("Roughness",0.001f);
+		emissiveBlue->SetShaderParameter("Roughness",1);
 		emissiveBlue->SetShaderParameter("ShadingMode",0);
 		emissiveBlue->SetShaderParameter("has_diffuse_tex",false);
 		emissiveBlue->SetShaderParameter("has_alpha_tex",false);
@@ -106,40 +102,32 @@ namespace YumeEngine
 		emissiveBlue->SetShaderParameter("has_normal_tex",false);
 		emissiveBlue->SetShaderParameter("has_roughness_tex",false);
 
-		MaterialPtr emissiveRed = YumeAPINew Material;
-		emissiveRed->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(1,0,0,1));
-		emissiveRed->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
-		emissiveRed->SetShaderParameter("Roughness",0.001f);
-		emissiveRed->SetShaderParameter("ShadingMode",0);
-		emissiveRed->SetShaderParameter("has_diffuse_tex",false);
-		emissiveRed->SetShaderParameter("has_alpha_tex",false);
-		emissiveRed->SetShaderParameter("has_specular_tex",false);
-		emissiveRed->SetShaderParameter("has_normal_tex",false);
-		emissiveRed->SetShaderParameter("has_roughness_tex",false);
+		renderer->SetFrustumCulling(true);
 
-		MaterialPtr emissivePink = YumeAPINew Material;
-		emissivePink->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(1,0.0784314f,0.576471f,1));
-		emissivePink->SetShaderParameter("SpecularColor",DirectX::XMFLOAT4(1,1,1,1));
-		emissivePink->SetShaderParameter("Roughness",0.001f);
-		emissivePink->SetShaderParameter("ShadingMode",0);
-		emissivePink->SetShaderParameter("has_diffuse_tex",false);
-		emissivePink->SetShaderParameter("has_alpha_tex",false);
-		emissivePink->SetShaderParameter("has_specular_tex",false);
-		emissivePink->SetShaderParameter("has_normal_tex",false);
-		emissivePink->SetShaderParameter("has_roughness_tex",false);
+		float boxScale = 0.15f;
 
+		boxBlue = CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(0,0,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+		boxBlue->SetMaterial(emissiveBlue);
 
-		StaticModel* jeyjeyModel = CreateModel("Models/sponza/sponza.yume");
+		for(int i=0; i < 3; ++i)
+		{
+			for(int j=0; j < 3; ++j)
+			{
+				StaticModel* d1 = CreateModel("Models/dragon/dragon.yume",DirectX::XMFLOAT3(i * 25,j * 25,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
+				d1->SetMaterial(emissiveBlue);
+			}
+
+		}
+
 
 		Light* dirLight = new Light;
 		dirLight->SetName("DirLight");
 		dirLight->SetType(LT_DIRECTIONAL);
-		dirLight->SetPosition(DirectX::XMVectorSet(0,1500,0,0));
+		dirLight->SetPosition(DirectX::XMVectorSet(0,20,0,0));
 		dirLight->SetDirection(DirectX::XMVectorSet(0,-1,0,0));
 		dirLight->SetRotation(DirectX::XMVectorSet(-1,0,0,0));
 		dirLight->SetColor(YumeColor(1,1,1,0));
 
-		
 		scene->AddNode(dirLight);
 	}
 
@@ -152,7 +140,28 @@ namespace YumeEngine
 
 	void GodRays::HandleUpdate(float timeStep)
 	{
+		const float YOrbitRadius = 5.f;
+		const float ZOrbitRadius = 5.f;
+		const float XOrbitRadius = 8;
+		angle1_ += M_PI * 0.1f * timeStep;
+		updown1_ += M_PI * 0.8f * timeStep;
+		leftRight1_ += M_PI * 0.34f * timeStep;
 
+		if(updown1_ > M_PI * 2)
+			updown1_ = 0.0f;
+
+		DirectX::XMVECTOR blueRot = DirectX::XMVectorSet(0,angle1_,0,0);
+
+		SceneNodes::type& renderables = gYume->pRenderer->GetScene()->GetRenderables();
+
+		for(int i=0; i < renderables.size(); ++i)
+		{
+			SceneNode* node = renderables[i];
+
+			node->SetRotation(blueRot);
+		}
+
+		
 	}
 	void GodRays::HandleRenderUpdate(float timeStep)
 	{
@@ -161,10 +170,10 @@ namespace YumeEngine
 
 	void GodRays::Setup()
 	{
-		engineVariants_["GI"] = LPV;
+		engineVariants_["GI"] = NoGI;
 		engineVariants_["WindowWidth"] = 1024;
 		engineVariants_["WindowHeight"] = 768;
-		BaseApplication::Setup();
 
+		BaseApplication::Setup();
 	}
 }

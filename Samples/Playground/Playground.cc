@@ -94,13 +94,14 @@ namespace YumeEngine
 		gYume->pInput->AddListener(this);
 
 #ifndef DISABLE_CEF
-		/*overlay_ = new YumeDebugOverlay;
-		gYume->pUI->AddUIElement(overlay_);
-		overlay_->SetVisible(true);*/
-
 		optionsMenu_ = new YumeOptionsMenu;
 		gYume->pUI->AddUIElement(optionsMenu_);
 		optionsMenu_->SetVisible(true);
+
+		overlay_ = new YumeDebugOverlay;
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);
+		overlay_->GetBinding("SampleName")->SetValue("Playground");
 #endif
 
 		MaterialPtr diff = YumeAPINew Material;
@@ -351,9 +352,5 @@ namespace YumeEngine
 	void PlaygroundDemo::Setup()
 	{
 		BaseApplication::Setup();
-
-		engineVariants_["WindowWidth"] = 1600;
-		engineVariants_["WindowHeight"] = 900;
-		engineVariants_["GI"] = SVO;
 	}
 }

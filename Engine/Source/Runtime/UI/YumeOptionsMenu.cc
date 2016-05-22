@@ -32,7 +32,7 @@
 namespace YumeEngine
 {
 	YumeOptionsMenu::YumeOptionsMenu()
-		: YumeUIElement(1600,900,Overlay,"OptionsMenu"),
+		: YumeUIElement(gYume->pRHI->GetWidth(),gYume->pRHI->GetHeight(),Overlay,"OptionsMenu"),
 		lightWarmth(0),
 		lightFlux(0)
 	{
@@ -42,8 +42,8 @@ namespace YumeEngine
 		//800 = 1600 - (L+R)
 		//800 = L+R
 		SetPosition(0,0);
-		SetWidth(1600);
-		SetHeight(900);
+		SetWidth(gYume->pRHI->GetWidth());
+		SetHeight(gYume->pRHI->GetHeight());
 
 		Initialize();
 	}
@@ -276,7 +276,7 @@ namespace YumeEngine
 			{
 				RenderPass* dp = gYume->pRenderer->GetDefaultPass();
 
-				float value = atof(data.c_str()) / 100;
+				float value = atof(data.c_str());
 
 				dp->SetShaderParameter("gi_scale",value);
 

@@ -68,14 +68,17 @@ namespace YumeEngine
 
 		gYume->pInput->AddListener(this);
 
-#ifndef DISABLE_CEF
-		overlay_ = new YumeDebugOverlay;
-		gYume->pUI->AddUIElement(overlay_);
-		overlay_->SetVisible(true);
+#ifndef DISABLE_CEF		
 
 		optionsMenu_ = new YumeOptionsMenu;
 		gYume->pUI->AddUIElement(optionsMenu_);
 		optionsMenu_->SetVisible(true);
+
+		overlay_ = new YumeDebugOverlay;
+		overlay_->GetBinding("SampleName")->SetValue("Cornell Showcase 2");
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);
+
 #endif
 
 		MaterialPtr emissiveBlue = YumeAPINew Material;
@@ -118,18 +121,25 @@ namespace YumeEngine
 
 		boxBlue = CreateModel("Models/Primitives/box.yume",DirectX::XMFLOAT3(2,5,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(1,1,1));
 		boxBlue->SetMaterial(emissiveBlue);
-		boxBlue->SetScale(boxScale ,boxScale ,boxScale );
+		boxBlue->SetScale(boxScale,boxScale,boxScale);
 
 		boxRed = CreateModel("Models/Primitives/box.yume",DirectX::XMFLOAT3(2,16.2f,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(1,1,1));
 		boxRed->SetMaterial(emissiveRed);
-		boxRed->SetScale(boxScale ,boxScale ,boxScale );
+		boxRed->SetScale(boxScale,boxScale,boxScale);
 
 		boxPink = CreateModel("Models/Primitives/box.yume",DirectX::XMFLOAT3(-7,8,5),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(1,1,1));
 		boxPink->SetMaterial(emissivePink);
-		boxPink->SetScale(boxScale ,boxScale ,boxScale );
+		boxPink->SetScale(boxScale,boxScale,boxScale);
 
 		StaticModel* jeyjeyModel = CreateModel("Models/cornell/cornell-empty.yume");
 
+		RenderPass* dp = renderer->GetDefaultPass();
+		dp->Load("RenderCalls/Bloom.xml",true);
+		dp->Load("RenderCalls/FXAA.xml",true);
+		dp->Load("RenderCalls/LensDistortion.xml",true);
+		dp->Load("RenderCalls/ShowGBuffer.xml",true);
+		dp->DisableRenderCalls("ShowGBuffer");
+		dp->DisableRenderCalls("Bloom");
 
 		Light* dirLight = new Light;
 		dirLight->SetName("DirLight");
@@ -186,9 +196,10 @@ namespace YumeEngine
 
 	void GodRays::Setup()
 	{
-		BaseApplication::Setup();
+		engineVariants_["GI"] = Dyn_Lpv;
+		engineVariants_["WindowWidth"] = 1024;
+		engineVariants_["WindowHeight"] = 768;
 
-		engineVariants_["WindowWidth"] = 1600;
-		engineVariants_["WindowHeight"] = 900;
+		BaseApplication::Setup();
 	}
 }

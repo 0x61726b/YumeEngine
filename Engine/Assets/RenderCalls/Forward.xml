@@ -1,6 +1,6 @@
 <Yume>
   <RenderTargets>
-    <Ds Name="LightDSV" Format="d24s8" Mips="1" Width="1600" Height="900" ArraySize="1" Stencil="readonly"/>
+    <Ds Name="LightDSV" Format="d24s8" Mips="1" Size="1 1" ArraySize="1" Stencil="readonly"/>
   </RenderTargets>
   <Samplers>
     <Sampler Name="Standard" Filter="Trilinear" Comprasion="Never" AddressU="Wrap" AddressV="Wrap" AddressW="Wrap" />

@@ -82,6 +82,7 @@ namespace YumeEngine
 		overlay_ = new YumeDebugOverlay;
 		gYume->pUI->AddUIElement(overlay_);
 		overlay_->SetVisible(true);
+		overlay_->GetBinding("SampleName")->SetValue("Chromium Embedded Framework");
 #endif
 
 		MaterialPtr leftBrowserMat = YumeAPINew Material;
@@ -167,7 +168,14 @@ namespace YumeEngine
 		
 		StaticModel* plane = CreateModel("Models/Primitives/HighPlane.yume");
 		plane->SetFloorRoughness(0);
-		
+
+		RenderPass* dp = renderer->GetDefaultPass();
+		dp->Load("RenderCalls/Bloom.xml",true);
+		dp->Load("RenderCalls/FXAA.xml",true);
+		dp->Load("RenderCalls/LensDistortion.xml",true);
+		dp->Load("RenderCalls/ShowGBuffer.xml",true);
+		dp->DisableRenderCalls("ShowGBuffer");
+		dp->DisableRenderCalls("Bloom");
 
 		Light* dirLight = new Light;
 		dirLight->SetName("DirLight");
@@ -203,10 +211,10 @@ namespace YumeEngine
 
 	void CefTest::Setup()
 	{
+		engineVariants_["GI"] = NoGI;
+		engineVariants_["WindowWidth"] = 1024;
+		engineVariants_["WindowHeight"] = 768;
+
 		BaseApplication::Setup();
-
-		engineVariants_["WindowWidth"] = 2000;
-		engineVariants_["WindowHeight"] = 2000;
-
 	}
 }

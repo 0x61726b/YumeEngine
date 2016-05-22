@@ -1,6 +1,6 @@
 <Yume>
   <RenderTargets>
-    <Rt Name="GodraysTarget" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="GodraysTarget" Format="rgba16f" Mips="1" Size="1 1" ArraySize="1"/>
 
     <Rt Name="GodraysBlurTarget0" Format="rgba16f" Mips="0" Size="2 2" ArraySize="1"/>
     <Rt Name="GodraysBlurTarget1" Format="rgba16f" Mips="0" Size="4 4" ArraySize="1"/>

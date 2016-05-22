@@ -76,7 +76,16 @@ namespace YumeEngine
 		overlay_ = new YumeDebugOverlay;
 		gYume->pUI->AddUIElement(overlay_);
 		overlay_->SetVisible(true);
+		overlay_->GetBinding("SampleName")->SetValue("Sponza");
 #endif
+
+		RenderPass* dp = renderer->GetDefaultPass();
+		dp->Load("RenderCalls/Bloom.xml",true);
+		dp->Load("RenderCalls/FXAA.xml",true);
+		dp->Load("RenderCalls/LensDistortion.xml",true);
+		dp->Load("RenderCalls/ShowGBuffer.xml",true);
+		dp->DisableRenderCalls("ShowGBuffer");
+		dp->DisableRenderCalls("Bloom");
 
 		MaterialPtr emissiveBlue = YumeAPINew Material;
 		emissiveBlue->SetShaderParameter("DiffuseColor",DirectX::XMFLOAT4(0,0,1,1));
@@ -213,9 +222,9 @@ namespace YumeEngine
 
 	void GodRays::Setup()
 	{
+		engineVariants_["GI"] = NoGI;
+		engineVariants_["WindowWidth"] = 1024;
+		engineVariants_["WindowHeight"] = 768;
 		BaseApplication::Setup();
-
-		engineVariants_["WindowWidth"] = 1600;
-		engineVariants_["WindowHeight"] = 900;
 	}
 }

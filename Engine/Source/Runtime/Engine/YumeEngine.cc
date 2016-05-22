@@ -202,8 +202,11 @@ namespace YumeEngine
 			if(!gYume->pEnv->GetVariant("NoRenderer").Get<bool>())
 			{
 				gYume->pUI = new YumeUI;
-				if(!gYume->pUI->Initialize())
-					return false;
+				if(gYume->pEnv->GetVariant("NoUI").Get<YumeString>() != "1")
+				{
+					if(!gYume->pUI->Initialize())
+						return false;
+				}
 			}
 		}
 #endif
@@ -276,7 +279,8 @@ namespace YumeEngine
 		//Renderer
 		gYume->pRenderer->Render();
 #ifndef DISABLE_CEF
-		gYume->pUI->Render();
+		if(!gYume->pEnv->GetVariant("NoUI").Get<bool>())
+			gYume->pUI->Render();
 #endif
 
 		gYume->pRHI->EndFrame();
@@ -456,10 +460,9 @@ namespace YumeEngine
 			gYume->pRHI->Close();
 
 #ifndef DISABLE_CEF
-		gYume->pUI->Shutdown();
+		if(gYume->pEnv->GetVariant("NoUI").Get<YumeString>() != "1")
+			gYume->pUI->Shutdown();
 #endif
-
-
 
 		//UnloadExternalLibraries();
 		//YumeAPIDelete resourceManager_;

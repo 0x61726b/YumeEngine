@@ -1,9 +1,9 @@
 <Yume>
   <RenderTargets>
-    <Rt Name="SSAOTarget" Format="l" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-    <Rt Name="SSAOTargetFinal" Format="rgba16f" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-    <Rt Name="BlurTargetX" Format="l" Mips="1" Width="1600" Height="900" ArraySize="1"/>
-    <Rt Name="BlurTargetY" Format="l" Mips="1" Width="1600" Height="900" ArraySize="1"/>
+    <Rt Name="SSAOTarget" Format="l" Mips="1" Size="1 1" ArraySize="1"/>
+    <Rt Name="SSAOTargetFinal" Format="rgba16f" Mips="1" Size="1 1" ArraySize="1"/>
+    <Rt Name="BlurTargetX" Format="l" Mips="1" Size="1 1" ArraySize="1"/>
+    <Rt Name="BlurTargetY" Format="l" Mips="1" Size="1 1" ArraySize="1"/>
   </RenderTargets>
   <Samplers>
     <Sampler Name="SSAOSampler" Filter="Nearest" Comprasion="Always" AddressU="Clamp" AddressV="Clamp" AddressW="Clamp" />

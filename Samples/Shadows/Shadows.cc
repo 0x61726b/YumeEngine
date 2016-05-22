@@ -64,15 +64,20 @@ namespace YumeEngine
 		gYume->pUI->AddUIElement(optionsMenu_);
 		optionsMenu_->SetVisible(true);
 
+
 		overlay_ = new YumeDebugOverlay;
 		gYume->pUI->AddUIElement(overlay_);
 		overlay_->SetVisible(true);
+		overlay_->GetBinding("SampleName")->SetValue("Cornell Showcase 1");
 #endif
 
 		RenderPass* dp = renderer->GetDefaultPass();
 		dp->Load("RenderCalls/Bloom.xml",true);
 		dp->Load("RenderCalls/FXAA.xml",true);
 		dp->Load("RenderCalls/LensDistortion.xml",true);
+		dp->Load("RenderCalls/ShowGBuffer.xml",true);
+		dp->DisableRenderCalls("ShowGBuffer");
+		dp->DisableRenderCalls("Bloom");
 
 
 		MaterialPtr diff = YumeAPINew Material;
@@ -135,10 +140,10 @@ namespace YumeEngine
 
 	void ShadowsDemo::Setup()
 	{
-		BaseApplication::Setup();
+		engineVariants_["WindowWidth"] = 1024;
+		engineVariants_["WindowHeight"] = 768;
+		engineVariants_["GI"] = Dyn_Lpv;
 
-		engineVariants_["WindowWidth"] = 1600;
-		engineVariants_["WindowHeight"] = 900;
-		engineVariants_["GI"] = LPV;
+		BaseApplication::Setup();
 	}
 }

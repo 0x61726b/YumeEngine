@@ -37,6 +37,12 @@ add_subdirectory(SponzaNormal)
 
 add_subdirectory(PostProcessing)
 
+add_subdirectory(RotatingCube)
+
+add_subdirectory(FrustumCulling)
+
+add_subdirectory(ModelViewer)
+
 if(NOT OS_MACOSX)
   #add_subdirectory(TestSuite)
 endif()

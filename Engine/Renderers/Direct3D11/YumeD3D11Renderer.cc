@@ -918,14 +918,14 @@ namespace YumeEngine
 
 
 #ifdef _DEBUG
-		hr = impl_->device_->QueryInterface(IID_ID3D11Debug,(void**)(&impl_->debug_));
+		/*hr = impl_->device_->QueryInterface(IID_ID3D11Debug,(void**)(&impl_->debug_));
 		ID3D11InfoQueue *d3dInfoQueue = nullptr;
 		impl_->device_->QueryInterface(__uuidof(ID3D11InfoQueue),(void**)&d3dInfoQueue);
 
 
 
 		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION,true);
-		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR,true);
+		d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR,true);*/
 
 		//D3D11_MESSAGE_ID hide[] =
 		//{

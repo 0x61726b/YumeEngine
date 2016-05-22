@@ -47,12 +47,14 @@
 #include "Logging/logging.h"
 using namespace DirectX;
 
-#define DEBUGGING_RSM
+
 #define DISABLE_CALLS
-#define DYNAMIC_ENV_MAP
+
 
 
 #define CAMERA_MOVE_SPEED 75
+
+
 
 
 namespace YumeEngine
@@ -186,13 +188,16 @@ namespace YumeEngine
 
 		defaultPass_ = YumeAPINew RenderPass;
 
-		/*defaultPass_->Load("RenderCalls/Deferred.xml");*/
+		
 
-		if(gi == LPV)
+		gi_ = gi;
+
+		if(gi_ == LPV || gi_ == Dyn_Lpv)
 		{
 			defaultPass_->Load("RenderCalls/ReflectiveShadowMap.xml");
 			defaultPass_->Load("RenderCalls/LightPropagationVolume.xml");
 			defaultPass_->Load("RenderCalls/DeferredGI.xml");
+
 
 			giVolume_ = new LightPropagationVolume();
 
@@ -204,32 +209,25 @@ namespace YumeEngine
 
 
 		}
-		if(gi == SVO)
+		if(gi_ == SVO || gi_ == Dyn_Svo)
 		{
 			defaultPass_->Load("RenderCalls/ReflectiveShadowMap.xml");
 			defaultPass_->Load("RenderCalls/SparseVoxelOctree.xml");
 			defaultPass_->Load("RenderCalls/DeferredGISVO.xml");
-			defaultPass_->Load("RenderCalls/Bloom.xml",true);
-			defaultPass_->Load("RenderCalls/FXAA.xml",true);
-			//defaultPass_->Load("RenderCalls/Godrays.xml",true);
-			/*defaultPass_->DisableRenderCalls("Bloom");*/
 
 			giVolume_ = new SparseVoxelOctree();
 
 			giVolume_->Create(256);
 		}
-		if(gi == NoGI)
+		if(gi_ == NoGI)
 		{
 			giVolume_ = 0;
 			giEnabled_ = false;
 			defaultPass_->Load("RenderCalls/Deferred.xml");
-			defaultPass_->Load("RenderCalls/Bloom.xml",true);
-			defaultPass_->Load("RenderCalls/FXAA.xml",true);
-			defaultPass_->Load("RenderCalls/LensDistortion.xml",true);
-			defaultPass_->Load("RenderCalls/ShowGBuffer.xml",true);
 		}
 
 		Setup();
+		
 
 
 
@@ -295,6 +293,8 @@ namespace YumeEngine
 
 		screenBuffers_.clear();
 		screenBufferAllocations_.clear();
+
+		envType_ = (EnvironmentMapType)atoi((gYume->pEnv->GetVariant("DynEnv").Get<YumeString>()).c_str());
 	}
 
 	void YumeMiscRenderer::Setup()
@@ -338,6 +338,10 @@ namespace YumeEngine
 
 
 		CreateCubemapCameras(0,15,0);
+
+		cameraMoveSpeed_ = (float)gYume->pEnv->GetVariant("CamMoveSpeed").Get<int>();
+		if(cameraMoveSpeed_ == 0)
+			cameraMoveSpeed_ = CAMERA_MOVE_SPEED;
 	}
 
 	void YumeMiscRenderer::CreateCubemapCameras(float x,float y,float z)
@@ -596,11 +600,11 @@ namespace YumeEngine
 			if(updateCubemap_)
 			{
 				RenderIntoCubemap();
-#ifdef DYNAMIC_ENV_MAP
-				updateCubemap_ = true;
-#else
-				updateCubemap_ = false;
-#endif
+
+				if(envType_ == Env_Static)
+					updateCubemap_ = false;
+				else
+					updateCubemap_ = true;
 			}
 
 			currentRenderTarget_ = 0;
@@ -1040,12 +1044,14 @@ namespace YumeEngine
 
 					giVolume_->Filter();
 
-#ifndef DEBUGGING_RSM
-					defaultPass_->DisableRenderCalls("RSM");
-					defaultPass_->DisableRenderCalls("RSMVoxelize");
-					defaultPass_->DisableRenderCalls("RSMInject");
-					updateRsm_ = false;
-#endif
+					if(gi_ != Dyn_Svo)
+					{
+						defaultPass_->DisableRenderCalls("RSM");
+						defaultPass_->DisableRenderCalls("RSMVoxelize");
+						defaultPass_->DisableRenderCalls("RSMInject");
+						updateRsm_ = false;
+
+					}
 
 					rhi_->BindResetTextures(6,3);
 				}
@@ -1178,10 +1184,11 @@ namespace YumeEngine
 						rhi_->SetShaderParameter("iteration",(float)i);
 						LPVPropagate(call,i);
 					}
-#ifndef DEBUGGING_RSM
-					updateRsm_ = false;
-					defaultPass_->DisableRenderCalls("RSM");
-#endif
+					if(gi_ != Dyn_Lpv)
+					{
+						updateRsm_ = false;
+						defaultPass_->DisableRenderCalls("RSM");
+					}
 
 				}
 				break;
@@ -2017,8 +2024,8 @@ namespace YumeEngine
 				YumeGeometry* geometry = batch[b]->geo_;
 				Material* material = batch[b]->material_;
 
-				DirectX::XMFLOAT3 max = geometry->GetBbMax();
-				DirectX::XMFLOAT3 min = geometry->GetBbMin();
+				DirectX::XMFLOAT3 max = mesh->GetBbMax();
+				DirectX::XMFLOAT3 min = mesh->GetBbMin();
 
 
 
@@ -2447,6 +2454,8 @@ namespace YumeEngine
 
 		DirectX::XMStoreFloat3(&bbMin,v_bb_min);
 		DirectX::XMStoreFloat3(&bbMax,v_bb_max);
+
+		mesh->SetBoundingBox(bbMin,bbMax);
 
 		//bbMin = dmin(bMin,bbMin);
 		//bbMax = dmax(bMax,bbMax);

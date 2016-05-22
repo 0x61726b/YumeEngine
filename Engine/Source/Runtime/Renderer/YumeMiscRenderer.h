@@ -30,6 +30,8 @@
 #include "RenderCall.h"
 #include "LightPropagationVolume.h"
 #include "SparseVoxelOctree.h"
+
+#include "RenderPass.h"
 //----------------------------------------------------------------------------
 namespace YumeEngine
 {
@@ -44,8 +46,16 @@ namespace YumeEngine
 	{
 		NoGI = 0,
 		SVO = 1,
-		LPV = 2
+		LPV = 2,
+		Dyn_Svo = 3,
+		Dyn_Lpv = 4
 	};
+	enum EnvironmentMapType
+	{
+		Env_Static = 0,
+		Env_Dynamic = 1
+	};
+
 
 	class YumeAPIExport YumeMiscRenderer : 
 		public YumeBase,
@@ -85,7 +95,7 @@ namespace YumeEngine
 		unsigned num_propagations_;
 
 		RenderPass* GetDefaultPass() const { return defaultPass_; }
-
+		void SetDefaultPass(SharedPtr<RenderPass> p) { defaultPass_ = p; }
 		GIParameters giParams_;
 
 		void LPVPropagate(RenderCall* call,float iteration);
@@ -155,8 +165,12 @@ namespace YumeEngine
 		void UpdateLights();
 
 		float cameraMoveSpeed_;
+		void SetCameraMoveSpeed(float f) {cameraMoveSpeed_ = f; };
 
 		GISolution gi_;
+		EnvironmentMapType envType_;
+
+		void SetFrustumCulling(bool b) { disableFrustumCull_ = !b; }
  		//~
 
 		void Render();

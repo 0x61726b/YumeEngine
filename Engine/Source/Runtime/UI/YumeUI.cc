@@ -46,6 +46,9 @@ namespace YumeEngine
 		mouseY_(0),
 		lastTimeStep_(0.0f)
 	{
+		if(gYume->pEnv->GetVariant("NoUI").Get<YumeString>() == "1")
+			return;
+
 		gYume->pTimer->AddTimeEventListener(this);
 		gYume->pEngine->AddListener(this);
 
@@ -81,6 +84,9 @@ namespace YumeEngine
 	{
 		FsPath binaryRoot = gYume->pIO->GetBinaryRoot();
 
+		if(gYume->pEnv->GetVariant("NoUI").Get<YumeString>() == "1")
+			return true;
+
 		YUMELOG_INFO("Initializing Cef...");
 		if(!cef3d_->Initialize(binaryRoot.generic_string().c_str()))
 			return false;
@@ -98,6 +104,9 @@ namespace YumeEngine
 
 	int YumeUI::CreateBrowser(YumeUIElement* element)
 	{
+		if(gYume->pEnv->GetVariant("NoUI").Get<YumeString>() == "1")
+			return 0;
+
 		CefUI::CefRect rect;
 		rect.x = element->GetRect().left_;
 		rect.y = element->GetRect().top_;
@@ -113,6 +122,7 @@ namespace YumeEngine
 
 	void YumeUI::Update()
 	{
+
 		UIElements::iterator It = uiElements_.begin();
 		for(;It != uiElements_.end(); ++It)
 		{
@@ -155,6 +165,9 @@ namespace YumeEngine
 
 	void YumeUI::AddUIElement(YumeUIElement* element)
 	{
+		if(gYume->pEnv->GetVariant("NoUI").Get<YumeString>() == "1")
+			return;
+
 		uiElements_.push_back(element);
 		element->PrepareResources();
 	}
@@ -177,7 +190,6 @@ namespace YumeEngine
 			if((*It)->GetVisible())
 				(*It)->OnContextReady();
 		}
-
 	}
 
 	void YumeUI::OnPaint(int browserIndex,std::vector<CefUI::CefRect>& rectList,const void* buffer,

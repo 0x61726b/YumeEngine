@@ -267,7 +267,7 @@ namespace YumeEngine
 	{
 		sampleName_->SetDirty();
 
-
+		YumeUIElement::MarkForUpdate();
 	}
 
 

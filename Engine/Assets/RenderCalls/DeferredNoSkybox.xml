@@ -33,6 +33,5 @@
         <Param Name="showDepth" Value="false" />
       </Parameters>
     </Scene>
-    <Scene PassName="Skybox" Identifier="Main" Flags="SKYBOX" Output="Backbuffer"/>
   </RenderCalls>
 </Yume>

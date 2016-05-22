@@ -57,13 +57,14 @@ namespace YumeEngine
 		gYume->pInput->AddListener(this);
 
 #ifndef DISABLE_CEF
-		/*overlay_ = new YumeDebugOverlay;
-		gYume->pUI->AddUIElement(overlay_);
-		overlay_->SetVisible(true);*/
-
 		optionsMenu_ = new YumeOptionsMenu;
 		gYume->pUI->AddUIElement(optionsMenu_);
 		optionsMenu_->SetVisible(true);
+
+		overlay_ = new YumeDebugOverlay;
+		gYume->pUI->AddUIElement(overlay_);
+		overlay_->SetVisible(true);
+		overlay_->GetBinding("SampleName")->SetValue("Sponza PBR");
 #endif
 
 		StaticModel* dragon= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(-40,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
@@ -73,6 +74,14 @@ namespace YumeEngine
 		StaticModel* dragon5= CreateModel("Models/Mitsuba/mitsuba-sphere.yume",DirectX::XMFLOAT3(120,150,0),DirectX::XMFLOAT4(0,0,0,0),DirectX::XMFLOAT3(15,15,15));
 
 		StaticModel* sponza = CreateModel("Models/sponza/sponza.yume");
+
+		RenderPass* dp = renderer->GetDefaultPass();
+		dp->Load("RenderCalls/Bloom.xml",true);
+		dp->Load("RenderCalls/FXAA.xml",true);
+		dp->Load("RenderCalls/LensDistortion.xml",true);
+		dp->Load("RenderCalls/ShowGBuffer.xml",true);
+		dp->DisableRenderCalls("ShowGBuffer");
+		dp->DisableRenderCalls("Bloom");
 
 
 		MaterialPtr diff = YumeAPINew Material;
@@ -149,7 +158,7 @@ namespace YumeEngine
 
 	void HelloWorld::MoveCamera(float timeStep)
 	{
-		
+
 	}
 
 
@@ -160,9 +169,10 @@ namespace YumeEngine
 
 	void HelloWorld::Setup()
 	{
-		BaseApplication::Setup();
+		engineVariants_["GI"] = SVO;
+		engineVariants_["WindowWidth"] = 1024;
+		engineVariants_["WindowHeight"] = 768;
 
-		engineVariants_["WindowWidth"] = 1600;
-		engineVariants_["WindowHeight"] = 900;
+		BaseApplication::Setup();
 	}
 }

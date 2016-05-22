@@ -70,6 +70,7 @@ namespace YumeEngine
 		overlay_ = new YumeDebugOverlay;
 		gYume->pUI->AddUIElement(overlay_);
 		overlay_->SetVisible(true);
+		overlay_->GetBinding("SampleName")->SetValue("Dark Souls Models & Specular Reflections");
 #endif
 
 		MaterialPtr emissiveBlue = YumeAPINew Material;
@@ -104,6 +105,14 @@ namespace YumeEngine
 		emissivePink->SetShaderParameter("has_specular_tex",false);
 		emissivePink->SetShaderParameter("has_normal_tex",false);
 		emissivePink->SetShaderParameter("has_roughness_tex",false);
+
+		RenderPass* dp = renderer->GetDefaultPass();
+		dp->Load("RenderCalls/Bloom.xml",true);
+		dp->Load("RenderCalls/FXAA.xml",true);
+		dp->Load("RenderCalls/LensDistortion.xml",true);
+		dp->Load("RenderCalls/ShowGBuffer.xml",true);
+		dp->DisableRenderCalls("ShowGBuffer");
+		dp->DisableRenderCalls("Bloom");
 
 
 		float boxScale = 0.15f;
@@ -160,9 +169,9 @@ namespace YumeEngine
 
 	void AODemo::Setup()
 	{
+		engineVariants_["GI"] = SVO;
+		engineVariants_["WindowWidth"] = 1024;
+		engineVariants_["WindowHeight"] = 768;
 		BaseApplication::Setup();
-
-		engineVariants_["WindowWidth"] = 1600;
-		engineVariants_["WindowHeight"] = 900;
 	}
 }
