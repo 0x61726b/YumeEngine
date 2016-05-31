@@ -6,9 +6,10 @@
 [![todofy badge](https://todofy.org/b/arkenthera/YumeEngine/master)](https://todofy.org/r/arkenthera/YumeEngine/master)
 [![Coverity](https://scan.coverity.com/projects/8038/badge.svg)](https://scan.coverity.com/projects/arkenthera-yumeengine)
 
-![](http://i.imgur.com/xG2na2E.jpg)
 
-![](http://i.imgur.com/5SyAHWa.jpg)
+![](http://i.imgur.com/HbOeJVu.jpg)
+
+![](http://i.imgur.com/xG2na2E.jpg)
 
 [CHECK OUT THE TECH DEMO HERE](https://www.youtube.com/watch?v=yKNa7dFu8iU)
 
